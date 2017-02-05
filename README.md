@@ -7,7 +7,7 @@ The repositories I have on my account vary from current projects I am working on
 
 1. The R34 trial [Lowering Blood Pressure Among Hypertensives with Screen-Detected Kidney Disease](https://mjfrigaard.github.io/R34_Trial/)
 
-2. The UCSF/CKD [Electronic Health Record Data](https://mjfrigaard.github.io/uckdehr_db/b)
+2. The UCSF/CKD [Electronic Health Record Data](https://mjfrigaard.github.io/uckdehr_db/)
 
 ## CTSI 
 
