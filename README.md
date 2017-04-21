@@ -1,6 +1,6 @@
 # Welcome to the GitHub page (.io) for my account mjfrigaard.github.io
 
-The repositories I have on my account vary from current projects I am working on through [CTSI](https://ctsi.ucsf.edu/), [KHRC](http://khrc.ucsf.edu/), and occaisionally for my posts to my [blog](https://newsandnumbers.org/).
+These repositories are from the research I do @ [KHRC](http://khrc.ucsf.edu/), my masters program @ [UCSF](http://ticr.ucsf.edu/), and occaisionally for my posts on my [blog](https://newsandnumbers.org/).
 
 
 ## KHRC
@@ -9,7 +9,7 @@ The repositories I have on my account vary from current projects I am working on
 
 2. The UCSF/CKD [Electronic Health Record Data](https://mjfrigaard.github.io/uckdehr_db/)
 
-## CTSI 
+## Other
 
 1. [205172_TERRY](https://mjfrigaard.github.io/205172_terry/) 
 
