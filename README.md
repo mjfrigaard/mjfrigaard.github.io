@@ -1,4 +1,4 @@
-# Welcome to the GitHub page (.io) for my account mjfrigaard.github.io
+# Welcome to my GitHub page 
 
 These repositories are from the research I do @ [KHRC](http://khrc.ucsf.edu/), my masters program @ [UCSF](http://ticr.ucsf.edu/), and occaisionally for my posts on my [blog](https://newsandnumbers.org/).
 
@@ -11,6 +11,3 @@ These repositories are from the research I do @ [KHRC](http://khrc.ucsf.edu/), m
 
 ## Previous projects
 
-1. [205172_TERRY](https://mjfrigaard.github.io/205172_terry/) 
-
-2. [205000_Barchas_Anderson](https://mjfrigaard.github.io/205000_Barchas_Anderson/)
