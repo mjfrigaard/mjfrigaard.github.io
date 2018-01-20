@@ -1,4 +1,4 @@
-# Welcome to my GitHub page 
+# Welcome to my GitHub page! 
 
 ## My Repos
 
@@ -9,6 +9,8 @@
 #### Code and data for [Cleaning Many .csv Files in R](https://mjfrigaard.github.io/doing_data_science_data/) or the [blog post](https://newsandnumbers.org/2018/01/18/cleaning-multiple-data-sets-efficiently/)
 
 #### Code and data for [Reproducible Research In Plos Tutorials](https://github.com/mjfrigaard/RR_PLoS) 
+
+***
 
 *Under construction*
 
