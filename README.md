@@ -1,23 +1,32 @@
 # Welcome to my GitHub page! 
 
-## My Repos
+## My Repositories
 
-#### Code and data for [Storybench Tutorials](https://github.com/mjfrigaard/storybenchR) - these are tutorials I've written for [Storybench.org](http://www.storybench.org/author/martinfri/)
+This is a list of my code repositories and various projects. 
 
-#### Code and data for [Tidyverse/RStudio demonstration for Quesgen](https://mjfrigaard.github.io/QuesgenDemo/)
+### Code and data for [Storybench Tutorials](https://github.com/mjfrigaard/storybenchR) - these are tutorials I've written for [Storybench.org](http://www.storybench.org/author/martinfri/)
 
-#### Code and data for [Cleaning Many .csv Files in R](https://mjfrigaard.github.io/doing_data_science_data/) or the [blog post](https://newsandnumbers.org/2018/01/18/cleaning-multiple-data-sets-efficiently/)
+### Code and data for the [Shiny Application](https://mjfrigaard.github.io/seg-shiny-v-1-3-1/) I built for the Diabetes Technology Society. 
 
-#### Code and data for [Reproducible Research In Plos Tutorials](https://github.com/mjfrigaard/RR_PLoS) 
+- check out the application [here](https://n3wsandnumb3rs.shinyapps.io/seg-shiny-v-1-3-1/)
+- and a description of the project [here](https://www.diabetestechnology.org/seg.shtml)
+
+### Code and data for my [Don't mess with Texas](https://mjfrigaard.github.io/dont-mess-with-texas/) project with execution data from the department of corrections.
+
+### Code and files for a [Git, Github, and RStudio](https://mjfrigaard.github.io/intro-git-terminal-rstudio/) tutorial.
+
+### Code, images, and data for a [recent change to my Shiny application](https://mjfrigaard.github.io/seg-ggplot2/) 
+
+- this required adding a Gaussian smoothed image into a `ggplot2` layer
+
+### Code and data for [Tidyverse/RStudio demonstration for Quesgen](https://mjfrigaard.github.io/QuesgenDemo/)
+
+### Code for connecting [MySQL to RStudio](https://github.com/mjfrigaard/mysql-intro)
+
 
 ***
 
 *Under construction*
 
-[Curse of dimensionality](https://github.com/mjfrigaard/fuzzy-dollop/tree/master) - paper on curse of dimensionality
-
-[Identifying Red Flags - Using Anthropometry Measures to Screen for Elevated Blood Pressure Risk in Children](https://github.com/mjfrigaard/ican_red_flags) - this is an R project for my [paper](http://journals.sagepub.com/doi/abs/10.1177/1941406412470719) from my Master's @ CSUC
-
-[Who dopes the most?](https://github.com/mjfrigaard/who-dopes-the-most) - project with USADA data.
 
 [Lowering Blood Pressure Among Hypertensives with Screen-Detected Kidney Disease](https://mjfrigaard.github.io/R34_Trial/) - this was the protocol for a CKD screening trial at the SFVAMC. Paper on methods [here](https://www.ncbi.nlm.nih.gov/pubmed/28399844)
