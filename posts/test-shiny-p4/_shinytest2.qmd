@@ -1,0 +1,1596 @@
+---
+title: "Testing shiny apps" 
+subtitle: "Testing app packages with `shniytest2`"
+author: "Martin Frigaard"
+date: "2023-05-14"
+categories: [shiny, testthat]
+image: "image.png"
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+
+draft: false
+
+code-fold: show
+code-summary: view code
+
+fig-align: center
+
+fontsize: '10.5'
+
+callout-icon: false
+
+freeze: true
+
+execute:
+  echo: true
+  warning: false
+  eval: false
+---
+
+
+
+## Expect Shiny values 
+
+When I've finished interacting with the application, I click on the **Expect Shiny values** button at the top of **`shinytest2` expectations**. This will add `app$expect_values()` to the **Code** section:
+
+::::{.column-page-inset-right}
+
+::: {#fig-expect-shiny-values layout-ncol=1}
+
+
+![expect-shiny-values](shinytest2-expect-shiny-values.png){#fig-expect-shiny-values width=100% fig-align="center"}
+
+**Expect Shiny values** in `shinytest2` expectations
+:::
+
+::::
+
+## Save test and exit
+
+Finally, to save the test, enter a **Test name** and click **Save test and exit**
+
+::::{.column-page-inset-right}
+
+::: {#fig-name-save-exit layout-ncol=1}
+
+![name-save-exit](shinytest2-name-save.png){#fig-shinytest2-name-save width=100% fig-align="center"}
+
+Name, save and exit `record_test()`
+:::
+
+::::
+
+Now let's examine the output of our test!
+
+# Test event recorder test file
+
+After clicking **Save test and exit**, the following test is created as `test-shinytest2.R`: 
+
+<!-- app <- AppDriver$new(name = "test-run-01", width = 1156, height = 562) -->
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-summary: contents of test-shinytest2.R
+library(shinytest2)
+
+test_that("{shinytest2} recording: test-run-01", {
+  app <- AppDriver$new(name = "test-run-01", width = 1156, height = 562)
+  app$set_inputs(`vars-y` = "critics_score")
+  app$set_inputs(`vars-x` = "audience_score")
+  app$set_inputs(`vars-alpha` = 0.3)
+  app$set_inputs(`vars-alpha` = 0.2)
+  app$set_inputs(`vars-size` = 3)
+  app$set_inputs(`vars-plot_title` = "New")
+  app$set_inputs(`vars-plot_title` = "New Title")
+  app$expect_values()
+})
+```
+
+The new `test-shinytest2.R` file is placed alongside the other test files in `tests/testthat/`: 
+
+-   New `test-shinytest2.R` files in `tests/` folder:
+
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-summary: new tests/ folder
+    tests/
+    ├── testthat
+    │   ├── _snaps
+    │   │   └── shinytest2
+    │   │       ├── test-run-01-001.json
+    │   │       └── test-run-01-001_.png
+    │   ├── setup-shinytest2.R
+    │   └── test-shinytest2.R
+    └── testthat.R
+    
+    4 directories, 5 files
+    ```
+
+
+## Test recorder output
+    
+If you happened to look in your console after exciting the test event recorder, you probably noticed the following output:
+    
+-   The `tests/testthat.R` file (i.e., the 'test runner') was overwritten and tests are now run with `shinytest2::test_app()`
+
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-summary: new shinytest2 test runner 
+    Warning: Overwriting test runner tests/testthat.R with `shinytest2::test_app()`
+    call to ensure proper a testing environment.
+    ```
+
+-   The new test file (`test-shinytest2.R`) is saved and run:
+
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-summary: record_test() test files
+    • Saving test file: tests/testthat/test-shinytest2.R
+    • Modify '/projects/apps/unitTestAppPkg/tests/testthat/test-shinytest2.R'
+    • Running recorded test: tests/testthat/test-shinytest2.R
+    ✔ | F W S  OK | Context
+    ✔ |   2     1 | shinytest2 [7.6s]  
+    ```
+
+-   Snapshots for the test are created and saved in the `tests/testthat/_snaps/` folder, and the test results are displayed 
+
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-summary: record_test() snapshot files
+    Warning (test-shinytest2.R:12:3): {shinytest2} recording: test-run-01
+    Adding new file snapshot: 'tests/testthat/_snaps/test-run-01-001_.png'
+    
+    Warning (test-shinytest2.R:12:3): {shinytest2} recording: test-run-01
+    Adding new file snapshot: 'tests/testthat/_snaps/test-run-01-001.json'
+    ```
+    
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-summary: test results
+    ══ Results ═════════════════════════════════════════════════════════════
+    Duration: 7.3 s
+    
+    [ FAIL 0 | WARN 2 | SKIP 0 | PASS 1 ]
+    ```
+
+### What did I expect? 
+
+It's always good news to see a passing test, but I also want to know *why* this initial test passed. I'll take a closer look at the two files stored in `tests/testthat/_snaps/` to see what clicking on **Expect Shiny values** and `app$expect_values()` is doing.
+
+
+#### `test-run-01-001_.png`
+
+The image saved in `tests/testthat/_snaps/test-run-01-001_.png` is below:
+
+![](test-run-01-001_.png){fig-align='center'}
+
+The image is grainy and hard to see, but it shows the changed `y` and `x` values (**`Critics Score`** and **`Audience Score`**), and the plot title (**`New Title`**).
+
+
+#### `test-run-01-001.json`
+
+The JSON file contains the `input`, `output`, and `export`ed values from the application at the conclusion of our test. Expand below to view: 
+
+```{bash}
+#| echo: true
+#| eval: false 
+#| code-fold: true
+#| code-summary: test-run-01-001.json
+{
+  "input": {
+    "vars-alpha": 0.2,
+    "vars-plot_title": "New Title",
+    "vars-size": 3,
+    "vars-x": "audience_score",
+    "vars-y": "critics_score",
+    "vars-z": "mpaa_rating"
+  },
+  "output": {
+    "plot-scatterplot": {
+      "src": "[image data hash: 3c80291f7c575419bb6684eae93a1059]",
+      "width": 671.328125,
+      "height": 400,
+      "alt": "Plot object",
+      "coordmap": {
+        "panels": [
+          {
+            "panel": 1,
+            "row": 1,
+            "col": 1,
+            "panel_vars": {
+
+            },
+            "log": {
+              "x": null,
+              "y": null
+            },
+            "domain": {
+              "left": 6.7,
+              "right": 101.3,
+              "bottom": -3.95,
+              "top": 104.95
+            },
+            "mapping": {
+              "colour": ".data[[\"mpaa_rating\"]]",
+              "x": ".data[[\"audience_score\"]]",
+              "y": ".data[[\"critics_score\"]]"
+            },
+            "range": {
+              "left": 37.8225599315069,
+              "right": 665.520547945205,
+              "bottom": 312.36866493102,
+              "top": 23.9712263844706
+            }
+          }
+        ],
+        "dims": {
+          "width": 671.328125,
+          "height": 400
+        }
+      }
+    }
+  },
+  "export": {
+
+  }
+}
+```
+
+Let's zoom in on the contents of `test-run-01-001.json` to see how using modules effects the `input` and `output` values: 
+
+#### Module considerations
+
+The application in `unitTestAppPkg` uses two modules (`mod_var_input` and `mod_display_plot`). Modules create namespaces for their inputs and outputs with the `shiny::NS()` function, which appends a second `id` string to each `inputId`/`outputId`.
+
+-   For example, the `inputId` for `"y"` in the `mod_var_input` module communicates between the UI and server using the shared `id` argument `"vars"`
+
+    ```{r}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: mod_var_input IDs
+    # in module UI function
+    shiny::selectInput(
+      inputId = ns("y"),
+      label = "Y-axis:",
+      choices = c(
+        "IMDB rating" = "imdb_rating",
+        "IMDB number of votes" = "imdb_num_votes",
+        "Critics Score" = "critics_score",
+        "Audience Score" = "audience_score",
+        "Runtime" = "runtime"
+      ),
+      selected = "audience_score"
+    )
+    # in app ui function
+    mod_var_input_ui(id = "vars")
+    # in module server function
+    return(
+      shiny::reactive({
+        list("y" = input$y)
+      })
+    )
+    # in app server function
+    selected_vars <- mod_var_input_server(id = "vars")
+    ```
+
+    -   `mod_display_plot` does the same thing with the `outputId` and the `id` argument `"plot"`
+
+    ```{r}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: mod_display_plot ids
+    # in module UI function
+    shiny::plotOutput(outputId = ns("scatterplot"))
+    # in app ui function
+    mod_display_plot_ui(id = "plot")
+    # in module server function
+    output$scatterplot <- shiny::renderPlot({
+      plot()
+    })
+    # in app server function
+    mod_display_plot_server(id = "plot", var_inputs = selected_vars)
+    ```
+
+Now when I examine the `input` and `output` values stored in  `test-run-01-001.json`, the names make sense (as `"id-inputId"`/`"outputId"`):
+
+```{bash}
+#| echo: true
+#| eval: false 
+#| code-fold: false
+# input values
+"input": {
+    "vars-y": "critics_score",
+# output values
+"output": {
+    "plot-scatterplot":
+```
+
+
+# Running shinytest2 tests
+
+I'll dive into the contents of `test_that()` more below, but first I want to run the new test and make sure it passes. I can do this by clicking on **Run Test** or by using `test_file()` from `testthat.R`
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: false
+#| code-summary: to run test-shinytest2.R from testthat.R
+testthat::test_file("tests/testthat/test-shinytest2.R")
+```
+
+
+:::: {.callout-important collapse='false'}
+## WARNING
+::: {style='font-size: 1.20em; color: #000000;'}
+
+Because `unitTestAppPkg` is a package, running tests with `shinytest2` produces in the warning:
+  
+![](run_tests_out.png)
+
+This warning is a caused by the call to `shinytest2::load_env()`. It's a [known issue](https://github.com/rstudio/shinytest2/issues/264#issuecomment-1251422788), so I assume the developers are working on it!
+
+:::
+::::
+
+The results of the test is below:
+
+```{verbatim}
+#| echo: true
+#| eval: false 
+#| code-fold: false
+#| code-summary: Run Test output
+==> Testing R file using 'testthat'
+
+ℹ Loading unitTestAppPkg
+Loading required package: shiny
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
+Test complete
+```
+
+Great--I have one successful `shinytest2` test. 
+
+# Running tests interactively 
+
+The great thing about testing with `shinytest2` is the ability to be run each step of the test from the **Console**. 
+
+I'll start by using executing the first line of the test code from the test stored in `test-shinytest2.R`:
+
+<!-- app <- AppDriver$new(name = "test-run-01", width = 1156, height = 562) -->
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: Create app with AppDriver
+app <- AppDriver$new(name = "test-run-01", width = 1156, height = 562)
+```
+
+`AppDriver` is used to initialize an `app` object, which "*provides a full simulation of a Shiny app so that you can test user interactions with a live app*"
+
+Use `app$view()` to view the initialized `app`:
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: false
+app$view()
+```
+
+This opens Chromium with the following display:
+
+::::{.column-page-inset-right}
+::: {#fig-AppDriver layout-ncol=1}
+
+![AppDriver](app_view.png){#fig-app_view}
+
+View `AppDriver$new()` object with `app$view()`
+
+:::
+::::
+
+## Setting inputs 
+
+If we continue running each line of the test in the console, we see that next lines set the `inputId`s for the `x` and `y` axes to `"critics_score"` and `"audience_score"` with `app$set_input()` (*Note that this uses the module notation above (i.e., `"id-inputId"`)*):
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: set inputs interactively
+app$set_inputs(`vars-y` = "critics_score")
+app$set_inputs(`vars-x` = "audience_score")
+```
+
+
+And we see the application update in Chromium:
+
+::::{.column-page-inset-right}
+
+::: {#fig-set_inputs layout-ncol=2}
+
+![x](app_set_inputs_01.png){#fig-x}
+
+![y](app_set_inputs_02.png){#fig-y}
+
+Set application inputs with `app$set_inputs()`
+
+:::
+
+::::
+
+## Getting values 
+
+I'll diverge from code in the test file to cover `get_values()` and `get_value()`. To return all the values from the current application, I can use `app$get_values()`:
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: get all app values
+app$get_values()
+```
+
+I've omitted some of the output from `get_values()`, but as you can see, all of the `inputs` and `outputs` from the application are available (*expand below to view*): 
+
+```{bash}
+#| echo: true
+#| eval: false 
+#| code-fold: true
+#| code-summary: app$get_values() truncated output
+$input
+$input$`vars-alpha`
+[1] 0.5
+
+$input$`vars-plot_title`
+[1] ""
+
+$input$`vars-size`
+[1] 2
+
+$input$`vars-x`
+[1] "audience_score"
+
+$input$`vars-y`
+[1] "critics_score"
+
+$input$`vars-z`
+[1] "mpaa_rating"
+
+
+$output
+$output$`plot-scatterplot`
+$output$`plot-scatterplot`$src
+[1] "data:image/png
+
+..<omitted>...
+
+$output$`plot-scatterplot`$coordmap$dims
+$output$`plot-scatterplot`$coordmap$dims$width
+[1] 710.6641
+
+$output$`plot-scatterplot`$coordmap$dims$height
+[1] 400
+
+$export
+named list()
+```
+
+The output from `get_values()` ends with and empty list named `$export` (which I will cover below).
+
+If I'd like to get a specific value, I can use `app$get_value()` (singular), and provide the name of the `$input`. For example, if I want the color input (`input$z`) from `mod_var_input` I would use the following: 
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: get single value interactively
+app$get_value(input = "vars-z")
+```
+
+The result is the initial `"z"` value I initially set with the `selectInput(inputId = ns("z"))` of `mod_var_input_ui()`:
+
+```{verbatim}
+#| echo: true
+#| eval: false 
+#| code-fold: false
+[1] "mpaa_rating"
+```
+
+### Expectations with get_value()
+
+`app$get_value()` can also be used to create specific test expectations. For example, now that I know what input value to expect in `vars-z`, I can write an explicit expectation for this value: 
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: expectations with get_value()
+test_that("{shinytest2} verify color variable", {
+  app <- AppDriver$new(name = "color-variable", height = 596, width = 1156)
+  color_input <- app$get_value(input = "vars-z")
+  expect_equal(object = color_input, expected = "mpaa_rating")
+})
+```
+
+## Stopping the app
+
+To close the `AppDriver`, use `app$stop()`
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: false
+app$stop()
+```
+
+# Exporting values 
+
+We saw that `$export` was empty in the returned list from `app#get_values()`. Exporting values from an application requires making some changes to the application server code. 
+
+-   In the `mod_display_plot_server()`, two reactives are created: `movies()` and `plot()`
+
+    -   To export these values, add `shiny::exportTestValues()` with a name for each reactive you'd like to export:
+
+    ```{r}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: add exportTestValues() to server module function
+    shiny::exportTestValues(
+      app_data = movies(),
+      app_graph =  plot()
+    )
+    ```
+
+    -   In the console, if I reset `app` with `AppDriver$new()` and run through the lines of code above, I can use `app$get_value()` to verify the output:
+    
+    ```{r}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: reset AppDriver and get exported values
+    app <- AppDriver$new(name = "export-data-plot", height = 596, width = 1156)
+    app$view()
+    app$get_value(export = "plot-app_data")
+    app$get_value(export = "plot-app_graph")
+    ```
+    
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-fold: show
+    #| code-summary: exported plot-app_data
+    # A tibble: 651 × 34
+       title   title_type genre runtime mpaa_rating studio thtr_rel_date      
+       <chr>   <fct>      <fct>   <dbl> <fct>       <fct>  <dttm>             
+     1 Filly … Feature F… Drama      80 R           Indom… 2013-04-18 21:00:00
+     2 The Di… Feature F… Drama     101 PG-13       Warne… 2001-03-13 21:00:00
+     3 Waitin… Feature F… Come…      84 R           Sony … 1996-08-20 21:00:00
+     4 The Ag… Feature F… Drama     139 PG          Colum… 1993-09-30 21:00:00
+     5 Malevo… Feature F… Horr…      90 R           Ancho… 2004-09-09 21:00:00
+     6 Old Pa… Documenta… Docu…      78 Unrated     Shcal… 2009-01-14 21:00:00
+     7 Lady J… Feature F… Drama     142 PG-13       Param… 1985-12-31 21:00:00
+     8 Mad Do… Feature F… Drama      93 R           MGM/U… 1996-11-07 21:00:00
+     9 Beauty… Documenta… Docu…      88 Unrated     Indep… 2012-09-06 21:00:00
+    10 The Sn… Feature F… Drama     119 Unrated     IFC F… 2012-03-01 21:00:00
+    # ℹ 641 more rows
+    # ℹ 27 more variables: thtr_rel_year <dbl>, thtr_rel_month <dbl>,
+    #   thtr_rel_day <dbl>, dvd_rel_date <dttm>, dvd_rel_year <dbl>,
+    #   dvd_rel_month <dbl>, dvd_rel_day <dbl>, imdb_rating <dbl>,
+    #   imdb_num_votes <int>, critics_rating <fct>, critics_score <dbl>,
+    #   audience_rating <fct>, audience_score <dbl>, best_pic_nom <fct>,
+    #   best_pic_win <fct>, best_actor_win <fct>, best_actress_win <fct>, …
+    # ℹ Use `print(n = ...)` to see more rows
+    ```
+    
+    -   The `plot-app_graph` will be rendered in the **Plot** pane:
+    
+![](plot-app-graph.png){fig-align='center' width=100%}
+
+## Expectations with exported values
+
+To convert these exported values into expectations, I can write a test that confirms the when the `x` and `y` axis is changed in the app, these variables are also mapped into the `plot()` reactive. 
+
+I can do this using a combination of `app$get_value()` and `app$set_inputs()`: 
+
+-   Run the following in the console: 
+
+    -   Reset the `AppDriver` and set the values in the application for the test:
+
+    ```{r}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: New app & set_inputs()
+    app <- AppDriver$new(name = "confirm-plot-labels", height = 596, width = 1156)
+    app$set_inputs(`vars-z` = "genre")
+    app$set_inputs(`vars-x` = "audience_score")
+    app$set_inputs(`vars-y` = "critics_score")
+    ```
+    
+    -   Store the current plot (in `output$plot-scatterplot`) as `scatter_object` using `app$get_value()` and view it's contents:
+    
+    ```{r}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: store plot object
+    scatter_object <- app$get_value(output = "plot-scatterplot")
+    names(scatter_object)
+    str(scatter_object)
+    ```
+    
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-fold: false
+    [1] "src"      "width"    "height"   "alt"      "coordmap"
+    ```
+    
+    -   Note the location of the `coordmap$mapping` list:
+    
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-fold: false
+    List of 5
+     $ src     : chr "data:image/png;base64,"| __truncated__
+     $ width   : num 711
+     $ height  : int 400
+     $ alt     : chr "Plot object"
+     $ coordmap:List of 2
+      ..$ panels:List of 1
+      .. ..$ :List of 8
+      .. .. ..$ panel     : num 1
+      .. .. ..$ row       : num 1
+      .. .. ..$ col       : num 1
+      .. .. ..$ panel_vars: Named list()
+      .. .. ..$ log       :List of 2
+      .. .. .. ..$ x: NULL
+      .. .. .. ..$ y: NULL
+      .. .. ..$ domain    :List of 4
+      .. .. .. ..$ left  : num 6.7
+      .. .. .. ..$ right : num 101
+      .. .. .. ..$ bottom: num -3.95
+      .. .. .. ..$ top   : num 105
+      .. .. ..$ mapping   :List of 3
+      .. .. .. ..$ colour: chr ".data[[\"genre\"]]"
+      .. .. .. ..$ x     : chr ".data[[\"audience_score\"]]"
+      .. .. .. ..$ y     : chr ".data[[\"critics_score\"]]"
+      .. .. ..$ range     :List of 4
+      .. .. .. ..$ left  : num 37.8
+      .. .. .. ..$ right : num 705
+      .. .. .. ..$ bottom: num 295
+      .. .. .. ..$ top   : num 24
+      ..$ dims  :List of 2
+      .. ..$ width : num 711
+      .. ..$ height: int 400
+    ```
+    
+    -   Locate `$mapping` list
+    
+    ```{r}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: view mapping
+    scatter_object$coordmap$panels[[1]]$mapping
+    ```
+    
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-fold: false
+    $colour
+    [1] ".data[[\"genre\"]]"
+    
+    $x
+    [1] ".data[[\"audience_score\"]]"
+    
+    $y
+    [1] ".data[[\"critics_score\"]]"
+    ```
+    
+    -   Store plot mappings, then use `stringr` to clean the excess text:
+    
+    ```{r}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: store and clean strings
+    plot_mappings <- scatter_object$coordmap$panels[[1]]$mapping
+    # test pattern
+    stringr::str_remove_all(
+      plot_mappings[2],
+      pattern = "^.data|\\[\\[|\\]\\]|\"|\""
+    )
+    ```
+    
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-fold: false
+    [1] "audience_score"
+    ```
+    
+    - Wrap this method in custom function that mimics what is happening to the plot labels in  `mod_display_plot_server()`:
+    
+    ```{r}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: bundle in custom function
+    get_plot_labels <- function(plot_mappings) {
+      # clean text
+      exp_mpngs <- purrr::map(
+        .x = plot_mappings,
+        .f = stringr::str_remove_all,
+        pattern = "^.data|\\[\\[|\\]\\]|\"|\""
+      )
+    
+      # create list of labels (similar to module)
+      expected_labels <- list(
+        x = stringr::str_replace_all(
+          tools::toTitleCase(exp_mpngs$x), "_", " "
+        ),
+        y = stringr::str_replace_all(
+          tools::toTitleCase(exp_mpngs$y), "_", " "
+        ),
+        colour = exp_mpngs$colour
+      )
+    
+      return(expected_labels)
+    }
+    expected_labels <- get_plot_labels(plot_mappings)
+    expected_labels
+    ```
+    
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-fold: false
+    $x
+    [1] "Audience score"
+    
+    $y
+    [1] "Critics score"
+    
+    $colour
+    [1] "genre"
+    ```
+    
+-   I now have a set of labels I'm expecting to see (because they originated from `output$plot-scatterplot`), I can use the exported values for comparison:
+
+    ```{r}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: export plot() & find labels
+    exported_app_graph <- app$get_value(export = "plot-app_graph")
+    names(exported_app_graph)
+    exported_app_graph$labels
+    ```
+    
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-fold: false
+    [1] "data"        "layers"      "scales"      "mapping"     "theme"   
+    [2] "coordinates" "facet"       "plot_env"    "labels"     
+    ```
+
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-fold: false
+    $x
+    [1] "Audience score"
+    
+    $y
+    [1] "Critics score"
+    
+    $title
+    [1] ""
+    
+    $colour
+    [1] "genre"
+    ```
+    
+    -   Create `plot_labels` from `exported_app_graph$labels` to use as the `object` in our `expect_equal()` expectation:
+    
+    ```{r}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: store object plot_labels
+    plot_labels <- exported_app_graph$labels[c("x", "y", "colour")]
+    plot_labels
+    ```
+    
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-fold: false
+    $x
+    [1] "Audience score"
+    
+    $y
+    [1] "Critics score"
+    
+    $colour
+    [1] "genre"
+    ```
+    
+    -   Before writing expectation, confirm there are no differences with `waldo::compare()`:
+    
+    ```{r}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: compare plot_labels with expected_labels
+    waldo::compare(
+      x = plot_labels,
+      y = expected_labels
+    )
+    ```
+    
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-fold: false
+    ✔ No differences
+    ```
+    
+
+When we write our test with these steps, it's much more concise because we're not confirming values. I'll place the test below in `test-shinytest2-confirm-plot-labels.R`
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: test exported values
+test_that("{shinytest2} confirm plot labels", {
+  app <- AppDriver$new(name = "confirm-plot-labels", height = 596, width = 1156)
+  app$set_inputs(`vars-z` = "genre")
+  app$set_inputs(`vars-x` = "audience_score")
+  app$set_inputs(`vars-y` = "critics_score")
+  scatter_object <- app$get_value(output = "plot-scatterplot")
+  plot_mappings <- scatter_object$coordmap$panels[[1]]$mapping
+  get_plot_labels <- function(plot_mappings) {
+    exp_mpngs <- purrr::map(
+      .x = plot_mappings,
+      .f = stringr::str_remove_all,
+      pattern = "^.data|\\[\\[|\\]\\]|\"|\""
+    )
+    expected_labels <- list(
+      x = stringr::str_replace_all(
+        tools::toTitleCase(exp_mpngs$x), "_", " "
+      ),
+      y = stringr::str_replace_all(
+        tools::toTitleCase(exp_mpngs$y), "_", " "
+      ),
+      colour = exp_mpngs$colour
+    )
+    return(expected_labels)
+  }
+  expected_labels <- get_plot_labels(plot_mappings)
+  exported_app_graph <- app$get_value(export = "plot-app_graph")
+  plot_labels <- exported_app_graph$labels[c("x", "y", "colour")]
+  expect_equal(object = plot_labels, expected = expected_labels)
+})
+```
+
+# Debugging tests 
+
+So far I've created the three `shinytest2` tests in `tests/testthat/` and generated two snapshots in `_snaps/`:
+
+```{bash}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: tests/testthat/
+tests/testthat
+├── _snaps
+│   ├── gg_base
+│   │   └── default-base-plot.svg
+│   └── shinytest2
+│       ├── test-run-01-001.json
+│       └── test-run-01-001_.png
+├── setup-shinytest2.R
+├── test-gg_base.R
+├── test-gg_points.R
+├── test-mod_display_plot_server.R
+├── test-mod_var_input_server.R
+├── test-shinytest2-color-variable.R
+├── test-shinytest2-confirm-plot-labels.R
+└── test-shinytest2.R
+
+4 directories, 11 files
+```
+
+I run the tests by clicking on the **Test** icon in the **Build** pane.
+
+::: {#fig-build_test layout-ncol=1}
+
+![Test](build_test.png){#fig-build-test fig-align='center'}
+
+Build **Test** 
+:::
+
+This tests all test files in `test/testthat/`. In the **Build** pane, you'll see each test listed with their `Context`.
+
+```{bash}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: test-shinytest2.R failure
+ℹ Testing unitTestAppPkg
+Loading required package: shiny
+✔ | F W S  OK | Context
+✔ |         1 | gg_base [0.4s]                                             
+✔ |         5 | gg_points [0.1s]                                           
+✔ |         5 | mod_display_plot_server [0.6s]                             
+✔ |         6 | mod_var_input_server [0.1s]                                
+✔ |         1 | shinytest2-color-variable [5.4s]                           
+✔ |         1 | shinytest2-confirm-plot-labels [8.7s]                      
+⠏ |         0 | shinytest2                                                    
+```
+
+
+I can see the `shinytest2` test failed. This is the test I created with `record_test()`, and it lives in `tests/testthat/test-shinytest2.R`. 
+
+-   I'll go over the test failure output below: 
+
+    -   First I notice the `shinytest2` test `query failed`, and I can see `URL` to the `shinytest2` session used in the test. The `<title></title>`, `<h1></h1>`, and `<p></p>` tags are telling me there is an error and `cannot unclass an environment`
+
+    ```{bash}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: test-shinytest2.R error
+    {shinytest2} query failed (500)----------------------
+    URL: http://127.0.0.1:3783/session/18fef41fa283fca33621bdb612352ad6/dataobj/shinytest?w=&nonce=36cdda5c9&input=1&output=1&export=1&format=json&sortC=1
+    <html>
+    
+    <head lang = "en">
+      <title>An error has occurred</title>
+    </head>
+    
+    <body>
+    
+    <h1>An error has occurred!</h1>
+    <p>cannot unclass an environment</p>
+    
+    </body>
+    </html>
+     
+    ----------------------------------------
+    ✖ | 1       0 | shinytest2 [7.2s]                                                         
+    ───────────────────────────────────────────────────────────────────────────
+    ```
+
+    -   Next I see what looks like an R error (`Error in app_httr_get(self,...`) and the `Backtrace:`, which tells me there was an error with `app$expect_values()`:
+
+    ```{bash}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: test-shinytest2.R backtrace
+    Error (test-shinytest2.R:12:3): {shinytest2} recording: test-run-01
+    Error in `app_httr_get(self, private, url, fn_404 = function(req) {
+        app_abort(self, private, c(paste0("Shiny server returned 404 for values URL: ", 
+            url), i = "Is `shiny::runApp(test.mode = TRUE)` enabled?"), 
+            call = cur_env)
+    })`: Unable request data from server
+    Backtrace:
+     1. app$expect_values()
+          at test-shinytest2.R:12:2
+     2. shinytest2:::app_expect_values(...)
+     3. shinytest2:::app_httr_get(...)
+    ──────────────────────────────────────────────────────────────────────────────────────────
+    ```
+    
+    -   I still see the overall test resutls (and some words of encouragement!).
+
+    ```{bash}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: overall test results
+    ══ Results ═══════════════════════════════════════════════════════════════════════════════
+    Duration: 22.6 s
+    
+    [ FAIL 1 | WARN 0 | SKIP 0 | PASS 19 ]
+    
+    Don't worry, you'll get it.
+    ```
+    
+    -   Finally, I notice the test screenshots have been deleted because they are `unused`.  
+
+    ```{bash}
+    #| echo: true
+    #| eval: false
+    #| code-fold: show
+    #| code-summary: test-shinytest2.R screenshots
+    Deleting unused snapshots:
+    • shinytest2/test-run-01-001_.png
+    • shinytest2/test-run-01-001.json
+    ```
+    
+***So what happened?*** 
+
+In order to export values from the application, I had to add code to `mod_display_plot_server()`: 
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: exportTestValues
+shiny::exportTestValues(
+  app_data = movies(),
+  app_graph =  plot()
+)
+```
+
+This changed the output in `app$expect_values()`, because the initial test didn't include any exported values. 
+
+```{bash}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: export from test-run-01-001.json
+  "export": {
+
+  }
+```
+
+***What can I do?***
+
+I *could* re-write the `test-shinytest2-confirm-plot-labels.R` test to not use exported values, but in my opinion, exporting the values creates a better test than the `_snaps/` from `record_test()`.
+
+If I delete the `test-shinytest2.R` file and the `_snaps/shinytest2` folder and re-run the test, I see they pass:
+
+```{bash}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: Results after removing test-shinytest2.R
+==> devtools::test()
+
+ℹ Testing unitTestAppPkg
+Loading required package: shiny
+✔ | F W S  OK | Context
+✔ |         1 | gg_base [0.3s]
+✔ |         5 | gg_points     
+✔ |         5 | mod_display_plot_server [0.5s]
+✔ |         6 | mod_var_input_server
+✔ |         1 | shinytest2-color-variable [5.4s]
+✔ |         1 | shinytest2-confirm-plot-labels [7.5s]
+
+══ Results ═══════════════════
+Duration: 13.8 s
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 19 ]
+```
+
+
+
+# Testing package app functions
+
+`unitTestAppPkg` is a package, and the application is run with the  `unitTestAppPkg::runShinyApp()` function in the `R/runShinyApp.R` file:
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-summary: runShinyApp()
+runShinyApp <- function(testing = FALSE) {
+  if (isTRUE(testing)) {
+    shiny::shinyApp(ui = appUI, server = appServer,
+            options = list('test.mode' = TRUE))
+  } else {
+    shiny::shinyApp(ui = appUI, server = appServer)
+  }
+}
+```
+
+Fortunately, `shinytest2`'s excellent documentation has examples for this particular circumstance in the [Using `shinytest2` with R packages](https://rstudio.github.io/shinytest2/articles/use-package.html) vignette (specfically, the [Application objects created by functions](https://rstudio.github.io/shinytest2/articles/use-package.html#application-objects-created-by-functions) section). 
+
+-   I start by creating a test file for `runShinyApp()` with `usethis::use_test("shinytest2-runShinyApp")`
+
+    
+    ```{r}
+    #| echo: true
+    #| eval: false
+    #| code-fold: false
+    usethis::use_test("shinytest2-runShinyApp")
+    ```
+    
+    -   This creates and opens my new test file:
+
+    ```{bash}
+    #| echo: true
+    #| eval: false 
+    #| code-fold: false
+    ✔ Setting active project to '/projects/apps/unitTestAppPkg'
+    ✔ Writing 'tests/testthat/test-shinytest2-runShinyApp.R'
+    • Modify 'tests/testthat/test-shinytest2-runShinyApp.R'
+    ```
+
+
+In `test-shinytest2-runShinyApp.R`, I'll add the following code (adapted from the example on the website):
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: false
+# File: tests/testthat/test-shinytest2-runShinyApp.R
+library(shinytest2)
+
+test_that("runShinyApp() initial values are consistent", {
+  shiny_app <- unitTestAppPkg::runShinyApp()
+  app <- AppDriver$new(shiny_app, height = 596, width = 1156)
+  app$expect_values()
+})
+```
+
+When I run this test initially, I see the test produced three warnings: 
+
+-   Two warnings for the `Adding new file snapshot`: 
+    -   One for `tests/testthat/_snaps/001_.png`   
+    -   One for `tests/testthat/_snaps/001.json` 
+    
+```{verbatim}
+#| echo: true
+#| eval: false 
+#| code-fold: show 
+#| code-summary: output from test-runShinyApp.R test
+==> Testing R file using 'testthat'
+
+ℹ Loading unitTestAppPkg
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 0 ]Loading required package: shiny
+[ FAIL 0 | WARN 2 | SKIP 0 | PASS 1 ]
+
+── Warning (test-runShinyApp.R:8:3): runShinyApp() initial values are consistent ──
+Adding new file snapshot: 'tests/testthat/_snaps/001_.png'
+
+── Warning (test-runShinyApp.R:8:3): runShinyApp() initial values are consistent ──
+Adding new file snapshot: 'tests/testthat/_snaps/001.json'
+
+[ FAIL 0 | WARN 2 | SKIP 0 | PASS 1 ]
+```
+
+    
+-   The third warning we've seen before (it's the [result of `shinytest2::load_env()`](https://github.com/rstudio/shinytest2/issues/264#issue)
+
+```{verbatim}
+#| echo: true
+#| eval: false 
+#| code-fold: show 
+#| code-summary: output from test-runShinyApp.R test
+Warning message:
+In shiny::loadSupport(app_dir, renv = renv, globalrenv = globalrenv) :
+  Loading R/ subdirectory for Shiny application, but this directory 
+  appears to contain an R package. Sourcing files in R/ may cause 
+  unexpected behavior.
+
+Test complete
+```
+
+
+
+<!--
+
+More resources: 
+
+https://www.jumpingrivers.com/blog/end-to-end-testing-shinytest2-part-1/
+https://www.jumpingrivers.com/blog/end-to-end-testing-shinytest2-part-2/
+https://www.jumpingrivers.com/blog/end-to-end-testing-shinytest2-part-3/
+
+## What's in _snaps/?
+
+I've just been warned about the creation of `tests/testthat/_snaps/001_.png` and `tests/testthat/_snaps/001.json`. However, I can disregard the warning because I know these files didn't previously exist. If I run the test a second time (by clicking on **Run Test**), I see the warnings disappear:
+
+```{verbatim}
+#| echo: true
+#| eval: false 
+==> Testing R file using 'testthat'
+
+ℹ Loading unitTestAppPkg
+Loading required package: shiny
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
+Warning message:
+In shiny::loadSupport(app_dir, renv = renv, globalrenv = globalrenv) :
+  Loading R/ subdirectory for Shiny application, but this directory 
+  appears to contain an R package. Sourcing files in R/ may cause 
+  unexpected behavior.
+
+Test complete
+```
+
+The `001.json` file contains the `input`, `output`, and `export` values from the test. Expand below to view: 
+
+```{bash}
+#| echo: true
+#| eval: false 
+#| code-fold: true 
+#| code-summary: view tests/testthat/_snaps/001.json
+{
+  "input": {
+    "vars-alpha": 0.5,
+    "vars-plot_title": "",
+    "vars-size": 2,
+    "vars-x": "imdb_rating",
+    "vars-y": "audience_score",
+    "vars-z": "mpaa_rating"
+  },
+  "output": {
+    "plot-scatterplot": {
+      "src": "[image data hash: 3ec86b9c90962f50aad5b6e1f0071d15]",
+      "width": 710.6640625,
+      "height": 400,
+      "alt": "Plot object",
+      "coordmap": {
+        "panels": [
+          {
+            "panel": 1,
+            "row": 1,
+            "col": 1,
+            "panel_vars": {
+
+            },
+            "log": {
+              "x": null,
+              "y": null
+            },
+            "domain": {
+              "left": 1.545,
+              "right": 9.355,
+              "bottom": 6.7,
+              "top": 101.3
+            },
+            "mapping": {
+              "colour": ".data[[\"mpaa_rating\"]]",
+              "x": ".data[[\"imdb_rating\"]]",
+              "y": ".data[[\"audience_score\"]]"
+            },
+            "range": {
+              "left": 37.8225599315069,
+              "right": 704.520547945205,
+              "bottom": 312.36866493102,
+              "top": 23.9712263844706
+            }
+          }
+        ],
+        "dims": {
+          "width": 710.6640625,
+          "height": 400
+        }
+      }
+    }
+  },
+  "export": {
+
+  }
+}
+
+```
+
+Note the `"export:"` values is still empty in `001.json`. Exported values is something we set in tests *and* in the application code.
+
+## Locating test objects
+
+One of the challenges for writing tests with shiny is knowing what an object looks like in the shiny application. For standard unit tests, the structure of the objects returned from functions is fairly predictable (or at least easy to debug). However, uncovering what an object looks like in your is less predictable (and takes a little digging). 
+
+Let's go through the steps to write a test that tells if certain variables (i.e., *expected* variables) are mapped in the graph being rendered in `output$scatterplot`.
+
+In the console, I'm going to create `AppDriver$new()` object, but instead of providing a `name`, I'm going to create `shiny_app` with `unitTestAppPkg::runShinyApp()` (like above): 
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: create shiny_app
+shiny_app <- unitTestAppPkg::runShinyApp()
+app <- AppDriver$new(shiny_app, height = 596, width = 1156)
+```
+
+Then I'm going to create a list of all app values using `app$get_values()` and examine it's structure:
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: get list of all values
+all_values <- app$get_values()
+str(all_values)
+```
+
+```{verbatim}
+List of 3
+ $ input :List of 6
+  ..$ vars-alpha     : num 0.5
+  ..$ vars-plot_title: chr ""
+  ..$ vars-size      : int 2
+  ..$ vars-x         : chr "imdb_rating"
+  ..$ vars-y         : chr "audience_score"
+  ..$ vars-z         : chr "mpaa_rating"
+ $ output:List of 1
+  ..$ plot-scatterplot:List of 5
+  .. ..$ src     : chr "data:image/png;base64,"| __truncated__
+  .. ..$ width   : num 711
+  .. ..$ height  : int 400
+  .. ..$ alt     : chr "Plot object"
+  .. ..$ coordmap:List of 2
+  .. .. ..$ panels:List of 1
+  .. .. .. ..$ :List of 8
+  .. .. .. .. ..$ panel     : num 1
+  .. .. .. .. ..$ row       : num 1
+  .. .. .. .. ..$ col       : num 1
+  .. .. .. .. ..$ panel_vars: Named list()
+  .. .. .. .. ..$ log       :List of 2
+  .. .. .. .. .. ..$ x: NULL
+  .. .. .. .. .. ..$ y: NULL
+  .. .. .. .. ..$ domain    :List of 4
+  .. .. .. .. .. ..$ left  : num 1.54
+  .. .. .. .. .. ..$ right : num 9.36
+  .. .. .. .. .. ..$ bottom: num 6.7
+  .. .. .. .. .. ..$ top   : num 101
+  .. .. .. .. ..$ mapping   :List of 3
+  .. .. .. .. .. ..$ colour: chr ".data[[\"mpaa_rating\"]]"
+  .. .. .. .. .. ..$ x     : chr ".data[[\"imdb_rating\"]]"
+  .. .. .. .. .. ..$ y     : chr ".data[[\"audience_score\"]]"
+  .. .. .. .. ..$ range     :List of 4
+  .. .. .. .. .. ..$ left  : num 37.8
+  .. .. .. .. .. ..$ right : num 705
+  .. .. .. .. .. ..$ bottom: num 312
+  .. .. .. .. .. ..$ top   : num 24
+  .. .. ..$ dims  :List of 2
+  .. .. .. ..$ width : num 711
+  .. .. .. ..$ height: int 400
+ $ export: Named list()
+```
+
+I want to locate the `mapping` list in `output$scatterplot`, but I know it's stored in the `mod_display_plot_ui()` (which uses `id = "plot"`). 
+
+
+```{verbatim}
+{
+  "output": {
+    "plot-scatterplot": {
+      "coordmap": {
+        "panels": [
+            "mapping": {
+              "colour": ".data[[\"mpaa_rating\"]]",
+              "x": ".data[[\"imdb_rating\"]]",
+              "y": ".data[[\"audience_score\"]]"
+            }
+      }
+    }
+  }
+}
+
+```
+
+I can do this by locating the `mappings` list in `all_values`
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: mappings in all_values list
+all_values$output$`plot-scatterplot`$coordmap$panels[[1]]$mapping
+```
+
+```{verbatim}
+$colour
+[1] ".data[[\"mpaa_rating\"]]"
+
+$x
+[1] ".data[[\"imdb_rating\"]]"
+
+$y
+[1] ".data[[\"audience_score\"]]"
+```
+
+Now I want to get only the  `"output$scatterplot"` from the `mod_display_plot_ui()` (which uses `id = "plot"`):
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: get scatterplot output
+# get module output
+plot_value <- app$get_value(output = "plot-scatterplot")
+```
+
+Using the subset location from `all_values`, I can extract the `plot_mappings`:
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: get plot mappings from plot_value
+# get mappings
+plot_mappings <- plot_value$coordmap$panels[[1]]$mapping
+plot_mappings
+```
+
+```{verbatim}
+$colour
+[1] ".data[[\"mpaa_rating\"]]"
+
+$x
+[1] ".data[[\"imdb_rating\"]]"
+
+$y
+[1] ".data[[\"audience_score\"]]"
+```
+
+
+Now I'm ready to write an expectation: I have the object (`plot_mappings`), and I can clearly articulate the `expected` values: 
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: write expectation
+expect_equal(
+  object = plot_mappings,
+  expected = list(
+    colour = ".data[[\"mpaa_rating\"]]",
+    x = ".data[[\"imdb_rating\"]]",
+    y = ".data[[\"audience_score\"]]"
+  )
+)
+```
+
+Finally, I wrap this expectation in `test_that()` and include the necessary steps to create the `object`:
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: test-scatterplot-mappings.R test
+test_that("scatterplot mappings", {
+  shiny_app <- unitTestAppPkg::runShinyApp()
+  app <- AppDriver$new(shiny_app, height = 596, width = 1156)
+  # get output value for scatterplot
+  plot_value <- app$get_value(output = "plot-scatterplot")
+  # extract mappings object:
+  plot_mappings <- plot_value$coordmap$panels[[1]]$mapping
+  expect_equal(
+    object = plot_mappings,
+    expected = list(
+      colour = ".data[[\"mpaa_rating\"]]",
+      x = ".data[[\"imdb_rating\"]]",
+      y = ".data[[\"audience_score\"]]"
+    )
+  )
+})
+```
+
+
+
+
+
+# Run all tests
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: show
+#| code-summary: shinytest2::test_app()
+shinytest2::test_app()
+```
+
+```{verbatim}
+✔ | F W S  OK | Context
+✔ |         1 | gg_base [0.2s]                                      
+✔ |         5 | gg_points                                           
+✔ |         5 | mod_display_plot_server [0.7s]                      
+✔ |         6 | mod_var_input_server [0.8s]                         
+✔ |         1 | runShinyApp [3.4s]                                  
+✔ |         1 | scatterplot-mappings [3.2s]                        
+✔ |         1 | shinytest2 [5.9s]         
+
+══ Results ═════════════════════════════════════════════════════════════════
+Duration: 14.5 s
+
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 20 ]
+```
+
+## Updated tests/testthat.R
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: false
+library(testthat)
+# for shinytest2
+# remotes::install_github("rstudio/chromote", force = TRUE, quiet = TRUE)
+library(chromote)
+Sys.setenv(CHROMOTE_CHROME = "/Applications/Chromium.app/Contents/MacOS/Chromium")
+chromote::find_chrome()
+# verify chromote
+# b <- ChromoteSession$new()
+# b$view()
+
+
+# run utility function tests ----------------------------------------------
+testthat::test_file("tests/testthat/test-gg_base.R")
+testthat::test_file("tests/testthat/test-gg_points.R")
+
+# run module function tests -----------------------------------------------
+testthat::test_file("tests/testthat/test-mod_var_input_server.R")
+testthat::test_file("tests/testthat/test-mod_display_plot_server.R")
+
+# run shinytest2 tests -----------------------------------------------
+testthat::test_file("tests/testthat/test-shinytest2.R")
+
+# run runShinyApp() test ----------------------------------------------
+testthat::test_file("tests/testthat/test-runShinyApp.R")
+
+# run scatterplot mappings tests --------------------------------------
+testthat::test_file("tests/testthat/test-scatterplot-mappings.R")
+
+# run all tests -----------------------------------------------------------
+shinytest2::test_app()
+```
+
+## Still unit tests?
+
+Tests done with `shinytest2` still fall under the umbrella of unit testing (i.e, testing that a single 'unit of work' has a 'logical (verifiable) purpose').
+
+[Integration testing](https://youtu.be/Wy3TY0gOmJw?t=2780) 
+
+> "With testing the app as a whole--so we call that integration testing--`shinytest` is specifically designed to help you do that. It is designed not only to do integration testing, but to make it so easy that you might actually do it."
+
+Integration tests typically check internal and external components--such as connecting to a SQL database or API--to verify the interactions between them behave as expected.
+
+
+
+This has a similar structure to the standard testthat test, but with some additional...
+
+ 
+
+::::{.column-page-inset-right}
+::: {#fig-export_test_error layout-ncol=1}
+
+![export test failure](export_test_error.png){#fig-export-failure}
+
+
+**Test** all test files in `test/testthat/`
+:::
+::::
+-->
+
+
+{{< include _co_test_types.qmd >}}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

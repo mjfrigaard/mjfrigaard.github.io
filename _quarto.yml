@@ -1,0 +1,49 @@
+project:
+  type: website
+
+website:
+  title: "@mjfrigaard"
+  favicon: profile.png
+  site-url: "https://mjfrigaard.github.io/"
+  repo-url: https://github.com/mjfrigaard/mjfrigaard.github.io
+  description: "Martin Frigaard's personal website"
+  twitter-card: true
+  navbar:
+    right:
+      - about.qmd
+      - icon: github
+        href: https://github.com/mjfrigaard
+      - icon: twitter
+        href: https://twitter.com/mjfrigaard
+    left:
+      - text: "Blog"
+        menu:
+          - text: "Posts"
+            file: posts.qmd
+          - text: "Series"
+            file: series.qmd
+        
+format:
+  html:
+    theme:
+      # dark: [slate, custom.scss]
+      light: [litera, custom.scss]
+    dpi: 320
+    fig-format: retina
+    fig-asp: 0.618
+    fontsize: '10.5'
+    toc: true
+    toc-depth: 5
+    toc-title: 'Contents'
+    toc-location: "left"
+    callout-icon: false
+    # code-block-border-left: true
+    code-block-bg: "#f8f8f8"
+    code-block-border-left: "#e8e8e8"
+    fig-align: center
+    code-fold: show
+    code-summary: 'show/hide'
+
+knitr:
+  opts_chunk: 
+    collapse: true

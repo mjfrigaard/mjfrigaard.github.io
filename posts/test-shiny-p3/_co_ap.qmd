@@ -1,0 +1,97 @@
+---
+title-meta: "Why create an app-package?"
+
+callout-icon: false
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: ap_setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("https://raw.githubusercontent.com/mjfrigaard/mstsap/main/tests/testthat/helper.R")
+co_box <- function(color, header, contents = "Your text") {
+  class <- switch(color,
+    b = "note",
+    g = "tip",
+    r = "important",
+    o = "caution",
+    stop("Invalid `type`", call. = FALSE)
+  )
+  switch(color,
+  b = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  g = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  o = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  r = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  stop("Invalid `type`", call. = FALSE)
+  )
+}
+options(scipen = 999)
+library(shiny)
+library(lobstr)
+library(crayon)
+library(stringr)
+install.packages(c("NHANES", "palmerpenguins"))
+library(NHANES)
+library(palmerpenguins)
+```
+
+:::: {.callout-tip collapse='true' title="Why create an app-package?"}
+
+::: {style='font-size: 1.10em;'}
+A shiny app-package is a shiny application that's been developed as (or converted to) an R package. The benefits of storing shiny apps in R packages have been [well](https://mastering-shiny.org/scaling-packaging.html) [documented](https://engineering-shiny.org/structuring-project.html#shiny-app-as-a-package), but I'll summarize just a few that are specific to testing: 
+
+1. **Standardized folder structure**: 
+    a. If unit tests are performed with `testthat`, minimal setup is required to perform tests.
+    b. `usethis::use_testthat()` sets up test files in the tests/testthat/ folder (to test the code in the R/ folder)    
+    c. *Read more about using `testthat` with R packages [here.](https://r-pkgs.org/testing-basics.html)*
+        
+2. **Test extras**:
+    a. Test data can be placed in `tests/testthat/<test dir>/<test_data.rds>`     
+    b. The code used to create the test data should be placed in `make_<test_data.rds>`   
+    c. Additional testing functions can be stored in `tests/testthat/helpers.R`    
+    d. *Read more about test helpers [here.](https://r-pkgs.org/testing-design.html#testthat-helper-files)*
+    
+3. **Development tools**: 
+    a. If you're using RStudio, tests can be run individually (`testthat::test_file()`) or collectively (`devtools::test()`), and code helpers and data are loaded using `devtools::load_all()`     
+    b. Tests created with `testthat` remain isolated during development    
+    c. *Read more about developing packages with RStudio in the [R Packages text.](https://r-pkgs.org/)*
+
+:::
+::::

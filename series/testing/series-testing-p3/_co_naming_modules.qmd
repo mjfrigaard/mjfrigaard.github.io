@@ -1,0 +1,158 @@
+---
+title-meta: "Naming modules"
+
+callout-icon: false
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: naming_modules_setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("https://raw.githubusercontent.com/mjfrigaard/mstsap/main/tests/testthat/helper.R")
+co_box <- function(color, header, contents = "Your text") {
+  class <- switch(color,
+    b = "note",
+    g = "tip",
+    r = "important",
+    o = "caution",
+    stop("Invalid `type`", call. = FALSE)
+  )
+  switch(color,
+  b = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  g = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  o = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  r = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  stop("Invalid `type`", call. = FALSE)
+  )
+}
+options(scipen = 999)
+library(shiny)
+library(lobstr)
+library(crayon)
+library(stringr)
+```
+
+
+:::: {.callout-tip collapse='true' title="Naming modules"}
+
+::: {style='font-size: 1.15em; color: #063E23;'}
+When creating an app-packages, modules are stored in the `R/` folder as a single file, typically following a [naming convention](https://mastering-shiny.org/scaling-modules.html#naming-conventions) that differentiates modules from the other package functions. The modules in this post use [camelCase](https://en.wikipedia.org/wiki/Camel_case), with suffix variations (i.e., `Input`/`Server` and `UI`/`Server`) for each functions. Other options come from the [`golem`](https://thinkr-open.github.io/golem/) and [`leprechaun`](https://leprechaun.opifex.org/#/) packages. 
+
+`golem` modules are created with  [`golem::add_module()`](https://thinkr-open.github.io/golem/reference/add_module.html) 
+
+:::
+
+
+```{r}
+#| eval: false
+#| code-fold: true
+#| code-summary: 'expand to see golem::add_module(\"inputs\")'
+mod_inputs_ui <- function(id){
+  ns <- NS(id)
+  tagList(
+  )
+}
+mod_inputs_server <- function(id){
+  moduleServer( id, function(input, output, session){
+    ns <- session$ns
+ 
+  })
+}
+## To be copied in the UI
+# mod_inputs_ui("inputs_1")
+    
+## To be copied in the server
+# mod_inputs_server("inputs_1")
+```
+
+::: {style='font-size: 1.15em; color: #063E23;'}
+
+`golem` modules the following naming convention: 
+
+1. All new module functions have a `mod_` prefix 
+
+2. `golem` module functions are differentiated with either a `_ui` or `_server` suffix
+
+3. New `golem` module files are named `R/mod_<name>.R`
+
+`leprechaun` modules are also created with a [`leprechaun::add_module()`](https://leprechaun.opifex.org/#/reference/add_module) function.
+
+:::
+
+```{r}
+#| eval: false
+#| code-fold: true
+#| code-summary: 'expand to see leprechaun::add_module(\"inputs\")'
+inputsUI <- function(id){
+	ns <- NS(id)
+	tagList(
+		h2("inputs")
+	)
+}
+inputs_server <- function(id){
+  moduleServer(id, function(input, output, session) {
+				ns <- session$ns
+				send_message <- make_send_message(session)
+				# your code here
+		}
+	)
+}
+# UI
+# inputsUI('id')
+
+# server
+# inputs_server('id')
+```
+
+::: {style='font-size: 1.15em; color: #063E23;'}
+
+`leprechaun` modules have a slightly different naming convention: 
+
+1. All new UI module functions have a `UI` suffix
+
+2. All new module server functions have a `_server` suffix 
+
+3. `leprechaun` module functions *do not have a prefix*
+
+4. New `leprechaun` modules named `module_<name>.R`
+
+Shiny app-packages often require multiple modules and utility functions, so uniform names will make it easier to manage (and test!) your code.
+:::
+::::

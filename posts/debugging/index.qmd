@@ -1,0 +1,1361 @@
+---
+title: "Debugging in RStudio"
+subtitle: "Developing code with `browser()`"
+author: "Martin Frigaard"
+date: "2023-06-01"
+categories: [code, debugging]
+image: "image.png"
+
+code-fold: show
+code-summary: 'show/hide'
+
+callout-icon: false
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: setup
+#| eval: true 
+#| echo: false 
+#| include: false
+co_box <- function(color, header, contents = "Your text") {
+  class <- switch(color,
+    b = "note",
+    g = "tip",
+    r = "important",
+    o = "caution",
+    stop("Invalid `type`", call. = FALSE)
+  )
+  switch(color,
+  b = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  g = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  o = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  r = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  stop("Invalid `type`", call. = FALSE)
+  )
+}
+options(scipen = 999)
+renv::install("mjfrigaard/dbap", prompt = FALSE)
+# renv::install("lobstr")
+library(lobstr)
+library(dbap)
+library(lubridate)
+library(forcats)
+# co_box(color = "r", 
+#   header = "ALERT!", 
+#   contents = "This post is currently under development. Thank you for your patience.")
+```
+
+In this post I'll cover using the `browser()` function with RStudio's debugger. RStudio's debugging tools are built into the IDE, which provides a seamless transition between writing, running, and debugging code.
+
+::: {.column-margin}
+![](image.png){width=70%}
+:::
+
+
+# Debugging
+
+Debuggers are a critical tool when you're programming, and they have several benefits that make them a must-use for any R user. You’ll inevitably encounter an error or unexpected behavior while you’re programming. Using a debugger allows you to 'step through' your code line-by-line, which makes it easier to find the precise location of bugs and errors and the conditions under which they occur. 
+
+But debuggers aren't only helpful in dealing with errors. The debugger can also be a great learning tool because it provides an interactive way to see how the code is being executed and the order in which functions are being called. For example, you might know that a function returns a particular object but can't determine how that object was created. Debugging lets us get 'under the hood' of our code and see how it's really working.
+
+You’re probably doing some version of debugging already. If you’ve ever dropped a call to `print()` or `return()` at some well-placed intermediate point in a function to try and understand its behavior, then you know the challenge debugging tries to solve: **We can’t see what happens inside the parentheses when code is executed.** When you use `print()` or `return()` in this way, it's an attempt to indirectly investigate how/if/where the code is performing its intended purpose. 
+
+In this post, I’ll cover using the `browser()` function and RStudio’s debugger while developing a series of small, modular functions for returning a table of 'package data structures.' The code for this post comes from [`dbap`](https://github.com/mjfrigaard/dbap) ('debugging app-package').
+
+## Getting started
+
+I want to create a function that returns a table of 'data structure' columns that describe the available `data.frame` or `tibble` objects loaded with a package. Below is a small example of the desired return object from this function:
+
+
+::: {style='font-size: 0.90em;'}
+```{r}
+#| eval: true
+#| echo: false
+knitr::kable(
+  data.frame(
+          Package = c("dplyr", "datasets"),
+          Dataset = c("starwars", "mtcars"),
+               # Title = c("Storm tracks data",
+               #         "Motor Trend Car Road Tests"),
+            Class = c("tbl_df, tbl, data.frame", "data.frame"),
+          Columns = c("13", "11"),
+             Rows = c("19066", "32"),
+          Logical = c("0", "0"),
+          Numeric = c("11", "11"),
+        Character = c("1", "0"),
+           Factor = c("1", "0"),
+             List = c("0", "0"),
+        check.names = FALSE)
+  )
+```
+:::
+
+This table shows the `storms` data from `dplyr` and the `mtcars` data from `datasets`. The columns include the `Package` the data came from, the dataset name (`Dataset`), the data `Title` from the documentation, the `Class` of the data object, the total number of `Columns` and `Rows`, and the number of columns by type (`Logical`, `Numeric`, `Character`, `Factor` and `List`).
+
+One of the first steps for creating this function is to verify a package's namespace is loaded. I’ve written the `check_pkg_ns()` to check this.
+
+```{r}
+#| label: check_pkg_ns
+#| eval: true
+#| code-fold: show
+#| code-summary: 'check_pkg_ns()'
+check_pkg_ns <- function(pkg, quiet = FALSE) {
+  if (isFALSE(quiet)) {
+    # with messages
+    if (!isNamespaceLoaded(pkg)) {
+      if (requireNamespace(pkg, quietly = FALSE)) {
+        cat(paste0("Loading package: ", pkg, "\n"))
+      } else {
+        stop(paste0(pkg, " not available"))
+      }
+    } else {
+      cat(paste0("Package ", pkg, " loaded\n"))
+    }
+  } else {
+    # without messages
+    if (!isNamespaceLoaded(pkg)) {
+      if (requireNamespace(pkg, quietly = TRUE)) {
+      } else {
+        stop(paste0(pkg, " not available"))
+      }
+    }
+  }
+}
+```
+
+`check_pkg_ns()` checks if a packages’s namespace is loaded, and if not, loads it. This function assumes the package (`pkg`) has been installed with `install.packages()` (I've also written [`check_pkg_inst()`](https://github.com/mjfrigaard/dbap/blob/main/R/check_pkg_inst.R) to check if the package has been installed.)
+
+### Experiment
+
+Before debugging, I'll read the documentation and help files to find examples or use cases for ‘mini-experiments.' These are designed to clarify any function arguments and learn how the code truly works. Experiments should produce predictable, definitive (preferably incompatible) outputs from each function.
+
+#### Namespace functions
+
+The help file contains the following helpful statement on `isNamespaceLoaded()`:
+
+> *"`isNamespaceLoaded(pkg)` is equivalent to but more efficient than `pkg %in% loadedNamespaces()`"*
+
+First, I'll check the loaded namespaces with `loadedNamespaces()`, then look for a package I know *isn't* in the namespace with `isNamespaceLoaded()`. I'll use the `fs` package because it isn't loaded or attached to the `search()` list:
+
+```{r}
+#| eval: false
+#| code-fold: false
+# what's in the namespace? 
+loadedNamespaces()
+```
+
+```{verbatim}
+#| eval: false
+#| code-fold: false
+ [1] "compiler"   "rsconnect"  "graphics"  
+ [4] "tools"      "rstudioapi" "utils"     
+ [7] "grDevices"  "stats"      "datasets"  
+[10] "methods"    "base"
+```
+
+Check if `fs` is in the loaded namespace:
+
+```{r}
+#| eval: false
+#| code-fold: false
+# verify fs is not loaded
+isNamespaceLoaded("fs")
+```
+
+```{verbatim}
+#| eval: false
+#| code-fold: false
+[1] FALSE
+```
+
+The help file tells me the following about `requireNamespace`:
+
+> *"`requireNamespace` is a wrapper for `loadNamespace` analogous to `require()` that returns a logical value."*
+
+...and...
+
+> *"`requireNamespace` returns `TRUE` if it succeeds or `FALSE`"*
+
+I'll load a package (`"fs"`) with `requireNamespace()` and verify it's in the namespace with `isNamespaceLoaded()`. 
+
+```{r}
+#| eval: false
+#| code-fold: false
+# add "fs" to the namespace
+requireNamespace("fs")
+```
+
+```{verbatim}
+#| eval: false
+#| code-fold: false
+Loading required namespace: fs
+[1] TRUE
+```
+
+```{r}
+#| eval: false
+#| code-fold: false
+# verify it's been added 
+isNamespaceLoaded("fs")
+```
+
+```{verbatim}
+#| eval: false
+#| code-fold: false
+[1] TRUE
+```
+
+Finally, I'll unload the `"fs"` package from the namespace so it can be tested in the debugger.
+    
+```{r}
+#| eval: false
+#| code-fold: false
+#| collapse: true
+# remove fs
+unloadNamespace("fs")
+# verify fs has been unloaded
+isNamespaceLoaded("fs")
+```
+
+```{verbatim}
+#| eval: false
+#| code-fold: false
+[1] FALSE
+```
+
+The great thing about designing these mini experiments is that they can be quickly converted into [`testthat` tests](https://testthat.r-lib.org/). I'm now confident I can use the namespace functions to:
+
+1. View loaded packages namespaces  
+2. Check for a specific package in the loaded namespaces       
+3. Require a package namespace is loaded    
+4. Remove a loaded package namespace    
+
+These are the behaviors I want to confirm in `check_pkg_ns()` using the `browser()` function.
+
+## browser()
+
+If I want to explore the behaviors of the namespace functions in `check_pkg_ns()`, I need to add `browser()` somewhere I can ‘step into’ this function and then proceed through line-by-line. In this case, the top of the function makes sense:
+
+::: {#fig-browser_fun}
+
+![`browser()` in `check_pkg_ns()`](dbg-browser_fun.png){#fig-browser_fun fig-align="center" width=80%}
+
+`browser()` placement in `check_pkg_ns()`
+:::
+
+### Debug mode
+
+To enter debugging mode, I'll need to run `check_pkg_ns()` or source `R/check_pkg_ns.R` with the package I used in my experiments.  
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: false
+check_pkg_ns("fs")
+```
+
+:::: {.column-page-inset-right} 
+
+::: {#fig-dbg-debug_mode}
+
+![Debug mode](dbg-debug_mode.png){#fig-dbg-debug_mode fig-align="center" width=100%}
+
+RStudio IDE in debug mode
+:::
+
+::::
+
+The `browser()` function is one of the multiple methods for using RStudio debugging tools (see the **TIP** callout box below for more).
+
+:::: {.callout-tip collapse='false'}
+## TIP: Other debugging methods 
+::: {style='font-size: 1.15em; color: #063E23;'}
+
+In this post, I focused on using the [`browser()`](https://stat.ethz.ch/R-manual/R-devel/library/base/html/browser.html) function to enter debug mode, but RStudio has several built-in tools that can help you debug your R code:
+
+-   **Debug function on error:** You can set R to automatically enter the debugger when an error occurs by using `options(error = utils::recover)`. Then, when an error occurs, you'll be given a menu of places to browse, the most recent (the location where the error occurred) first.
+
+-   **Breakpoints:** Breakpoints can be set in your R scripts to pause execution at a particular line of code. You can add breakpoints by clicking to the left of the line number in the script editor or by pressing Shift+F9 with your cursor on the desired line. Then, run your code. Execution will stop just before the line with the breakpoint, allowing you to inspect the current state of the environment.
+
+-   **`debug()`:** You can use `debug(function_name)` to flag a function for "debug" mode. When you call the function, the debugger will open and stop at the first line of the function, where you can step through the function line by line, inspect the environment, and see what's happening at each step.
+
+-   **`traceback()`**: When an error occurs, you can call `traceback()` to get a stack trace that shows you the sequence of calls that led up to the error.
+
+-   **Code Diagnostics**: RStudio provides real-time notifications about potential issues in your code, like syntax errors or unused variables. These are not technically part of the debugger, but diagnostics will help you avoid bugs before you run your code. 
+
+You should read [this blog post](https://support.posit.co/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE) and [this chapter](https://adv-r.hadley.nz/debugging.html) of Advanced R, 2nd Ed. for more information on the various debugging methods.
+
+:::
+::::
+
+
+### Console
+
+When the `browser()` function is called, the **Console** enters the 'reactive browser environment,' tells me where the debugging function was called from, and changes the prompt to `Browse[1]>`: 
+
+```{verbatim}
+Called from: check_pkg_ns("fs")
+Browse[1]> 
+```
+
+I can use the **Console** to inspect variables and 'step through' the function code. 
+
+:::: {.column-page-inset-right}
+
+::: {#fig-console}
+
+![Debug mode in **Console**](dbg-browse-console.png){#fig-console fig-align="center" width=80%}
+
+Debug mode with `browser()` in Console
+:::
+
+::::
+
+The debugger toolbar is also placed at the top of the **Console**: 
+
+::: {#fig-browser_toolbar}
+
+![Debug toolbar **Console**](dbg-browser_toolbar.png){#fig-browser_toolbar width=100%}
+
+Debug toolbar in Console
+:::
+
+I can use the toolbar or enter the following commands in the **Console**:
+
+-   `n` (next): execute the next step in the function
+
+-   `s` (step into): step into the function call on the current line
+
+-   `c` (continue): continue normal execution without stepping
+
+-   `f` (finish): execute the rest of the current loop or function
+
+-   `Q` (Quit): quit the debugger
+
+I'll return to the **Console** in a bit (this is where most of the debugging is done), but let's view the other changes to the IDE first.
+
+### Source  
+
+In the **Source** pane, we can see the line with `browser()` has been highlighted with an arrow:
+
+:::: {.column-page-inset-right}
+::: {#fig-source}
+
+![Debug mode in **Source**](dbg-browse-source.png){#fig-source fig-align="center" width=80%}
+
+Debug mode with `browser()` in Source
+:::
+::::
+
+The **Source** pane will continually update and highlight my execution position (i.e., what's going to be executed next) as I 'step through' the code.
+
+\**After we’ve finished debugging, it’s important to remember to remove the `browser()` function so it isn’t triggered the next time it is executed.* 
+
+### Environment 
+
+The *(Environment)* pane is changed from the global environment to the environment of the function that’s currently being executed in the **Console**:
+
+:::: {.column-page-inset-right}
+::: {#fig-env}
+
+![Debug mode in **Environment**](dbg-browse-env.png){#fig-env fig-align="center" width=80%}
+
+Debug mode with `browser()` in Environment
+:::
+::::
+
+In the case of `check_pkg_ns()`, I can see the **Values** section contains the `pkg` (`"fs"`) and `quiet` (`FALSE`) arguments. 
+
+#### Other environments
+
+The drop-down list of environments above the **Values** is arranged in reverse hierarchical order: The **Global Environment** is listed under the drop-down list, but it's above the `check_pkg_ns()` environment in the search path:
+
+:::: {.column-page-inset-right}
+
+::: {#fig-env layout-ncol=2}
+
+![Items in **Environment** debug mode](dbg-browse-env-list.png){#fig-env-list fig-align="center" width=90%}
+
+![[Package environments and the search path](https://adv-r.hadley.nz/environments.html#search-path)](search-path.png "Source: https://adv-r.hadley.nz/environments.html#search-path"){#fig-env-list fig-align="center" width=90%}
+
+Environments with debugger
+:::
+
+::::
+
+#### Traceback
+
+The traceback (or 'call stack') is the 'stack' of functions that have been run thus far:
+
+::: {#fig-traceback}
+
+![Traceback in **Environment**](dbg-browse-traceback.png){#fig-traceback fig-align="center" width=100%}
+
+Environment Traceback viewer
+:::
+
+Clicking on an item in traceback will display the environment contents in the function’s code. Right now, it includes the call to `source("R/check_pkg_ns.R")`, and 'Debug source' call to `check_pkg_ns("fs")`.
+
+If the ***Show internals*** option is selected, the internal functions are shown (slightly subdued in gray).
+
+::: {#fig-traceback-internals}
+
+![Traceback internals](dbg-browse-traceback-internals.png){#fig-traceback-internals fig-align="center" width=100%}
+
+Traceback internals
+:::
+
+### Arguments
+
+The `pkg` argument can be printed to verify it's contents. 
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[1]> pkg
+[1] "fs"
+```
+
+The debugger lets me view the state of a function's values or variables at each execution step, which helps me understand any incorrect or unexpected values.
+
+Based on the help files and my experiments, `check_pkg_ns()` should be looking through the namespace to see if a `pkg` is loaded; if it isn't, that `pkg` is loaded in the namespace. 
+
+I can also check the code from the mini experiments inside the debugger **Console** to see if the `fs` namespace has been loaded:
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[1]> isNamespaceLoaded("fs")
+[1] FALSE
+```
+
+At my current location in `check_pkg_ns()`, the `fs` package hasn't been loaded. 
+
+### Stepping through 
+
+I can begin 'stepping through' `check_pkg_ns()` by entering **`n`** in the **Console**:
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[1]> n
+```
+
+Notice after the entering **`n`** in the **Console**, the debugger tells me where the `browser()` function has paused execution (`debug at /path/to/function/file.R`), the line number (`#27`), and the `check_pkg_ns()` function is printed to console (I've omitted it here): 
+
+
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[1]> n
+debug at ~/projects/apps/dbap/R/check_pkg_ns.R#27:
+
+<...check_pkg_ns() function...>
+
+Browse[2]>
+```
+
+The prompt also changes from `Browse[1]>` to `Browse[2]>` to let me know I'm inside the `check_pkg_ns()` function. 
+
+I'll use **`n`** (or Next) to continue following the path `pkg` takes through the function:  
+
+:::: {.column-page-inset-right}
+
+::: {#fig-dbg-next-console}
+
+![Use Console to step through function](dbg-next-console.png){#fig-dbg-next-console fig-align="center" width=100%}
+
+Use `n` to step through `check_pkg_ns()`
+:::
+
+::::
+
+
+When I land on the line *after* the call to `requireNamespace()`, I can check to see if the `fs` namespace has been loaded with `isNamespaceLoaded("fs")`
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[2]> isNamespaceLoaded("fs")
+[1] TRUE
+```
+
+### Inspect values
+
+Now that I've confirmed `check_pkg_ns()` works with `fs`, I should also confirm it works with a development package (i.e., not on CRAN). I can test this with the [`roxygen2Comment` package](https://github.com/csgillespie/roxygen2Comment)--it contains an addin for pasting `roxygen2` comment blocks.
+
+To quit debug mode, I can enter **`Q`** in the **Console** or click on the red square (***Stop***) icon in the toolbar. 
+
+```{verbatim}
+#| eval: false
+#| echo: true
+#| code-fold: false
+Browse[2]> Q
+```
+
+I'll confirm `roxygen2Comment` is not loaded with `isNamespaceLoaded()`, then change the `pkg` argument in `check_pkg_ns()` and re-run the function
+
+```{verbatim}
+#| eval: false
+#| echo: true
+#| code-fold: false
+isNamespaceLoaded("roxygen2Comment")
+[1] FALSE
+```
+
+```{verbatim}
+#| eval: false
+#| echo: true
+#| code-fold: false
+> check_pkg_ns("roxygen2Comment")
+Called from: check_pkg_ns("roxygen2Comment")
+Browse[1]> 
+```
+
+
+This time, when I step through `check_pkg_ns()`, I notice `pkg` takes an alternative path: 
+
+:::: {.column-page-inset-right}
+
+::: {#fig-dbg-next-console-02}
+
+![Alternative path through function](dbg-next-console-02.png){#fig-dbg-next-console-02 fig-align="center" width=100%}
+
+Development package in `check_pkg_ns()`
+:::
+
+::::
+
+When the **Source** pane highlights the `stop()` function, I can check to confirm this package wasn't loaded:
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[2]> isNamespaceLoaded("roxygen2Comment")
+[1] FALSE
+```
+
+If I enter **`n`** one more time in the **Console**, I see the `stop()` error from the function is returned: 
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[2]> n
+Error in check_pkg_ns("roxygen2Comment") : 
+  roxygen2Comment not available
+```
+
+
+I'll perform one last check on `check_pkg_ns()`: what if I want to pass multiple packages to `pkg`? I'll check this with [`fs`](https://fs.r-lib.org/) and [`box`](https://klmr.me/box/index.html).
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+# First make sure these aren't loaded...
+unloadNamespace("fs")
+unloadNamespace("box")
+# Now combine into vector
+pkgs <- c("fs", "box")
+check_pkg_ns(pkgs)
+```
+
+
+After entering debug mode, I want to proceed to the control flow and verify the `pkgs` variable: 
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+> check_pkg_ns(pkgs)
+Called from: check_pkg_ns(pkgs)
+Browse[1]> n
+Browse[2]> pkgs
+[1] "fs"  "box"
+```
+
+This confirms both packages are in the `pkg` variable. If I use **`n`** to proceed through to end of `check_pkg_ns()`, I see the final line returns the successful loading message twice: 
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[2]> n
+Loading package: fs
+Loading package: box
+```
+
+
+### *browser() recap*
+
+Once execution is paused with `browser()`, using the **`n`** command in the **Console** (or in the debugging toolbar at the top-right of the pane) lets me step through the code line-by-line. 
+
+::: {#fig-next_toolbar}
+
+![Step through/over](dbg-next_toolbar.png){#fig-next_toolbar fig-align="center" width=75%}
+
+Step through/over code
+:::
+
+This allows me to inspect the state of the variables at various points within a function.
+
+## Nested functions
+
+The `check_pkg_ns()` function is fairly basic in that it performs a single 'unit of work' (i.e., *check if add-on packages package have been loaded and attached; if not, load and attach them*). When functions become more complex, it's more efficient to use nested functions--i.e., functions within other functions--which allow me to execute multiple commands simultaneously. 
+
+An example of this is the `pkg_data_results()` function below: 
+
+```{r}
+#| label: initial_pkg_data_results
+#| eval: true
+#| echo: false 
+#| code-fold: false 
+pkg_data_results <- function(pkg) {
+  # load packages
+  check_pkg_ns(pkg = pkg, quiet = TRUE)
+
+  tibble::as_tibble(
+    data.frame(
+      Package = data(package = pkg)$results[, "Package"],
+      Item = data(package = pkg)$results[, "Item"],
+      Title = data(package = pkg)$results[, "Title"],
+      stringsAsFactors = FALSE,
+      check.names = FALSE,
+      row.names = NULL
+    )
+  )
+}
+```
+
+
+```{r}
+#| eval: true
+#| echo: true 
+#| code-fold: show 
+#| code-summary: 'pkg_data_results()'
+pkg_data_results("dplyr")
+```
+
+`pkg_data_results()` returns a `data.frame` with three columns: `Package`, `Item`, and `Title`. 
+
+The output from `pkg_data_results()` comes from the `data(package = "pkg")` output:
+
+::: {#fig-next_toolbar}
+
+![Output from `data(package = )`](dbg-data_output.png){#fig-dbg-data_output fig-align="center" width=100%}
+
+`data(package = "dplyr")`
+:::
+
+This output is normally opened in a separate window, but it's created as a matrix. 
+
+```{r}
+#| eval: true
+#| echo: true 
+#| code-fold: show 
+#| code-summary: 'structure of data(package =)'
+str(data(package = "dplyr"))
+```
+
+`pkg_data_results()` converts the matrix output into a `data.frame` three columns in (`Package`, `Title`, `Item`).
+
+I've placed `browser()` at the top of `pkg_data_results()` and run it with the  [`fivethirtyeight` package](https://fivethirtyeight-r.netlify.app/). 
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+pkg_data_results("fivethirtyeight")
+```
+
+
+
+::: {#fig-pkg_data_results_538}
+
+![browser() in pkg_data_results("fivethirtyeight")](dbg-pkg_data_results_538.png){#fig-dbg-pkg_data_results_538 fig-align="center" width=100%}
+
+`browser()` in `pkg_data_results("fivethirtyeight")`
+:::
+
+
+### Step into
+
+When the debugger lands on `check_pkg_ns()`, I can follow the `fivethirtyeight` package through this function by 'stepping into' this function by entering **`s`** in the **Console** (or the toolbar icon): 
+
+:::: {.column-margin}
+
+![Step into a function](dbg-step_into_toolbar.png){width=100%}
+
+::::
+
+
+
+::: {#fig-step_into_pkg_data_results}
+
+![browser() in pkg_data_results("fivethirtyeight")](dbg-step_into_pkg_data_results.png){#fig-dbg-step_into_pkg_data_results fig-align="center" width=70%}
+
+Step into in `pkg_data_results("fivethirtyeight")`
+:::
+
+
+### Debugging 'at' vs 'in'
+
+In the **Console**, there are now `debugging in` and `debug at` locations:
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[2]> s
+debugging in: check_pkg_ns(pkg = pkg, quiet = TRUE)
+debug at /apps/dbap/R/check_pkg_ns.R#25: 
+```
+
+The `debug at` location is the the we location of the initial call to `browser()`, and `debugging in` is the function I *stepped into*.
+
+The prompt has also changed from `Browse[2]>` to `Browse[3]>`:
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[3]>
+```
+
+:::: {.column-page-inset-right}
+
+::: {#fig-dbg-step_into_01}
+
+![Use `s` to step into check_pkg_ns()](dbg-step_into_01.png){#fig-dbg-step_into_01 fig-align="center" width=100%}
+
+Use `s` to step through `check_pkg_ns()`
+:::
+
+::::
+
+The `R/check_pkg_ns.R` file will open with the highlighted function. I can proceed through `check_pkg_ns()` using **`n`** until I reach `requireNamespace()`:
+
+:::: {.column-page-inset-right}
+
+::: {#fig-dbg-step_into_02}
+
+![Use `n` to step through `check_pkg_ns()`](dbg-step_into_02.png){#fig-dbg-step_into_02 fig-align="center" width=70%}
+
+Use `n` to step through `check_pkg_ns()`
+:::
+
+::::
+
+When I reach the final line in `check_pkg_ns()`, I can use either method below verify the `pkg` namespace is loaded:
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[3]> pkg %in% loadedNamespaces()
+[1] TRUE
+Browse[3]> isNamespaceLoaded(pkg)
+[1] TRUE
+```
+
+
+After the last line of `check_pkg_ns()` has been evaluated, the debugger will automatically return to the `pkg_data_results()` function. The **Source** pane will highlight the final step (and the prompt returns to `Browse[2]>`):
+
+:::: {.column-page-inset-right}
+
+::: {#fig-dbg-step_into_03}
+
+![Step into/through `check_pkg_ns()` from  `pkg_data_results()`](dbg-step_into_03.png){#fig-dbg-step_into_03 fig-align="center" width=100%}
+
+Step into and through `check_pkg_ns()` from  `pkg_data_results()`
+:::
+
+::::
+
+A final **`n`** command in the **Console** will return the output table:
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[2]> n
+### A tibble: 129 × 3
+##    Package         Item                Title
+##    <chr>           <chr>               <chr>
+##  1 fivethirtyeight US_births_1994_2003 Some People Are Too Superstitious To …
+##  2 fivethirtyeight US_births_2000_2014 Some People Are Too Superstitious To …
+##  3 fivethirtyeight ahca_polls          American Health Care Act Polls
+##  4 fivethirtyeight airline_safety      Should Travelers Avoid Flying Airline…
+##  5 fivethirtyeight antiquities_act     Trump Might Be The First President To…
+##  6 fivethirtyeight august_senate_polls How Much Trouble Is Ted Cruz Really  …
+##  7 fivethirtyeight avengers            Joining The Avengers Is As Deadly As
+##  8 fivethirtyeight bachelorette        Bachelorette / Bachelor
+##  9 fivethirtyeight bad_drivers         Dear Mona, Which State Has The Worst …
+## 10 fivethirtyeight bechdel             The Dollar-And-Cents Case Against Hol…
+## # ℹ 119 more rows
+## # ℹ Use `print(n = ...)` to see more rows
+```
+
+## Put it all together
+
+The initial `pkg_data_str()` function for returning a table of 'package data structures' is below.
+
+```{r}
+#| eval: true
+#| echo: true 
+#| code-fold: true
+#| code-summary: 'expand to see initial pkg_data_str()'
+pkg_data_str <- function(pkg) {
+
+  data_results <- pkg_data_results(pkg = pkg)
+
+  ds_list <- purrr::map2(
+    .x = data_results[["Item"]], 
+    .y = data_results[["Package"]],
+    .f = pkg_data_object, .progress = TRUE
+  )
+
+  cols_tbl <- dplyr::mutate(data_results,
+    Class = purrr::map(.x = ds_list, .f = class) |>
+      purrr::map(paste0, collapse = ", ") |> unlist(),
+    Columns = purrr::map(.x = ds_list, .f = ncol) |>
+      purrr::map(paste0, " columns") |> unlist(),
+    Rows = purrr::map(.x = ds_list, .f = nrow) |>
+      purrr::map(paste0, " rows") |> unlist(),
+    Logical = purrr::map(
+      .x = ds_list,
+      .f = col_type_count, "log"
+    ) |> unlist(),
+    Numeric = purrr::map(
+      .x = ds_list,
+      .f = col_type_count, "num"
+    ) |> unlist(),
+    Character = purrr::map(
+      .x = ds_list,
+      .f = col_type_count, "chr"
+    ) |> unlist(),
+    Factor = purrr::map(
+      .x = ds_list,
+      .f = col_type_count, "fct"
+    ) |> unlist(),
+    List = purrr::map(
+      .x = ds_list,
+      .f = col_type_count, "lst"
+    ) |> unlist(),
+  )
+
+  pkg_tbls_dfs <- dplyr::filter(cols_tbl,
+    stringr::str_detect(Class, "data.frame")
+  )
+
+  return(pkg_tbls_dfs)
+}
+```
+
+`pkg_data_str()` uses nested functions to create the following intermediate objects I can check while developing with `browser()` (the example below uses the [`forcats` package](https://forcats.tidyverse.org/))
+
+
+### Data results 
+
+The output from `pkg_data_results()` is stored in `data_results`:
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+data_results <- pkg_data_results(pkg = pkg)
+```
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[2]> data_results
+# A tibble: 1 × 3
+  Package Item    Title                                                           
+  <chr>   <chr>   <chr>                                                           
+1 forcats gss_cat A sample of categorical variables from the General Social su...
+```
+
+### Package data objects
+
+After extracting the `Package`, `Title`, and `Type` columns from `pkg_data_results()`, I use `purrr:map2()` to iterate over each `Item` and `Package`, which builds a list of datasets (`ds_list`). The `.f` argument is a [nested `pkg_data_object()` function](https://github.com/mjfrigaard/dbap/blob/main/R/pkg_data_object.R), which calls `base::get()`.
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+ds_list <- purrr::map2(
+  .x = data_results[["Item"]],
+  .y = data_results[["Package"]],
+  .f = pkg_data_object, .progress = TRUE
+)
+```
+
+I'll view the contents of the list with `str()`
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[2]> str(ds_list)
+List of 1
+ $ : tibble [21,483 × 9] (S3: tbl_df/tbl/data.frame)
+  ..$ year   : int [1:21483] 2000 2000 2000 2000 2000 2000 2000 2000 ...
+  ..$ marital: Factor w/ 6 levels "No answer","Never married",..: 2 4 ...
+  ..$ age    : int [1:21483] 26 48 67 39 25 25 36 44 44 47 ...
+  ..$ race   : Factor w/ 4 levels "Other","Black",..: 3 3 3 3 3 3 3 3 3 3 ...
+  ..$ rincome: Factor w/ 16 levels "No answer","Don't know",..: 8 8 16 16 ...
+  ..$ partyid: Factor w/ 10 levels "No answer","Don't know",..: 6 5 7 6  ...
+  ..$ relig  : Factor w/ 16 levels "No answer","Don't know",..: 15 15 15 ...
+  ..$ denom  : Factor w/ 30 levels "No answer","Don't know",..: 25 23 3 ...
+  ..$ tvhours: int [1:21483] 12 NA 2 4 1 NA 3 NA 0 3 ...
+```
+
+
+### Column counts
+
+The `ds_list` created above is used to add the `Class`, `Columns`, and `Rows` columns to `data_results` using the `class()`, `ncol()`, `nrow()`. The column counts are added with the [`col_type_count()` function](https://github.com/mjfrigaard/dbap/blob/main/R/col_type_count.R). 
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+  cols_tbl <- dplyr::mutate(data_results,
+    Class = purrr::map(.x = ds_list, .f = class) |>
+      purrr::map(paste0, collapse = ", ") |> unlist(),
+    Columns = purrr::map(.x = ds_list, .f = ncol) |>
+      purrr::map(paste0, " columns") |> unlist(),
+    Rows = purrr::map(.x = ds_list, .f = nrow) |>
+      purrr::map(paste0, " rows") |> unlist(),
+    Logical = purrr::map(
+      .x = ds_list,
+      .f = col_type_count, "log"
+    ) |> unlist(),
+    Numeric = purrr::map(
+      .x = ds_list,
+      .f = col_type_count, "num"
+    ) |> unlist(),
+    Character = purrr::map(
+      .x = ds_list,
+      .f = col_type_count, "chr"
+    ) |> unlist(),
+    Factor = purrr::map(
+      .x = ds_list,
+      .f = col_type_count, "fct"
+    ) |> unlist(),
+    List = purrr::map(
+      .x = ds_list,
+      .f = col_type_count, "lst"
+    ) |> unlist(),
+  )
+```
+
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[2]> cols_tbl
+# A tibble: 1 × 11
+  Package Item    Title          Class Columns Rows  Logical Numeric Character Factor  List
+  <chr>   <chr>   <chr>          <chr> <chr>   <chr>   <int>   <int>     <int>  <int> <int>
+1 forcats gss_cat A sample of c… tbl_… 9 colu… 2148…       0       3         0      6     0
+```
+
+### Rectangular objects 
+
+Finally, `cols_tbl` is filtered to only those objects with a `class()` containing the string '`data.frame`'.
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+pkg_tbls_dfs <- dplyr::filter(.data = cols_tbl,
+                  stringr::str_detect(Class, "data.frame"))
+```
+
+This is exactly the same as the previous tibble because forcats has only one data object (`gss_cat`), and it's a tibble: 
+
+```{verbatim}
+Browse[2]> pkg_tbls_dfs
+# A tibble: 1 × 11
+  Package Item    Title          Class Columns Rows  Logical Numeric Character Factor  List
+  <chr>   <chr>   <chr>          <chr> <chr>   <chr>   <int>   <int>     <int>  <int> <int>
+1 forcats gss_cat A sample of c… tbl_… 9 colu… 2148…       0       3         0      6     0
+```
+
+
+I'm explicitly returning `pkg_tbls_dfs` to view it in the debugger. When I'm confident it's behaving as expected, I'll remove this final object and '[rely on R to return the result of the last evaluated expression](https://style.tidyverse.org/functions.html#return).'
+
+### Error!
+
+When I tried using the initial `pkg_data_str()` with a package that had zero data objects (`fs`), I get the following error: 
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+pkg_data_str("fs")
+```
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Error in `dplyr::filter()` at dbap/R/pkg_data_str.R:78:2:
+ℹ In argument: `stringr::str_detect(Class, "data.frame")`.
+Caused by error in `vctrs::vec_size_common()`:
+! object 'Class' not found
+Run `rlang::last_trace()` to see where the error occurred.
+```
+
+In the debugger, I was able to pinpoint the source of this error (and the underlying condition causing it to occur).
+
+#### Replicate the error
+
+The `browser()` beings at the top of `pkg_data_str()`, where I'll step into `pkg_data_results()` 
+
+:::: {.column-page-inset-right}
+
+::: {#fig-dbg-all_together_01}
+
+![`pkg_data_results()` from  `pkg_data_str()`](dbg-all_together_01.png){#fig-dbg-all_together_01 fig-align="center" width=100%}
+
+Step into `pkg_data_results()` from  `pkg_data_str()`
+:::
+
+::::
+
+When I'm inside `pkg_data_results()`, I'll use **`n`** to verify the `fs` package namespace was loaded and the `tibble` was created: 
+
+:::: {.column-page-inset-right}
+
+::: {#fig-dbg-all_together_02}
+
+![Step through `pkg_data_results()`](dbg-all_together_02.png){#fig-dbg-all_together_02 fig-align="center" width=100%}
+
+Step through `pkg_data_results()` (from  `pkg_data_str()`)
+:::
+
+::::
+
+Back in `pkg_data_str()`, the output from `pkg_data_results()` is stored as `data_results`. I can check the contents of `data_results` in the **Console**. 
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[2]> data_results
+# A tibble: 0 × 3
+# ℹ 3 variables: Package <chr>, Item <chr>, Title <chr>
+```
+
+I see it's empty. An empty `data_results` results in an empty list output from `purrr::map2()`:
+
+:::: {.column-page-inset-right}
+
+::: {#fig-dbg-all_together_03}
+
+![Step out of `pkg_data_results()`](dbg-all_together_03.png){#fig-dbg-all_together_03 fig-align="center" width=100%}
+
+Step out of `pkg_data_results()` back into `pkg_data_str()`
+:::
+
+::::
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[2]> ds_list
+list()
+```
+
+The empty `ds_list` results in `dplyr::mutate()` being unable to create the `Class` column in `cols_tbl`:
+
+:::: {.column-page-inset-right}
+
+::: {#fig-dbg-all_together_04}
+
+![`dplyr::mutate()` call in `get_ds_strs()`](dbg-all_together_04.png){#fig-dbg-all_together_04 fig-align="center" width=65%}
+
+Create `Class` column in `get_ds_strs()`
+:::
+
+::::
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[2]> cols_tbl
+# A tibble: 0 × 3
+# ℹ 3 variables: Package <chr>, Item <chr>, Title <chr>
+```
+
+Which triggers the error in `dplyr::filter()`
+
+```{verbatim}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+Browse[2]> n
+Error in `dplyr::filter()` at dbap/R/get_ds_str.R:60:2:
+ℹ In argument: `stringr::str_detect(Class, "data.frame")`.
+Caused by error in `vctrs::vec_size_common()`:
+! object 'Class' not found
+Run `rlang::last_trace()` to see where the error occurred.
+```
+
+The full path for the `fs` package through the initial `get_ds_str()` is outlined in the figure below:
+
+:::: {.column-page-inset-right}
+
+::: {#fig-dbg-all_together_05}
+
+![Error path in `get_ds_strs()`](dbg-all_together_05.png){#fig-dbg-all_together_05 fig-align="center" width=100%}
+
+Replicate the error from `get_ds_strs()`
+:::
+
+::::
+
+### Solution
+
+To fix this error, I had to make some changes to *both* `pkg_data_results()` *and* `pkg_data_str()`:
+
+In `pkg_data_results()`, I added control flow to return a `tibble` of logical columns (all `NA`) if the package doesn't have any data objects: 
+
+```{r}
+#| eval: true
+#| echo: true 
+#| code-fold: true 
+#| code-summary: 'Expand to view the updated pkg_data_results()'
+pkg_data_results <- function(pkg) {
+  # load packages
+  check_pkg_ns(pkg = pkg, quiet = TRUE)
+
+  results <- tibble::as_tibble(
+    data.frame(
+      Package = data(package = pkg)$results[, "Package"],
+      Item = data(package = pkg)$results[, "Item"],
+      Title = data(package = pkg)$results[, "Title"],
+      stringsAsFactors = FALSE,
+      check.names = FALSE,
+      row.names = NULL
+    )
+  )
+
+  if (nrow(results) == 0) {
+
+  data_results <- tibble::as_tibble(
+    data.frame(
+		matrix(
+			nrow = 1, ncol = 11,
+			byrow = TRUE,
+			dimnames = list(NULL,
+			  c("Package", "Item", "Title",
+			    "Class", "Columns", "Rows",
+			    "Logical", "Numeric", 
+			    "Character", "Factor", 
+			    "List"))
+				),
+		row.names = NULL))
+
+    return(data_results)
+
+
+  } else {
+
+    results
+
+  }
+
+}
+```
+
+
+In `pkg_data_str()`, I added two `if` statements:
+
+-   the first `if` statement identifies the logical `NA` columns (indicating the results from `data(package = pkg)` didn't have any data objects) 
+
+-   the second `if` statement creates the `Class` column *first*, then filters the rows to only those containing a `data.frame` string pattern. If none of the data objects have the `data.frame` string pattern in their class, an empty `data_results` table is returned
+
+```{r}
+#| eval: true
+#| echo: true 
+#| code-fold: true 
+#| code-summary: 'Expand to view the updated pkg_data_str()'
+pkg_data_str <- function(pkg) {
+  
+  data_results <- pkg_data_results(pkg = pkg)
+  
+  if (!is.logical(data_results[["Item"]])) {
+    # data_results contains data objects
+    ds_list <- purrr::map2(
+      .x = data_results[["Item"]], 
+      .y = data_results[["Package"]],
+      .f = pkg_data_object, .progress = TRUE
+    )
+
+    class_tbl <- dplyr::mutate(data_results,
+      Class = purrr::map(.x = ds_list, .f = class) |>
+        purrr::map(paste0, collapse = ", ") |> unlist()
+    )
+
+    df_tbl <- dplyr::filter(
+      class_tbl,
+      stringr::str_detect(Class, "data.frame")
+    )
+
+    if (nrow(df_tbl) == 0) {
+      # df_tbl does not contain 'data.frame' classes
+      data_results <- tibble::as_tibble(
+        data.frame(
+          matrix(
+            nrow = 1, ncol = 11,
+            byrow = TRUE,
+            dimnames = list(
+              NULL,
+              c(
+                "Package", "Item", "Title",
+                "Class", "Columns", "Rows",
+                "Logical", "Numeric", "Character",
+                "Factor", "List"
+              )
+            )
+          ),
+          row.names = NULL
+        )
+      )
+
+      return(data_results)
+      
+    } else {
+      
+      # df_tbl contains 'data.frame' classes
+      dplyr::mutate(df_tbl,
+        Columns = purrr::map(.x = ds_list, .f = ncol) |>
+          purrr::map(paste0, " columns") |> unlist(),
+        Rows = purrr::map(.x = ds_list, .f = nrow) |>
+          purrr::map(paste0, " rows") |> unlist(),
+        Logical = purrr::map(
+          .x = ds_list,
+          .f = col_type_count, "log") |> unlist(),
+        Numeric = purrr::map(
+          .x = ds_list,
+          .f = col_type_count, "num") |> unlist(),
+        Character = purrr::map(
+          .x = ds_list,
+          .f = col_type_count, "chr") |> unlist(),
+        Factor = purrr::map(
+          .x = ds_list,
+          .f = col_type_count, "fct") |> unlist(),
+        List = purrr::map(
+          .x = ds_list,
+          .f = col_type_count, "lst") |> unlist())
+      
+    }
+    
+  } else {
+    
+    # data_results does not contains data objects
+    return(data_results)
+    
+  }
+  
+}
+```
+
+Rather than go through the debugger process again, I'll go through each of the the mini experiments I used to check the updated `pkg_data_results()` and `pkg_data_str()` functions: 
+
+-   Check single package without any data objects (`box`)
+
+    ```{r}
+    #| eval: true
+    #| echo: true 
+    #| code-fold: false
+    knitr::kable(
+      pkg_data_str("box"))
+    ```
+
+-   Check single package with data objects, but none with classes that contain `data.frame` (`stringr`)
+
+    ```{r}
+    #| eval: true
+    #| echo: true 
+    #| code-fold: false
+    knitr::kable(
+    pkg_data_str("stringr"))
+    ```
+    
+-   Check single package with multiple data objects (`dplyr`)
+
+    ```{r}
+    #| eval: true
+    #| echo: true 
+    #| code-fold: false
+    knitr::kable(
+    pkg_data_str("dplyr"))
+    ```
+    
+-   Check multiple packages with multiple data objects (`dplyr`, `forcats` and `lubridate`)
+
+    ```{r}
+    #| eval: true
+    #| echo: true 
+    #| code-fold: false
+    knitr::kable(
+    pkg_data_str(c("dplyr", "forcats", "lubridate")))
+    ```
+
+## Recap
+
+RStudio's debugger is a powerful tool that can save tons of time when you're developing new functions, discovering how a function's code is executed, or dealing with errors. When you've finished debugging, remember to remove the `browser()` call from your function.
+
+The steps above should help get you started, and if you'd like to learn more, check out the [debugging chapter of Advanced R](https://adv-r.hadley.nz/debugging.html), and the documentation for [`browser()`](https://stat.ethz.ch/R-manual/R-devel/library/base/html/browser.html),  [`debug()`/`debugonce()`/`undebug()`](https://stat.ethz.ch/R-manual/R-devel/library/base/html/debug.html), and [`traceback()`](https://stat.ethz.ch/R-manual/R-devel/library/base/html/traceback.html) functions.

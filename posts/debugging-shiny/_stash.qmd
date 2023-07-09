@@ -1,0 +1,1339 @@
+
+
+<!--
+## `mod_pkg`
+
+The `mod_pkg` module displays the packages with `data.frame`s or `tibble`s in the `selectInput()` with the `tsap::get_pkgs_with_dfs()` function:
+
+```{r}
+#| code-fold: show
+#| eval: true
+#| echo: true
+#| code-summary: 'display package names with data.frames or tibbles'
+pkgs <- tsap::get_pkgs_with_dfs()
+pkgs
+```
+
+One of these is selected (`pkg`) and passed returned as a reactive value 
+
+```{r}
+#| code-fold: show
+#| eval: true
+#| echo: true
+#| code-summary: 'select package with data.frames/tibbles'
+pkg <- pkgs["palmerpenguins"]
+pkg 
+```
+
+
+:::: {.column-body-outset-right}
+
+::: {#fig-mod_pkg_schema}
+
+![`mod_pkg` in `tsap::pkgDataApp()`](mod_pkg_schema.png){#fig-mod_pkg_schema width=40%}
+
+`mod_pkg` module in `pkgDataApp()`
+:::
+
+::::
+
+
+In the `appServer()` function, the reactive output from `mod_pkg` is passed to `mod_ds` as `pkg_input()` 
+
+```{r}
+#| code-fold: show
+#| eval: false
+#| echo: true
+#| code-summary: 'mod_pkg <-> mod_ds'
+appServer <- function(input, output, session) {
+  # pkg module ----
+  pkg <- mod_pkg_server("pkg")
+
+  # dataset module ----
+  mod_ds_server("ds", pkg_input = pkg)
+
+}
+```
+
+
+## `mod_ds`
+
+Inside `mod_ds`, the `pkg_input()` is used to update the `selectInput()` for the package datasets:
+
+```{r}
+#| code-fold: show
+#| eval: true
+#| echo: true
+#| code-summary: 'get_pkg_df_names'
+tsap::get_pkg_df_names(pkg = pkg)
+```
+
+After one dataset (`ds`) is selected, 
+
+```{r}
+#| code-fold: show
+#| eval: true
+#| echo: true
+#| code-summary: 'select dataset'
+ds <- get_pkg_df_names(pkg)[1]
+ds
+```
+
+`ds` is used to `get()` the data object (with the `pkg`): 
+
+The data below is returned as the reactive `dataset` output object from `mod_ds`:
+
+:::: {.column-body-outset-right}
+
+::: {#fig-mod_ds_schema}
+
+![`mod_ds` in `tsap::pkgDataApp()`](mod_ds_schema.png){#fig-mod_ds_schema width=70%}
+
+`mod_pkg` and `mod_ds` modules in `pkgDataApp()`
+:::
+
+::::
+
+```{r}
+#| code-fold: show
+#| eval: true
+#| echo: true
+#| code-summary: 'get package dataset'
+dataset <- get(x = ds, pos = paste0("package:", pkg)) |> 
+  janitor::clean_names()
+head(dataset)
+```
+
+
+## `mod_cols`
+
+
+```{r}
+#| code-fold: show
+#| eval: false
+#| echo: true
+#| code-summary: 'mod_ds <-> mod_cols'
+appServer <- function(input, output, session) {
+  # pkg module ----
+  pkg <- mod_pkg_server("pkg")
+
+  # dataset module ----
+  dataset <- mod_ds_server("ds", pkg_input = pkg)
+
+  # column select module ----
+  mod_cols_server(id = "cols", ds_input = dataset)
+
+}
+```
+
+The `dataset()` reactive enters `mod_cols` and is renamed `ds_input`. Inside mod_cols, the `pull_[type]_cols()` utility functions 'pull' out the columns by `type` and display them in the `selectInput()`s.
+
+-   The numeric variables are collected as `x` = `x_var`, `y` = `y_var`, 
+
+    ```{r}
+    #| code-fold: show
+    #| eval: true
+    #| echo: true
+    #| code-summary: 'pull_numeric_cols() functions'
+    # rename to ds_input
+    ds_input <- dataset
+    # get numeric x var 
+    x_var <- pull_numeric_cols(ds_input)[1]
+    x_var
+    # get numeric y var 
+    y_var <- pull_numeric_cols(ds_input)[2]
+    y_var
+    ```
+
+-   The color variable any binary column `col` = `col_var`
+
+    ```{r}
+    #| code-fold: show
+    #| eval: true
+    #| echo: true
+    #| code-summary: 'pull_binary_cols() functions'
+    # get color (binary) var 
+    col_var <- pull_binary_cols(ds_input)[1]
+    col_var
+    ```
+
+-   Facet are any categorical variable with five or fewer unique values `facet`  = `facet_var`: 
+
+    ```{r}
+    #| code-fold: show
+    #| eval: true
+    #| echo: true
+    #| code-summary: 'pull_facet_cols() functions'
+    # get facet var 
+    facet_var <- pull_facet_cols(ds_input)[1]
+    facet_var
+    ```
+
+Two additional `sliderInput()`s are used to capture the `alpha` and `size` aesthetics. 
+
+```{r}
+#| code-fold: show
+#| eval: true
+#| echo: true
+#| code-summary: 'alpha and size aesthetics'
+# set size 
+size <- 2L
+# set alpha 
+alpha <- 0.75
+```
+
+
+The columns, data, and aesthetics are combined and returned as the `plot_values()` reactive list from `mod_cols` (as `plot_values`)
+
+```{r}
+#| code-fold: show
+#| eval: true
+#| echo: true
+#| code-summary: 'create list of plot_values'
+plot_values <- list(
+  'df' = ds_input,
+  'x_var' = x_var, 
+  'y_var' = y_var, 
+  'col_var' = col_var, 
+  'facet_var' = facet_var, 
+  'size' = size, 
+  'alpha' = alpha
+)
+```
+
+:::: {.column-body-outset-right}
+
+::: {#fig-mod_cols_schema}
+
+![`mod_ds` in `tsap::pkgDataApp()`](mod_cols_schema.png){#fig-mod_cols_schema width=100%}
+
+`mod_pkg`,`mod_ds`, and `mod_cols` modules in `pkgDataApp()`
+:::
+
+::::
+
+
+The `plot_values()` list is what's returned from `mod_cols`:
+
+```{r}
+#| code-fold: show
+#| eval: true
+#| echo: true
+#| code-summary: 'structure of plot_values list'
+str(plot_values, list.len = 7)
+```
+
+## `mod_plot`
+
+In `appServer()`, the `plot_values` list is passed to the final module, `mod_plot`, where it's assigned to the `plot_inputs` argument. 
+
+```{r}
+#| code-fold: show
+#| eval: false
+#| echo: true
+#| code-summary: 'mod_ds <-> mod_cols'
+appServer <- function(input, output, session) {
+  # pkg module ----
+  pkg <- mod_pkg_server("pkg")
+
+  # dataset module ----
+  dataset <- mod_ds_server("ds", pkg_input = pkg)
+
+  # column select module ----
+  plot_values <- mod_cols_server(id = "cols", ds_input = dataset)
+
+  # plot module ----
+  mod_plot_server("plot", plot_inputs = plot_values)
+
+}
+```
+
+Once inside `mod_plot`, the `plot_inputs` is used with a custom `ggplot2` utility function (`gg_color_scatter_facet()`) 
+
+```{r}
+#| code-fold: true
+#| eval: false
+#| echo: true
+#| code-summary: 'expand to view gg_color_scatter_facet()'
+gg_color_scatter_facet <- function(df, x_var, y_var,
+                                col_var = NULL, facet_var = NULL,
+                                ...) {
+  # missing both color and facet vars
+  if (is.null(col_var) & is.null(facet_var)) {
+      ggplot2::ggplot(
+        data = df,
+        mapping = ggplot2::aes(
+          x = .data[[x_var]], 
+          y = .data[[y_var]])
+      ) +
+        ggplot2::geom_point(...) +
+        # add labels
+        ggplot2::labs(
+          title = make_x_y_title(x = x_var, y = y_var),
+          x = stringr::str_replace_all(
+            snakecase::to_title_case(x_var), "_", " "
+          ),
+          y = stringr::str_replace_all(
+            snakecase::to_title_case(y_var), "_", " "
+          )
+        ) +
+        ggplot2::theme_minimal() +
+        ggplot2::theme(legend.position = "bottom")
+
+
+    # no facet, but has color
+  } else if (!is.null(col_var) & is.null(facet_var)) {
+
+      ggplot2::ggplot(
+        data = df,
+        mapping = ggplot2::aes(
+          x = .data[[x_var]], 
+          y = .data[[y_var]])
+      ) +
+        # add ... for alpha and size passed to points
+        ggplot2::geom_point(
+          ggplot2::aes(
+            colour = .data[[col_var]], 
+            group = .data[[col_var]]), 
+            ...
+        ) +
+        # add labels
+        ggplot2::labs(
+          title = make_x_y_color_title(
+            x = x_var, y = y_var, color = col_var),
+          x = stringr::str_replace_all(
+            snakecase::to_title_case(x_var), "_", " "
+          ),
+          y = stringr::str_replace_all(
+            snakecase::to_title_case(y_var), "_", " "
+          ),
+          color = stringr::str_replace_all(
+            snakecase::to_title_case(col_var), "_", " "
+          )
+        ) +
+        ggplot2::theme_minimal() +
+        ggplot2::theme(legend.position = "bottom")
+
+    # no color, but has facet
+  } else if (is.null(col_var) & !is.null(facet_var)) {
+
+      ggplot2::ggplot(
+        data = df,
+        mapping = ggplot2::aes(
+          x = .data[[x_var]], 
+          y = .data[[y_var]])
+      ) +
+        # add ... for alpha and size passed to points
+        ggplot2::geom_point(...) +
+        # add facet layer
+        ggplot2::facet_wrap(ggplot2::vars(.data[[facet_var]])) +
+        # add labels
+        ggplot2::labs(
+          title = make_x_y_title(
+            x = x_var, y = y_var),
+          x = stringr::str_replace_all(
+            snakecase::to_title_case(x_var), "_", " "
+          ),
+          y = stringr::str_replace_all(
+            snakecase::to_title_case(y_var), "_", " "
+          )
+        ) +
+        ggplot2::theme_minimal() +
+        ggplot2::theme(legend.position = "bottom")
+
+  } else {
+
+      # missing both color and facet vars
+      ggplot2::ggplot(
+        data = df,
+        mapping = ggplot2::aes(
+          x = .data[[x_var]], 
+          y = .data[[y_var]])
+      ) +
+        # points layer
+        # add ... for alpha and size passed to points
+        ggplot2::geom_point(
+          ggplot2::aes(
+            colour = .data[[col_var]], 
+            group = .data[[col_var]]),
+            ...
+        ) +
+        # add facet layer
+        ggplot2::facet_wrap(ggplot2::vars(.data[[facet_var]])) +
+        # add labels
+        ggplot2::labs(
+          title = make_x_y_col_facet_title(
+            x = x_var, y = y_var,
+            color = col_var, facets = facet_var
+          ),
+          x = stringr::str_replace_all(
+            snakecase::to_title_case(x_var), "_", " "
+          ),
+          y = stringr::str_replace_all(
+            snakecase::to_title_case(y_var), "_", " "
+          ),
+          color = stringr::str_replace_all(
+            snakecase::to_title_case(col_var), "_", " "
+          ),
+          group = stringr::str_replace_all(
+            snakecase::to_title_case(facet_var), "_", " "
+          )
+        ) +
+        ggplot2::theme_minimal() +
+        ggplot2::theme(legend.position = "bottom")
+
+  }
+}
+```
+
+-   `gg_color_scatter_facet()` builds the reactive `plot()` object:
+
+    ```{r}
+    #| code-fold: show
+    #| eval: true
+    #| echo: true
+    #| code-summary: 'create scatter plot with gg_color_scatter_facet()'
+    # rename as plot_inputs
+    plot_inputs <- plot_values
+    # render plot 
+    plot <- gg_color_scatter_facet(
+      df = plot_inputs$df, 
+      x_var = plot_inputs$x_var, 
+      y_var = plot_inputs$y_var,
+      col_var = plot_inputs$col_var,
+      facet_var = plot_inputs$facet_var,
+      size = plot_inputs$size,
+      alpha = plot_inputs$alpha)
+    ```
+
+
+
+
+`plot()` is passed to `renderPlot({})`, where we can see the final output:
+
+```{r}
+#| code-fold: show
+#| eval: true
+#| echo: true
+#| code-summary: 'render scatter plot()'
+plot
+```
+
+# Locating the bug 
+
+Dealing with bugs in `shiny` applications is challenging because the diagnosis isn't always obvious. For example, I don't immediately know whether the source of this bug is the reactivity in the app (i.e. the `shiny` code) or some underlying (non-reactive) R function. 
+
+I've displayed the `shiny` warning below to review: 
+
+:::: {.column-page-inset-right}
+::: {#fig-graph_error_gif}
+
+![Verify `mod_plot` in `appServer()`](graph_error.gif){#fig-graph_error_gif width=100%}
+
+`# Warning: Error in [[: Column 'race1' not found in '.data'`
+:::
+::::
+
+
+In the UI, I can see the error above display in the UI briefly when switching package sources in the `selectInput()` (before the plot is updated). 
+
+## Stack trace
+
+When the data an columns from `palmerpenguins::penguins` are updated in the UI, a stack trace with the `shiny` warning is printed in the **Console**:
+
+```{bash}
+#| code-fold: true
+#| code-summary: 'expand to view the stack trace'
+#| eval: false
+#| echo: true
+Warning: Error in [[: Column `race1` not found in `.data`.
+  202: <Anonymous>
+  201: signalCondition
+  200: signal_abort
+  199: abort
+  198: abort_data_pronoun
+  197: data_pronoun_get
+  196: [[.rlang_data_pronoun
+  195: [[
+  194: eval_tidy
+  189: FUN
+  188: lapply
+  185: FUN
+  184: lapply
+  181: combine_vars
+  180: compute_layout
+  179: self$facet$compute_layout
+  178: setup
+  177: layout$setup
+  176: ggplot_build.ggplot
+  174: print.ggplot
+  169: func
+  167: f
+  166: Reduce
+  157: do
+  156: hybrid_chain
+  128: drawPlot
+  114: <reactive:plotObj>
+   98: drawReactive
+   85: renderFunc
+   84: output$plot-graph
+    3: runApp
+    2: print.shiny.appobj
+    1: <Anonymous>
+```
+
+
+-->
+
+
+
+I'm not an expert at diagnosing shiny bugs, but the parts I'm paying attention to are lines `174` through `181`: 
+
+```{bash}
+#| eval: false 
+#| code-fold: false 
+#| echo: true
+  181: combine_vars
+  180: compute_layout
+  179: self$facet$compute_layout
+  178: setup
+  177: layout$setup
+  176: ggplot_build.ggplot
+  174: print.ggplot
+```
+
+These lines seem to deal with building plot (`print.ggplot` & `ggplot_build.ggplot`), and more specifically, the facets (`self$facet$compute_layout`). 
+
+I also notice lines `195`-`200`:  
+
+```{bash}
+#| eval: false 
+#| code-fold: false 
+#| echo: true
+  200: signal_abort
+  199: abort
+  198: abort_data_pronoun
+  197: data_pronoun_get
+  196: [[.rlang_data_pronoun
+  195: [[
+```
+
+These contents of these lines are similar to the warnings I'm seeing in the UI (specifically, `[[` and `[[.rlang_data_pronoun`). 
+
+I'll replicate the `ggplot2` error using values stored in `plot_inputs` below to try and mimic what I'm seeing in the application:
+
+```{r}
+#| code-fold: show
+#| eval: true
+#| echo: true
+#| error: true
+#| code-summary: 'replicate scatter plot bug'
+gg_color_scatter_facet(
+  df = plot_inputs$df,
+  x_var = plot_inputs$x_var, 
+  y_var = plot_inputs$y_var,
+  col_var = plot_inputs$col_var,
+  facet_var = "race1", # previous facet variable
+  alpha = plot_inputs$alpha,
+  size = plot_inputs$size
+)
+```
+
+`race1` is the `facet_var` from the previous graph (`NHANES`), but it's not getting flushed out with the rest of the `NHANES` variables.
+
+-   `facet_var` is still set to `species`
+
+    ```{r}
+    #| code-fold: show
+    #| eval: true
+    #| echo: true
+    #| error: true
+    #| code-summary: 'facet_var'
+    plot_inputs$facet_var
+    ```
+    
+#### *Stack trace recap*
+    
+Reviewing the stack trace usually helps me narrow down the source of `shiny` bugs. The current error is originating from `mod_plot_server()`. When the plot values are passed to `gg_color_scatter_facet()`, the facet variable input isn't being identified in the `.data[[facet_var]]` [argument](https://github.com/mjfrigaard/tsap/blob/d84b93488a166554de5d509d16d900743a22c204/R/utils_scatter.R#L535). 
+
+::: {#fig-mod_plot_warning}
+![Location of `mod_plot` warning](mod_plot_warning.png){#fig-mod_plot_warning width=100%}
+
+The warning is triggered by `mod_plot`
+:::
+
+I've placed the `ggplot2` error next to the stack trace output to illustrate their relationship:
+    
+::: {layout-ncol=2}
+
+
+
+To help identify the origin of this bug, I should consider the cascade of changes caused by selecting a new package input:
+
+1. Changing the package from `NHANES` to `palmerpenguins` will trigger the dataset inputs to change (from `NHANES` to `penguins`)
+
+::: {#fig-mod_pkg2mod_ds}
+
+![Changing package input](mod_pkg2mod_ds.png){#fig-mod_pkg2mod_ds width=70%}
+
+`mod_pkg` triggers `mod_ds`
+:::
+
+
+2. The columns in the `selectInput()` are updated with the appropriate default inputs (`x` = `bill_length_mm`, `y` = `bill_depth_mm`, `color` = `sex`, `facet` = `species`)
+
+::: {#fig-mod_pkg2mod_ds2mod_cols}
+
+
+![Downstream changes after changing package input](mod_pkg2mod_ds2mod_cols.png){#fig-mod_pkg2mod_ds2mod_cols width=100%}
+
+`mod_pkg` triggers `mod_ds`, which triggers `mod_cols`
+:::
+
+3. The package dataset and default columns are passed immediately into the `renderPlot()`/`plotOutput()` functions (which is where I am seeing the warning in the UI). 
+
+::: {#fig-mod_pkg2mod_ds2mod_cols2mod_plot}
+
+![Changes to `mod_plot` after changing the package input](mod_pkg2mod_ds2mod_cols2mod_plot.png){#fig-mod_pkg2mod_ds2mod_cols2mod_plot width=100%}
+
+Final plot output from `mod_plot`
+:::
+
+
+RStudio also provides a [traceback/stack trace](https://en.wikipedia.org/wiki/Stack_trace?oldformat=true) to help diagnosing bugs.
+
+
+
+#### `ggplot2` error
+
+``` r
+## Error in `.data[["race1"]]`:
+## ! Column `race1` not found in `.data`.
+```
+
+#### Stack trace output
+
+``` r
+199: abort
+198: abort_data_pronoun
+197: data_pronoun_get
+196: [[.rlang_data_pronoun
+195: [[
+```
+
+:::
+
+## Is it the `NULL`s?
+
+The `shiny` warning message tells me the error is being generated by the `ggplot2` function, but I've written `gg_color_scatter_facet()` to handle `NULL` values for *both* `facet_var` and `col_var`. View the outputs below: 
+
+```{r}
+#| layout-ncol: 2 
+#| code-fold: true
+#| code-summary: 'Compare col_var = NULL in gg_color_scatter_facet()'
+#| eval: true
+#| fig-cap: 
+#|   - "All arguments"
+#|   - "NULL col_var"
+gg_color_scatter_facet(
+  df = plot_inputs$df,
+  x_var = plot_inputs$x_var, 
+  y_var = plot_inputs$y_var,
+  col_var = plot_inputs$col_var,
+  facet_var = plot_inputs$facet_var,
+  alpha = plot_inputs$alpha,
+  size = plot_inputs$size
+)
+gg_color_scatter_facet(
+  df = plot_inputs$df,
+  x_var = plot_inputs$x_var, 
+  y_var = plot_inputs$y_var,
+  col_var = NULL,
+  facet_var = plot_inputs$facet_var,
+  alpha = plot_inputs$alpha,
+  size = plot_inputs$size
+)
+```
+
+```{r}
+#| layout-ncol: 2 
+#| code-fold: true
+#| code-summary: 'Compare facet_var = NULL in gg_color_scatter_facet()'
+#| eval: true
+#| fig-cap: 
+#|   - "All arguments"
+#|   - "NULL facet_var"
+gg_color_scatter_facet(
+  df = plot_inputs$df,
+  x_var = plot_inputs$x_var, 
+  y_var = plot_inputs$y_var,
+  col_var = plot_inputs$col_var,
+  facet_var = plot_inputs$facet_var,
+  alpha = plot_inputs$alpha,
+  size = plot_inputs$size
+)
+gg_color_scatter_facet(
+  df = plot_inputs$df,
+  x_var = plot_inputs$x_var, 
+  y_var = plot_inputs$y_var,
+  col_var = plot_inputs$col_var,
+  facet_var = NULL,
+  alpha = plot_inputs$alpha,
+  size = plot_inputs$size
+)
+```
+
+```{r}
+#| layout-ncol: 2 
+#| code-fold: true
+#| code-summary: 'Compare col_var and facet_var = NULL in gg_color_scatter_facet()'
+#| eval: true
+#| fig-cap: 
+#|   - "All arguments"
+#|   - "NULL col_var and facet_var"
+gg_color_scatter_facet(
+  df = plot_inputs$df,
+  x_var = plot_inputs$x_var, 
+  y_var = plot_inputs$y_var,
+  col_var = plot_inputs$col_var,
+  facet_var = plot_inputs$facet_var,
+  alpha = plot_inputs$alpha,
+  size = plot_inputs$size
+)
+gg_color_scatter_facet(
+  df = plot_inputs$df,
+  x_var = plot_inputs$x_var, 
+  y_var = plot_inputs$y_var,
+  col_var = NULL,
+  facet_var = NULL, 
+  alpha = plot_inputs$alpha,
+  size = plot_inputs$size
+)
+```
+
+If the `gg_color_scatter_facet()` function can handle `NULL` values, why am I seeing this error? 
+
+I'll use the debugger to try and dignose what's going on inside `gg_color_scatter_facet()` as it evaluates. 
+
+## Debugger
+
+I'll start debugging  `gg_color_scatter_facet()` by placing `browser()` at the top of the function: 
+
+::: {#fig-browser_01}
+
+![`browser()` in `gg_color_scatter_facet()`](browser_01.png){#fig-browser_01 width=100%}
+
+Place `browser()` at top of `gg_color_scatter_facet()` 
+:::
+
+I've created a function for creating the `plot_inputs()` list for testing and debugging, `get_plot_inputs_list()`: 
+
+```{r}
+#| eval: true 
+#| code-fold: show
+#| code-summary: 'create plot_inputs for debugger'
+plot_inputs <- get_plot_inputs_list(pkg = "palmerpenguins", ds = "penguins")
+str(plot_inputs)
+```
+
+I'll pass items in `plot_inputs` to each of the arguments in `gg_color_scatter_facet()` so I can see if the control flow works as expected:
+
+```{r}
+#| eval: false
+#| code-fold: show
+#| code-summary: 'code passed to debugger'
+gg_color_scatter_facet(
+  df = plot_inputs$df,
+  x_var = plot_inputs$x_var,
+  y_var = plot_inputs$y_var,
+  col_var = plot_inputs$col_var,
+  facet_var = plot_inputs$facet_var,
+  alpha = plot_inputs$alpha,
+  size = plot_inputs$size
+)
+```
+
+### Function evaluation
+
+When I run `gg_color_scatter_facet()` after adding `browser()`, I see the following interactive **Console** environment: 
+
+```{verbatim}
+#| code-fold: false
+source("~/tsap/R/utils_scatter.R")
+Called from: gg_color_scatter_facet(
+  df = plot_inputs$df, 
+  x_var = plot_inputs$x_var, 
+  y_var = plot_inputs$y_var, 
+  col_var = plot_inputs$col_var, 
+  facet_var = plot_inputs$facet_var, 
+  alpha = plot_inputs$alpha, 
+  size = plot_inputs$size)
+```
+
+I'll use **`n`** in the **Console** to drop into the first `if()` statement in the control flow. This step checks if both `col_var` and `facet_var` are `NULL`:
+
+```{verbatim}
+#| eval: false
+#| code-fold: false
+Browse[1]> n
+debug at ~/tsap/R/utils_scatter.R#452: if (is.null(col_var) & is.null(facet_var)) {
+```
+
+At this point in the function, the **Environment** will display the `plot_input` values (although slightly muted): 
+
+::: {#fig-facet_var_control_flow_01}
+
+![`plot_inputs` inside `gg_color_scatter_facet()`](facet_var_control_flow_01.png){#fig-facet_var_control_flow_01 width=90% fig-align="center"}
+
+Initial `plot_inputs` in `gg_color_scatter_facet()`
+:::
+
+Another **`n`** in the **Console** and I'll step past the first `if()` statement (because I've included values that meet these conditions).
+
+The next step I land on checks for a `NULL` value in `facet_var` (with `is.null(facet_var)`):
+
+```{verbatim}
+#| eval: false
+#| code-fold: false
+Browse[2]> n
+debug at ~/tsap/R/utils_scatter.R#452: if (!is.null(col_var) & is.null(facet_var)) {
+```
+
+The `col_var` and `facet_var` (`"sex"` and `"species"`) values are updated in the **Environment**: 
+
+::: {#fig-facet_var_control_flow_02}
+
+![`plot_inputs` inside `gg_color_scatter_facet()`](facet_var_control_flow_02.png){#fig-facet_var_control_flow_02 width=90% fig-align="center"}
+
+Changed `plot_inputs` in **Environment**
+:::
+
+These variables are being evaluated in the `if()` statements, so their values are no longer muted. In the next step, the control flow checks `col_var` for `NULL` values.
+
+```{verbatim}
+#| eval: false
+#| code-fold: false
+Browse[2]> n
+debug at ~/tsap/R/utils_scatter.R#452: if (is.null(col_var) & !is.null(facet_var)) {
+```
+
+After passing through the control flow, the **Console** displays the `ggplot2` code that will be evaluated to generate the plot: 
+
+```{verbatim}
+#| eval: false
+#| code-fold: false
+Browse[2]> n
+debug at ~/projects/apps/tsap/R/utils_scatter.R#526: ggplot2::ggplot(data = df, 
+  mapping = ggplot2::aes(
+    x = .data[[x_var]], 
+    y = .data[[y_var]])) + 
+  ggplot2::geom_point(ggplot2::aes(
+    colour = .data[[col_var]], 
+    group = .data[[col_var]]),
+    ...) + 
+  ggplot2::facet_wrap(ggplot2::vars(.data[[facet_var]])) + 
+  ggplot2::labs(title = 
+      make_x_y_col_facet_title(x = x_var, y = y_var, 
+                               color = col_var, 
+                               facets = facet_var), 
+    x = stringr::str_replace_all(snakecase::to_title_case(x_var), "_", " "),
+    y = stringr::str_replace_all(snakecase::to_title_case(y_var), "_", " "), 
+    color = stringr::str_replace_all(snakecase::to_title_case(col_var), "_", " "), 
+    group = stringr::str_replace_all(snakecase::to_title_case(facet_var), "_", " ")) +
+    ggplot2::theme_minimal() + 
+  ggplot2::theme(legend.position = "bottom")
+```
+
+This section is highlighted in the **Source** pane: 
+
+::: {#fig-gg_color_scatter_facet_n.png}
+
+![Control flow for `plot_inputs`](gg_color_scatter_facet_n.png){#fig-gg_color_scatter_facet_n width=90%}
+
+The evaluated `ggplot2` code in `gg_color_scatter_facet()`
+:::
+
+One final **`n`** in the **Console** will build the graph and display it in the **Plots** pane: 
+
+```{verbatim}
+#| eval: false
+#| code-fold: false
+Browse[2]> n
+Warning message:
+Removed 2 rows containing missing values (`geom_point()`).
+```
+
+
+
+::: {#fig-plot_pane_output}
+
+![Plot output](plot_pane_output.png){#fig-plot_pane_output width=100%}
+
+Plot output from `gg_color_scatter_facet()`
+:::
+
+The debugger has shown me that the color (`col_var`) and facet (`facet_var`) variables are evaluated *before* the other inputs (`x`, `y`, `size`, and `alpha`).
+
+### Reproducing the error
+
+I'm getting closer to understanding what's causing this error, but I'll need to check one more experiment in the debugger: If the application initiates with the `plot_inputs` from the  `NHANES::NHANES` data, and changing the package input doesn't replace the `plot_inputs` variables until the new package input makes it's way through each module (`mod_pkg` -> `mod_ds` -> `mod_cols` -> `mod_plot`), then wouldn't `col_var` cause the error (and not `facet_var`)? 
+
+When the `ggplot2` code was evaluated in `gg_color_scatter_facet()`, the color layer (with `.data[[col_var]]`) comes *before* the facet layer (with `.data[[facet_var]]`): 
+
+```{r}
+#| eval: false 
+#| echo: true 
+#| code-fold: show 
+#| code-summary: 'x, y, color and facet layers in gg_color_scatter_facet()'
+ggplot2::ggplot(data = df, 
+    mapping = ggplot2::aes(
+      x = .data[[x_var]], 
+      y = .data[[y_var]])) + 
+  ggplot2::geom_point(ggplot2::aes(
+    colour = .data[[col_var]], 
+     group = .data[[col_var]]), 
+     ...) + 
+  ggplot2::facet_wrap(ggplot2::vars(.data[[facet_var]]))
+```
+
+Is it possible that `plot_inputs` updates the package dataset (in `plot_inputs$df`) and attempts to render `palmerpenguins::penguins` with *all* of the `NHANES::NHANES` column inputs?
+
+To investigate this, I'll check what happens when `plot_inputs` contains the column inputs from the `NHANES::NHANES` data (`plot_inputs$x_var` = `"poverty"`, `plot_inputs$y_var` = `"weight"`, `plot_inputs$col_var` = `"survey_yr"` and `plot_inputs$facet_var` = `"race1"`), with the 'updated' `palmerpenguins::penguins` dataset in `plot_inputs$df`.
+
+First I'll create a new `plot_inputs` list with `palmerpenguins::penguins`, but I'll replace the column inputs with the `NHANES::NHANES` values: 
+
+```{r}
+#| eval: true 
+#| error: true 
+#| code-fold: show 
+#| code-summary: 'new plot_inputs and col_var and facet_var'
+plot_inputs <- get_plot_inputs_list(pkg = "palmerpenguins", ds = "penguins")
+x_var <- c(poverty = "poverty")
+y_var <- c(weight = "weight")
+facet_var <- c(race1 = "race1")
+col_var <- c(survey_yr = "survey_yr")
+plot_inputs$x_var <- x_var
+plot_inputs$y_var <- y_var
+plot_inputs$facet_var <- facet_var
+plot_inputs$col_var <- col_var
+str(plot_inputs)
+```
+
+I can see the `penguins` data in `df` with the `NHANES` columns. 
+
+Now I'll rerun the `gg_color_scatter_facet()` using the `browser()` function and step through each line of the control flow: 
+
+-   Initiate debugger **Console**: 
+
+    ```{verbatim}
+    #| eval: false 
+    #| echo: true
+    #| code-fold: false 
+    source("~/tsap/R/utils_scatter.R")
+    Called from: gg_color_scatter_facet(
+        df = plot_inputs$df, 
+        x_var = plot_inputs$x_var,
+        y_var = plot_inputs$y_var, 
+        col_var = plot_inputs$col_var, 
+        facet_var = plot_inputs$facet_var, 
+        alpha = plot_inputs$alpha, 
+        size = plot_inputs$size)
+    ```
+
+    -   The first `if()` checks both `col_var` and `facet_var` for `NULL`s: 
+
+    ```{verbatim}
+    #| eval: false 
+    #| echo: true
+    #| code-fold: false 
+    Browse[1]> n
+    debug at ~/tsap/R/utils_scatter.R#452: if (is.null(col_var) & is.null(facet_var)) {
+    ```
+    
+    -   Check if `col_var` is `NULL`
+
+    ```{verbatim}
+    #| eval: false 
+    #| echo: true
+    #| code-fold: false
+    Browse[2]> n
+    debug at ~/tsap/R/utils_scatter.R#452: if (!is.null(col_var) & is.null(facet_var)) {
+    ```
+    
+    -   At this point I see the `NHANES` values in the **Environment**:
+
+    ::: {#fig-facet_var_control_flow_03}
+    
+    ![Previous data source variable inputs](facet_var_control_flow_03.png){#fig-facet_var_control_flow_03 width=80%}
+    
+    `NHANES` color and facet variables with `penguins` data in `gg_color_scatter_facet()`
+    :::
+
+    -   The third `if()` checks `facet_var` for `NULL` values:
+
+    ```{verbatim}
+    #| eval: false 
+    #| echo: true
+    #| code-fold: false
+    Browse[2]> n
+    debug at ~/tsap/R/utils_scatter.R#452: if (is.null(col_var) & !is.null(facet_var)) {
+    ```
+    
+After passing through the control flow, the `plot_inputs` arrive at the `ggplot2` functions:
+
+```{verbatim}
+#| eval: false 
+#| echo: true
+#| code-fold: false
+Browse[2]> n
+debug at ~/tsap/R/utils_scatter.R#526: ggplot2::ggplot(data = df, 
+    mapping = ggplot2::aes(
+      x = .data[[x_var]], 
+      y = .data[[y_var]])) + 
+  ggplot2::geom_point(ggplot2::aes(
+    colour = .data[[col_var]], 
+     group = .data[[col_var]]), 
+     ...) + 
+  ggplot2::facet_wrap(ggplot2::vars(.data[[facet_var]])) + 
+  ggplot2::labs(
+      title = make_x_y_col_facet_title(
+        x = x_var, y = y_var, color = col_var, 
+        facets = facet_var), 
+    x = stringr::str_replace_all(snakecase::to_title_case(x_var), "_", " "), 
+    y = stringr::str_replace_all(snakecase::to_title_case(y_var), "_", " "), 
+    color = stringr::str_replace_all(snakecase::to_title_case(col_var), "_", " "), 
+    group = stringr::str_replace_all(snakecase::to_title_case(facet_var), "_", " ")) +
+  ggplot2::theme_minimal() + 
+  ggplot2::theme(legend.position = "bottom")
+```
+
+If my prediction was correct, the `facet_var` (`"race1"`) should throw the error: 
+
+```{verbatim}
+#| eval: false 
+#| echo: true
+#| code-fold: false
+Browse[2]> n
+Error in `.data[[<chr: race1 = "race1">]]`:
+! Column `race1` not found in `.data`.
+Run `rlang::last_trace()` to see where the error occurred.
+```
+
+And it does! If I run `rlang::last_trace()`, I notice the final lines are similar to the stack trace generated by `shiny` displayed above: 
+
+```{verbatim}
+#| eval: false 
+#| echo: true
+#| code-fold: false
+Backtrace:
+     ▆
+ 27. ├─<unknown>
+ 28. ├─rlang:::`[[.rlang_data_pronoun`(.data, `<chr>`)
+ 29. │ └─rlang:::data_pronoun_get(...)
+ 30. └─rlang:::abort_data_pronoun(x, call = y)
+```
+
+## The fix
+
+Now that know the location of the bug, I can write some 'checks' to make sure the column names in `plot_inputs` are actually in the package dataset.
+
+I've created a second `ggplot2` function to implement this fix: [`gg_scatter_color_facet()`](https://github.com/mjfrigaard/tsap/blob/2650d684d02f085704f8d9d009274dfd16ca2bbd/R/utils_scatter.R#L309)
+
+Creating a new function allowed me to keep the previous [`gg_color_scatter_facet()`](https://github.com/mjfrigaard/tsap/blob/2650d684d02f085704f8d9d009274dfd16ca2bbd/R/utils_scatter.R#L447) function as a 'good bad example', and the new function adheres more closely to a consistent naming convention. 
+
+The new `gg_scatter_color_facet()` function includes secondary `if()` statements to verify the columns in the `plot_inputs` list are in the accompanying dataset (`df`). I've included the first step in the code below: 
+
+```{r}
+#| eval: false 
+#| echo: true
+#| code-fold: false
+# missing both color and facet vars
+if (is.null(col_var) & is.null(facet_var)) {
+  if (sum(c(x_var, y_var) %in% names(df)) == 2) {
+    ggplot2::ggplot(
+      data = df,
+      mapping = ggplot2::aes(x = .data[[x_var]], y = .data[[y_var]])
+    ) +
+      ggplot2::geom_point(...) +
+      # add labels
+      ggplot2::labs(
+        title = make_x_y_title(x = x_var, y = y_var),
+        x = stringr::str_replace_all(
+          snakecase::to_title_case(x_var), "_", " "
+        ),
+        y = stringr::str_replace_all(
+          snakecase::to_title_case(y_var), "_", " "
+        )
+      ) +
+      ggplot2::theme_minimal() +
+      ggplot2::theme(legend.position = "bottom")
+  } else {
+    NULL
+  }
+}
+```
+
+
+
+
+## Application modules 
+
+The `debugApp()` in `dbap` is built by combining the `mod_pkg_data` and `mod_select_vars` modules, which are described below: 
+
+### *`mod_pkg_data`*
+
+The `mod_pkg_data_ui()`/`mod_pkg_data_server()` functions are stored in [`R/mod_pkg_data.R`](https://github.com/mjfrigaard/dbap/blob/main/R/mod_pkg_data.R).
+
+#### UI
+
+`mod_pkg_data` has two `inputId`s: `pkg` and `data`. The `get_pkgs_with_dfs()` function identifies packages on the seach list with `data.frames` or `tibbles`:
+
+```{r}
+#| code-summary: 'get packages with data.frames/tibbles'
+#| eval: true
+pkgs <- get_pkgs_with_dfs()
+pkgs
+pkg <- pkgs['dplyr']
+```
+
+These packages populate the first `selectInput()` in the UI portion of the `sidebarPanel()`. The second `selectInput()` is empty with `choices` set to `NULL`.
+
+-   View the location of `input$pkg` and `input$data`:
+
+    ```{r}
+    #| code-summary: 'appUI() location for mod_pkg_data()'
+    #| eval: false
+    #| code-fold: true
+    mod_pkg_data_ui <- function(id) {
+      df_pkgs <- get_pkgs_with_dfs()
+      ns <- shiny::NS(id)
+      shiny::tagList(
+      shiny::selectInput(ns("pkg"),
+        label = "Select a package",
+        choices = df_pkgs),
+      shiny::selectInput(ns("data"),
+        label = "Select data",
+        choices = NULL)
+        )
+    }
+    ```
+
+#### Server
+
+In the server, `input$pkg` is passed `get_pkg_df_names()` to update the datasets in `input$data`.
+
+```{r}
+#| code-summary: 'get data.frames/tibbles from pkg'
+#| eval: true
+get_pkg_df_names(pkg = pkg)
+```
+
+The package (`input$pkg`) and dataset (`input$data`) are passed to `get()` to return a reactive `pkg_data()`:
+
+```{r}
+#| code-summary: 'return reactive pkg_data()'
+#| eval: true
+pkg_ds <- get_pkg_df_names(pkg = pkg)[4] # pull starwars data
+pkg_data <- base::get(x = pkg_ds, 
+                      pos = paste0("package:", pkg))
+dplyr::glimpse(pkg_data)
+```
+
+-   View `input$pkg` and `input$data` in the server:
+
+    ```{r}
+    #| code-summary: 'view mod_pkg_data_server()'
+    #| eval: false
+    #| code-fold: true
+    mod_pkg_data_server <- function(id) {
+    
+      shiny::moduleServer(id, function(input, output, session) {
+    
+        shiny::observe({
+            pkg_data_nms <- get_pkg_df_names(pkg = input$pkg)
+             shiny::updateSelectInput(session,
+                inputId = "data",
+                choices = pkg_data_nms)
+             }) |>
+           shiny::bindEvent(input$pkg,
+             ignoreNULL = TRUE)
+    
+        shiny::reactive({
+              shiny::req(input$data, input$pkg)
+              get(x = input$data,
+                  pos = paste0("package:", input$pkg))
+              }) |>
+                shiny::bindCache(c(input$pkg, input$data)) |>
+                shiny::bindEvent(input$data,
+                  ignoreNULL = TRUE)
+    
+      })
+    
+    }
+    ```
+
+
+### *`mod_var_select`*
+
+The `mod_var_select_ui()`/`mod_var_select_server()` functions are stored in [`R/mod_var_select.R`](https://github.com/mjfrigaard/dbap/blob/main/R/mod_var_select.R).
+
+#### UI
+
+`mod_select_vars_ui()` also has two `inputId`s: `input$fun` and `input$vars`:
+
+-   View `input$fun` and `input$vars` in the UI:
+
+    ```{r}
+    #| code-summary: 'view mod_select_vars_ui()'
+    #| eval: false
+    #| code-fold: true
+    mod_select_vars_ui <- function(id) {
+      ns <- shiny::NS(id)
+      shiny::tagList(
+      shiny::selectInput(
+        ns("fun"),
+        label = "Filter by",
+        choices = c("is.numeric",
+                    "is.character",
+                    "is.factor",
+                    "is.logical",
+                    "is.list"),
+        selected = "is.numeric"),
+      shiny::selectizeInput(
+        ns("vars"),
+        label = "Select variables",
+        choices = NULL,
+        multiple = TRUE)
+        )
+    }
+    ```
+
+#### Server
+
+In `mod_select_vars_server()`, the first `selectInput()`s is upated with a column type function (created with `pull_type_cols()`):
+
+```{r}
+#| code-summary: 'pull_type_cols()'
+#| eval: true
+#| code-fold: show
+filtererd <- dbap::pull_type_cols(
+  data = pkg_data, 
+  filter = "is.numeric")
+filtererd
+```
+
+This `filtererd` vector populates the `selectizeInput()` with the list of column names matching the function type:
+
+```{r}
+#| code-summary: 'filtererd pkg_data()'
+#| eval: true
+#| code-fold: show
+pkg_data[filtererd[1:2]] |> head()
+```
+
+`mod_select_vars_server()` returns a subset of columns from `pkg_data()`:
+
+-   View `input$fun` and `input$vars` in the server:
+
+    ```{r}
+    #| code-summary: 'view mod_select_vars_server()'
+    #| eval: false
+    #| code-fold: true
+    mod_select_vars_server <- function(id, pkg_data) {
+    
+      shiny::moduleServer(id, function(input, output, session) {
+    
+          shiny::observe({
+            filtered <- pull_type_cols(
+                                  data = pkg_data(),
+                                  filter =  input$fun)
+             shiny::updateSelectizeInput(session,
+                inputId = "vars",
+                choices = filtered,
+               selected = filtered)
+             }) |>
+              shiny::bindEvent(c(pkg_data(), input$fun),
+                ignoreNULL = TRUE)
+    
+            shiny::reactive({
+               shiny::req(input$vars, input$fun)
+                  pkg_data()[input$vars]
+                }) |>
+              shiny::bindEvent(input$vars, input$fun)
+    
+        })
+    
+    }
+    ```
+
+
+## App UI
+
+In the `appUI()`, the modules are placed in respective locations, along with a `verbatimTextOutput()` for the custom `skimr::skim()` output in the `mainPanel()` (*without a namespace*)
+
+```{r}
+#| code-summary: 'view appUI()'
+#| eval: false
+#| code-fold: true
+appUI <- function() {
+  shiny::tagList(
+    shiny::fluidPage(
+      shiny::sidebarLayout(
+        shiny::sidebarPanel(
+          mod_pkg_data_ui("data")
+          ),
+        shiny::mainPanel(
+          shiny::h3(
+            shiny::code("CustomdebugApp")),
+          mod_select_vars_ui("vars"),
+          shiny::verbatimTextOutput("skim")
+        )
+      )
+    )
+  )
+}
+```
+
+## App Server
+
+In the application server function (`appServer()`), the hand-off between modules is illustrated by the names of the return objects: 
+
+```{r}
+#| code-summary: 'view appServer()'
+#| eval: false
+#| code-fold: true
+appServer <- function(input, output, session) {
+
+    data_pkg <- mod_pkg_data_server("data")
+
+    vars_select <- mod_select_vars_server("vars", pkg_data = data_pkg)
+
+    output$skim <- shiny::renderPrint({ df_skim(df = vars_select()) })
+
+}
+```
+
+-   The stand-alone `debugApp()` function is below: 
+
+    ```{r}
+    #| code-summary: 'view debugApp()'
+    #| eval: false
+    #| code-fold: true
+    debugApp <- function() {
+      shiny::shinyApp(
+        ui = appUI,
+        server = appServer)
+    }
+    ```
+
+
+When the filtered `pkg_data()` is returned from `mod_select_vars_server()`, the `df_skim()` renders the output: 
+
+```{r}
+#| code-summary: 'view df_skim()'
+#| eval: true
+#| code-fold: show
+#| collapse: true
+vars_select <- pkg_data[filtererd[1:2]]
+df_skim(vars_select)
+```
