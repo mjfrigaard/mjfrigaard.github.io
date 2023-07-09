@@ -1,0 +1,188 @@
+---
+title-meta: "Shiny module refresher"
+
+callout-icon: false
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: module_setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("https://raw.githubusercontent.com/mjfrigaard/mstsap/main/tests/testthat/helper.R")
+co_box <- function(color, header, contents = "Your text") {
+  class <- switch(color,
+    b = "note",
+    g = "tip",
+    r = "important",
+    o = "caution",
+    stop("Invalid `type`", call. = FALSE)
+  )
+  switch(color,
+  b = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  g = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  o = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  r = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  stop("Invalid `type`", call. = FALSE)
+  )
+}
+options(scipen = 999)
+library(shiny)
+library(lobstr)
+library(crayon)
+library(stringr)
+install.packages(c("NHANES", "palmerpenguins"))
+library(NHANES)
+library(palmerpenguins)
+```
+
+:::: {.callout-tip collapse='true' title="Shiny module refresher"}
+
+Module UI functions typically wrap the layout, input, and output functions in `tagList()`. Module server functions contain the 'backend' code that typically goes in a shiny `server` function. Both the UI and server module functions are linked by an `id` argument, which is created using `NS()` (namespace) in the UI function, and called in the server function with `moduleServer()`.
+
+### Module UI functions
+
+Below is an example module UI function:
+
+```{r}
+#| echo: true 
+#| eval: false 
+#| code-fold: false
+mod_fun_ui <- function(id) {
+  tagList(
+    numericInput(inputId = NS(namespace = id, id = "num_input")),
+    uiOutput(outputId = NS(namespace = id, id = "num_out"))
+  )
+}
+```
+
+-   `mod_fun_ui` creates a dedicated namespace for one `inputId` and one `outputId` with `shiny::NS()`:
+
+    ```{r}
+    #| echo: false 
+    #| eval: true 
+    #| code-fold: false
+    #| comment: ""
+    lobstr::ast(
+      mod_fun_ui(id,
+        tagList(
+          numericInput(inputId = NS(namespace = id, id = "num_input")),
+          uiOutput(outputId = NS(namespace = id, id = "num_out"))
+        )
+      )
+    )
+    ```
+    
+### Module server functions
+
+The corresponding module server function is below:
+
+```{r}
+#| echo: true 
+#| eval: false 
+#| code-fold: false
+mod_fun_server <- function(id) {
+        moduleServer(id, function(input, output, session) {
+            ns <- session
+          output$num_out <- uiOutput(outputId = input$num_input)
+      })
+}
+```
+
+-   The code to render the reactive `input$num_input` with `output$num_out` is contained in the nested call to `moduleServer()`
+
+    ```{r}
+    #| echo: false 
+    #| eval: true 
+    #| code-fold: false
+    #| comment: ""
+    lobstr::ast(
+      mod_fun_server(id,
+          moduleServer(id = id,
+            server = `function(input, output, session)`
+              (`ns <- session`, 
+               `output$num_out <-`, 
+                  renderUI(`input$num_input`)),
+            session = session
+          )
+        )
+    )
+    ```
+
+### Using modules
+
+Both module functions are combined in the `ui` and `server` arguments of  `shinyApp()`:
+
+```{r}
+#| echo: true 
+#| eval: false 
+#| code-fold: false
+shinyApp(
+    ui = fluidPage(
+          mod_fun_ui(id = "mod")
+        ),
+   server = function(input, output, session) 
+          mod_fun_server("mod")
+  )
+```
+
+-   The `id` arguments connect the UI and server functions to communicate between the UI and backend of the app:
+
+    ```{r}
+    #| echo: false 
+    #| eval: true 
+    #| code-fold: false
+    #| comment: ""
+    lobstr::ast(
+      shinyApp(
+        ui = fluidPage(
+              mod_fun_ui(id = "mod namespace")
+            ),
+       server = `function(input, output, session)` 
+        (mod_fun_server(id = "mod namespace"))
+      )
+    )
+    ```
+
+
+I recommend creating test files when you create module files (i.e., with `usethis::use_r()` & `usethis::use_test()`).
+
+
+
+::::

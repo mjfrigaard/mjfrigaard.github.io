@@ -1,0 +1,91 @@
+---
+title-meta: "Creating test messages with `testServer()`"
+
+callout-icon: false
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: test_cmt_setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("https://raw.githubusercontent.com/mjfrigaard/mstsap/main/tests/testthat/helper.R")
+co_box <- function(color, header, contents = "Your text") {
+  class <- switch(color,
+    b = "note",
+    g = "tip",
+    r = "important",
+    o = "caution",
+    stop("Invalid `type`", call. = FALSE)
+  )
+  switch(color,
+  b = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  g = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  o = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  r = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  stop("Invalid `type`", call. = FALSE)
+  )
+}
+options(scipen = 999)
+library(shiny)
+library(lobstr)
+library(crayon)
+library(stringr)
+```
+
+:::: {.callout-note collapse='false' title="Creating test messages with `testServer()`"}
+
+::: {style='font-size: 1.10em;'}
+
+The `testServer()` documentation has [examples](https://shiny.posit.co/r/articles/improve/server-function-testing/) of using `cat()` to create custom messages. I put a function for creating `testServer()` messages (`test_cmt()`) in the [`helper.R`](https://github.com/mjfrigaard/mstsap/blob/main/tests/testthat/helper.R) file ([read more about test helpers here](https://r-pkgs.org/testing-advanced.html)). 
+
+It has two arguments (`test` and `msg`), and makes it easy to print messages to the console while I'm developing tests.
+
+```{r}
+#| eval: true 
+#| echo: true
+#| code-fold: false 
+#| comment: ""
+test_cmt(test = "mod_server_function", msg = "test contents")
+```
+
+
+:::
+
+::::

@@ -1,0 +1,275 @@
+
+The `dataStrApp()` in `msst2ap` is built by combining the `mod_pkg_data`, `mod_pkg_data_str` and `mod_select_vars` modules, which are described below: 
+
+### *`mod_pkg_data`*
+
+The `mod_pkg_data_ui()`/`mod_pkg_data_server()` functions are stored in [`R/mod_pkg_data.R`](https://github.com/mjfrigaard/msst2ap/blob/main/R/mod_pkg_data.R).
+
+#### UI
+
+`mod_pkg_data` has two `inputId`s: `pkg` and `data`. The `get_pkgs_with_dfs()` function identifies packages on the search list with `data.frames` or `tibbles`:
+
+```{r}
+#| code-summary: 'get packages with data.frames/tibbles'
+#| eval: false
+pkgs <- pkg_nms_with_data_frames()
+pkgs
+```
+
+```{r}
+#| code-summary: 'get package'
+#| eval: false
+pkg <- pkgs['dplyr']
+pkg
+```
+
+These packages populate the first `selectInput()` in the UI portion of the `sidebarPanel()`. The second `selectInput()` is empty with `choices` set to `NULL`.
+
+-   View the location of `input$pkg` and `input$data`:
+
+    ```{r}
+    #| code-summary: 'appUI() location for mod_pkg_data()'
+    #| eval: false
+    #| code-fold: true
+    mod_pkg_data_ui <- function(id) {
+    
+      pkgs <- c("lubridate", "forcats", "tidyr", "dplyr")
+      requireNamespace(pkgs)
+    
+      df_pkgs <- pkg_nms_with_data_frames()
+      ns <- shiny::NS(id)
+      shiny::tagList(
+      shiny::selectInput(ns("pkg"),
+        label = "Select a package",
+        choices = df_pkgs),
+      shiny::selectInput(ns("data"),
+        label = "Select data",
+        choices = NULL)
+        )
+    }
+    ```
+
+#### Server
+
+In the server, `input$pkg` is passed `pkg_data_frame_nms()` to update the datasets in `input$data`.
+
+```{r}
+#| code-summary: 'get data.frames/tibbles from pkg'
+#| eval: false
+pkg_data_frame_nms(pkg = pkg)
+```
+
+The package (`input$pkg`) and dataset (`input$data`) are passed to `get()` to return a reactive `pkg_data()`:
+
+```{r}
+#| code-summary: 'return pkg dataset'
+#| eval: false
+pkg_ds <- pkg_data_frame_nms(pkg = pkg)[4] # pull starwars data
+pkg_ds
+```
+
+
+```{r}
+#| code-summary: 'run pkg_data_object()'
+#| eval: false
+pkg_data <- pkg_data_object(ds = pkg_ds, pkg = pkg)
+dplyr::glimpse(pkg_data)
+```
+
+-   View `input$pkg` and `input$data` in the server:
+
+    ```{r}
+    #| code-summary: 'view mod_pkg_data_server()'
+    #| eval: false
+    #| code-fold: true
+    mod_pkg_data_server <- function(id) {
+    
+      shiny::moduleServer(id, function(input, output, session) {
+    
+        shiny::observe({
+              shiny::req(input$pkg)
+            pkg_data_nms <- pkg_data_frame_nms(pkg = input$pkg)
+             shiny::updateSelectInput(session,
+                inputId = "data",
+                choices = pkg_data_nms)
+             }) |>
+           shiny::bindEvent(input$pkg)
+    
+        shiny::reactive({
+              shiny::req(input$data, input$pkg)
+              list(ds = input$data,
+                   pkg = input$pkg)
+              }) |>
+                shiny::bindCache(c(input$pkg, input$data)) |>
+                shiny::bindEvent(input$data,
+                  ignoreNULL = TRUE)
+    
+      })
+    }
+    ```
+
+
+### *`mod_var_select`*
+
+The `mod_var_select_ui()`/`mod_var_select_server()` functions are stored in [`R/mod_var_select.R`](https://github.com/mjfrigaard/msst2ap/blob/main/R/mod_var_select.R).
+
+#### UI
+
+`mod_select_vars_ui()` also has two `inputId`s: `input$fun` and `input$vars`:
+
+-   View `input$fun` and `input$vars` in the UI:
+
+    ```{r}
+    #| code-summary: 'view mod_select_vars_ui()'
+    #| eval: false
+    #| code-fold: true
+    mod_select_vars_ui <- function(id) {
+      ns <- shiny::NS(id)
+      shiny::tagList(
+      shiny::selectInput(
+        ns("fun"),
+        label = "Filter by",
+        choices = c("is.numeric",
+                    "is.character",
+                    "is.factor",
+                    "is.logical",
+                    "is.list"),
+        selected = "is.numeric"),
+      shiny::selectizeInput(
+        ns("vars"),
+        label = "Select variables",
+        choices = NULL,
+        multiple = TRUE)
+        )
+    }
+    ```
+
+#### Server
+
+In `mod_select_vars_server()`, the first `selectInput()`s is upated with a column type function (created with `pull_type_cols()`):
+
+```{r}
+#| code-summary: 'pull_type_cols()'
+#| eval: false
+#| code-fold: show
+filtererd <- msst2ap::pull_type_cols(
+  data = pkg_data, 
+  filter = "is.numeric")
+filtererd
+```
+
+This `filtererd` vector populates the `selectizeInput()` with the list of column names matching the function type:
+
+```{r}
+#| code-summary: 'filtererd pkg_data()'
+#| eval: false
+#| code-fold: show
+pkg_data[filtererd[1:2]] |> head()
+```
+
+`mod_select_vars_server()` returns a subset of columns from `pkg_data()`:
+
+-   View `input$fun` and `input$vars` in the server:
+
+    ```{r}
+    #| code-summary: 'view mod_select_vars_server()'
+    #| eval: false
+    #| code-fold: true
+    mod_select_vars_server <- function(id, pkg_data) {
+    
+      shiny::moduleServer(id, function(input, output, session) {
+    
+          shiny::observe({
+            filtered <- pull_type_cols(
+                                  data = pkg_data(),
+                                  filter =  input$fun)
+             shiny::updateSelectizeInput(session,
+                inputId = "vars",
+                choices = filtered,
+               selected = filtered)
+             }) |>
+              shiny::bindEvent(c(pkg_data(), input$fun),
+                ignoreNULL = TRUE)
+    
+            shiny::reactive({
+               shiny::req(input$vars, input$fun)
+                  pkg_data()[input$vars]
+                }) |>
+              shiny::bindEvent(input$vars, input$fun)
+    
+        })
+    
+    }
+    ```
+
+
+## App UI
+
+In the `appUI()`, the modules are placed in respective locations, along with a `verbatimTextOutput()` for the custom `skimr::skim()` output in the `mainPanel()` (*without a namespace*)
+
+```{r}
+#| code-summary: 'view appUI()'
+#| eval: false
+#| code-fold: true
+appUI <- function() {
+  shiny::tagList(
+    shiny::fluidPage(
+      shiny::sidebarLayout(
+        shiny::sidebarPanel(
+          mod_pkg_data_ui("data")
+          ),
+        shiny::mainPanel(
+          shiny::h3(
+            shiny::code("CustomSkimApp")),
+          mod_select_vars_ui("vars"),
+          shiny::verbatimTextOutput("skim")
+        )
+      )
+    )
+  )
+}
+```
+
+## App Server
+
+In the application server function (`appServer()`), the hand-off between modules is illustrated by the names of the return objects: 
+
+```{r}
+#| code-summary: 'view appServer()'
+#| eval: false
+#| code-fold: true
+appServer <- function(input, output, session) {
+
+    data_pkg <- mod_pkg_data_server("data")
+
+    vars_select <- mod_select_vars_server("vars", pkg_data = data_pkg)
+
+    output$skim <- shiny::renderPrint({ df_skim(df = vars_select()) })
+
+}
+```
+
+-   The stand-alone `skimApp()` function is below: 
+
+    ```{r}
+    #| code-summary: 'view skimApp()'
+    #| eval: false
+    #| code-fold: true
+    skimApp <- function() {
+      shiny::shinyApp(
+        ui = appUI,
+        server = appServer)
+    }
+    ```
+
+
+When the filtered `pkg_data()` is returned from `mod_select_vars_server()`, the `df_skim()` renders the output: 
+
+```{r}
+#| code-summary: 'view df_skim()'
+#| eval: false
+#| code-fold: show
+#| collapse: true
+vars_select <- pkg_data[filtererd[1:2]]
+df_skim(vars_select)
+```

@@ -1,0 +1,122 @@
+---
+title-meta: "Are `shinytest2()` tests unit tests?"
+
+callout-icon: false
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: test_cmt_setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("https://raw.githubusercontent.com/mjfrigaard/msst2ap/main/tests/testthat/helper.R")
+co_box <- function(color, header, contents = "Your text") {
+  class <- switch(color,
+    b = "note",
+    g = "tip",
+    r = "important",
+    o = "caution",
+    stop("Invalid `type`", call. = FALSE)
+  )
+  switch(color,
+  b = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  g = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  o = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  r = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  stop("Invalid `type`", call. = FALSE)
+  )
+}
+options(scipen = 999)
+library(shiny)
+library(lobstr)
+library(crayon)
+library(stringr)
+```
+
+:::: {.callout-note collapse='true' title="Are `shinytest2()` tests unit tests?"}
+
+::: {style='font-size: 1.10em;'}
+
+`testthat` is a unit testing package, but if you're a stickler for definitions (or you've read [Effective Software Testing, a developer's guide](https://www.manning.com/books/effective-software-testing)), you might find yourself wondering, 
+
+> "*Is a `shinytest2()` test a unit test?*"
+
+Well, that depends on who you ask (and if you care). I initially found myself referring to `shinytest2()` tests as integration tests because of [Joe Cheng](https://www.rstudio.com/authors/joe-cheng/)'s answer to this question [during his 2019 talk.](https://www.youtube.com/watch?v=Wy3TY0gOmJw&t=2779s). The question and answer is below: 
+
+> Question from audience: "*Is there anything built or being built to help with integration testing automated integration testing?*"
+
+> Answer from Joe: "*oh you make me regret that I cut that whole section...look at all these hidden slides that I have created...`shinytest` is the answer to that. Let me preface this by saying you should be unit testing your are code that you are calling from your `shiny` app, but unit testing doesn't help with testing the app as a whole.*"
+> 
+> "**So we call that integration testing. `shinytest` is specifically designed to help you do that--it is designed not only to do integration testing, but to make it so easy that you might actually do it.**"
+
+Joe goes on to explain how `shinytest` works: 
+
+> "*So what it does is similar to `shinyloadtest`: you record a session of yourself using the app, and you have a special UI on the side of your app, that we inject, that lets you, say, take a snapshot here, take a snapshot here, as you do various things. Then in the future, as your code changes, or as your software configuration changes, as you upgrade packages from the `tidyverse`, you can run that test again and then it will automatically give you a visual view of the differences.*"
+>
+> "*So not unlike get the Git (diff) support in RStudio, so it will give you both a textual representation of the data that's different...what it'll also do is give you the ability to examine--in several different ways--the visual snapshot of the 'before' and 'after' your changes. So yeah, `shinytest` is where you want to go for that*"
+
+[`shinytest` has since become `shinytest2`](https://rstudio.github.io/shinytest2/articles/z-migration.html), but in my mind, the distinction had been made between standard unit tests (including `testServer()` tests) and `shinytest2` tests. 
+
+#### A 'working' definition of unit tests 
+
+I like the definition of unit tests from [The Art of Unit Testing, 2nd edition](https://www.manning.com/books/the-art-of-unit-testing-second-edition): 
+
+> "*A unit test is a piece of code that invokes a unit of work and checks one specific end result of that unit of work. If the assumptions on the end result turn out to be wrong, the unit test has failed. A unit test’s scope can span as little as a method or as much as multiple classes.*"
+
+It's relatively easy for me to think of R functions as 'units of work' and they're resulting behavior the 'end result.' The definitions can also be scaled to include a combination of functions performing a single 'unit of work' resulting in a definable 'end result.'
+
+#### A 'working' definition of integration tests 
+
+The description below captures the way I tend to think about how `shinytest2` tests are different than standard unit tests:
+
+> "*Integration testing aims to test multiple components of a system together, focusing on the interactions between them instead of testing the system as a whole. Are they communicating correctly? What happens if component A sends message X to component B? Do they still present correct behavior?*" - [Effective Software Testing](https://www.manning.com/books/effective-software-testing)
+
+If you're building an application with modules, the description above should resonate because 1) modules span multiple functions (at least two) and need to communicate with each other between the UI and server, and 2) testing shiny applications means understanding the complexity of predicting and managing multiple interconnected reactive expressions.
+
+#### Why should I care? 
+
+It's useful to think about the distinction between the two types of tests because they serve different purposes and have different characteristics. Unit tests validate that each bit of code **works as expected in isolation**, which is why unit tests will help you catch bugs if you perform them regularly throughout the development process.
+
+Integration tests identify problems that occur when two functions (or collections of functions) interact with each other. These tests will help ensure that the application (or 'system') functions correctly **as a whole**.
+
+
+
+:::
+
+::::

@@ -1,0 +1,391 @@
+---
+title: "Testing shiny apps with `shinytest2`" 
+subtitle: "Part 4: recording tests and snapshots"
+author: "Martin Frigaard"
+date: "2023-06-30"
+categories: [shiny, testing]
+image: "image.svg"
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+
+draft: true
+
+code-fold: show
+code-summary: 'show/hide'
+code-link: false
+
+fig-align: center
+
+fontsize: '10.5'
+
+callout-icon: false
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: setup
+#| eval: true
+#| echo: false
+#| include: false
+co_box <- function(color, header, contents = "Your text") {
+  class <- switch(color,
+    b = "note",
+    g = "tip",
+    r = "important",
+    o = "caution",
+    stop("Invalid `type`", call. = FALSE)
+  )
+  switch(color,
+    b = cat(paste0(
+      "\n",
+      ":::: {.callout-", class, " collapse='true'}", "\n\n",
+      "## ", header, "\n\n",
+      "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+      glue::glue_collapse(contents), "\n\n",
+      "::: \n\n",
+      "::::", "\n"
+    )),
+    g = cat(paste0(
+      "\n",
+      ":::: {.callout-", class, " collapse='true'}", "\n\n",
+      "## ", header, "\n\n",
+      "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+      glue::glue_collapse(contents), "\n\n",
+      "::: \n\n",
+      "::::", "\n"
+    )),
+    o = cat(paste0(
+      "\n",
+      ":::: {.callout-", class, " collapse='false'}", "\n\n",
+      "## ", header, "\n\n",
+      "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+      glue::glue_collapse(contents), "\n\n",
+      "::: \n\n",
+      "::::", "\n"
+    )),
+    r = cat(paste0(
+      "\n",
+      ":::: {.callout-", class, " collapse='false'}", "\n\n",
+      "## ", header, "\n\n",
+      "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+      glue::glue_collapse(contents), "\n\n",
+      "::: \n\n",
+      "::::", "\n"
+    )),
+    stop("Invalid `type`", call. = FALSE)
+  )
+}
+options(scipen = 999)
+# renv::install("mjfrigaard/msst2ap")
+# renv::install("lobstr")
+library(lobstr)
+library(dplyr)
+library(Lahman)
+library(NHANES)
+library(palmerpenguins)
+```
+
+```{r}
+#| label: pkgs
+#| eval: true
+#| code-summary: packages
+library(testthat)
+library(ggplot2)
+library(shiny)
+library(vdiffr)
+library(shinytest2)
+```
+
+
+```{r}
+#| label: co_box_test
+#| eval: false
+#| results: asis
+#| include: false
+co_box(color = "r", "RED", "**This is red**
+
+  **This is a new line**
+
+  **this a another line**")
+```
+
+
+```{r}
+#| label: co_box_dev
+#| echo: false
+#| results: asis
+#| eval: false
+co_box(
+  color = "r",
+  header = "ALERT!",
+  contents = "This post is currently under development. Thank you for your patience."
+)
+```
+
+This is the fourth post in a [series on testing](https://mjfrigaard.github.io/series.html#testing-shiny-applications) shiny applications. My previous posts have covered [unit testing utility functions](https://mjfrigaard.github.io/posts/test-shiny-p1/) and [testing module server functions with `testServer()`](https://mjfrigaard.github.io/posts/test-shiny-p3/). In this post, I'll be covering testing shiny applications using `testthat` and `shinytest2`.
+
+::: {.column-margin}
+![](image.svg){width=70%}
+:::
+
+
+```{r}
+#| label: co_box_shinytest
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(
+  color = "b",
+  header = "Why `shinytest2`?",
+  contents = "
+  **What happened to `shinytest`?**
+  
+  `shinytest2` replaced `shinytest` on 2022-04-27. If you've previously written tests with `shinytest`--or are curious how `shinytest2` if different--I recommend going through the [Migrating from `shinytest`](https://cran.r-project.org/web/packages/shinytest2/vignettes/z-migration.html#:~:text) vignette.
+  "
+)
+```
+
+## Set up
+
+[`shinytest2`](https://rstudio.github.io/shinytest2/index.html) requires a few steps to get up and running, so I've included my start up steps below (in hopes that someone might find them useful).
+
+## Chromium
+
+First make sure you have [Chromium headless browser](https://www.chromium.org/chromium-projects/) installed. Chromium is the browser used to test and debug shiny apps with `shinytest2`.
+
+If you're using macOS, you can install Chromium using [homebrew](https://formulae.brew.sh/cask/chromium): 
+
+```{bash}
+#| eval: false
+#| code-fold: false 
+brew install --cask chromium
+```
+
+```{bash}
+#| eval: false
+#| code-fold: true 
+#| code-summary: 'show/hide output'
+==> Downloading https://download-chromium.appspot.com/dl/Mac?type=snapshots
+==> Downloading from https://commondatastorage.googleapis.com/chromium-browser-s
+######################################################################### 100.0%
+Warning: No checksum defined for cask 'chromium', skipping verification.
+==> Installing Cask chromium
+==> Moving App 'Chromium.app' to '/Applications/Chromium.app'
+==> Linking Binary 'chromium.wrapper.sh' to '/usr/local/bin/chromium'
+🍺  chromium was successfully installed!
+```
+
+
+## [`chromote`]{style="font-size: 1.20em"}
+
+The [`chromote` package](https://rstudio.github.io/chromote/index.html) allows R to open Chromium. I had to make sure R knew where to find the Chromium application ([this section helps](https://rstudio.github.io/chromote/#specifying-which-browser-to-use)) by passing the path to the app to `Sys.setenv()` (*you can locate the path to Chromium using by holding <kbd>command (⌘)</kbd> and clicking on the application icon*)
+
+```{r}
+#| eval: false
+#| code-fold: false
+remotes::install_github("rstudio/chromote")
+library(chromote)
+Sys.setenv(CHROMOTE_CHROME = "/Applications/Chromium.app/Contents/MacOS/Chromium")
+```
+
+Find your chrome app: 
+
+```{r}
+#| eval: false
+#| code-fold: false
+chromote::find_chrome()
+```
+
+```{bash}
+#| eval: false
+#| code-fold: false 
+[1] "/Applications/Chromium.app/Contents/MacOS/Chromium"
+```
+
+I also verified the Chromium app opened with `ChromoteSession$new()`
+
+```{r}
+#| eval: false
+#| code-fold: false
+#| code-summary: verify ChromoteSession$new()
+b <- ChromoteSession$new()
+b$view()
+```
+
+
+:::: {.column-body-outset-right}
+
+::: {#fig-chromium layout-ncol=1}
+![Chromium](chromium.png){#fig-chromium width=100% fig-align="center"}
+
+Chromium headless browser
+:::
+
+::::
+
+Great! Going through this step means `shinytest2`'s test recorder will (*should*) deploy when I'm recording tests. 
+
+## A shiny app-package
+
+I've created [`msst2ap`](https://github.com/mjfrigaard/msst2ap) (i.e., **M**astering **S**hiny **s**hiny**t**est**2** **a**pp-**p**ackage), which you can download [here](https://github.com/mjfrigaard/msst2ap/archive/refs/heads/main.zip) or install it using the following: 
+
+```{r}
+#| code-fold: false
+#| eval: false
+#| results: hide
+remotes::install_github("mjfrigaard/msst2ap",
+  force = TRUE, quiet = TRUE
+)
+library(msst2ap)
+```
+
+The applications in `msst2ap` can be run with the their standalone app functions.
+
+{{< include _modules_apps.qmd >}}
+
+
+## Using [`shinytest2`]{style="font-size: 1.15em"}
+
+`shinytest2` is extremely [well documentation](https://rstudio.github.io/shinytest2/index.html). I highly recommended the [Get Started vignette](https://rstudio.github.io/shinytest2/articles/shinytest2.html). In the next sections, I'll cover some examples for what I've included in the `msst2ap`.
+
+Run `shinytest2::use_shinytest2()` to create the initial files for `shinytest2`:
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: false
+shinytest2::use_shinytest2()
+```
+
+```{bash}
+#| echo: true
+#| eval: false
+#| code-fold: true
+#| code-summary: 'show/hide output from use_shinytest2()'
+! Runner already found: tests/testthat.R
+✔ Adding 'shinytest2::load_app_env()' to 'tests/testthat/setup-shinytest2.R'
+✔ Adding '*_.new.png' to '.gitignore'
+✔ Adding '_\\.new\\.png$' to '.Rbuildignore'
+✔ Setting active project to '/projects/apps/msst2ap'
+✔ Adding 'shinytest2' to Suggests field in DESCRIPTION
+• Use `requireNamespace("shinytest2", quietly = TRUE)` to test if package is installed
+• Then directly refer to functions with `shinytest2::fun()`
+✔ Setting active project to '<no active project>'
+```
+
+-   `use_shinytest2()` adds the `setup-shinytest2.R` script to my `tests/testthat/` folder:
+
+    ```{bash}
+    #| echo: true
+    #| eval: false
+    #| code-fold: false
+    tests/testthat/
+    ├── _snaps/
+    └── setup-shinytest2.R
+    ```
+
+The `setup-shinytest2.R` file contains a single call to `shinytest2::load_app_env()`, which "*Executes all `./R` files and `global.R` into the current environment*"
+
+### Recording tests
+
+New tests with [`shinytest2`](https://rstudio.github.io/shinytest2/index.html) can be created by launching the test event recorder, which allows us interact with our application, observe it's behavior, and record inputs, reactive values, and outputs. To record a test, run `shinytest2::record_test()`.
+
+The first argument in `record_test()` is the path to application. If you've stored your application in an `app.R` file, `record_test()` will automatically load that application. In `msst2ap`, the application in `app.R` is the `histogramApp()`, so the test recorder will automatically open with this application if I run `record_test()` (without providing the path to a `shiny` app).
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: false
+shinytest2::record_test()
+```
+
+::::{.column-page-inset-right}
+
+::: {#fig-record_test_histogramApp layout-ncol=1}
+![shinytest2::record_test()](record_test_histogramApp.png){#fig-record_test_histogramApp width=100% fig-align="center"}
+
+`record_test()` with application in `app.R`
+:::
+
+::::
+
+If you have an application is stored in another location (like the `inst/dev/` folder), the you can pass the path to `record_test()`:
+
+```{r}
+#| echo: true
+#| eval: false 
+#| code-fold: false
+shinytest2::record_test(app = "")
+```
+
+This opens Chromium with our shiny app: 
+
+::::{.column-page-inset-right}
+
+::: {#fig-record_test_datasetApp layout-ncol=1}
+
+![record_test("inst/dev/datasetApp/") ](record_test_datasetApp.png){#fig-record_test_datasetApp width=100% fig-align="center"}
+
+`record_test()` for `datasetApp()`
+:::
+
+::::
+
+The test event recorder displays the `shiny` app, but also includes a window for recording each application 'event.' 
+
+#### Expectations
+
+I'll start by recording a test for `datasetApp()`. On the right-hand side of the Chromium headless browser, you'll see the **`shinytest2` expectations** window:
+
+::::{.column-page-inset-right}
+
+::: {#fig-shinytest2-expectations layout-ncol=1}
+![`shinytest2` expectations](shinytest2-expectations.png){#fig-expectations}
+
+`shinytest2` expectations in `record_test()`
+:::
+
+::::
+
+The initial value in the **Code** window displays the dimensions of the application in Chromium (`app$set_window_size(width = , height = )`).
+
+#### Events
+
+When I interact with the application (i.e., make changes to the inputs), each change is an 'event' that is recorded in the test:
+
+::::{.column-page-inset-right}
+
+::: {#fig-chromium layout-ncol=1}
+![change inputs](shinytest2-change-inputs.png){#fig-change-values-shinytest2 width=100% fig-align="center"}
+
+Changing app inputs 
+:::
+
+::::
+
+#### Code 
+
+All events are recorded as code in the **Code** section of **`shinytest2` expectations**:
+
+::::{.column-page-inset-right}
+
+::: {#fig-shinytest2-code-expectations layout-ncol=1}
+
+![shinytest2 code expectations](shinytest2-expectations-code.png){#fig-shinytest2-expectations-code width=100% fig-align="center"}
+
+Recorded code for each event
+:::
+
+::::
+
+
+

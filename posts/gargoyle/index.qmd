@@ -1,0 +1,152 @@
+---
+title: "Connecting reactivity between modules"
+subtitle: "Using `gargoyle` to manage reactivity"
+author: "Martin Frigaard"
+date: "2023-06-18"
+categories: [shiny, testing]
+# image: "image.png"
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+
+draft: true
+
+code-fold: show
+code-summary: view code
+
+fig-align: center
+
+fontsize: '10.5'
+
+callout-icon: false
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: setup
+#| eval: true 
+#| echo: false 
+#| include: false
+co_box <- function(color, header, contents = "Your text") {
+  class <- switch(color,
+    b = "note",
+    g = "tip",
+    r = "important",
+    o = "caution",
+    stop("Invalid `type`", call. = FALSE)
+  )
+  switch(color,
+    b = cat(paste0(
+      "\n",
+      ":::: {.callout-", class, " collapse='false'}", "\n\n",
+      "## ", header, "\n\n",
+      "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+      glue::glue_collapse(contents), "\n\n",
+      "::: \n\n",
+      "::::", "\n"
+    )),
+    g = cat(paste0(
+      "\n",
+      ":::: {.callout-", class, " collapse='false'}", "\n\n",
+      "## ", header, "\n\n",
+      "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+      glue::glue_collapse(contents), "\n\n",
+      "::: \n\n",
+      "::::", "\n"
+    )),
+    o = cat(paste0(
+      "\n",
+      ":::: {.callout-", class, " collapse='false'}", "\n\n",
+      "## ", header, "\n\n",
+      "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+      glue::glue_collapse(contents), "\n\n",
+      "::: \n\n",
+      "::::", "\n"
+    )),
+    r = cat(paste0(
+      "\n",
+      ":::: {.callout-", class, " collapse='false'}", "\n\n",
+      "## ", header, "\n\n",
+      "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+      glue::glue_collapse(contents), "\n\n",
+      "::: \n\n",
+      "::::", "\n"
+    )),
+    stop("Invalid `type`", call. = FALSE)
+  )
+}
+options(scipen = 999)
+# remotes::install_github("mjfrigaard/tsap",
+#   force = TRUE, quiet = TRUE)
+library(tsap)
+library(palmerpenguins)
+library(NHANES)
+```
+
+
+```{r}
+#| label: co_box_dev
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "r", 
+  header = "ALERT!", 
+  contents = "This post is currently under development. Thank you for your patience.")
+```
+
+# `gargoyle`
+
+I have a couple options here; I could rebuild/combine `mod_cols` and `mod_plot` and hope this resolves the error, or I could use the [`gargoyle` package](https://github.com/ColinFay/gargoyle) by the geniuses over at [`ThinkR`](https://rtask.thinkr.fr/shiny-applications-design-and-deployment/):
+
+> *{`shiny`}’s default reactive behavior is very helpful when it comes to building small applications. Because, you know, the good thing about reactivity is that when something moves somewhere, it’s updated everywhere. But the bad thing about reactivity is that when something moves somewhere, it’s updated everywhere.*
+
+`gargoyle` comes from the same authors of [`golem`](https://thinkr-open.github.io/golem/), and it supports "*Event-Based Structures for 'Shiny'*". It's elegant and simple (remember these three functions): `init()`, `trigger()`, and `watch()`.
+
+The [example in the documentation](https://github.com/ColinFay/gargoyle) gives an overview of how `gargoyle` works, but it's not in a package (and doesn't use modules). You can see a deployed version of `gargoyle` built as a package using modules [here.](https://mjfrigaard.shinyapps.io/gargap-demo/). 
+
+I'll cover how `gargoyle` works using the demos in the `inst/dev` folder: 
+
+## `init()`
+
+This [function](https://github.com/ColinFay/gargoyle/blob/83234de417b9b0b39be9b8f1556e5df1968624b2/R/funs.R#L66)
+
+## `on()`
+
+This [function](https://github.com/ColinFay/gargoyle/blob/83234de417b9b0b39be9b8f1556e5df1968624b2/R/funs.R#L124)
+
+## `trigger()`
+
+This [function](https://github.com/ColinFay/gargoyle/blob/83234de417b9b0b39be9b8f1556e5df1968624b2/R/funs.R#L78)
+
+## `watch()`
+
+This [function](https://github.com/ColinFay/gargoyle/blob/83234de417b9b0b39be9b8f1556e5df1968624b2/R/funs.R#L106)
+
+
+
+
+
+
+
+
+
+
+
+
+## testServer() + browser()
+
+::: {style='font-size: 1.10em; font-weight: bold;'}
+
+> *"You can abuse `testServer()` to get in an interactive environment that does support reactivity: `testServer(myApp(), browser())`"*
+
+:::
+
+The quote above comes from the ['Testing' chapter of Mastering Shiny](https://mastering-shiny.org/scaling-testing.html). 

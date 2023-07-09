@@ -1,0 +1,143 @@
+---
+title-meta: "Updating selectVarServer() and find_vars()"
+
+callout-icon: false
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: stopifnot_setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("https://raw.githubusercontent.com/mjfrigaard/mstsap/main/tests/testthat/helper.R")
+co_box <- function(color, header, contents = "Your text") {
+  class <- switch(color,
+    b = "note",
+    g = "tip",
+    r = "important",
+    o = "caution",
+    stop("Invalid `type`", call. = FALSE)
+  )
+  switch(color,
+  b = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  g = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  o = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  r = cat(paste0(
+    "\n",
+    ":::: {.callout-", class, " collapse='false'}", "\n\n",
+    "## ", header, "\n\n", 
+    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+    glue::glue_collapse(contents), "\n\n",
+    "::: \n\n",
+    "::::", "\n")),
+  stop("Invalid `type`", call. = FALSE)
+  )
+}
+options(scipen = 999)
+library(shiny)
+library(lobstr)
+library(crayon)
+library(stringr)
+```
+
+:::: {.callout-important collapse='true'}
+
+## Updating selectVarServer() and find_vars()
+
+::: {style='font-size: 1.10em;'}
+
+Both `selectVarServer()` and `find_vars()` are updated from their original versions to include `stopifnot()` checks for `is.reactive()`, `is.data.frame()` and `is.function()`: 
+
+-   [Original versions:](https://mastering-shiny.org/scaling-modules.html#server-inputs)
+
+    ```{r}
+    #| eval: false 
+    #| echo: true
+    #| code-fold: false
+    find_vars <- function(data, filter) {
+      names(data)[vapply(data, filter, logical(1))]
+    }
+    ```
+    
+    ```{r}
+    #| eval: false 
+    #| echo: true
+    #| code-fold: false 
+    selectVarServer <- function(id, data, filter = is.numeric) {
+      moduleServer(id, function(input, output, session) {
+        observeEvent(data(), {
+          updateSelectInput(session, "var", choices = find_vars(data(), filter))
+        })
+        
+        reactive(data()[[input$var]])
+      })
+    }
+    ```
+
+-   [Updated versions:](https://mastering-shiny.org/scaling-modules.html#server-inputs) 
+
+    ```{r}
+    #| eval: false 
+    #| echo: true
+    #| code-fold: false
+    selectVarServer <- function(id, data, filter = is.numeric) {
+      
+      stopifnot(is.reactive(data))
+      stopifnot(!is.reactive(filter))
+      
+      moduleServer(id, function(input, output, session) {
+        observeEvent(data(), {
+          updateSelectInput(session = session, 
+            inputId = "var", 
+            choices = find_vars(data(), filter)
+            )
+        })
+        
+        reactive(data()[[input$var]])
+      })
+    }
+    ```
+    
+    ```{r}
+    #| eval: false 
+    #| echo: true
+    #| code-fold: false
+    find_vars <- function(data, filter) {
+      stopifnot(is.data.frame(data))
+      stopifnot(is.function(filter))
+      names(data)[vapply(data, filter, logical(1))]
+    }
+    ```
+
+:::
+
+::::

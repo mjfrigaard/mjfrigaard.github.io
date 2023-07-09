@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Martin Frigaard">
+<meta name="dcterms.date" content="2023-06-30">
+
+<title>@mjfrigaard - Testing shiny apps with shinytest2</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../profile.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<meta name="twitter:title" content="@mjfrigaard - Testing shiny apps with shinytest2">
+<meta name="twitter:description" content="Part 4: recording tests and snapshots">
+<meta name="twitter:image" content="https://mjfrigaard.github.io/posts/test-shiny-p4/image.svg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="floating nav-fixed slimcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title"><span class="citation" data-cites="mjfrigaard">@mjfrigaard</span></span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-blog" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+ <span class="menu-text">Blog</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-blog">    
+        <li>
+    <a class="dropdown-item" href="../../posts.html" rel="" target="">
+ <span class="dropdown-text">Posts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../series.html" rel="" target="">
+ <span class="dropdown-text">Series</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/mjfrigaard" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/mjfrigaard" rel="" target=""><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Testing shiny apps with <code>shinytest2</code></h1>
+            <p class="subtitle lead">Part 4: recording tests and snapshots</p>
+                                <div class="quarto-categories">
+                <div class="quarto-category">shiny</div>
+                <div class="quarto-category">testing</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Martin Frigaard </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">June 30, 2023</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#set-up" id="toc-set-up" class="nav-link active" data-scroll-target="#set-up">Set up</a></li>
+  <li><a href="#chromium" id="toc-chromium" class="nav-link" data-scroll-target="#chromium">Chromium</a></li>
+  <li><a href="#chromote" id="toc-chromote" class="nav-link" data-scroll-target="#chromote"><span style="font-size: 1.20em"><code>chromote</code></span></a></li>
+  <li><a href="#a-shiny-app-package" id="toc-a-shiny-app-package" class="nav-link" data-scroll-target="#a-shiny-app-package">A shiny app-package</a></li>
+  <li><a href="#modules-apps" id="toc-modules-apps" class="nav-link" data-scroll-target="#modules-apps">Modules &amp; apps</a>
+  <ul>
+  <li><a href="#dataset-module" id="toc-dataset-module" class="nav-link" data-scroll-target="#dataset-module"><span style="font-size: 1.15em"><code>dataset</code></span> module</a>
+  <ul>
+  <li><a href="#datasetapp" id="toc-datasetapp" class="nav-link" data-scroll-target="#datasetapp"><span style="font-size: 1.10em"><code>datasetApp()</code></span></a></li>
+  </ul></li>
+  <li><a href="#selectvar-module" id="toc-selectvar-module" class="nav-link" data-scroll-target="#selectvar-module"><span style="font-size: 1.15em"><code>selectVar</code></span> module</a>
+  <ul>
+  <li><a href="#selectvarapp" id="toc-selectvarapp" class="nav-link" data-scroll-target="#selectvarapp"><span style="font-size: 1.10em"><code>selectVarApp()</code></span></a></li>
+  </ul></li>
+  <li><a href="#selectdatavar-module" id="toc-selectdatavar-module" class="nav-link" data-scroll-target="#selectdatavar-module"><span style="font-size: 1.10em"><code>selectDataVar</code></span> module</a>
+  <ul>
+  <li><a href="#selectdatavarapp" id="toc-selectdatavarapp" class="nav-link" data-scroll-target="#selectdatavarapp"><span style="font-size: 1.15em"><code>selectDataVarApp()</code></span></a></li>
+  </ul></li>
+  <li><a href="#histogram-module" id="toc-histogram-module" class="nav-link" data-scroll-target="#histogram-module"><span style="font-size: 1.10em"><code>histogram</code></span> module</a>
+  <ul>
+  <li><a href="#histogramapp" id="toc-histogramapp" class="nav-link" data-scroll-target="#histogramapp"><span style="font-size: 1.15em"><code>histogramApp()</code></span></a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#using-shinytest2" id="toc-using-shinytest2" class="nav-link" data-scroll-target="#using-shinytest2">Using <span style="font-size: 1.15em"><code>shinytest2</code></span></a>
+  <ul>
+  <li><a href="#recording-tests" id="toc-recording-tests" class="nav-link" data-scroll-target="#recording-tests">Recording tests</a>
+  <ul>
+  <li><a href="#expectations" id="toc-expectations" class="nav-link" data-scroll-target="#expectations">Expectations</a></li>
+  <li><a href="#events" id="toc-events" class="nav-link" data-scroll-target="#events">Events</a></li>
+  <li><a href="#code" id="toc-code" class="nav-link" data-scroll-target="#code">Code</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+
+
+
+
+<div class="cell">
+<details open="">
+<summary>packages</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(testthat)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shiny)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(vdiffr)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shinytest2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>This is the fourth post in a <a href="https://mjfrigaard.github.io/series.html#testing-shiny-applications">series on testing</a> shiny applications. My previous posts have covered <a href="https://mjfrigaard.github.io/posts/test-shiny-p1/">unit testing utility functions</a> and <a href="https://mjfrigaard.github.io/posts/test-shiny-p3/">testing module server functions with <code>testServer()</code></a>. In this post, I’ll be covering testing shiny applications using <code>testthat</code> and <code>shinytest2</code>.</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><img src="image.svg" class="img-fluid" style="width:70.0%"></p>
+</div></div><div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why <code>shinytest2</code>?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #696969;">
+<p><strong>What happened to <code>shinytest</code>?</strong></p>
+<p><code>shinytest2</code> replaced <code>shinytest</code> on 2022-04-27. If you’ve previously written tests with <code>shinytest</code>–or are curious how <code>shinytest2</code> if different–I recommend going through the <a href="https://cran.r-project.org/web/packages/shinytest2/vignettes/z-migration.html#:~:text">Migrating from <code>shinytest</code></a> vignette.</p>
+</div>
+</div>
+</div>
+</div>
+<section id="set-up" class="level2">
+<h2 class="anchored" data-anchor-id="set-up">Set up</h2>
+<p><a href="https://rstudio.github.io/shinytest2/index.html"><code>shinytest2</code></a> requires a few steps to get up and running, so I’ve included my start up steps below (in hopes that someone might find them useful).</p>
+</section>
+<section id="chromium" class="level2">
+<h2 class="anchored" data-anchor-id="chromium">Chromium</h2>
+<p>First make sure you have <a href="https://www.chromium.org/chromium-projects/">Chromium headless browser</a> installed. Chromium is the browser used to test and debug shiny apps with <code>shinytest2</code>.</p>
+<p>If you’re using macOS, you can install Chromium using <a href="https://formulae.brew.sh/cask/chromium">homebrew</a>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">brew</span> install <span class="at">--cask</span> chromium</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<details>
+<summary>show/hide output</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">==</span><span class="op">&gt;</span> Downloading https://download-chromium.appspot.com/dl/Mac<span class="pp">?</span>type=snapshots</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">==</span><span class="op">&gt;</span> Downloading from https://commondatastorage.googleapis.com/chromium-browser-s</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">######################################################################### 100.0%</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Warning:</span> No checksum defined for cask <span class="st">'chromium'</span>, skipping verification.</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ex">==</span><span class="op">&gt;</span> Installing Cask chromium</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="ex">==</span><span class="op">&gt;</span> Moving App <span class="st">'Chromium.app'</span> to <span class="st">'/Applications/Chromium.app'</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="ex">==</span><span class="op">&gt;</span> Linking Binary <span class="st">'chromium.wrapper.sh'</span> to <span class="st">'/usr/local/bin/chromium'</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="ex">🍺</span>  chromium was successfully installed!</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="chromote" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="chromote"><span style="font-size: 1.20em"><code>chromote</code></span></h2>
+<p>The <a href="https://rstudio.github.io/chromote/index.html"><code>chromote</code> package</a> allows R to open Chromium. I had to make sure R knew where to find the Chromium application (<a href="https://rstudio.github.io/chromote/#specifying-which-browser-to-use">this section helps</a>) by passing the path to the app to <code>Sys.setenv()</code> (<em>you can locate the path to Chromium using by holding <kbd>command (⌘)</kbd> and clicking on the application icon</em>)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"rstudio/chromote"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(chromote)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">Sys.setenv</span>(<span class="at">CHROMOTE_CHROME =</span> <span class="st">"/Applications/Chromium.app/Contents/MacOS/Chromium"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Find your chrome app:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>chromote<span class="sc">::</span><span class="fu">find_chrome</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">[1]</span> <span class="st">"/Applications/Chromium.app/Contents/MacOS/Chromium"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>I also verified the Chromium app opened with <code>ChromoteSession$new()</code></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> ChromoteSession<span class="sc">$</span><span class="fu">new</span>()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>b<span class="sc">$</span><span class="fu">view</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="column-body-outset-right">
+<div id="fig-chromium" class="quarto-layout-panel">
+<figure class="figure">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 100.0%;justify-content: center;">
+<div id="fig-chromium" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="chromium.png" class="img-fluid figure-img" data-ref-parent="fig-chromium"></p>
+<figcaption class="figure-caption">(a) Chromium</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p></p><figcaption class="figure-caption">Figure&nbsp;1: Chromium headless browser</figcaption><p></p>
+</figure>
+</div>
+</div>
+<p>Great! Going through this step means <code>shinytest2</code>’s test recorder will (<em>should</em>) deploy when I’m recording tests.</p>
+</section>
+<section id="a-shiny-app-package" class="level2">
+<h2 class="anchored" data-anchor-id="a-shiny-app-package">A shiny app-package</h2>
+<p>I’ve created <a href="https://github.com/mjfrigaard/msst2ap"><code>msst2ap</code></a> (i.e., <strong>M</strong>astering <strong>S</strong>hiny <strong>s</strong>hiny<strong>t</strong>est<strong>2</strong> <strong>a</strong>pp-<strong>p</strong>ackage), which you can download <a href="https://github.com/mjfrigaard/msst2ap/archive/refs/heads/main.zip">here</a> or install it using the following:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"mjfrigaard/msst2ap"</span>,</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">force =</span> <span class="cn">TRUE</span>, <span class="at">quiet =</span> <span class="cn">TRUE</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(msst2ap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The applications in <code>msst2ap</code> can be run with the their standalone app functions.</p>
+</section>
+<section id="modules-apps" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="modules-apps">Modules &amp; apps</h2>
+<p>The modules in <code>msst2ap</code> are from the <a href="https://mastering-shiny.org/scaling-modules.html">Modules chapter of Mastering Shiny</a>, with a few minor adjustments.</p>
+<p>Each standalone app includes the output from <code>shiny::reactiveValuesToList()</code>:</p>
+<ul>
+<li><p>In the <code>ui</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># for printing reactive values in application modules</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">verbatimTextOutput</span>(<span class="st">"vals"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><p>In the <code>server</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># for printing reactive values in application modules</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>output<span class="sc">$</span>vals <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderPrint</span>({</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">reactiveValuesToList</span>(input,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">all.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(x, <span class="at">width =</span> <span class="dv">30</span>, <span class="at">max.levels =</span> <span class="cn">NULL</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>}, <span class="at">width =</span> <span class="dv">30</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+</ul>
+<section id="dataset-module" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="dataset-module"><span style="font-size: 1.15em"><code>dataset</code></span> module</h3>
+<p>The <code>dataset</code> module displays the objects in the <code>datasets</code> package in a <code>selectInput()</code> according to a filter argument (i.e., <code>is.data.frame</code>, <code>is.matrix</code>, etc.).</p>
+<p><code>datasetServer()</code> returns the selected object as a reactive value. Read more <a href="https://mastering-shiny.org/scaling-modules.html#getting-started-ui-input-server-output">here</a>.</p>
+<div class="cell">
+<details>
+<summary>datasetInput() &amp; datasetServer()</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>datasetInput <span class="ot">&lt;-</span> <span class="cf">function</span>(id, <span class="at">filter =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  names <span class="ot">&lt;-</span> <span class="fu">ls</span>(<span class="st">"package:datasets"</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(filter)) {</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">&lt;-</span> <span class="fu">lapply</span>(names, get, <span class="st">"package:datasets"</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    names <span class="ot">&lt;-</span> names[<span class="fu">vapply</span>(data, filter, <span class="fu">logical</span>(<span class="dv">1</span>))]</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">selectInput</span>(</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">NS</span>(id, <span class="st">"dataset"</span>),</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Pick a dataset"</span>,</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">choices =</span> names)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>datasetServer <span class="ot">&lt;-</span> <span class="cf">function</span>(id) {</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">moduleServer</span>(id, <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">reactive</span>(<span class="fu">get</span>(input<span class="sc">$</span>dataset, <span class="st">"package:datasets"</span>))</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="datasetapp" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="datasetapp"><span style="font-size: 1.10em"><code>datasetApp()</code></span></h4>
+<div class="cell">
+<details>
+<summary>datasetApp()</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>datasetApp <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">filter =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  ui <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">fluidPage</span>(</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">datasetInput</span>(<span class="st">"dataset"</span>, <span class="at">filter =</span> is.data.frame),</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">tableOutput</span>(<span class="st">"data"</span>),</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># for printing reactive values in application modules</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">verbatimTextOutput</span>(<span class="st">"vals"</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">&lt;-</span> <span class="fu">datasetServer</span>(<span class="st">"dataset"</span>)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>data <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderTable</span>(<span class="fu">head</span>(<span class="fu">data</span>()))</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># for printing reactive values in application modules</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>vals <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderPrint</span>({</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>      x <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">reactiveValuesToList</span>(input,</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>                              <span class="at">all.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>      <span class="fu">print</span>(x, <span class="at">width =</span> <span class="dv">30</span>, <span class="at">max.levels =</span> <span class="cn">NULL</span>)</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    }, <span class="at">width =</span> <span class="dv">30</span>)</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">shinyApp</span>(ui, server)</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Below the table output in <code>datasetApp()</code>, the reactive values displays the <code>inputId</code> from <code>datasetInput()</code> and the namespace value from the shared <code>id</code> argument with <code>datasetServer()</code>: <code>$`dataset-dataset`</code></p>
+<div class="column-body-outset-right">
+<div id="fig-datasetApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-datasetApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="datasetApp.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-datasetApp"></p>
+<figcaption class="figure-caption">(a) <code>datasetApp()</code></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;2: <code>datasetApp()</code> in <code>msst2ap</code></figcaption>
+</figure>
+</div>
+</div>
+</section>
+</section>
+<section id="selectvar-module" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="selectvar-module"><span style="font-size: 1.15em"><code>selectVar</code></span> module</h3>
+<p>The <code>selectVar</code> module <a href="https://mastering-shiny.org/scaling-modules.html#case-study-selecting-a-numeric-variable">selects a numeric variable</a> the <code>data()</code> object returned from <code>datasetServer()</code>.</p>
+<p>It has a single utility function (<code>find_vars()</code>) which is used to filter the columns (variables):</p>
+<div class="cell">
+<details>
+<summary>show/hide selectVarInput() &amp; selectVarServer()</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>selectVarInput <span class="ot">&lt;-</span> <span class="cf">function</span>(id) {</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">selectInput</span>(</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">NS</span>(id, <span class="st">"var"</span>),</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">"Variable"</span>,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">choices =</span> <span class="cn">NULL</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>selectVarServer <span class="ot">&lt;-</span> <span class="cf">function</span>(id, data, <span class="at">filter =</span> is.numeric) {</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(shiny<span class="sc">::</span><span class="fu">is.reactive</span>(data))</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="sc">!</span>shiny<span class="sc">::</span><span class="fu">is.reactive</span>(filter))</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">moduleServer</span>(id, <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">observe</span>({</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">updateSelectInput</span>(</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>        session, <span class="st">"var"</span>,</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">choices =</span> <span class="fu">find_vars</span>(<span class="fu">data</span>(), filter))</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    }) <span class="sc">|&gt;</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">bindEvent</span>(<span class="fu">data</span>())</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">reactive</span>({</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (input<span class="sc">$</span>var <span class="sc">%in%</span> <span class="fu">names</span>(<span class="fu">data</span>())) {</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>          <span class="fu">data</span>()[input<span class="sc">$</span>var]</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>        } <span class="cf">else</span> {</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>          <span class="cn">NULL</span></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>      }) <span class="sc">|&gt;</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">bindEvent</span>(input<span class="sc">$</span>var)</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>I’ve made a few small changes to <code>selectVarServer()</code>:</p>
+<ul>
+<li><p>In the original version, <code>input$var</code> is returned as a vector:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">reactive</span>(<span class="fu">data</span>()[[input<span class="sc">$</span>var]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><p>I’ve added some validation and return <code>input$var</code> as a single column from <code>data()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">reactive</span>({</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (input<span class="sc">$</span>var <span class="sc">%in%</span> <span class="fu">names</span>(<span class="fu">data</span>())) {</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">data</span>()[input<span class="sc">$</span>var]</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>        <span class="cn">NULL</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  }) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><p>The <code>find_vars()</code> function is also below:</p>
+<div class="cell">
+<details open="">
+<summary>show/hide find_vars()</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>find_vars <span class="ot">&lt;-</span> <span class="cf">function</span>(data, <span class="at">filter =</span> is.vector) {</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">is.data.frame</span>(data))</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">is.function</span>(filter))</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(data)[<span class="fu">vapply</span>(data, filter, <span class="fu">logical</span>(<span class="dv">1</span>))]</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div></li>
+</ul>
+<section id="selectvarapp" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="selectvarapp"><span style="font-size: 1.10em"><code>selectVarApp()</code></span></h4>
+<p>The <code>selectVarApp()</code> extends the <code>dataset</code> module by collecting the returned reactive value, passing it to <code>find_vars()</code>, and returning a single column.</p>
+<div class="cell">
+<details>
+<summary>show/hide selectVarApp()</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>selectVarApp <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">filter =</span> is.numeric) {</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  ui <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">fluidPage</span>(</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>            <span class="fu">datasetInput</span>(<span class="st">"data"</span>, is.data.frame),</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>            <span class="fu">selectVarInput</span>(<span class="st">"var"</span>),</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>            shiny<span class="sc">::</span><span class="fu">tableOutput</span>(<span class="st">"out"</span>),</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>            shiny<span class="sc">::</span><span class="fu">verbatimTextOutput</span>(<span class="st">"vals"</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">&lt;-</span> <span class="fu">datasetServer</span>(<span class="st">"data"</span>)</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    var <span class="ot">&lt;-</span> <span class="fu">selectVarServer</span>(<span class="st">"var"</span>, data, <span class="at">filter =</span> filter)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>out <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderTable</span>(<span class="fu">head</span>(<span class="fu">var</span>()))</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>vals <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderPrint</span>({</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>      x <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">reactiveValuesToList</span>(input,</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>                              <span class="at">all.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>      <span class="fu">print</span>(x)</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">shinyApp</span>(ui, server)</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="column-body-outset-right">
+<div id="fig-selectVarApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-selectVarApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="selectVarApp.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-selectVarApp"></p>
+<figcaption class="figure-caption">(a) <code>selectVarApp()</code></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;3: <code>selectVarApp()</code> in <code>msst2ap</code></figcaption>
+</figure>
+</div>
+</div>
+<p>The reactive values in <code>selectVarApp()</code> are displayed below the table:</p>
+</section>
+<div class="quarto-layout-panel">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<section id="variables" class="level4 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<h4 class="anchored" data-anchor-id="variables">Variables</h4>
+<ul>
+<li><p>the 1st <code>var</code> is from the <code>inputId</code> in <code>selectVarInput()</code></p>
+<pre><code>$`-var` </code></pre></li>
+<li><p>the 2nd <code>var</code> is the shared namespace <code>id</code> from the <code>selectVar</code> module</p>
+<pre><code>$`var-var` </code></pre></li>
+</ul>
+</section>
+<section id="data" class="level4 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<h4 class="anchored" data-anchor-id="data">Data</h4>
+<ul>
+<li><p><code>dataset</code> is from the <code>inputId</code> in <code>datasetInput()</code></p>
+<pre><code>$`-dataset`</code></pre></li>
+<li><p><code>data</code> is the shared namespace <code>id</code> from the <code>dataset</code> module</p>
+<pre><code>$`data-dataset`</code></pre></li>
+</ul>
+</section>
+</div>
+</div>
+</section>
+<section id="selectdatavar-module" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="selectdatavar-module"><span style="font-size: 1.10em"><code>selectDataVar</code></span> module</h3>
+<p><code>selectDataVar</code> is from the <a href="https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules">Modules inside of modules</a> section, so true to form, both the <code>dataset</code> and <code>selectVar</code> modules are called inside of the UI and Server modules:</p>
+<div class="cell">
+<details>
+<summary>selectDataVarUI() &amp; selectDataVarServer()</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>selectDataVarUI <span class="ot">&lt;-</span> <span class="cf">function</span>(id) {</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">tagList</span>(</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">datasetInput</span>(</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">NS</span>(id, <span class="st">"data"</span>), </span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">filter =</span> is.data.frame),</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">selectVarInput</span>(</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">NS</span>(id, <span class="st">"var"</span>))</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>selectDataVarServer <span class="ot">&lt;-</span> <span class="cf">function</span>(id, <span class="at">filter =</span> is.numeric) {</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">moduleServer</span>(id, <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">&lt;-</span> <span class="fu">datasetServer</span>(<span class="st">"data"</span>)</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>    var <span class="ot">&lt;-</span> <span class="fu">selectVarServer</span>(<span class="st">"var"</span>, data, <span class="at">filter =</span> filter)</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    var</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="selectdatavarapp" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="selectdatavarapp"><span style="font-size: 1.15em"><code>selectDataVarApp()</code></span></h4>
+<p>The <code>selectDataVarApp()</code> places the inputs in the <code>sidebarPanel()</code> and the outputs in the <code>mainPanel()</code>.</p>
+<div class="cell">
+<details>
+<summary>selectDataVarApp()</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>selectDataVarApp <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">filter =</span> is.numeric) {</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  ui <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">fluidPage</span>(</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">sidebarLayout</span>(</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">sidebarPanel</span>(</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">selectDataVarUI</span>(<span class="st">"var"</span>)</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">mainPanel</span>(</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>        shiny<span class="sc">::</span><span class="fu">tableOutput</span>(<span class="st">"out"</span>),</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>        shiny<span class="sc">::</span><span class="fu">verbatimTextOutput</span>(<span class="st">"vals"</span>)</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>  server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    var <span class="ot">&lt;-</span> <span class="fu">selectDataVarServer</span>(<span class="st">"var"</span>, filter)</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>out <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderTable</span>(<span class="fu">head</span>(<span class="fu">var</span>()))</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>vals <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderPrint</span>({</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>      x <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">reactiveValuesToList</span>(input,</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>                              <span class="at">all.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">print</span>(x)</span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">shinyApp</span>(ui, server)</span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="column-body-outset-right">
+<div id="fig-selectDataVarApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-selectDataVarApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="selectDataVarApp.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-selectDataVarApp"></p>
+<figcaption class="figure-caption">(a) <code>selectDataVarApp()</code></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;4: <code>selectDataVarApp()</code> in <code>msst2ap</code></figcaption>
+</figure>
+</div>
+</div>
+<p>The reactive values from <code>selectDataVarApp()</code> reflect the nested module structure:</p>
+</section>
+<div class="quarto-layout-panel">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<section id="variables-1" class="level4 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<h4 class="anchored" data-anchor-id="variables-1">Variables</h4>
+<ul>
+<li><p>The first <code>var</code> belongs to the <code>inputId</code> in <code>selectVarInput()</code>,</p>
+<pre><code>$`-var` </code></pre></li>
+<li><p>the 2nd <code>var</code> is the shared namespace <code>id</code> from the <code>selectVar</code> module,</p>
+<pre><code>$`-var-var`</code></pre></li>
+<li><p>the 3rd <code>var</code> is the call to the <code>selectVar</code> module <em>inside</em> <code>selectDataVar</code></p>
+<pre><code>$`var-var-var` 
+[1] "Ozone"</code></pre></li>
+</ul>
+</section>
+<section id="data-1" class="level4 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<h4 class="anchored" data-anchor-id="data-1">Data</h4>
+<ul>
+<li><p><code>dataset</code> belongs to the <code>inputId</code> in <code>datasetInput()</code>,</p>
+<pre><code>$`-dataset` </code></pre></li>
+<li><p><code>data</code> is the shared namespace <code>id</code> from the <code>dataset</code> module,</p>
+<pre><code>$`-data-dataset` </code></pre></li>
+<li><p><code>var</code> is the call to the <code>dataset</code> module <em>inside</em> <code>selectDataVar</code></p>
+<pre><code>$`var-data-dataset` 
+[1] "airquality"</code></pre></li>
+</ul>
+</section>
+</div>
+</div>
+</section>
+<section id="histogram-module" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="histogram-module"><span style="font-size: 1.10em"><code>histogram</code></span> module</h3>
+<p>The final modules and application I’ll use from Mastering Shiny are from the <a href="https://mastering-shiny.org/scaling-modules.html#case-study-histogram">Case study: histogram</a> section. This application uses the existing <code>dataset</code> and <code>selectVar</code> modules to pass a single variable to the render a histogram:</p>
+<div class="cell">
+<details>
+<summary>show/hide histogramOutput() &amp; histogramServer()</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>histogramOutput <span class="ot">&lt;-</span> <span class="cf">function</span>(id) {</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">tagList</span>(</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">numericInput</span>(</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">NS</span>(id, <span class="st">"bins"</span>),</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">label =</span> <span class="st">"bins"</span>,</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">value =</span> <span class="dv">10</span>,</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">min =</span> <span class="dv">1</span>,</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">step =</span> <span class="dv">1</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">plotOutput</span>(</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">NS</span>(id, <span class="st">"hist"</span>))</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>histogramServer <span class="ot">&lt;-</span> <span class="cf">function</span>(id, x, <span class="at">title =</span> <span class="fu">reactive</span>(<span class="st">"Histogram"</span>)) {</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(shiny<span class="sc">::</span><span class="fu">is.reactive</span>(x))</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(shiny<span class="sc">::</span><span class="fu">is.reactive</span>(title))</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">moduleServer</span>(id, <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>hist <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderPlot</span>({</span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>        shiny<span class="sc">::</span><span class="fu">req</span>(<span class="fu">x</span>())</span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>        main <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">title</span>(), <span class="st">" ["</span>, input<span class="sc">$</span>bins, <span class="st">"]"</span>)</span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a>        <span class="fu">hist</span>(purrr<span class="sc">::</span><span class="fu">as_vector</span>(<span class="fu">x</span>()),</span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a>          <span class="at">breaks =</span> input<span class="sc">$</span>bins,</span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>          <span class="at">main =</span> main</span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a>      }, <span class="at">res =</span> <span class="dv">96</span>)</span>
+<span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>data <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderPrint</span>({</span>
+<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">req</span>(<span class="fu">x</span>())</span>
+<span id="cb30-30"><a href="#cb30-30" aria-hidden="true" tabindex="-1"></a>      <span class="fu">print</span>(<span class="fu">head</span>(<span class="fu">x</span>()))</span>
+<span id="cb30-31"><a href="#cb30-31" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb30-32"><a href="#cb30-32" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb30-33"><a href="#cb30-33" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>I’ve made some changes to the <code>histogramServer()</code> function (to accomodate the changes to the <code>selectVar</code> module).</p>
+<ul>
+<li><p>The original <code>renderPlot()</code> call in <code>histogramServer()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>hist <span class="ot">&lt;-</span> <span class="fu">renderPlot</span>({</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req</span>(<span class="fu">is.numeric</span>(<span class="fu">x</span>()))</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    main <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">title</span>(), <span class="st">" ["</span>, input<span class="sc">$</span>bins, <span class="st">"]"</span>)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">hist</span>(<span class="fu">x</span>(), <span class="at">breaks =</span> input<span class="sc">$</span>bins, <span class="at">main =</span> main)</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">res =</span> <span class="dv">96</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><p>The updated <code>renderPlot()</code> call in <code>histogramServer()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>hist <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderPlot</span>({</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">req</span>(<span class="fu">x</span>())</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    main <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">title</span>(), <span class="st">" [bins ="</span>, input<span class="sc">$</span>bins, <span class="st">"]"</span>)</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">hist</span>(purrr<span class="sc">::</span><span class="fu">as_vector</span>(<span class="fu">x</span>()),</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">breaks =</span> input<span class="sc">$</span>bins,</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">main =</span> main)</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">res =</span> <span class="dv">96</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li><p>As you can see, <code>req()</code> is verifying <code>x()</code> exists, but doesn’t check it’s class with <code>is.numeric()</code>.</p></li>
+<li><p><code>x()</code> is also passed to <code>purrr::as_vector()</code> before it’s plotted with <code>hist()</code></p></li>
+</ul></li>
+</ul>
+<section id="histogramapp" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="histogramapp"><span style="font-size: 1.15em"><code>histogramApp()</code></span></h4>
+<div class="cell">
+<details>
+<summary>histogramApp()</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>histogramApp <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  ui <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">fluidPage</span>(</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">sidebarLayout</span>(</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">sidebarPanel</span>(</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">datasetInput</span>(<span class="st">"data"</span>, is.data.frame),</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">selectVarInput</span>(<span class="st">"var"</span>),</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">mainPanel</span>(</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">histogramOutput</span>(<span class="st">"hist"</span>),</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>        shiny<span class="sc">::</span><span class="fu">verbatimTextOutput</span>(<span class="st">"vals"</span>)</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>  server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">&lt;-</span> <span class="fu">datasetServer</span>(<span class="st">"data"</span>)</span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> <span class="fu">selectVarServer</span>(<span class="st">"var"</span>, data)</span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">histogramServer</span>(<span class="st">"hist"</span>, x)</span>
+<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-21"><a href="#cb33-21" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>vals <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderPrint</span>({</span>
+<span id="cb33-22"><a href="#cb33-22" aria-hidden="true" tabindex="-1"></a>      x <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">reactiveValuesToList</span>(input,</span>
+<span id="cb33-23"><a href="#cb33-23" aria-hidden="true" tabindex="-1"></a>                              <span class="at">all.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb33-24"><a href="#cb33-24" aria-hidden="true" tabindex="-1"></a>      <span class="fu">print</span>(x)</span>
+<span id="cb33-25"><a href="#cb33-25" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb33-26"><a href="#cb33-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-27"><a href="#cb33-27" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb33-28"><a href="#cb33-28" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">shinyApp</span>(ui, server)</span>
+<span id="cb33-29"><a href="#cb33-29" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="column-body-outset-right">
+<div id="fig-histogramApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-dataStrApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="histogramApp.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-histogramApp"></p>
+<figcaption class="figure-caption">(a) <code>histogramApp()</code></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;5: <code>histogramApp()</code> in <code>msst2ap</code></figcaption>
+</figure>
+</div>
+</div>
+<p>The displayed reactive values in <code>histogramApp()</code> are described below:</p>
+</section>
+<div class="quarto-layout-panel">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<section id="plot" class="level4 quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<h4 class="anchored" data-anchor-id="plot">Plot</h4>
+<ul>
+<li><p>The <code>inputId</code> from <code>histogramOutput()</code> and the shared namespace <code>id</code></p>
+<pre><code>$`hist-bins`
+[1] 10</code></pre></li>
+</ul>
+</section>
+<section id="variables-2" class="level4 quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<h4 class="anchored" data-anchor-id="variables-2">Variables</h4>
+<ul>
+<li><p>The <code>inputId</code> from <code>selectVarInput()</code> and the shared namespace <code>id</code></p>
+<pre><code>$`var-var`
+[1] "Ozone"</code></pre></li>
+</ul>
+</section>
+<section id="data-2" class="level4 quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<h4 class="anchored" data-anchor-id="data-2">Data</h4>
+<ul>
+<li><p>The <code>inputId</code> from <code>datasetInput()</code> and the shared namespace <code>id</code></p>
+<pre><code>$`data-dataset` 
+[1] "airquality"</code></pre></li>
+</ul>
+</section>
+</div>
+</div>
+</section>
+</section>
+<section id="using-shinytest2" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="using-shinytest2">Using <span style="font-size: 1.15em"><code>shinytest2</code></span></h2>
+<p><code>shinytest2</code> is extremely <a href="https://rstudio.github.io/shinytest2/index.html">well documentation</a>. I highly recommended the <a href="https://rstudio.github.io/shinytest2/articles/shinytest2.html">Get Started vignette</a>. In the next sections, I’ll cover some examples for what I’ve included in the <code>msst2ap</code>.</p>
+<p>Run <code>shinytest2::use_shinytest2()</code> to create the initial files for <code>shinytest2</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>shinytest2<span class="sc">::</span><span class="fu">use_shinytest2</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<details>
+<summary>show/hide output from use_shinytest2()</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="ot">! </span><span class="ex">Runner</span> already found: tests/testthat.R</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="ex">✔</span> Adding <span class="st">'shinytest2::load_app_env()'</span> to <span class="st">'tests/testthat/setup-shinytest2.R'</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="ex">✔</span> Adding <span class="st">'*_.new.png'</span> to <span class="st">'.gitignore'</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="ex">✔</span> Adding <span class="st">'_\\.new\\.png$'</span> to <span class="st">'.Rbuildignore'</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="ex">✔</span> Setting active project to <span class="st">'/projects/apps/msst2ap'</span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a><span class="ex">✔</span> Adding <span class="st">'shinytest2'</span> to Suggests field in DESCRIPTION</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a><span class="ex">•</span> Use <span class="kw">`</span><span class="ex">requireNamespace</span><span class="er">(</span><span class="st">"shinytest2"</span><span class="ex">,</span> quietly = TRUE<span class="kw">)`</span> to test if package is installed</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a><span class="ex">•</span> Then directly refer to functions with <span class="kw">`</span><span class="fu">shinytest2::fun()</span><span class="kw">`</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a><span class="ex">✔</span> Setting active project to <span class="st">'&lt;no active project&gt;'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<ul>
+<li><p><code>use_shinytest2()</code> adds the <code>setup-shinytest2.R</code> script to my <code>tests/testthat/</code> folder:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="ex">tests/testthat/</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> _snaps/</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> setup-shinytest2.R</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+</ul>
+<p>The <code>setup-shinytest2.R</code> file contains a single call to <code>shinytest2::load_app_env()</code>, which “<em>Executes all <code>./R</code> files and <code>global.R</code> into the current environment</em>”</p>
+<section id="recording-tests" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="recording-tests">Recording tests</h3>
+<p>New tests with <a href="https://rstudio.github.io/shinytest2/index.html"><code>shinytest2</code></a> can be created by launching the test event recorder, which allows us interact with our application, observe it’s behavior, and record inputs, reactive values, and outputs. To record a test, run <code>shinytest2::record_test()</code>.</p>
+<p>The first argument in <code>record_test()</code> is the path to application. If you’ve stored your application in an <code>app.R</code> file, <code>record_test()</code> will automatically load that application. In <code>msst2ap</code>, the application in <code>app.R</code> is the <code>histogramApp()</code>, so the test recorder will automatically open with this application if I run <code>record_test()</code> (without providing the path to a <code>shiny</code> app).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>shinytest2<span class="sc">::</span><span class="fu">record_test</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="column-page-inset-right">
+<div id="fig-record_test_histogramApp" class="quarto-layout-panel">
+<figure class="figure">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 100.0%;justify-content: center;">
+<div id="fig-record_test_histogramApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="record_test_histogramApp.png" class="img-fluid figure-img" data-ref-parent="fig-record_test_histogramApp"></p>
+<figcaption class="figure-caption">(a) shinytest2::record_test()</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p></p><figcaption class="figure-caption">Figure&nbsp;6: <code>record_test()</code> with application in <code>app.R</code></figcaption><p></p>
+</figure>
+</div>
+</div>
+<p>If you have an application is stored in another location (like the <code>inst/dev/</code> folder), the you can pass the path to <code>record_test()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>shinytest2<span class="sc">::</span><span class="fu">record_test</span>(<span class="at">app =</span> <span class="st">""</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This opens Chromium with our shiny app:</p>
+<div class="column-page-inset-right">
+<div id="fig-record_test_datasetApp" class="quarto-layout-panel">
+<figure class="figure">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 100.0%;justify-content: center;">
+<div id="fig-record_test_datasetApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="record_test_datasetApp.png" class="img-fluid figure-img" data-ref-parent="fig-record_test_datasetApp"></p>
+<figcaption class="figure-caption">(a) record_test(“inst/dev/datasetApp/”)</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p></p><figcaption class="figure-caption">Figure&nbsp;7: <code>record_test()</code> for <code>datasetApp()</code></figcaption><p></p>
+</figure>
+</div>
+</div>
+<p>The test event recorder displays the <code>shiny</code> app, but also includes a window for recording each application ‘event.’</p>
+<section id="expectations" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="expectations">Expectations</h4>
+<p>I’ll start by recording a test for <code>datasetApp()</code>. On the right-hand side of the Chromium headless browser, you’ll see the <strong><code>shinytest2</code> expectations</strong> window:</p>
+<div class="column-page-inset-right">
+<div id="fig-shinytest2-expectations" class="quarto-layout-panel">
+<figure class="figure">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 100.0%;justify-content: center;">
+<div id="fig-expectations" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="shinytest2-expectations.png" class="img-fluid figure-img" data-ref-parent="fig-shinytest2-expectations"></p>
+<figcaption class="figure-caption">(a) <code>shinytest2</code> expectations</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p></p><figcaption class="figure-caption">Figure&nbsp;8: <code>shinytest2</code> expectations in <code>record_test()</code></figcaption><p></p>
+</figure>
+</div>
+</div>
+<p>The initial value in the <strong>Code</strong> window displays the dimensions of the application in Chromium (<code>app$set_window_size(width = , height = )</code>).</p>
+</section>
+<section id="events" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="events">Events</h4>
+<p>When I interact with the application (i.e., make changes to the inputs), each change is an ‘event’ that is recorded in the test:</p>
+<div class="column-page-inset-right">
+<div id="fig-chromium" class="quarto-layout-panel">
+<figure class="figure">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 100.0%;justify-content: center;">
+<div id="fig-change-values-shinytest2" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="shinytest2-change-inputs.png" class="img-fluid figure-img" data-ref-parent="fig-chromium"></p>
+<figcaption class="figure-caption">(a) change inputs</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p></p><figcaption class="figure-caption">Figure&nbsp;9: Changing app inputs</figcaption><p></p>
+</figure>
+</div>
+</div>
+</section>
+<section id="code" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="code">Code</h4>
+<p>All events are recorded as code in the <strong>Code</strong> section of <strong><code>shinytest2</code> expectations</strong>:</p>
+<div class="column-page-inset-right">
+<div id="fig-shinytest2-code-expectations" class="quarto-layout-panel">
+<figure class="figure">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 100.0%;justify-content: center;">
+<div id="fig-shinytest2-expectations-code" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="shinytest2-expectations-code.png" class="img-fluid figure-img" data-ref-parent="fig-shinytest2-code-expectations"></p>
+<figcaption class="figure-caption">(a) shinytest2 code expectations</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p></p><figcaption class="figure-caption">Figure&nbsp;10: Recorded code for each event</figcaption><p></p>
+</figure>
+</div>
+</div>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

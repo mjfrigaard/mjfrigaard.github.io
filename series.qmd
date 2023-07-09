@@ -1,0 +1,32 @@
+---
+title: "Series"
+listing:
+  - id: testing
+    contents: series/testing
+    type: table
+    sort: "date asc"
+    sort-ui: false
+    filter-ui: false
+    fields: [title, date]
+    table-striped: true
+    
+page-layout: full
+title-block-banner: false
+execute:
+    freeze: auto
+---
+
+## Testing shiny applications
+
+These posts focus on testing shiny applications with `testthat`, `shiny::testServer()`, and `shinytest2`: 
+
+-   The first post covers unit testing a set of utility functions ([Github Repo](https://github.com/mjfrigaard/utap))
+
+-   Your shiny app *should* be developed as a package, but this isn't always the case. If you'd like to test your application's code *without* converting it to a package, check out the second post ([GitHub repo](https://github.com/mjfrigaard/noap) with the code)
+
+-   If you've built your shiny application as a package and it contains modules, the third post covers **testing module server functions** using the examples from the ['Modules' chapter of Mastering Shiny](https://mastering-shiny.org/scaling-modules.html). ([GitHub repo](https://github.com/mjfrigaard/mstsap) with the code)
+
+
+
+::: {#testing}
+:::

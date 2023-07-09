@@ -1,0 +1,22 @@
+---
+listing:
+  contents: posts
+  feed:
+    categories: [R]
+  sort: "date desc"
+  type: default
+  categories: true
+  sort-ui: true
+  filter-ui: true
+  fields: [date, title, description, categories]
+  page-size: 10
+page-layout: full
+title-block-banner: false
+aliases:
+  - blog.html
+  - post.html
+  - blog
+  - post
+execute:
+  freeze: auto
+---

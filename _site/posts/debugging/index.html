@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Martin Frigaard">
+<meta name="dcterms.date" content="2023-06-01">
+
+<title>@mjfrigaard - Debugging in RStudio</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../profile.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<meta name="twitter:title" content="@mjfrigaard - Debugging in RStudio">
+<meta name="twitter:description" content="Developing code with browser()">
+<meta name="twitter:image" content="https://mjfrigaard.github.io/posts/debugging/image.png">
+<meta name="twitter:image-height" content="1316">
+<meta name="twitter:image-width" content="1128">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="floating nav-fixed slimcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title"><span class="citation" data-cites="mjfrigaard">@mjfrigaard</span></span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-blog" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
+ <span class="menu-text">Blog</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-blog">    
+        <li>
+    <a class="dropdown-item" href="../../posts.html" rel="" target="">
+ <span class="dropdown-text">Posts</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../series.html" rel="" target="">
+ <span class="dropdown-text">Series</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/mjfrigaard" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/mjfrigaard" rel="" target=""><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Debugging in RStudio</h1>
+            <p class="subtitle lead">Developing code with <code>browser()</code></p>
+                                <div class="quarto-categories">
+                <div class="quarto-category">code</div>
+                <div class="quarto-category">debugging</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Martin Frigaard </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">June 1, 2023</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#debugging" id="toc-debugging" class="nav-link active" data-scroll-target="#debugging">Debugging</a>
+  <ul>
+  <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started">Getting started</a>
+  <ul>
+  <li><a href="#experiment" id="toc-experiment" class="nav-link" data-scroll-target="#experiment">Experiment</a>
+  <ul class="collapse">
+  <li><a href="#namespace-functions" id="toc-namespace-functions" class="nav-link" data-scroll-target="#namespace-functions">Namespace functions</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#browser" id="toc-browser" class="nav-link" data-scroll-target="#browser">browser()</a>
+  <ul>
+  <li><a href="#debug-mode" id="toc-debug-mode" class="nav-link" data-scroll-target="#debug-mode">Debug mode</a></li>
+  <li><a href="#console" id="toc-console" class="nav-link" data-scroll-target="#console">Console</a></li>
+  <li><a href="#source" id="toc-source" class="nav-link" data-scroll-target="#source">Source</a></li>
+  <li><a href="#environment" id="toc-environment" class="nav-link" data-scroll-target="#environment">Environment</a>
+  <ul class="collapse">
+  <li><a href="#other-environments" id="toc-other-environments" class="nav-link" data-scroll-target="#other-environments">Other environments</a></li>
+  <li><a href="#traceback" id="toc-traceback" class="nav-link" data-scroll-target="#traceback">Traceback</a></li>
+  </ul></li>
+  <li><a href="#arguments" id="toc-arguments" class="nav-link" data-scroll-target="#arguments">Arguments</a></li>
+  <li><a href="#stepping-through" id="toc-stepping-through" class="nav-link" data-scroll-target="#stepping-through">Stepping through</a></li>
+  <li><a href="#inspect-values" id="toc-inspect-values" class="nav-link" data-scroll-target="#inspect-values">Inspect values</a></li>
+  <li><a href="#browser-recap" id="toc-browser-recap" class="nav-link" data-scroll-target="#browser-recap"><em>browser() recap</em></a></li>
+  </ul></li>
+  <li><a href="#nested-functions" id="toc-nested-functions" class="nav-link" data-scroll-target="#nested-functions">Nested functions</a>
+  <ul>
+  <li><a href="#step-into" id="toc-step-into" class="nav-link" data-scroll-target="#step-into">Step into</a></li>
+  <li><a href="#debugging-at-vs-in" id="toc-debugging-at-vs-in" class="nav-link" data-scroll-target="#debugging-at-vs-in">Debugging ‘at’ vs ‘in’</a></li>
+  </ul></li>
+  <li><a href="#put-it-all-together" id="toc-put-it-all-together" class="nav-link" data-scroll-target="#put-it-all-together">Put it all together</a>
+  <ul>
+  <li><a href="#data-results" id="toc-data-results" class="nav-link" data-scroll-target="#data-results">Data results</a></li>
+  <li><a href="#package-data-objects" id="toc-package-data-objects" class="nav-link" data-scroll-target="#package-data-objects">Package data objects</a></li>
+  <li><a href="#column-counts" id="toc-column-counts" class="nav-link" data-scroll-target="#column-counts">Column counts</a></li>
+  <li><a href="#rectangular-objects" id="toc-rectangular-objects" class="nav-link" data-scroll-target="#rectangular-objects">Rectangular objects</a></li>
+  <li><a href="#error" id="toc-error" class="nav-link" data-scroll-target="#error">Error!</a>
+  <ul class="collapse">
+  <li><a href="#replicate-the-error" id="toc-replicate-the-error" class="nav-link" data-scroll-target="#replicate-the-error">Replicate the error</a></li>
+  </ul></li>
+  <li><a href="#solution" id="toc-solution" class="nav-link" data-scroll-target="#solution">Solution</a></li>
+  </ul></li>
+  <li><a href="#recap" id="toc-recap" class="nav-link" data-scroll-target="#recap">Recap</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+
+
+
+
+<p>In this post I’ll cover using the <code>browser()</code> function with RStudio’s debugger. RStudio’s debugging tools are built into the IDE, which provides a seamless transition between writing, running, and debugging code.</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><img src="image.png" class="img-fluid" style="width:70.0%"></p>
+</div></div><section id="debugging" class="level1 page-columns page-full">
+<h1>Debugging</h1>
+<p>Debuggers are a critical tool when you’re programming, and they have several benefits that make them a must-use for any R user. You’ll inevitably encounter an error or unexpected behavior while you’re programming. Using a debugger allows you to ‘step through’ your code line-by-line, which makes it easier to find the precise location of bugs and errors and the conditions under which they occur.</p>
+<p>But debuggers aren’t only helpful in dealing with errors. The debugger can also be a great learning tool because it provides an interactive way to see how the code is being executed and the order in which functions are being called. For example, you might know that a function returns a particular object but can’t determine how that object was created. Debugging lets us get ‘under the hood’ of our code and see how it’s really working.</p>
+<p>You’re probably doing some version of debugging already. If you’ve ever dropped a call to <code>print()</code> or <code>return()</code> at some well-placed intermediate point in a function to try and understand its behavior, then you know the challenge debugging tries to solve: <strong>We can’t see what happens inside the parentheses when code is executed.</strong> When you use <code>print()</code> or <code>return()</code> in this way, it’s an attempt to indirectly investigate how/if/where the code is performing its intended purpose.</p>
+<p>In this post, I’ll cover using the <code>browser()</code> function and RStudio’s debugger while developing a series of small, modular functions for returning a table of ‘package data structures.’ The code for this post comes from <a href="https://github.com/mjfrigaard/dbap"><code>dbap</code></a> (‘debugging app-package’).</p>
+<section id="getting-started" class="level2">
+<h2 class="anchored" data-anchor-id="getting-started">Getting started</h2>
+<p>I want to create a function that returns a table of ‘data structure’ columns that describe the available <code>data.frame</code> or <code>tibble</code> objects loaded with a package. Below is a small example of the desired return object from this function:</p>
+<div style="font-size: 0.90em;">
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 25%">
+<col style="width: 8%">
+<col style="width: 6%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 10%">
+<col style="width: 7%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Package</th>
+<th style="text-align: left;">Dataset</th>
+<th style="text-align: left;">Class</th>
+<th style="text-align: left;">Columns</th>
+<th style="text-align: left;">Rows</th>
+<th style="text-align: left;">Logical</th>
+<th style="text-align: left;">Numeric</th>
+<th style="text-align: left;">Character</th>
+<th style="text-align: left;">Factor</th>
+<th style="text-align: left;">List</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">dplyr</td>
+<td style="text-align: left;">starwars</td>
+<td style="text-align: left;">tbl_df, tbl, data.frame</td>
+<td style="text-align: left;">13</td>
+<td style="text-align: left;">19066</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">11</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">datasets</td>
+<td style="text-align: left;">mtcars</td>
+<td style="text-align: left;">data.frame</td>
+<td style="text-align: left;">11</td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">11</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>This table shows the <code>storms</code> data from <code>dplyr</code> and the <code>mtcars</code> data from <code>datasets</code>. The columns include the <code>Package</code> the data came from, the dataset name (<code>Dataset</code>), the data <code>Title</code> from the documentation, the <code>Class</code> of the data object, the total number of <code>Columns</code> and <code>Rows</code>, and the number of columns by type (<code>Logical</code>, <code>Numeric</code>, <code>Character</code>, <code>Factor</code> and <code>List</code>).</p>
+<p>One of the first steps for creating this function is to verify a package’s namespace is loaded. I’ve written the <code>check_pkg_ns()</code> to check this.</p>
+<div class="cell">
+<details open="">
+<summary>check_pkg_ns()</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>check_pkg_ns <span class="ot">&lt;-</span> <span class="cf">function</span>(pkg, <span class="at">quiet =</span> <span class="cn">FALSE</span>) {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">isFALSE</span>(quiet)) {</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># with messages</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">isNamespaceLoaded</span>(pkg)) {</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="fu">requireNamespace</span>(pkg, <span class="at">quietly =</span> <span class="cn">FALSE</span>)) {</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cat</span>(<span class="fu">paste0</span>(<span class="st">"Loading package: "</span>, pkg, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>))</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>      } <span class="cf">else</span> {</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">stop</span>(<span class="fu">paste0</span>(pkg, <span class="st">" not available"</span>))</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="fu">paste0</span>(<span class="st">"Package "</span>, pkg, <span class="st">" loaded</span><span class="sc">\n</span><span class="st">"</span>))</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># without messages</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">isNamespaceLoaded</span>(pkg)) {</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="fu">requireNamespace</span>(pkg, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) {</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>      } <span class="cf">else</span> {</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>        <span class="fu">stop</span>(<span class="fu">paste0</span>(pkg, <span class="st">" not available"</span>))</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><code>check_pkg_ns()</code> checks if a packages’s namespace is loaded, and if not, loads it. This function assumes the package (<code>pkg</code>) has been installed with <code>install.packages()</code> (I’ve also written <a href="https://github.com/mjfrigaard/dbap/blob/main/R/check_pkg_inst.R"><code>check_pkg_inst()</code></a> to check if the package has been installed.)</p>
+<section id="experiment" class="level3">
+<h3 class="anchored" data-anchor-id="experiment">Experiment</h3>
+<p>Before debugging, I’ll read the documentation and help files to find examples or use cases for ‘mini-experiments.’ These are designed to clarify any function arguments and learn how the code truly works. Experiments should produce predictable, definitive (preferably incompatible) outputs from each function.</p>
+<section id="namespace-functions" class="level4">
+<h4 class="anchored" data-anchor-id="namespace-functions">Namespace functions</h4>
+<p>The help file contains the following helpful statement on <code>isNamespaceLoaded()</code>:</p>
+<blockquote class="blockquote">
+<p><em>“<code>isNamespaceLoaded(pkg)</code> is equivalent to but more efficient than <code>pkg %in% loadedNamespaces()</code>”</em></p>
+</blockquote>
+<p>First, I’ll check the loaded namespaces with <code>loadedNamespaces()</code>, then look for a package I know <em>isn’t</em> in the namespace with <code>isNamespaceLoaded()</code>. I’ll use the <code>fs</code> package because it isn’t loaded or attached to the <code>search()</code> list:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># what's in the namespace? </span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">loadedNamespaces</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a> [1] "compiler"   "rsconnect"  "graphics"  </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> [4] "tools"      "rstudioapi" "utils"     </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a> [7] "grDevices"  "stats"      "datasets"  </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>[10] "methods"    "base"</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Check if <code>fs</code> is in the loaded namespace:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># verify fs is not loaded</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">isNamespaceLoaded</span>(<span class="st">"fs"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>[1] FALSE</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The help file tells me the following about <code>requireNamespace</code>:</p>
+<blockquote class="blockquote">
+<p><em>“<code>requireNamespace</code> is a wrapper for <code>loadNamespace</code> analogous to <code>require()</code> that returns a logical value.”</em></p>
+</blockquote>
+<p>…and…</p>
+<blockquote class="blockquote">
+<p><em>“<code>requireNamespace</code> returns <code>TRUE</code> if it succeeds or <code>FALSE</code>”</em></p>
+</blockquote>
+<p>I’ll load a package (<code>"fs"</code>) with <code>requireNamespace()</code> and verify it’s in the namespace with <code>isNamespaceLoaded()</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># add "fs" to the namespace</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">requireNamespace</span>(<span class="st">"fs"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Loading required namespace: fs</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>[1] TRUE</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># verify it's been added </span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">isNamespaceLoaded</span>(<span class="st">"fs"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>[1] TRUE</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Finally, I’ll unload the <code>"fs"</code> package from the namespace so it can be tested in the debugger.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># remove fs</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">unloadNamespace</span>(<span class="st">"fs"</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># verify fs has been unloaded</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">isNamespaceLoaded</span>(<span class="st">"fs"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>[1] FALSE</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The great thing about designing these mini experiments is that they can be quickly converted into <a href="https://testthat.r-lib.org/"><code>testthat</code> tests</a>. I’m now confident I can use the namespace functions to:</p>
+<ol type="1">
+<li>View loaded packages namespaces<br>
+</li>
+<li>Check for a specific package in the loaded namespaces<br>
+</li>
+<li>Require a package namespace is loaded<br>
+</li>
+<li>Remove a loaded package namespace</li>
+</ol>
+<p>These are the behaviors I want to confirm in <code>check_pkg_ns()</code> using the <code>browser()</code> function.</p>
+</section>
+</section>
+</section>
+<section id="browser" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="browser">browser()</h2>
+<p>If I want to explore the behaviors of the namespace functions in <code>check_pkg_ns()</code>, I need to add <code>browser()</code> somewhere I can ‘step into’ this function and then proceed through line-by-line. In this case, the top of the function makes sense:</p>
+<div id="fig-browser_fun" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-browser_fun" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-browser_fun.png" class="img-fluid figure-img" style="width:80.0%" data-ref-parent="fig-browser_fun"></p>
+<figcaption class="figure-caption">(a) <code>browser()</code> in <code>check_pkg_ns()</code></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;1: <code>browser()</code> placement in <code>check_pkg_ns()</code></figcaption>
+</figure>
+</div>
+<section id="debug-mode" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="debug-mode">Debug mode</h3>
+<p>To enter debugging mode, I’ll need to run <code>check_pkg_ns()</code> or source <code>R/check_pkg_ns.R</code> with the package I used in my experiments.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">check_pkg_ns</span>(<span class="st">"fs"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="column-page-inset-right">
+<div id="fig-dbg-debug_mode" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-dbg-debug_mode" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-debug_mode.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-debug_mode"></p>
+<figcaption class="figure-caption">(a) Debug mode</figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;2: RStudio IDE in debug mode</figcaption>
+</figure>
+</div>
+</div>
+<p>The <code>browser()</code> function is one of the multiple methods for using RStudio debugging tools (see the <strong>TIP</strong> callout box below for more).</p>
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+TIP: Other debugging methods
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.15em; color: #063E23;">
+<p>In this post, I focused on using the <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/browser.html"><code>browser()</code></a> function to enter debug mode, but RStudio has several built-in tools that can help you debug your R code:</p>
+<ul>
+<li><p><strong>Debug function on error:</strong> You can set R to automatically enter the debugger when an error occurs by using <code>options(error = utils::recover)</code>. Then, when an error occurs, you’ll be given a menu of places to browse, the most recent (the location where the error occurred) first.</p></li>
+<li><p><strong>Breakpoints:</strong> Breakpoints can be set in your R scripts to pause execution at a particular line of code. You can add breakpoints by clicking to the left of the line number in the script editor or by pressing Shift+F9 with your cursor on the desired line. Then, run your code. Execution will stop just before the line with the breakpoint, allowing you to inspect the current state of the environment.</p></li>
+<li><p><strong><code>debug()</code>:</strong> You can use <code>debug(function_name)</code> to flag a function for “debug” mode. When you call the function, the debugger will open and stop at the first line of the function, where you can step through the function line by line, inspect the environment, and see what’s happening at each step.</p></li>
+<li><p><strong><code>traceback()</code></strong>: When an error occurs, you can call <code>traceback()</code> to get a stack trace that shows you the sequence of calls that led up to the error.</p></li>
+<li><p><strong>Code Diagnostics</strong>: RStudio provides real-time notifications about potential issues in your code, like syntax errors or unused variables. These are not technically part of the debugger, but diagnostics will help you avoid bugs before you run your code.</p></li>
+</ul>
+<p>You should read <a href="https://support.posit.co/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE">this blog post</a> and <a href="https://adv-r.hadley.nz/debugging.html">this chapter</a> of Advanced R, 2nd Ed. for more information on the various debugging methods.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="console" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="console">Console</h3>
+<p>When the <code>browser()</code> function is called, the <strong>Console</strong> enters the ‘reactive browser environment,’ tells me where the debugging function was called from, and changes the prompt to <code>Browse[1]&gt;</code>:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>Called from: check_pkg_ns("fs")</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>Browse[1]&gt; </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>I can use the <strong>Console</strong> to inspect variables and ‘step through’ the function code.</p>
+<div class="column-page-inset-right">
+<div id="fig-console" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-console" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-browse-console.png" class="img-fluid figure-img" style="width:80.0%" data-ref-parent="fig-console"></p>
+<figcaption class="figure-caption">(a) Debug mode in <strong>Console</strong></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;3: Debug mode with <code>browser()</code> in Console</figcaption>
+</figure>
+</div>
+</div>
+<p>The debugger toolbar is also placed at the top of the <strong>Console</strong>:</p>
+<div id="fig-browser_toolbar" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-browser_toolbar" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-browser_toolbar.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-browser_toolbar"></p>
+<figcaption class="figure-caption">(a) Debug toolbar <strong>Console</strong></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;4: Debug toolbar in Console</figcaption>
+</figure>
+</div>
+<p>I can use the toolbar or enter the following commands in the <strong>Console</strong>:</p>
+<ul>
+<li><p><code>n</code> (next): execute the next step in the function</p></li>
+<li><p><code>s</code> (step into): step into the function call on the current line</p></li>
+<li><p><code>c</code> (continue): continue normal execution without stepping</p></li>
+<li><p><code>f</code> (finish): execute the rest of the current loop or function</p></li>
+<li><p><code>Q</code> (Quit): quit the debugger</p></li>
+</ul>
+<p>I’ll return to the <strong>Console</strong> in a bit (this is where most of the debugging is done), but let’s view the other changes to the IDE first.</p>
+</section>
+<section id="source" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="source">Source</h3>
+<p>In the <strong>Source</strong> pane, we can see the line with <code>browser()</code> has been highlighted with an arrow:</p>
+<div class="column-page-inset-right">
+<div id="fig-source" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-source" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-browse-source.png" class="img-fluid figure-img" style="width:80.0%" data-ref-parent="fig-source"></p>
+<figcaption class="figure-caption">(a) Debug mode in <strong>Source</strong></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;5: Debug mode with <code>browser()</code> in Source</figcaption>
+</figure>
+</div>
+</div>
+<p>The <strong>Source</strong> pane will continually update and highlight my execution position (i.e., what’s going to be executed next) as I ‘step through’ the code.</p>
+<p>*<em>After we’ve finished debugging, it’s important to remember to remove the <code>browser()</code> function so it isn’t triggered the next time it is executed.</em></p>
+</section>
+<section id="environment" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="environment">Environment</h3>
+<p>The <em>(Environment)</em> pane is changed from the global environment to the environment of the function that’s currently being executed in the <strong>Console</strong>:</p>
+<div class="column-page-inset-right">
+<div id="fig-env" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-env" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-browse-env.png" class="img-fluid figure-img" style="width:80.0%" data-ref-parent="fig-env"></p>
+<figcaption class="figure-caption">(a) Debug mode in <strong>Environment</strong></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;6: Debug mode with <code>browser()</code> in Environment</figcaption>
+</figure>
+</div>
+</div>
+<p>In the case of <code>check_pkg_ns()</code>, I can see the <strong>Values</strong> section contains the <code>pkg</code> (<code>"fs"</code>) and <code>quiet</code> (<code>FALSE</code>) arguments.</p>
+<section id="other-environments" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="other-environments">Other environments</h4>
+<p>The drop-down list of environments above the <strong>Values</strong> is arranged in reverse hierarchical order: The <strong>Global Environment</strong> is listed under the drop-down list, but it’s above the <code>check_pkg_ns()</code> environment in the search path:</p>
+<div class="column-page-inset-right">
+<div id="fig-env" class="quarto-layout-panel">
+<figure class="figure">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 50.0%;justify-content: center;">
+<div id="fig-env-list" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-browse-env-list.png" class="img-fluid figure-img" data-ref-parent="fig-env"></p>
+<figcaption class="figure-caption">(a) Items in <strong>Environment</strong> debug mode</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 50.0%;justify-content: center;">
+<div id="fig-env-list" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="search-path.png" title="Source: https://adv-r.hadley.nz/environments.html#search-path" class="img-fluid figure-img" data-ref-parent="fig-env"></p>
+<figcaption class="figure-caption">(b) <a href="https://adv-r.hadley.nz/environments.html#search-path">Package environments and the search path</a></figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p></p><figcaption class="figure-caption">Figure&nbsp;7: Environments with debugger</figcaption><p></p>
+</figure>
+</div>
+</div>
+</section>
+<section id="traceback" class="level4">
+<h4 class="anchored" data-anchor-id="traceback">Traceback</h4>
+<p>The traceback (or ‘call stack’) is the ‘stack’ of functions that have been run thus far:</p>
+<div id="fig-traceback" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-traceback" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-browse-traceback.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-traceback"></p>
+<figcaption class="figure-caption">(a) Traceback in <strong>Environment</strong></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;8: Environment Traceback viewer</figcaption>
+</figure>
+</div>
+<p>Clicking on an item in traceback will display the environment contents in the function’s code. Right now, it includes the call to <code>source("R/check_pkg_ns.R")</code>, and ‘Debug source’ call to <code>check_pkg_ns("fs")</code>.</p>
+<p>If the <strong><em>Show internals</em></strong> option is selected, the internal functions are shown (slightly subdued in gray).</p>
+<div id="fig-traceback-internals" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-traceback-internals" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-browse-traceback-internals.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-traceback-internals"></p>
+<figcaption class="figure-caption">(a) Traceback internals</figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;9: Traceback internals</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="arguments" class="level3">
+<h3 class="anchored" data-anchor-id="arguments">Arguments</h3>
+<p>The <code>pkg</code> argument can be printed to verify it’s contents.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>Browse[1]&gt; pkg</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>[1] "fs"</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The debugger lets me view the state of a function’s values or variables at each execution step, which helps me understand any incorrect or unexpected values.</p>
+<p>Based on the help files and my experiments, <code>check_pkg_ns()</code> should be looking through the namespace to see if a <code>pkg</code> is loaded; if it isn’t, that <code>pkg</code> is loaded in the namespace.</p>
+<p>I can also check the code from the mini experiments inside the debugger <strong>Console</strong> to see if the <code>fs</code> namespace has been loaded:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>Browse[1]&gt; isNamespaceLoaded("fs")</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>[1] FALSE</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>At my current location in <code>check_pkg_ns()</code>, the <code>fs</code> package hasn’t been loaded.</p>
+</section>
+<section id="stepping-through" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="stepping-through">Stepping through</h3>
+<p>I can begin ‘stepping through’ <code>check_pkg_ns()</code> by entering <strong><code>n</code></strong> in the <strong>Console</strong>:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>Browse[1]&gt; n</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Notice after the entering <strong><code>n</code></strong> in the <strong>Console</strong>, the debugger tells me where the <code>browser()</code> function has paused execution (<code>debug at /path/to/function/file.R</code>), the line number (<code>#27</code>), and the <code>check_pkg_ns()</code> function is printed to console (I’ve omitted it here):</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>Browse[1]&gt; n</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>debug at ~/projects/apps/dbap/R/check_pkg_ns.R#27:</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>&lt;...check_pkg_ns() function...&gt;</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The prompt also changes from <code>Browse[1]&gt;</code> to <code>Browse[2]&gt;</code> to let me know I’m inside the <code>check_pkg_ns()</code> function.</p>
+<p>I’ll use <strong><code>n</code></strong> (or Next) to continue following the path <code>pkg</code> takes through the function:</p>
+<div class="column-page-inset-right">
+<div id="fig-dbg-next-console" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-dbg-next-console" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-next-console.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-next-console"></p>
+<figcaption class="figure-caption">(a) Use Console to step through function</figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;10: Use <code>n</code> to step through <code>check_pkg_ns()</code></figcaption>
+</figure>
+</div>
+</div>
+<p>When I land on the line <em>after</em> the call to <code>requireNamespace()</code>, I can check to see if the <code>fs</code> namespace has been loaded with <code>isNamespaceLoaded("fs")</code></p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; isNamespaceLoaded("fs")</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>[1] TRUE</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="inspect-values" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="inspect-values">Inspect values</h3>
+<p>Now that I’ve confirmed <code>check_pkg_ns()</code> works with <code>fs</code>, I should also confirm it works with a development package (i.e., not on CRAN). I can test this with the <a href="https://github.com/csgillespie/roxygen2Comment"><code>roxygen2Comment</code> package</a>–it contains an addin for pasting <code>roxygen2</code> comment blocks.</p>
+<p>To quit debug mode, I can enter <strong><code>Q</code></strong> in the <strong>Console</strong> or click on the red square (<strong><em>Stop</em></strong>) icon in the toolbar.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; Q</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>I’ll confirm <code>roxygen2Comment</code> is not loaded with <code>isNamespaceLoaded()</code>, then change the <code>pkg</code> argument in <code>check_pkg_ns()</code> and re-run the function</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>isNamespaceLoaded("roxygen2Comment")</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>[1] FALSE</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>&gt; check_pkg_ns("roxygen2Comment")</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>Called from: check_pkg_ns("roxygen2Comment")</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>Browse[1]&gt; </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This time, when I step through <code>check_pkg_ns()</code>, I notice <code>pkg</code> takes an alternative path:</p>
+<div class="column-page-inset-right">
+<div id="fig-dbg-next-console-02" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-dbg-next-console-02" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-next-console-02.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-next-console-02"></p>
+<figcaption class="figure-caption">(a) Alternative path through function</figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;11: Development package in <code>check_pkg_ns()</code></figcaption>
+</figure>
+</div>
+</div>
+<p>When the <strong>Source</strong> pane highlights the <code>stop()</code> function, I can check to confirm this package wasn’t loaded:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; isNamespaceLoaded("roxygen2Comment")</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>[1] FALSE</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If I enter <strong><code>n</code></strong> one more time in the <strong>Console</strong>, I see the <code>stop()</code> error from the function is returned:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; n</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>Error in check_pkg_ns("roxygen2Comment") : </span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  roxygen2Comment not available</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>I’ll perform one last check on <code>check_pkg_ns()</code>: what if I want to pass multiple packages to <code>pkg</code>? I’ll check this with <a href="https://fs.r-lib.org/"><code>fs</code></a> and <a href="https://klmr.me/box/index.html"><code>box</code></a>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># First make sure these aren't loaded...</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">unloadNamespace</span>(<span class="st">"fs"</span>)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="fu">unloadNamespace</span>(<span class="st">"box"</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Now combine into vector</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>pkgs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"fs"</span>, <span class="st">"box"</span>)</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="fu">check_pkg_ns</span>(pkgs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>After entering debug mode, I want to proceed to the control flow and verify the <code>pkgs</code> variable:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>&gt; check_pkg_ns(pkgs)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>Called from: check_pkg_ns(pkgs)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>Browse[1]&gt; n</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; pkgs</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>[1] "fs"  "box"</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This confirms both packages are in the <code>pkg</code> variable. If I use <strong><code>n</code></strong> to proceed through to end of <code>check_pkg_ns()</code>, I see the final line returns the successful loading message twice:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; n</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>Loading package: fs</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>Loading package: box</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="browser-recap" class="level3">
+<h3 class="anchored" data-anchor-id="browser-recap"><em>browser() recap</em></h3>
+<p>Once execution is paused with <code>browser()</code>, using the <strong><code>n</code></strong> command in the <strong>Console</strong> (or in the debugging toolbar at the top-right of the pane) lets me step through the code line-by-line.</p>
+<div id="fig-next_toolbar" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-next_toolbar" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-next_toolbar.png" class="img-fluid figure-img" style="width:75.0%" data-ref-parent="fig-next_toolbar"></p>
+<figcaption class="figure-caption">(a) Step through/over</figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;12: Step through/over code</figcaption>
+</figure>
+</div>
+<p>This allows me to inspect the state of the variables at various points within a function.</p>
+</section>
+</section>
+<section id="nested-functions" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="nested-functions">Nested functions</h2>
+<p>The <code>check_pkg_ns()</code> function is fairly basic in that it performs a single ‘unit of work’ (i.e., <em>check if add-on packages package have been loaded and attached; if not, load and attach them</em>). When functions become more complex, it’s more efficient to use nested functions–i.e., functions within other functions–which allow me to execute multiple commands simultaneously.</p>
+<p>An example of this is the <code>pkg_data_results()</code> function below:</p>
+<div class="cell">
+<details open="">
+<summary>pkg_data_results()</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pkg_data_results</span>(<span class="st">"dplyr"</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 5 × 3</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="do">##   Package Item              Title              </span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;chr&gt;   &lt;chr&gt;             &lt;chr&gt;              </span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 dplyr   band_instruments  Band membership    </span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 dplyr   band_instruments2 Band membership    </span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 dplyr   band_members      Band membership    </span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 dplyr   starwars          Starwars characters</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="do">## 5 dplyr   storms            Storm tracks data</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><code>pkg_data_results()</code> returns a <code>data.frame</code> with three columns: <code>Package</code>, <code>Item</code>, and <code>Title</code>.</p>
+<p>The output from <code>pkg_data_results()</code> comes from the <code>data(package = "pkg")</code> output:</p>
+<div id="fig-next_toolbar" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-dbg-data_output" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-data_output.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-next_toolbar"></p>
+<figcaption class="figure-caption">(a) Output from <code>data(package = )</code></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;13: <code>data(package = "dplyr")</code></figcaption>
+</figure>
+</div>
+<p>This output is normally opened in a separate window, but it’s created as a matrix.</p>
+<div class="cell">
+<details open="">
+<summary>structure of data(package =)</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(<span class="fu">data</span>(<span class="at">package =</span> <span class="st">"dplyr"</span>))</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="do">## List of 4</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="do">##  $ title  : chr "Data sets"</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="do">##  $ header : NULL</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="do">##  $ results: chr [1:5, 1:4] "dplyr" "dplyr" "dplyr" "dplyr" ...</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="do">##   ..- attr(*, "dimnames")=List of 2</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="do">##   .. ..$ : NULL</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a><span class="do">##   .. ..$ : chr [1:4] "Package" "LibPath" "Item" "Title"</span></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a><span class="do">##  $ footer : NULL</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a><span class="do">##  - attr(*, "class")= chr "packageIQR"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><code>pkg_data_results()</code> converts the matrix output into a <code>data.frame</code> three columns in (<code>Package</code>, <code>Title</code>, <code>Item</code>).</p>
+<p>I’ve placed <code>browser()</code> at the top of <code>pkg_data_results()</code> and run it with the <a href="https://fivethirtyeight-r.netlify.app/"><code>fivethirtyeight</code> package</a>.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>pkg_data_results("fivethirtyeight")</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="fig-pkg_data_results_538" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-dbg-pkg_data_results_538" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-pkg_data_results_538.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-pkg_data_results_538"></p>
+<figcaption class="figure-caption">(a) browser() in pkg_data_results(“fivethirtyeight”)</figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;14: <code>browser()</code> in <code>pkg_data_results("fivethirtyeight")</code></figcaption>
+</figure>
+</div>
+<section id="step-into" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="step-into">Step into</h3>
+<p>When the debugger lands on <code>check_pkg_ns()</code>, I can follow the <code>fivethirtyeight</code> package through this function by ‘stepping into’ this function by entering <strong><code>s</code></strong> in the <strong>Console</strong> (or the toolbar icon):</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="dbg-step_into_toolbar.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Step into a function</figcaption>
+</figure>
+</div>
+</div></div><div id="fig-step_into_pkg_data_results" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-dbg-step_into_pkg_data_results" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-step_into_pkg_data_results.png" class="img-fluid figure-img" style="width:70.0%" data-ref-parent="fig-step_into_pkg_data_results"></p>
+<figcaption class="figure-caption">(a) browser() in pkg_data_results(“fivethirtyeight”)</figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;15: Step into in <code>pkg_data_results("fivethirtyeight")</code></figcaption>
+</figure>
+</div>
+</section>
+<section id="debugging-at-vs-in" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="debugging-at-vs-in">Debugging ‘at’ vs ‘in’</h3>
+<p>In the <strong>Console</strong>, there are now <code>debugging in</code> and <code>debug at</code> locations:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; s</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>debugging in: check_pkg_ns(pkg = pkg, quiet = TRUE)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>debug at /apps/dbap/R/check_pkg_ns.R#25: </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The <code>debug at</code> location is the the we location of the initial call to <code>browser()</code>, and <code>debugging in</code> is the function I <em>stepped into</em>.</p>
+<p>The prompt has also changed from <code>Browse[2]&gt;</code> to <code>Browse[3]&gt;</code>:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>Browse[3]&gt;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="column-page-inset-right">
+<div id="fig-dbg-step_into_01" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-dbg-step_into_01" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-step_into_01.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-step_into_01"></p>
+<figcaption class="figure-caption">(a) Use <code>s</code> to step into check_pkg_ns()</figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;16: Use <code>s</code> to step through <code>check_pkg_ns()</code></figcaption>
+</figure>
+</div>
+</div>
+<p>The <code>R/check_pkg_ns.R</code> file will open with the highlighted function. I can proceed through <code>check_pkg_ns()</code> using <strong><code>n</code></strong> until I reach <code>requireNamespace()</code>:</p>
+<div class="column-page-inset-right">
+<div id="fig-dbg-step_into_02" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-dbg-step_into_02" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-step_into_02.png" class="img-fluid figure-img" style="width:70.0%" data-ref-parent="fig-dbg-step_into_02"></p>
+<figcaption class="figure-caption">(a) Use <code>n</code> to step through <code>check_pkg_ns()</code></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;17: Use <code>n</code> to step through <code>check_pkg_ns()</code></figcaption>
+</figure>
+</div>
+</div>
+<p>When I reach the final line in <code>check_pkg_ns()</code>, I can use either method below verify the <code>pkg</code> namespace is loaded:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>Browse[3]&gt; pkg %in% loadedNamespaces()</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>[1] TRUE</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>Browse[3]&gt; isNamespaceLoaded(pkg)</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>[1] TRUE</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>After the last line of <code>check_pkg_ns()</code> has been evaluated, the debugger will automatically return to the <code>pkg_data_results()</code> function. The <strong>Source</strong> pane will highlight the final step (and the prompt returns to <code>Browse[2]&gt;</code>):</p>
+<div class="column-page-inset-right">
+<div id="fig-dbg-step_into_03" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-dbg-step_into_03" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-step_into_03.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-step_into_03"></p>
+<figcaption class="figure-caption">(a) Step into/through <code>check_pkg_ns()</code> from <code>pkg_data_results()</code></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;18: Step into and through <code>check_pkg_ns()</code> from <code>pkg_data_results()</code></figcaption>
+</figure>
+</div>
+</div>
+<p>A final <strong><code>n</code></strong> command in the <strong>Console</strong> will return the output table:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; n</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>### A tibble: 129 × 3</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>##    Package         Item                Title</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>##    &lt;chr&gt;           &lt;chr&gt;               &lt;chr&gt;</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>##  1 fivethirtyeight US_births_1994_2003 Some People Are Too Superstitious To …</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>##  2 fivethirtyeight US_births_2000_2014 Some People Are Too Superstitious To …</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>##  3 fivethirtyeight ahca_polls          American Health Care Act Polls</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>##  4 fivethirtyeight airline_safety      Should Travelers Avoid Flying Airline…</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>##  5 fivethirtyeight antiquities_act     Trump Might Be The First President To…</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>##  6 fivethirtyeight august_senate_polls How Much Trouble Is Ted Cruz Really  …</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>##  7 fivethirtyeight avengers            Joining The Avengers Is As Deadly As</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>##  8 fivethirtyeight bachelorette        Bachelorette / Bachelor</span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>##  9 fivethirtyeight bad_drivers         Dear Mona, Which State Has The Worst …</span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>## 10 fivethirtyeight bechdel             The Dollar-And-Cents Case Against Hol…</span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>## # ℹ 119 more rows</span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>## # ℹ Use `print(n = ...)` to see more rows</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="put-it-all-together" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="put-it-all-together">Put it all together</h2>
+<p>The initial <code>pkg_data_str()</code> function for returning a table of ‘package data structures’ is below.</p>
+<div class="cell">
+<details>
+<summary>expand to see initial pkg_data_str()</summary>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>pkg_data_str <span class="ot">&lt;-</span> <span class="cf">function</span>(pkg) {</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  data_results <span class="ot">&lt;-</span> <span class="fu">pkg_data_results</span>(<span class="at">pkg =</span> pkg)</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  ds_list <span class="ot">&lt;-</span> purrr<span class="sc">::</span><span class="fu">map2</span>(</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">.x =</span> data_results[[<span class="st">"Item"</span>]], </span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">.y =</span> data_results[[<span class="st">"Package"</span>]],</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">.f =</span> pkg_data_object, <span class="at">.progress =</span> <span class="cn">TRUE</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>  cols_tbl <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">mutate</span>(data_results,</span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">Class =</span> purrr<span class="sc">::</span><span class="fu">map</span>(<span class="at">.x =</span> ds_list, <span class="at">.f =</span> class) <span class="sc">|&gt;</span></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>      purrr<span class="sc">::</span><span class="fu">map</span>(paste0, <span class="at">collapse =</span> <span class="st">", "</span>) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">Columns =</span> purrr<span class="sc">::</span><span class="fu">map</span>(<span class="at">.x =</span> ds_list, <span class="at">.f =</span> ncol) <span class="sc">|&gt;</span></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>      purrr<span class="sc">::</span><span class="fu">map</span>(paste0, <span class="st">" columns"</span>) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">Rows =</span> purrr<span class="sc">::</span><span class="fu">map</span>(<span class="at">.x =</span> ds_list, <span class="at">.f =</span> nrow) <span class="sc">|&gt;</span></span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>      purrr<span class="sc">::</span><span class="fu">map</span>(paste0, <span class="st">" rows"</span>) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">Logical =</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">.x =</span> ds_list,</span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">.f =</span> col_type_count, <span class="st">"log"</span></span>
+<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">Numeric =</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a>      <span class="at">.x =</span> ds_list,</span>
+<span id="cb34-24"><a href="#cb34-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">.f =</span> col_type_count, <span class="st">"num"</span></span>
+<span id="cb34-25"><a href="#cb34-25" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb34-26"><a href="#cb34-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">Character =</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb34-27"><a href="#cb34-27" aria-hidden="true" tabindex="-1"></a>      <span class="at">.x =</span> ds_list,</span>
+<span id="cb34-28"><a href="#cb34-28" aria-hidden="true" tabindex="-1"></a>      <span class="at">.f =</span> col_type_count, <span class="st">"chr"</span></span>
+<span id="cb34-29"><a href="#cb34-29" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb34-30"><a href="#cb34-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">Factor =</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb34-31"><a href="#cb34-31" aria-hidden="true" tabindex="-1"></a>      <span class="at">.x =</span> ds_list,</span>
+<span id="cb34-32"><a href="#cb34-32" aria-hidden="true" tabindex="-1"></a>      <span class="at">.f =</span> col_type_count, <span class="st">"fct"</span></span>
+<span id="cb34-33"><a href="#cb34-33" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb34-34"><a href="#cb34-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">List =</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb34-35"><a href="#cb34-35" aria-hidden="true" tabindex="-1"></a>      <span class="at">.x =</span> ds_list,</span>
+<span id="cb34-36"><a href="#cb34-36" aria-hidden="true" tabindex="-1"></a>      <span class="at">.f =</span> col_type_count, <span class="st">"lst"</span></span>
+<span id="cb34-37"><a href="#cb34-37" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb34-38"><a href="#cb34-38" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb34-39"><a href="#cb34-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-40"><a href="#cb34-40" aria-hidden="true" tabindex="-1"></a>  pkg_tbls_dfs <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(cols_tbl,</span>
+<span id="cb34-41"><a href="#cb34-41" aria-hidden="true" tabindex="-1"></a>    stringr<span class="sc">::</span><span class="fu">str_detect</span>(Class, <span class="st">"data.frame"</span>)</span>
+<span id="cb34-42"><a href="#cb34-42" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb34-43"><a href="#cb34-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-44"><a href="#cb34-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(pkg_tbls_dfs)</span>
+<span id="cb34-45"><a href="#cb34-45" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><code>pkg_data_str()</code> uses nested functions to create the following intermediate objects I can check while developing with <code>browser()</code> (the example below uses the <a href="https://forcats.tidyverse.org/"><code>forcats</code> package</a>)</p>
+<section id="data-results" class="level3">
+<h3 class="anchored" data-anchor-id="data-results">Data results</h3>
+<p>The output from <code>pkg_data_results()</code> is stored in <code>data_results</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>data_results <span class="ot">&lt;-</span> <span class="fu">pkg_data_results</span>(<span class="at">pkg =</span> pkg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; data_results</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a># A tibble: 1 × 3</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  Package Item    Title                                                           </span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;                                                           </span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>1 forcats gss_cat A sample of categorical variables from the General Social su...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="package-data-objects" class="level3">
+<h3 class="anchored" data-anchor-id="package-data-objects">Package data objects</h3>
+<p>After extracting the <code>Package</code>, <code>Title</code>, and <code>Type</code> columns from <code>pkg_data_results()</code>, I use <code>purrr:map2()</code> to iterate over each <code>Item</code> and <code>Package</code>, which builds a list of datasets (<code>ds_list</code>). The <code>.f</code> argument is a <a href="https://github.com/mjfrigaard/dbap/blob/main/R/pkg_data_object.R">nested <code>pkg_data_object()</code> function</a>, which calls <code>base::get()</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>ds_list <span class="ot">&lt;-</span> purrr<span class="sc">::</span><span class="fu">map2</span>(</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">.x =</span> data_results[[<span class="st">"Item"</span>]],</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">.y =</span> data_results[[<span class="st">"Package"</span>]],</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">.f =</span> pkg_data_object, <span class="at">.progress =</span> <span class="cn">TRUE</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>I’ll view the contents of the list with <code>str()</code></p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; str(ds_list)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>List of 1</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a> $ : tibble [21,483 × 9] (S3: tbl_df/tbl/data.frame)</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  ..$ year   : int [1:21483] 2000 2000 2000 2000 2000 2000 2000 2000 ...</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  ..$ marital: Factor w/ 6 levels "No answer","Never married",..: 2 4 ...</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>  ..$ age    : int [1:21483] 26 48 67 39 25 25 36 44 44 47 ...</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>  ..$ race   : Factor w/ 4 levels "Other","Black",..: 3 3 3 3 3 3 3 3 3 3 ...</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>  ..$ rincome: Factor w/ 16 levels "No answer","Don't know",..: 8 8 16 16 ...</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>  ..$ partyid: Factor w/ 10 levels "No answer","Don't know",..: 6 5 7 6  ...</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>  ..$ relig  : Factor w/ 16 levels "No answer","Don't know",..: 15 15 15 ...</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>  ..$ denom  : Factor w/ 30 levels "No answer","Don't know",..: 25 23 3 ...</span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>  ..$ tvhours: int [1:21483] 12 NA 2 4 1 NA 3 NA 0 3 ...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="column-counts" class="level3">
+<h3 class="anchored" data-anchor-id="column-counts">Column counts</h3>
+<p>The <code>ds_list</code> created above is used to add the <code>Class</code>, <code>Columns</code>, and <code>Rows</code> columns to <code>data_results</code> using the <code>class()</code>, <code>ncol()</code>, <code>nrow()</code>. The column counts are added with the <a href="https://github.com/mjfrigaard/dbap/blob/main/R/col_type_count.R"><code>col_type_count()</code> function</a>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>  cols_tbl <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">mutate</span>(data_results,</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">Class =</span> purrr<span class="sc">::</span><span class="fu">map</span>(<span class="at">.x =</span> ds_list, <span class="at">.f =</span> class) <span class="sc">|&gt;</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>      purrr<span class="sc">::</span><span class="fu">map</span>(paste0, <span class="at">collapse =</span> <span class="st">", "</span>) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Columns =</span> purrr<span class="sc">::</span><span class="fu">map</span>(<span class="at">.x =</span> ds_list, <span class="at">.f =</span> ncol) <span class="sc">|&gt;</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>      purrr<span class="sc">::</span><span class="fu">map</span>(paste0, <span class="st">" columns"</span>) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">Rows =</span> purrr<span class="sc">::</span><span class="fu">map</span>(<span class="at">.x =</span> ds_list, <span class="at">.f =</span> nrow) <span class="sc">|&gt;</span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>      purrr<span class="sc">::</span><span class="fu">map</span>(paste0, <span class="st">" rows"</span>) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">Logical =</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">.x =</span> ds_list,</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">.f =</span> col_type_count, <span class="st">"log"</span></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">Numeric =</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">.x =</span> ds_list,</span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">.f =</span> col_type_count, <span class="st">"num"</span></span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">Character =</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">.x =</span> ds_list,</span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">.f =</span> col_type_count, <span class="st">"chr"</span></span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb39-20"><a href="#cb39-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">Factor =</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb39-21"><a href="#cb39-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">.x =</span> ds_list,</span>
+<span id="cb39-22"><a href="#cb39-22" aria-hidden="true" tabindex="-1"></a>      <span class="at">.f =</span> col_type_count, <span class="st">"fct"</span></span>
+<span id="cb39-23"><a href="#cb39-23" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb39-24"><a href="#cb39-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">List =</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb39-25"><a href="#cb39-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">.x =</span> ds_list,</span>
+<span id="cb39-26"><a href="#cb39-26" aria-hidden="true" tabindex="-1"></a>      <span class="at">.f =</span> col_type_count, <span class="st">"lst"</span></span>
+<span id="cb39-27"><a href="#cb39-27" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb39-28"><a href="#cb39-28" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb40"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; cols_tbl</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a># A tibble: 1 × 11</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  Package Item    Title          Class Columns Rows  Logical Numeric Character Factor  List</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;          &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;int&gt;   &lt;int&gt;     &lt;int&gt;  &lt;int&gt; &lt;int&gt;</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>1 forcats gss_cat A sample of c… tbl_… 9 colu… 2148…       0       3         0      6     0</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="rectangular-objects" class="level3">
+<h3 class="anchored" data-anchor-id="rectangular-objects">Rectangular objects</h3>
+<p>Finally, <code>cols_tbl</code> is filtered to only those objects with a <code>class()</code> containing the string ‘<code>data.frame</code>’.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>pkg_tbls_dfs <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(<span class="at">.data =</span> cols_tbl,</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>                  stringr<span class="sc">::</span><span class="fu">str_detect</span>(Class, <span class="st">"data.frame"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This is exactly the same as the previous tibble because forcats has only one data object (<code>gss_cat</code>), and it’s a tibble:</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; pkg_tbls_dfs</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a># A tibble: 1 × 11</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  Package Item    Title          Class Columns Rows  Logical Numeric Character Factor  List</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;          &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;int&gt;   &lt;int&gt;     &lt;int&gt;  &lt;int&gt; &lt;int&gt;</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>1 forcats gss_cat A sample of c… tbl_… 9 colu… 2148…       0       3         0      6     0</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>I’m explicitly returning <code>pkg_tbls_dfs</code> to view it in the debugger. When I’m confident it’s behaving as expected, I’ll remove this final object and ‘<a href="https://style.tidyverse.org/functions.html#return">rely on R to return the result of the last evaluated expression</a>.’</p>
+</section>
+<section id="error" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="error">Error!</h3>
+<p>When I tried using the initial <code>pkg_data_str()</code> with a package that had zero data objects (<code>fs</code>), I get the following error:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pkg_data_str</span>(<span class="st">"fs"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb44"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>Error in `dplyr::filter()` at dbap/R/pkg_data_str.R:78:2:</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>ℹ In argument: `stringr::str_detect(Class, "data.frame")`.</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>Caused by error in `vctrs::vec_size_common()`:</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>! object 'Class' not found</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>Run `rlang::last_trace()` to see where the error occurred.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In the debugger, I was able to pinpoint the source of this error (and the underlying condition causing it to occur).</p>
+<section id="replicate-the-error" class="level4 page-columns page-full">
+<h4 class="anchored" data-anchor-id="replicate-the-error">Replicate the error</h4>
+<p>The <code>browser()</code> beings at the top of <code>pkg_data_str()</code>, where I’ll step into <code>pkg_data_results()</code></p>
+<div class="column-page-inset-right">
+<div id="fig-dbg-all_together_01" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-dbg-all_together_01" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-all_together_01.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-all_together_01"></p>
+<figcaption class="figure-caption">(a) <code>pkg_data_results()</code> from <code>pkg_data_str()</code></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;19: Step into <code>pkg_data_results()</code> from <code>pkg_data_str()</code></figcaption>
+</figure>
+</div>
+</div>
+<p>When I’m inside <code>pkg_data_results()</code>, I’ll use <strong><code>n</code></strong> to verify the <code>fs</code> package namespace was loaded and the <code>tibble</code> was created:</p>
+<div class="column-page-inset-right">
+<div id="fig-dbg-all_together_02" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-dbg-all_together_02" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-all_together_02.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-all_together_02"></p>
+<figcaption class="figure-caption">(a) Step through <code>pkg_data_results()</code></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;20: Step through <code>pkg_data_results()</code> (from <code>pkg_data_str()</code>)</figcaption>
+</figure>
+</div>
+</div>
+<p>Back in <code>pkg_data_str()</code>, the output from <code>pkg_data_results()</code> is stored as <code>data_results</code>. I can check the contents of <code>data_results</code> in the <strong>Console</strong>.</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; data_results</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a># A tibble: 0 × 3</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a># ℹ 3 variables: Package &lt;chr&gt;, Item &lt;chr&gt;, Title &lt;chr&gt;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>I see it’s empty. An empty <code>data_results</code> results in an empty list output from <code>purrr::map2()</code>:</p>
+<div class="column-page-inset-right">
+<div id="fig-dbg-all_together_03" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-dbg-all_together_03" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-all_together_03.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-all_together_03"></p>
+<figcaption class="figure-caption">(a) Step out of <code>pkg_data_results()</code></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;21: Step out of <code>pkg_data_results()</code> back into <code>pkg_data_str()</code></figcaption>
+</figure>
+</div>
+</div>
+<div class="sourceCode" id="cb46"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; ds_list</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>list()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The empty <code>ds_list</code> results in <code>dplyr::mutate()</code> being unable to create the <code>Class</code> column in <code>cols_tbl</code>:</p>
+<div class="column-page-inset-right">
+<div id="fig-dbg-all_together_04" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-dbg-all_together_04" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-all_together_04.png" class="img-fluid figure-img" style="width:65.0%" data-ref-parent="fig-dbg-all_together_04"></p>
+<figcaption class="figure-caption">(a) <code>dplyr::mutate()</code> call in <code>get_ds_strs()</code></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;22: Create <code>Class</code> column in <code>get_ds_strs()</code></figcaption>
+</figure>
+</div>
+</div>
+<div class="sourceCode" id="cb47"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; cols_tbl</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a># A tibble: 0 × 3</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a># ℹ 3 variables: Package &lt;chr&gt;, Item &lt;chr&gt;, Title &lt;chr&gt;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Which triggers the error in <code>dplyr::filter()</code></p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; n</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>Error in `dplyr::filter()` at dbap/R/get_ds_str.R:60:2:</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>ℹ In argument: `stringr::str_detect(Class, "data.frame")`.</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>Caused by error in `vctrs::vec_size_common()`:</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>! object 'Class' not found</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>Run `rlang::last_trace()` to see where the error occurred.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The full path for the <code>fs</code> package through the initial <code>get_ds_str()</code> is outlined in the figure below:</p>
+<div class="column-page-inset-right">
+<div id="fig-dbg-all_together_05" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-dbg-all_together_05" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="dbg-all_together_05.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-all_together_05"></p>
+<figcaption class="figure-caption">(a) Error path in <code>get_ds_strs()</code></figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;23: Replicate the error from <code>get_ds_strs()</code></figcaption>
+</figure>
+</div>
+</div>
+</section>
+</section>
+<section id="solution" class="level3">
+<h3 class="anchored" data-anchor-id="solution">Solution</h3>
+<p>To fix this error, I had to make some changes to <em>both</em> <code>pkg_data_results()</code> <em>and</em> <code>pkg_data_str()</code>:</p>
+<p>In <code>pkg_data_results()</code>, I added control flow to return a <code>tibble</code> of logical columns (all <code>NA</code>) if the package doesn’t have any data objects:</p>
+<div class="cell">
+<details>
+<summary>Expand to view the updated pkg_data_results()</summary>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>pkg_data_results <span class="ot">&lt;-</span> <span class="cf">function</span>(pkg) {</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># load packages</span></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">check_pkg_ns</span>(<span class="at">pkg =</span> pkg, <span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> tibble<span class="sc">::</span><span class="fu">as_tibble</span>(</span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">data.frame</span>(</span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">Package =</span> <span class="fu">data</span>(<span class="at">package =</span> pkg)<span class="sc">$</span>results[, <span class="st">"Package"</span>],</span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">Item =</span> <span class="fu">data</span>(<span class="at">package =</span> pkg)<span class="sc">$</span>results[, <span class="st">"Item"</span>],</span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">Title =</span> <span class="fu">data</span>(<span class="at">package =</span> pkg)<span class="sc">$</span>results[, <span class="st">"Title"</span>],</span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">check.names =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">row.names =</span> <span class="cn">NULL</span></span>
+<span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-16"><a href="#cb49-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">nrow</span>(results) <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb49-17"><a href="#cb49-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-18"><a href="#cb49-18" aria-hidden="true" tabindex="-1"></a>  data_results <span class="ot">&lt;-</span> tibble<span class="sc">::</span><span class="fu">as_tibble</span>(</span>
+<span id="cb49-19"><a href="#cb49-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">data.frame</span>(</span>
+<span id="cb49-20"><a href="#cb49-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">matrix</span>(</span>
+<span id="cb49-21"><a href="#cb49-21" aria-hidden="true" tabindex="-1"></a>            <span class="at">nrow =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">11</span>,</span>
+<span id="cb49-22"><a href="#cb49-22" aria-hidden="true" tabindex="-1"></a>            <span class="at">byrow =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb49-23"><a href="#cb49-23" aria-hidden="true" tabindex="-1"></a>            <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="cn">NULL</span>,</span>
+<span id="cb49-24"><a href="#cb49-24" aria-hidden="true" tabindex="-1"></a>              <span class="fu">c</span>(<span class="st">"Package"</span>, <span class="st">"Item"</span>, <span class="st">"Title"</span>,</span>
+<span id="cb49-25"><a href="#cb49-25" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Class"</span>, <span class="st">"Columns"</span>, <span class="st">"Rows"</span>,</span>
+<span id="cb49-26"><a href="#cb49-26" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Logical"</span>, <span class="st">"Numeric"</span>, </span>
+<span id="cb49-27"><a href="#cb49-27" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Character"</span>, <span class="st">"Factor"</span>, </span>
+<span id="cb49-28"><a href="#cb49-28" aria-hidden="true" tabindex="-1"></a>                <span class="st">"List"</span>))</span>
+<span id="cb49-29"><a href="#cb49-29" aria-hidden="true" tabindex="-1"></a>                ),</span>
+<span id="cb49-30"><a href="#cb49-30" aria-hidden="true" tabindex="-1"></a>        <span class="at">row.names =</span> <span class="cn">NULL</span>))</span>
+<span id="cb49-31"><a href="#cb49-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-32"><a href="#cb49-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(data_results)</span>
+<span id="cb49-33"><a href="#cb49-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-34"><a href="#cb49-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-35"><a href="#cb49-35" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb49-36"><a href="#cb49-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-37"><a href="#cb49-37" aria-hidden="true" tabindex="-1"></a>    results</span>
+<span id="cb49-38"><a href="#cb49-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-39"><a href="#cb49-39" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb49-40"><a href="#cb49-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-41"><a href="#cb49-41" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>In <code>pkg_data_str()</code>, I added two <code>if</code> statements:</p>
+<ul>
+<li><p>the first <code>if</code> statement identifies the logical <code>NA</code> columns (indicating the results from <code>data(package = pkg)</code> didn’t have any data objects)</p></li>
+<li><p>the second <code>if</code> statement creates the <code>Class</code> column <em>first</em>, then filters the rows to only those containing a <code>data.frame</code> string pattern. If none of the data objects have the <code>data.frame</code> string pattern in their class, an empty <code>data_results</code> table is returned</p></li>
+</ul>
+<div class="cell">
+<details>
+<summary>Expand to view the updated pkg_data_str()</summary>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>pkg_data_str <span class="ot">&lt;-</span> <span class="cf">function</span>(pkg) {</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  data_results <span class="ot">&lt;-</span> <span class="fu">pkg_data_results</span>(<span class="at">pkg =</span> pkg)</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.logical</span>(data_results[[<span class="st">"Item"</span>]])) {</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># data_results contains data objects</span></span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>    ds_list <span class="ot">&lt;-</span> purrr<span class="sc">::</span><span class="fu">map2</span>(</span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">.x =</span> data_results[[<span class="st">"Item"</span>]], </span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">.y =</span> data_results[[<span class="st">"Package"</span>]],</span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">.f =</span> pkg_data_object, <span class="at">.progress =</span> <span class="cn">TRUE</span></span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a>    class_tbl <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">mutate</span>(data_results,</span>
+<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">Class =</span> purrr<span class="sc">::</span><span class="fu">map</span>(<span class="at">.x =</span> ds_list, <span class="at">.f =</span> class) <span class="sc">|&gt;</span></span>
+<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a>        purrr<span class="sc">::</span><span class="fu">map</span>(paste0, <span class="at">collapse =</span> <span class="st">", "</span>) <span class="sc">|&gt;</span> <span class="fu">unlist</span>()</span>
+<span id="cb50-16"><a href="#cb50-16" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb50-17"><a href="#cb50-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-18"><a href="#cb50-18" aria-hidden="true" tabindex="-1"></a>    df_tbl <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(</span>
+<span id="cb50-19"><a href="#cb50-19" aria-hidden="true" tabindex="-1"></a>      class_tbl,</span>
+<span id="cb50-20"><a href="#cb50-20" aria-hidden="true" tabindex="-1"></a>      stringr<span class="sc">::</span><span class="fu">str_detect</span>(Class, <span class="st">"data.frame"</span>)</span>
+<span id="cb50-21"><a href="#cb50-21" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb50-22"><a href="#cb50-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-23"><a href="#cb50-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">nrow</span>(df_tbl) <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb50-24"><a href="#cb50-24" aria-hidden="true" tabindex="-1"></a>      <span class="co"># df_tbl does not contain 'data.frame' classes</span></span>
+<span id="cb50-25"><a href="#cb50-25" aria-hidden="true" tabindex="-1"></a>      data_results <span class="ot">&lt;-</span> tibble<span class="sc">::</span><span class="fu">as_tibble</span>(</span>
+<span id="cb50-26"><a href="#cb50-26" aria-hidden="true" tabindex="-1"></a>        <span class="fu">data.frame</span>(</span>
+<span id="cb50-27"><a href="#cb50-27" aria-hidden="true" tabindex="-1"></a>          <span class="fu">matrix</span>(</span>
+<span id="cb50-28"><a href="#cb50-28" aria-hidden="true" tabindex="-1"></a>            <span class="at">nrow =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">11</span>,</span>
+<span id="cb50-29"><a href="#cb50-29" aria-hidden="true" tabindex="-1"></a>            <span class="at">byrow =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb50-30"><a href="#cb50-30" aria-hidden="true" tabindex="-1"></a>            <span class="at">dimnames =</span> <span class="fu">list</span>(</span>
+<span id="cb50-31"><a href="#cb50-31" aria-hidden="true" tabindex="-1"></a>              <span class="cn">NULL</span>,</span>
+<span id="cb50-32"><a href="#cb50-32" aria-hidden="true" tabindex="-1"></a>              <span class="fu">c</span>(</span>
+<span id="cb50-33"><a href="#cb50-33" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Package"</span>, <span class="st">"Item"</span>, <span class="st">"Title"</span>,</span>
+<span id="cb50-34"><a href="#cb50-34" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Class"</span>, <span class="st">"Columns"</span>, <span class="st">"Rows"</span>,</span>
+<span id="cb50-35"><a href="#cb50-35" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Logical"</span>, <span class="st">"Numeric"</span>, <span class="st">"Character"</span>,</span>
+<span id="cb50-36"><a href="#cb50-36" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Factor"</span>, <span class="st">"List"</span></span>
+<span id="cb50-37"><a href="#cb50-37" aria-hidden="true" tabindex="-1"></a>              )</span>
+<span id="cb50-38"><a href="#cb50-38" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb50-39"><a href="#cb50-39" aria-hidden="true" tabindex="-1"></a>          ),</span>
+<span id="cb50-40"><a href="#cb50-40" aria-hidden="true" tabindex="-1"></a>          <span class="at">row.names =</span> <span class="cn">NULL</span></span>
+<span id="cb50-41"><a href="#cb50-41" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb50-42"><a href="#cb50-42" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb50-43"><a href="#cb50-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-44"><a href="#cb50-44" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(data_results)</span>
+<span id="cb50-45"><a href="#cb50-45" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb50-46"><a href="#cb50-46" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb50-47"><a href="#cb50-47" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb50-48"><a href="#cb50-48" aria-hidden="true" tabindex="-1"></a>      <span class="co"># df_tbl contains 'data.frame' classes</span></span>
+<span id="cb50-49"><a href="#cb50-49" aria-hidden="true" tabindex="-1"></a>      dplyr<span class="sc">::</span><span class="fu">mutate</span>(df_tbl,</span>
+<span id="cb50-50"><a href="#cb50-50" aria-hidden="true" tabindex="-1"></a>        <span class="at">Columns =</span> purrr<span class="sc">::</span><span class="fu">map</span>(<span class="at">.x =</span> ds_list, <span class="at">.f =</span> ncol) <span class="sc">|&gt;</span></span>
+<span id="cb50-51"><a href="#cb50-51" aria-hidden="true" tabindex="-1"></a>          purrr<span class="sc">::</span><span class="fu">map</span>(paste0, <span class="st">" columns"</span>) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb50-52"><a href="#cb50-52" aria-hidden="true" tabindex="-1"></a>        <span class="at">Rows =</span> purrr<span class="sc">::</span><span class="fu">map</span>(<span class="at">.x =</span> ds_list, <span class="at">.f =</span> nrow) <span class="sc">|&gt;</span></span>
+<span id="cb50-53"><a href="#cb50-53" aria-hidden="true" tabindex="-1"></a>          purrr<span class="sc">::</span><span class="fu">map</span>(paste0, <span class="st">" rows"</span>) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb50-54"><a href="#cb50-54" aria-hidden="true" tabindex="-1"></a>        <span class="at">Logical =</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb50-55"><a href="#cb50-55" aria-hidden="true" tabindex="-1"></a>          <span class="at">.x =</span> ds_list,</span>
+<span id="cb50-56"><a href="#cb50-56" aria-hidden="true" tabindex="-1"></a>          <span class="at">.f =</span> col_type_count, <span class="st">"log"</span>) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb50-57"><a href="#cb50-57" aria-hidden="true" tabindex="-1"></a>        <span class="at">Numeric =</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb50-58"><a href="#cb50-58" aria-hidden="true" tabindex="-1"></a>          <span class="at">.x =</span> ds_list,</span>
+<span id="cb50-59"><a href="#cb50-59" aria-hidden="true" tabindex="-1"></a>          <span class="at">.f =</span> col_type_count, <span class="st">"num"</span>) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb50-60"><a href="#cb50-60" aria-hidden="true" tabindex="-1"></a>        <span class="at">Character =</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb50-61"><a href="#cb50-61" aria-hidden="true" tabindex="-1"></a>          <span class="at">.x =</span> ds_list,</span>
+<span id="cb50-62"><a href="#cb50-62" aria-hidden="true" tabindex="-1"></a>          <span class="at">.f =</span> col_type_count, <span class="st">"chr"</span>) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb50-63"><a href="#cb50-63" aria-hidden="true" tabindex="-1"></a>        <span class="at">Factor =</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb50-64"><a href="#cb50-64" aria-hidden="true" tabindex="-1"></a>          <span class="at">.x =</span> ds_list,</span>
+<span id="cb50-65"><a href="#cb50-65" aria-hidden="true" tabindex="-1"></a>          <span class="at">.f =</span> col_type_count, <span class="st">"fct"</span>) <span class="sc">|&gt;</span> <span class="fu">unlist</span>(),</span>
+<span id="cb50-66"><a href="#cb50-66" aria-hidden="true" tabindex="-1"></a>        <span class="at">List =</span> purrr<span class="sc">::</span><span class="fu">map</span>(</span>
+<span id="cb50-67"><a href="#cb50-67" aria-hidden="true" tabindex="-1"></a>          <span class="at">.x =</span> ds_list,</span>
+<span id="cb50-68"><a href="#cb50-68" aria-hidden="true" tabindex="-1"></a>          <span class="at">.f =</span> col_type_count, <span class="st">"lst"</span>) <span class="sc">|&gt;</span> <span class="fu">unlist</span>())</span>
+<span id="cb50-69"><a href="#cb50-69" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb50-70"><a href="#cb50-70" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb50-71"><a href="#cb50-71" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb50-72"><a href="#cb50-72" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb50-73"><a href="#cb50-73" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb50-74"><a href="#cb50-74" aria-hidden="true" tabindex="-1"></a>    <span class="co"># data_results does not contains data objects</span></span>
+<span id="cb50-75"><a href="#cb50-75" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(data_results)</span>
+<span id="cb50-76"><a href="#cb50-76" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb50-77"><a href="#cb50-77" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb50-78"><a href="#cb50-78" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb50-79"><a href="#cb50-79" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Rather than go through the debugger process again, I’ll go through each of the the mini experiments I used to check the updated <code>pkg_data_results()</code> and <code>pkg_data_str()</code> functions:</p>
+<ul>
+<li><p>Check single package without any data objects (<code>box</code>)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pkg_data_str</span>(<span class="st">"box"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 10%">
+<col style="width: 6%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 13%">
+<col style="width: 9%">
+<col style="width: 6%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Package</th>
+<th style="text-align: left;">Item</th>
+<th style="text-align: left;">Title</th>
+<th style="text-align: left;">Class</th>
+<th style="text-align: left;">Columns</th>
+<th style="text-align: left;">Rows</th>
+<th style="text-align: left;">Logical</th>
+<th style="text-align: left;">Numeric</th>
+<th style="text-align: left;">Character</th>
+<th style="text-align: left;">Factor</th>
+<th style="text-align: left;">List</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div></li>
+<li><p>Check single package with data objects, but none with classes that contain <code>data.frame</code> (<code>stringr</code>)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pkg_data_str</span>(<span class="st">"stringr"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 10%">
+<col style="width: 6%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 13%">
+<col style="width: 9%">
+<col style="width: 6%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Package</th>
+<th style="text-align: left;">Item</th>
+<th style="text-align: left;">Title</th>
+<th style="text-align: left;">Class</th>
+<th style="text-align: left;">Columns</th>
+<th style="text-align: left;">Rows</th>
+<th style="text-align: left;">Logical</th>
+<th style="text-align: left;">Numeric</th>
+<th style="text-align: left;">Character</th>
+<th style="text-align: left;">Factor</th>
+<th style="text-align: left;">List</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div></li>
+<li><p>Check single package with multiple data objects (<code>dplyr</code>)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pkg_data_str</span>(<span class="st">"dplyr"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 13%">
+<col style="width: 15%">
+<col style="width: 18%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 5%">
+<col style="width: 3%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Package</th>
+<th style="text-align: left;">Item</th>
+<th style="text-align: left;">Title</th>
+<th style="text-align: left;">Class</th>
+<th style="text-align: left;">Columns</th>
+<th style="text-align: left;">Rows</th>
+<th style="text-align: right;">Logical</th>
+<th style="text-align: right;">Numeric</th>
+<th style="text-align: right;">Character</th>
+<th style="text-align: right;">Factor</th>
+<th style="text-align: right;">List</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">dplyr</td>
+<td style="text-align: left;">band_instruments</td>
+<td style="text-align: left;">Band membership</td>
+<td style="text-align: left;">tbl_df, tbl, data.frame</td>
+<td style="text-align: left;">2 columns</td>
+<td style="text-align: left;">3 rows</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">dplyr</td>
+<td style="text-align: left;">band_instruments2</td>
+<td style="text-align: left;">Band membership</td>
+<td style="text-align: left;">tbl_df, tbl, data.frame</td>
+<td style="text-align: left;">2 columns</td>
+<td style="text-align: left;">3 rows</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">dplyr</td>
+<td style="text-align: left;">band_members</td>
+<td style="text-align: left;">Band membership</td>
+<td style="text-align: left;">tbl_df, tbl, data.frame</td>
+<td style="text-align: left;">2 columns</td>
+<td style="text-align: left;">3 rows</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">dplyr</td>
+<td style="text-align: left;">starwars</td>
+<td style="text-align: left;">Starwars characters</td>
+<td style="text-align: left;">tbl_df, tbl, data.frame</td>
+<td style="text-align: left;">14 columns</td>
+<td style="text-align: left;">87 rows</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">dplyr</td>
+<td style="text-align: left;">storms</td>
+<td style="text-align: left;">Storm tracks data</td>
+<td style="text-align: left;">tbl_df, tbl, data.frame</td>
+<td style="text-align: left;">13 columns</td>
+<td style="text-align: left;">19066 rows</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div></li>
+<li><p>Check multiple packages with multiple data objects (<code>dplyr</code>, <code>forcats</code> and <code>lubridate</code>)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pkg_data_str</span>(<span class="fu">c</span>(<span class="st">"dplyr"</span>, <span class="st">"forcats"</span>, <span class="st">"lubridate"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 5%">
+<col style="width: 10%">
+<col style="width: 36%">
+<col style="width: 13%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 4%">
+<col style="width: 4%">
+<col style="width: 5%">
+<col style="width: 3%">
+<col style="width: 2%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Package</th>
+<th style="text-align: left;">Item</th>
+<th style="text-align: left;">Title</th>
+<th style="text-align: left;">Class</th>
+<th style="text-align: left;">Columns</th>
+<th style="text-align: left;">Rows</th>
+<th style="text-align: right;">Logical</th>
+<th style="text-align: right;">Numeric</th>
+<th style="text-align: right;">Character</th>
+<th style="text-align: right;">Factor</th>
+<th style="text-align: right;">List</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">forcats</td>
+<td style="text-align: left;">gss_cat</td>
+<td style="text-align: left;">A sample of categorical variables from the General Social survey</td>
+<td style="text-align: left;">tbl_df, tbl, data.frame</td>
+<td style="text-align: left;">9 columns</td>
+<td style="text-align: left;">21483 rows</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">lubridate</td>
+<td style="text-align: left;">lakers</td>
+<td style="text-align: left;">Lakers 2008-2009 basketball data set</td>
+<td style="text-align: left;">data.frame</td>
+<td style="text-align: left;">13 columns</td>
+<td style="text-align: left;">34624 rows</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">dplyr</td>
+<td style="text-align: left;">band_instruments</td>
+<td style="text-align: left;">Band membership</td>
+<td style="text-align: left;">tbl_df, tbl, data.frame</td>
+<td style="text-align: left;">2 columns</td>
+<td style="text-align: left;">3 rows</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">dplyr</td>
+<td style="text-align: left;">band_instruments2</td>
+<td style="text-align: left;">Band membership</td>
+<td style="text-align: left;">tbl_df, tbl, data.frame</td>
+<td style="text-align: left;">2 columns</td>
+<td style="text-align: left;">3 rows</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">dplyr</td>
+<td style="text-align: left;">band_members</td>
+<td style="text-align: left;">Band membership</td>
+<td style="text-align: left;">tbl_df, tbl, data.frame</td>
+<td style="text-align: left;">2 columns</td>
+<td style="text-align: left;">3 rows</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">dplyr</td>
+<td style="text-align: left;">starwars</td>
+<td style="text-align: left;">Starwars characters</td>
+<td style="text-align: left;">tbl_df, tbl, data.frame</td>
+<td style="text-align: left;">14 columns</td>
+<td style="text-align: left;">87 rows</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">dplyr</td>
+<td style="text-align: left;">storms</td>
+<td style="text-align: left;">Storm tracks data</td>
+<td style="text-align: left;">tbl_df, tbl, data.frame</td>
+<td style="text-align: left;">13 columns</td>
+<td style="text-align: left;">19066 rows</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div></li>
+</ul>
+</section>
+</section>
+<section id="recap" class="level2">
+<h2 class="anchored" data-anchor-id="recap">Recap</h2>
+<p>RStudio’s debugger is a powerful tool that can save tons of time when you’re developing new functions, discovering how a function’s code is executed, or dealing with errors. When you’ve finished debugging, remember to remove the <code>browser()</code> call from your function.</p>
+<p>The steps above should help get you started, and if you’d like to learn more, check out the <a href="https://adv-r.hadley.nz/debugging.html">debugging chapter of Advanced R</a>, and the documentation for <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/browser.html"><code>browser()</code></a>, <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/debug.html"><code>debug()</code>/<code>debugonce()</code>/<code>undebug()</code></a>, and <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/traceback.html"><code>traceback()</code></a> functions.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
