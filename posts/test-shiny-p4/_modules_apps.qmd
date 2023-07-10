@@ -69,11 +69,11 @@ library(crayon)
 library(stringr)
 ```
 
-## Modules & apps 
+### Modules & apps 
 
-The modules in `msst2ap` are from the [Modules chapter of Mastering Shiny](https://mastering-shiny.org/scaling-modules.html), with a few minor adjustments. 
+The modules in `msst2ap` are from the [Modules chapter of Mastering Shiny](https://mastering-shiny.org/scaling-modules.html), with a few minor adjustments. These modules create namespaces for their inputs and outputs with the `shiny::NS()` function, which appends a second `id` string to each `inputId`/`outputId`.
 
-Each standalone app includes the output from `shiny::reactiveValuesToList()`:
+Each standalone app also includes the output from `shiny::reactiveValuesToList()`:
 
 -   In the `ui`: 
 
@@ -100,7 +100,7 @@ Each standalone app includes the output from `shiny::reactiveValuesToList()`:
     ```
 
 
-### [`dataset`]{style="font-size: 1.15em"} module
+#### [`dataset`]{style="font-size: 1.15em"} module
 
 The `dataset` module displays the objects in the `datasets` package in a `selectInput()` according to a filter argument (i.e., `is.data.frame`, `is.matrix`, etc.).
 
@@ -131,7 +131,7 @@ datasetServer <- function(id) {
 }
 ```
 
-#### [`datasetApp()`]{style="font-size: 1.10em"}
+##### [`datasetApp()`]{style="font-size: 1.10em"}
 
 ```{r}
 #| eval: false
@@ -162,9 +162,6 @@ datasetApp <- function(filter = NULL) {
 }
 ```
 
-Below the table output in `datasetApp()`, the reactive values displays the `inputId` from `datasetInput()` and the namespace value from the shared `id` argument with `datasetServer()`: ```` $`dataset-dataset` ````
-
-
 
 :::: {.column-body-outset-right}
 
@@ -177,9 +174,15 @@ Below the table output in `datasetApp()`, the reactive values displays the `inpu
 
 ::::
 
+##### Reactive values ([`vals`]{style="font-size: 1.15em"})
 
+Below the table output in `datasetApp()`, the reactive values displays the `inputId` from `datasetInput()` and the namespace value from the shared `id` argument with `datasetServer()`:
 
-### [`selectVar`]{style="font-size: 1.15em"} module
+```r
+$`dataset-dataset`
+```
+
+#### [`selectVar`]{style="font-size: 1.15em"} module
 
 The `selectVar` module [selects a numeric variable](https://mastering-shiny.org/scaling-modules.html#case-study-selecting-a-numeric-variable) the `data()` object returned from `datasetServer()`.
 
@@ -266,7 +269,7 @@ I've made a few small changes to `selectVarServer()`:
     }
     ```
 
-#### [`selectVarApp()`]{style="font-size: 1.10em"}
+##### [`selectVarApp()`]{style="font-size: 1.10em"}
 
 The `selectVarApp()` extends the `dataset` module by collecting the returned reactive value, passing it to `find_vars()`, and returning a single column.
 
@@ -311,11 +314,13 @@ selectVarApp <- function(filter = is.numeric) {
 
 ::::
 
+##### Reactive values ([`vals`]{style="font-size: 1.15em"})
+
 The reactive values in `selectVarApp()` are displayed below the table: 
 
 :::: {layout-ncol=2}
 
-#### Variables 
+##### Variables 
 
 ::: {style="font-size: 0.80em"}
 
@@ -333,19 +338,19 @@ The reactive values in `selectVarApp()` are displayed below the table:
 
 :::
 
-#### Data
+##### Data
 
 ::: {style="font-size: 0.80em"}
     
 -   `dataset` is from the `inputId` in `datasetInput()`
 
-    ```
+    ```r
     $`-dataset`
     ```
     
 -   `data` is the shared namespace `id` from the `dataset` module
 
-    ```
+    ```r
     $`data-dataset`
     ```
     
@@ -353,7 +358,7 @@ The reactive values in `selectVarApp()` are displayed below the table:
 
 ::::
 
-### [`selectDataVar`]{style="font-size: 1.10em"} module
+#### [`selectDataVar`]{style="font-size: 1.10em"} module
 
 `selectDataVar` is from the [Modules inside of modules](https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules) section, so true to form, both the `dataset` and `selectVar` modules are called inside of the UI and Server modules: 
 
@@ -382,7 +387,7 @@ selectDataVarServer <- function(id, filter = is.numeric) {
 }
 ```
 
-#### [`selectDataVarApp()`]{style="font-size: 1.15em"}
+##### [`selectDataVarApp()`]{style="font-size: 1.15em"}
 
 The `selectDataVarApp()` places the inputs in the `sidebarPanel()` and the outputs in the `mainPanel()`.
 
@@ -434,50 +439,50 @@ The reactive values from `selectDataVarApp()` reflect the nested module structur
 
 :::: {layout-ncol=2}
 
-#### Variables 
+##### Variables 
 
 ::: {style="font-size: 0.80em"}
 
 -   The first `var` belongs to the `inputId` in `selectVarInput()`, 
 
-    ```
+    ```r
     $`-var` 
     ```
 
 -   the 2nd `var` is the shared namespace `id` from the `selectVar` module,
 
-    ```
+    ```r
     $`-var-var`
     ```
     
 -   the 3rd `var` is the call to the `selectVar` module *inside* `selectDataVar`
 
-    ```
+    ```r
     $`var-var-var` 
     [1] "Ozone"
     ```
     
 :::
 
-#### Data
+##### Data
 
 ::: {style="font-size: 0.80em"}
 
 -   `dataset` belongs to the `inputId` in `datasetInput()`, 
 
-    ```
+    ```r
     $`-dataset` 
     ```
 
 -   `data` is the shared namespace `id` from the `dataset` module, 
 
-    ```
+    ```r
     $`-data-dataset` 
     ```
 
 -   `var` is the call to the `dataset` module *inside* `selectDataVar`
         
-    ```
+    ```r
     $`var-data-dataset` 
     [1] "airquality"
     ```
@@ -488,7 +493,7 @@ The reactive values from `selectDataVarApp()` reflect the nested module structur
 
 
 
-### [`histogram`]{style="font-size: 1.10em"} module
+#### [`histogram`]{style="font-size: 1.10em"} module
 
 The final modules and application I'll use from Mastering Shiny are from the [Case study: histogram](https://mastering-shiny.org/scaling-modules.html#case-study-histogram) section. This application uses the existing `dataset` and `selectVar` modules to pass a single variable to the render a histogram:
 
@@ -567,7 +572,7 @@ I've made some changes to the `histogramServer()` function (to accomodate the ch
     -   `x()` is also passed to `purrr::as_vector()` before it's plotted with `hist()`
 
 
-#### [`histogramApp()`]{style="font-size: 1.15em"}
+##### [`histogramApp()`]{style="font-size: 1.15em"}
 
 
 
@@ -619,43 +624,45 @@ histogramApp <- function() {
 
 ::::
 
+##### Reactive values ([`vals`]{style="font-size: 1.15em"})
+
 The displayed reactive values in `histogramApp()` are described below:
 
 :::: {layout-ncol=3}
 
-#### Plot
+##### Plot
 
 ::: {style="font-size: 0.80em"}
 
 -   The `inputId` from `histogramOutput()` and the shared namespace `id`
 
-    ```
+    ```r
     $`hist-bins`
     [1] 10
     ```
     
 :::
 
-#### Variables 
+##### Variables 
 
 ::: {style="font-size: 0.80em"}
 
 -   The `inputId` from `selectVarInput()` and the shared namespace `id`
 
-    ```
+    ```r
     $`var-var`
     [1] "Ozone"
     ```
     
 :::
     
-#### Data
+##### Data
 
 ::: {style="font-size: 0.80em"}
 
 -   The `inputId` from `datasetInput()` and the shared namespace `id`
 
-    ```
+    ```r
     $`data-dataset` 
     [1] "airquality"
     ```
