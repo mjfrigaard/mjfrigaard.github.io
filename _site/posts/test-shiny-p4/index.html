@@ -199,9 +199,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Contents</h2>
    
   <ul>
-  <li><a href="#set-up" id="toc-set-up" class="nav-link active" data-scroll-target="#set-up">Set up</a></li>
+  <li><a href="#set-up" id="toc-set-up" class="nav-link active" data-scroll-target="#set-up">Set up</a>
+  <ul>
   <li><a href="#chromium" id="toc-chromium" class="nav-link" data-scroll-target="#chromium">Chromium</a></li>
   <li><a href="#chromote" id="toc-chromote" class="nav-link" data-scroll-target="#chromote"><span style="font-size: 1.20em"><code>chromote</code></span></a></li>
+  </ul></li>
   <li><a href="#app-package-contents" id="toc-app-package-contents" class="nav-link" data-scroll-target="#app-package-contents">App-package contents</a>
   <ul>
   <li><a href="#modules-apps" id="toc-modules-apps" class="nav-link" data-scroll-target="#modules-apps">Modules &amp; apps</a>
@@ -227,8 +229,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul></li>
   </ul></li>
   </ul></li>
-  <li><a href="#using-shinytest2" id="toc-using-shinytest2" class="nav-link" data-scroll-target="#using-shinytest2">Using <span style="font-size: 1.20em"><code>shinytest2</code></span></a>
-  <ul>
+  <li><a href="#using-shinytest2" id="toc-using-shinytest2" class="nav-link" data-scroll-target="#using-shinytest2">Using <span style="font-size: 1.20em"><code>shinytest2</code></span></a></li>
   <li><a href="#recording-tests" id="toc-recording-tests" class="nav-link" data-scroll-target="#recording-tests">Recording tests</a>
   <ul>
   <li><a href="#expectations" id="toc-expectations" class="nav-link" data-scroll-target="#expectations">Expectations</a></li>
@@ -238,12 +239,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#save-test-and-exit" id="toc-save-test-and-exit" class="nav-link" data-scroll-target="#save-test-and-exit">Save test and exit</a></li>
   </ul></li>
   <li><a href="#console-output" id="toc-console-output" class="nav-link" data-scroll-target="#console-output">Console output</a></li>
-  <li><a href="#test-results" id="toc-test-results" class="nav-link" data-scroll-target="#test-results">Test results</a></li>
+  <li><a href="#test-results" id="toc-test-results" class="nav-link" data-scroll-target="#test-results">Test results</a>
+  <ul>
   <li><a href="#snaps" id="toc-snaps" class="nav-link" data-scroll-target="#snaps"><span style="font-size: 1.15em"><code>_snaps</code></span></a>
   <ul>
   <li><a href="#png" id="toc-png" class="nav-link" data-scroll-target="#png"><span style="font-size: 1.20em"><code>.png</code></span></a></li>
   <li><a href="#json" id="toc-json" class="nav-link" data-scroll-target="#json"><span style="font-size: 1.20em"><code>.json</code></span></a></li>
   <li><a href="#namespaces" id="toc-namespaces" class="nav-link" data-scroll-target="#namespaces">Namespaces</a></li>
+  </ul></li>
   </ul></li>
   <li><a href="#shinytest2-test-contents" id="toc-shinytest2-test-contents" class="nav-link" data-scroll-target="#shinytest2-test-contents"><span style="font-size: 1.20em"><code>shinytest2</code></span> test contents</a>
   <ul>
@@ -251,12 +254,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#set_inputs" id="toc-set_inputs" class="nav-link" data-scroll-target="#set_inputs"><span style="font-size: 1.15em"><code>set_inputs()</code></span></a></li>
   <li><a href="#expect_values" id="toc-expect_values" class="nav-link" data-scroll-target="#expect_values"><span style="font-size: 1.15em"><code>expect_values()</code></span></a></li>
   </ul></li>
-  <li><a href="#running-interactive-tests" id="toc-running-interactive-tests" class="nav-link" data-scroll-target="#running-interactive-tests">Running interactive tests</a>
+  <li><a href="#writing-tests" id="toc-writing-tests" class="nav-link" data-scroll-target="#writing-tests">Writing tests</a>
   <ul>
   <li><a href="#setting-inputs" id="toc-setting-inputs" class="nav-link" data-scroll-target="#setting-inputs">Setting inputs</a></li>
-  <li><a href="#exporting-outputs" id="toc-exporting-outputs" class="nav-link" data-scroll-target="#exporting-outputs">Exporting outputs</a></li>
+  <li><a href="#checking-inputs" id="toc-checking-inputs" class="nav-link" data-scroll-target="#checking-inputs">Checking inputs</a></li>
   </ul></li>
-  </ul></li>
+  <li><a href="#exporting-test-values" id="toc-exporting-test-values" class="nav-link" data-scroll-target="#exporting-test-values">Exporting test values</a></li>
   </ul>
 </nav>
 </nav>
@@ -302,12 +305,11 @@ Why <code>shinytest2</code>?
 </div>
 </div>
 </div>
-<section id="set-up" class="level2">
+<section id="set-up" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="set-up">Set up</h2>
 <p><a href="https://rstudio.github.io/shinytest2/index.html"><code>shinytest2</code></a> requires a few steps to get up and running, so I’ve included my start up steps below (in hopes that someone might find them useful).</p>
-</section>
-<section id="chromium" class="level2">
-<h2 class="anchored" data-anchor-id="chromium">Chromium</h2>
+<section id="chromium" class="level3">
+<h3 class="anchored" data-anchor-id="chromium">Chromium</h3>
 <p>First make sure you have <a href="https://www.chromium.org/chromium-projects/">Chromium headless browser</a> installed. Chromium is the browser used to test and debug shiny apps with <code>shinytest2</code>.</p>
 <p>If you’re using macOS, you can install Chromium using <a href="https://formulae.brew.sh/cask/chromium">homebrew</a>:</p>
 <div class="cell">
@@ -327,8 +329,8 @@ Why <code>shinytest2</code>?
 </details>
 </div>
 </section>
-<section id="chromote" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="chromote"><span style="font-size: 1.20em"><code>chromote</code></span></h2>
+<section id="chromote" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="chromote"><span style="font-size: 1.20em"><code>chromote</code></span></h3>
 <p>The <a href="https://rstudio.github.io/chromote/index.html"><code>chromote</code> package</a> allows R to open Chromium. I had to make sure R knew where to find the Chromium application (<a href="https://rstudio.github.io/chromote/#specifying-which-browser-to-use">this section helps</a>) by passing the path to the app to <code>Sys.setenv()</code> (<em>you can locate the path to Chromium using by holding <kbd>command (⌘)</kbd> and clicking on the application icon</em>)</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"rstudio/chromote"</span>)</span>
@@ -365,6 +367,7 @@ Why <code>shinytest2</code>?
 </div>
 </div>
 <p>Great! Going through this step means <code>shinytest2</code>’s test recorder will (<em>should</em>) deploy when I’m recording tests.</p>
+</section>
 </section>
 <section id="app-package-contents" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="app-package-contents">App-package contents</h2>
@@ -870,7 +873,7 @@ Why <code>shinytest2</code>?
 </section>
 </section>
 </section>
-<section id="using-shinytest2" class="level2 page-columns page-full">
+<section id="using-shinytest2" class="level2">
 <h2 class="anchored" data-anchor-id="using-shinytest2">Using <span style="font-size: 1.20em"><code>shinytest2</code></span></h2>
 <p><code>shinytest2</code> is extremely <a href="https://rstudio.github.io/shinytest2/index.html">well documentation</a>. I highly recommended the <a href="https://rstudio.github.io/shinytest2/articles/shinytest2.html">Get Started vignette</a>. In the next sections, I’ll cover some examples for what I’ve included in the <code>msst2ap</code>.</p>
 <p>Run <code>shinytest2::use_shinytest2()</code> to create the initial files for <code>shinytest2</code>:</p>
@@ -900,8 +903,9 @@ Why <code>shinytest2</code>?
 </div></li>
 </ul>
 <p>The <code>setup-shinytest2.R</code> file contains a single call to <code>shinytest2::load_app_env()</code>, which “<em>Executes all <code>./R</code> files and <code>global.R</code> into the current environment</em>”</p>
-<section id="recording-tests" class="level3 page-columns page-full">
-<h3 class="anchored" data-anchor-id="recording-tests">Recording tests</h3>
+</section>
+<section id="recording-tests" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="recording-tests">Recording tests</h2>
 <p>New tests with <a href="https://rstudio.github.io/shinytest2/index.html"><code>shinytest2</code></a> can be created by launching the test event recorder, which allows us interact with our application, observe it’s behavior, and record inputs, reactive values, and outputs. To record a test, run <code>shinytest2::record_test()</code>.</p>
 <p>The first argument in <code>record_test()</code> is the path to application. If you’ve stored your application in an <code>app.R</code> file, <code>record_test()</code> will automatically load that application.</p>
 <p>In <code>msst2ap</code>, the application in <code>app.R</code> is the <code>histogramApp()</code>, so the test recorder will automatically open with this application if I run <code>record_test()</code> (without providing the path to a <code>shiny</code> app).</p>
@@ -981,8 +985,8 @@ Why <code>shinytest2</code>?
 </div>
 </div>
 <p>The test event recorder displays the <code>shiny</code> app, but also includes a window for recording each application ‘event.’</p>
-<section id="expectations" class="level4 page-columns page-full">
-<h4 class="anchored" data-anchor-id="expectations">Expectations</h4>
+<section id="expectations" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="expectations">Expectations</h3>
 <p>I’ll start by recording a test for <code>histogramApp()</code>. On the right-hand side of the Chromium headless browser, you’ll see the <strong><code>shinytest2</code> expectations</strong> window:</p>
 <div class="column-body-outset-right">
 <div id="fig-shinytest2-expectations" class="quarto-layout-panel">
@@ -1003,8 +1007,8 @@ Why <code>shinytest2</code>?
 </div>
 <p>The initial value in the <strong>Code</strong> window displays the dimensions of the application in Chromium (<code>app$set_window_size(width = , height = )</code>).</p>
 </section>
-<section id="events" class="level4 page-columns page-full">
-<h4 class="anchored" data-anchor-id="events">Events</h4>
+<section id="events" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="events">Events</h3>
 <p>When I interact with the application (i.e., make changes to the inputs), each change is an ‘event’ that is recorded in the test:</p>
 <div class="column-body-outset-right">
 <div id="fig-chromium" class="quarto-layout-panel">
@@ -1024,8 +1028,8 @@ Why <code>shinytest2</code>?
 </div>
 </div>
 </section>
-<section id="code" class="level4 page-columns page-full">
-<h4 class="anchored" data-anchor-id="code">Code</h4>
+<section id="code" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="code">Code</h3>
 <p>All events are recorded as code in the <strong>Code</strong> section of <strong><code>shinytest2</code> expectations</strong>:</p>
 <div class="column-body-outset-right">
 <div id="fig-shinytest2-code-expectations" class="quarto-layout-panel">
@@ -1045,8 +1049,8 @@ Why <code>shinytest2</code>?
 </div>
 </div>
 </section>
-<section id="expect-shiny-values" class="level4 page-columns page-full">
-<h4 class="anchored" data-anchor-id="expect-shiny-values">Expect Shiny values</h4>
+<section id="expect-shiny-values" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="expect-shiny-values">Expect Shiny values</h3>
 <p>When I’ve finished interacting with the application, I click on the <strong>Expect Shiny values</strong> button at the top of <strong><code>shinytest2</code> expectations</strong>. This will add <code>app$expect_values()</code> to the <strong>Code</strong> section:</p>
 <div class="column-body-outset-right">
 <div id="fig-expect-shiny-values" class="quarto-layout-panel">
@@ -1066,8 +1070,8 @@ Why <code>shinytest2</code>?
 </div>
 </div>
 </section>
-<section id="save-test-and-exit" class="level4 page-columns page-full">
-<h4 class="anchored" data-anchor-id="save-test-and-exit">Save test and exit</h4>
+<section id="save-test-and-exit" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="save-test-and-exit">Save test and exit</h3>
 <p>Finally, to save the test, enter a <strong>Test name</strong> and click <strong>Save test and exit</strong></p>
 <div class="column-body-outset-right">
 <div id="fig-name-save-exit" class="quarto-layout-panel">
@@ -1089,8 +1093,8 @@ Why <code>shinytest2</code>?
 <p>Let’s examine the output of the test!</p>
 </section>
 </section>
-<section id="console-output" class="level3">
-<h3 class="anchored" data-anchor-id="console-output">Console output</h3>
+<section id="console-output" class="level2">
+<h2 class="anchored" data-anchor-id="console-output">Console output</h2>
 <p>Back in the Console, the <code>shinytest2</code> test recorder is performing the following actions behind the scenes:</p>
 <ul>
 <li><p>The Chromium headless browser opens with the <code>histogramApp()</code> and <code>shiny</code> is loaded</p>
@@ -1131,8 +1135,8 @@ Why <code>shinytest2</code>?
 </div></li>
 </ul>
 </section>
-<section id="test-results" class="level3">
-<h3 class="anchored" data-anchor-id="test-results">Test results</h3>
+<section id="test-results" class="level2">
+<h2 class="anchored" data-anchor-id="test-results">Test results</h2>
 <p>The results from running the new test file (<code>test-shinytest2.R</code>) are below:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="ex">•</span> Running recorded test: tests/testthat/test-shinytest2.R</span>
@@ -1162,7 +1166,6 @@ Why <code>shinytest2</code>?
 <span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a><span class="ex">2</span> directories, 2 files</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>These are the files new test runs will be compared against (i.e., our ‘baseline’ snapshots). I’ll briefly cover their contents below:</p>
-</section>
 <section id="snaps" class="level3">
 <h3 class="anchored" data-anchor-id="snaps"><span style="font-size: 1.15em"><code>_snaps</code></span></h3>
 <p><code>expect_values()</code> generates two snapshot files in the <code>tests/testthat/_snaps/</code> folder: one <code>.png</code> and one <code>.json</code> file:</p>
@@ -1289,8 +1292,9 @@ Why <code>shinytest2</code>?
 <p>Namespaces and <code>inputId</code>s will come up again if you start writing your own tests, which I’ll cover below.</p>
 </section>
 </section>
-<section id="shinytest2-test-contents" class="level3">
-<h3 class="anchored" data-anchor-id="shinytest2-test-contents"><span style="font-size: 1.20em"><code>shinytest2</code></span> test contents</h3>
+</section>
+<section id="shinytest2-test-contents" class="level2">
+<h2 class="anchored" data-anchor-id="shinytest2-test-contents"><span style="font-size: 1.20em"><code>shinytest2</code></span> test contents</h2>
 <p>The contents of the test file generated from the test recorder are below:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shinytest2)</span>
@@ -1337,8 +1341,8 @@ WARNING
 </div>
 </div>
 <p>Now that I know the first <code>shinytest2</code> test is passing, I’ll dive into each line in the test.</p>
-<section id="appdriver" class="level4">
-<h4 class="anchored" data-anchor-id="appdriver"><span style="font-size: 1.15em"><code>AppDriver</code></span></h4>
+<section id="appdriver" class="level3">
+<h3 class="anchored" data-anchor-id="appdriver"><span style="font-size: 1.15em"><code>AppDriver</code></span></h3>
 <p><code>shinytest2</code> uses the <a href="https://rstudio.github.io/shinytest2/reference/AppDriver.html"><code>AppDriver</code></a> to create “<em>a full simulation of a Shiny app</em>”. When recording tests, this will be the first argument (along with the <code>name</code> of the <code>.png</code> and <code>.json</code> snapshot <code>testthat</code> files, and the <code>height</code> and <code>width</code> of the <a href="https://rstudio.github.io/chromote/reference/ChromoteSession.html"><code>ChromoteSession</code></a>).</p>
 <ul>
 <li><p>The example from the test above is below:</p>
@@ -1347,8 +1351,8 @@ WARNING
 </div></li>
 </ul>
 </section>
-<section id="set_inputs" class="level4">
-<h4 class="anchored" data-anchor-id="set_inputs"><span style="font-size: 1.15em"><code>set_inputs()</code></span></h4>
+<section id="set_inputs" class="level3">
+<h3 class="anchored" data-anchor-id="set_inputs"><span style="font-size: 1.15em"><code>set_inputs()</code></span></h3>
 <p>When recording <code>shinytest2</code> tests, every change to the applications inputs will result in a call to <code>app$set_inputs()</code>. This function is similar to the <code>testServer()</code> call to <code>session$setInputs()</code> (i.e., the inputs are provided as “<em>name-value pairs</em>”, i.e., <code>inputId</code> = <code>"value"</code>).</p>
 <ul>
 <li><p>In the <code>histogramApp()</code>, these are provided with the appended namespaces:</p>
@@ -1363,8 +1367,8 @@ WARNING
 </div></li>
 </ul>
 </section>
-<section id="expect_values" class="level4">
-<h4 class="anchored" data-anchor-id="expect_values"><span style="font-size: 1.15em"><code>expect_values()</code></span></h4>
+<section id="expect_values" class="level3">
+<h3 class="anchored" data-anchor-id="expect_values"><span style="font-size: 1.15em"><code>expect_values()</code></span></h3>
 <p><a href="https://rstudio.github.io/shinytest2/articles/in-depth.html#making-expectations">The documentation</a> on <code>expect_values()</code> is definitely worth reading. <code>expect_values()</code> is added to the test file when <strong>Expect Shiny values</strong> is clicked in the test recorder and “<em>creates a list of values and compares them to the current values of the application</em>.”</p>
 <ul>
 <li><p><code>expect_values()</code> = “<em>Expect all <code>input</code>, <code>output</code>, and <code>export</code> values are consistent</em>”</p>
@@ -1374,10 +1378,9 @@ WARNING
 </ul>
 </section>
 </section>
-<section id="running-interactive-tests" class="level3 page-columns page-full">
-<h3 class="anchored" data-anchor-id="running-interactive-tests">Running interactive tests</h3>
-<p>The great thing about testing with <code>shinytest2</code> is the ability to be view the <code>AppDriver</code> interactively.</p>
-<p>I’ll demo building a test for the <code>datasetApp()</code> by adapting the code in <code>tests/testthat/test-shinytest2.R</code> in a new <code>tests/testthat/test-shinytest2-datasetApp.R</code> file.</p>
+<section id="writing-tests" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="writing-tests">Writing tests</h2>
+<p>The great thing about testing with <code>shinytest2</code> is the ability to be view the <code>AppDriver</code> interactively as you write tests. I’ll demo writing a test for the <code>datasetApp()</code> by adapting the contents of <code>tests/testthat/test-shinytest2.R</code> into a new <code>tests/testthat/test-shinytest2-datasetApp.R</code> file.</p>
 <ul>
 <li><p>First I want to make sure I have the development version of Chromium:</p>
 <div class="cell">
@@ -1386,22 +1389,22 @@ WARNING
 <span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(chromote)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></li>
 </ul>
-<p>In the test file, I’ll start by creating and viewing the <code>app</code> object with the Chromium headless browser. I’ve adjusted the height and weight to fit the <code>datasetApp()</code>.</p>
+<p>In the new test <code>test-shinytest2-datasetApp.R</code> file, I’ll start with a call to <code>testthat::test_that(),</code> then create and view a new <code>app</code> object with the Chromium headless browser. The namespaced standalone app function can be passed to the first argument of <code>AppDriver$new()</code>, followed by the <code>height</code> and <code>weight</code> (which I’ve adjusted to fit the <code>datasetApp()</code>).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">"{shinytest2}: datasetApp"</span>, {</span>
 <span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(msst2ap<span class="sc">::</span><span class="fu">datasetApp</span>(), <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">800</span>)</span>
 <span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span>view</span>
 <span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>This results in the following Chromium window:</p>
+<p>This opens the following Chromium window:</p>
 <div class="column-body-outset-right">
-<div id="fig-app_view.png" class="quarto-layout-panel">
+<div id="fig-app_view" class="quarto-layout-panel">
 <figure class="figure">
 <div class="quarto-layout-row quarto-layout-valign-top">
 <div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 100.0%;justify-content: center;">
 <div id="fig-app_view" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
-<p><img src="app_view.png" class="img-fluid figure-img" data-ref-parent="fig-app_view.png"></p>
+<p><img src="app_view.png" class="img-fluid figure-img" data-ref-parent="fig-app_view"></p>
 <figcaption class="figure-caption">(a) <code>app$view()</code></figcaption>
 </figure>
 </div>
@@ -1411,9 +1414,9 @@ WARNING
 </figure>
 </div>
 </div>
-<p>This is the same application I see in when I run <code>msst2ap::datasetApp()</code> in the console.</p>
-<section id="setting-inputs" class="level4 page-columns page-full">
-<h4 class="anchored" data-anchor-id="setting-inputs">Setting inputs</h4>
+<p>I can see the same app I see when I run <code>msst2ap::datasetApp()</code> in the console, but with some additional developer tools.</p>
+<section id="setting-inputs" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="setting-inputs">Setting inputs</h3>
 <p>If I continue to adapt each line of <code>test-shinytest2.R</code>, I see that next lines set the <code>inputId</code>s for <code>dataset-dataset</code> to the <code>attitude</code> dataset with <code>app$set_input()</code> (<em>Note that this uses the module notation above (i.e., <code>"id-inputId"</code>)</em>):</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">"{shinytest2}: datasetApp"</span>, {</span>
@@ -1441,48 +1444,156 @@ WARNING
 </div>
 </div>
 </section>
-<section id="exporting-outputs" class="level4">
-<h4 class="anchored" data-anchor-id="exporting-outputs">Exporting outputs</h4>
-<p>If I want to narrow the scope of the test, I can adjust <code>expect_values()</code> to only include specific the <code>input</code>s and <code>output</code>s, but because <code>datasetApp()</code> only includes a single input and output, I’ll export both values with <code>app$expect_values()</code></p>
+<section id="checking-inputs" class="level3">
+<h3 class="anchored" data-anchor-id="checking-inputs">Checking inputs</h3>
+<p>I’ll include a call to <code>app$get_values()</code> and assign the output to <code>app_values</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">"{shinytest2}: datasetApp"</span>, {</span>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: datasetApp"</span>, {</span>
 <span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(msst2ap<span class="sc">::</span><span class="fu">datasetApp</span>(), <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">800</span>)</span>
 <span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">view</span>()</span>
 <span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"attitude"</span>)</span>
-<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">expect_values</span>()</span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>  app_values <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_values</span>()</span>
 <span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>If I save and run the <code>test-shinytest2-datasetApp.R</code> file, I see the following results:</p>
+<p>The contents of <code>app_values</code> is a list with the same three value types in the <code>.json</code> snapshot covered above (<code>input</code>, <code>output</code>, and <code>export</code>):</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ℹ</span> Loading msst2ap</span>
-<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Loading</span> required package: shiny</span>
-<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Loading</span> required package: shinytest2</span>
-<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Loading</span> required package: testthat</span>
-<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">2</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 1 ]</span>
-<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a><span class="ex">──</span> Warning <span class="er">(</span><span class="ex">test-shinytest2-datasetApp.R:6:3</span><span class="kw">)</span><span class="bu">:</span> {shinytest2}: datasetApp ────────</span>
-<span id="cb68-8"><a href="#cb68-8" aria-hidden="true" tabindex="-1"></a><span class="ex">Adding</span> new file snapshot: <span class="st">'tests/testthat/_snaps/001_.png'</span></span>
-<span id="cb68-9"><a href="#cb68-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb68-10"><a href="#cb68-10" aria-hidden="true" tabindex="-1"></a><span class="ex">──</span> Warning <span class="er">(</span><span class="ex">test-shinytest2-datasetApp.R:6:3</span><span class="kw">)</span><span class="bu">:</span> {shinytest2}: datasetApp ────────</span>
-<span id="cb68-11"><a href="#cb68-11" aria-hidden="true" tabindex="-1"></a><span class="ex">Adding</span> new file snapshot: <span class="st">'tests/testthat/_snaps/001.json'</span></span>
-<span id="cb68-12"><a href="#cb68-12" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">2</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 1 ]</span>
-<span id="cb68-13"><a href="#cb68-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb68-14"><a href="#cb68-14" aria-hidden="true" tabindex="-1"></a><span class="ex">Test</span> complete</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(app_values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>This is the initial run of the test for <code>datasetApp()</code>, so the snapshots are generated with a warning. When I run <code>test-shinytest2-datasetApp.R</code> a second time, I see the tests passes:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ℹ</span> Loading msst2ap</span>
-<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Loading</span> required package: shiny</span>
-<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Loading</span> required package: shinytest2</span>
-<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Loading</span> required package: testthat</span>
-<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 1 ]</span>
-<span id="cb69-6"><a href="#cb69-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb69-7"><a href="#cb69-7" aria-hidden="true" tabindex="-1"></a><span class="ex">Test</span> complete</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="ex">List</span> of 3</span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> input :List of 1</span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">..$</span> dataset-dataset: chr <span class="st">"attitude"</span></span>
+<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> output:List of 2</span>
+<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>  <span class="ex">..$</span> data: chr <span class="st">"&lt;table  class = 'table shiny-table table- "</span><span class="kw">|</span> <span class="ex">__truncated__</span></span>
+<span id="cb69-6"><a href="#cb69-6" aria-hidden="true" tabindex="-1"></a>  <span class="ex">..$</span> vals: chr <span class="st">"$</span><span class="kw">`</span><span class="ex">dataset-dataset</span><span class="kw">`</span><span class="st">\n[1] </span><span class="dt">\"</span><span class="st">attitude</span><span class="dt">\"</span><span class="st">\n"</span></span>
+<span id="cb69-7"><a href="#cb69-7" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> export: Named list<span class="er">(</span><span class="kw">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>I can narrow the scope of the test and verify only the <code>input</code> that was changed with <code>app$set_inputs()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: datasetApp"</span>, {</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(msst2ap<span class="sc">::</span><span class="fu">datasetApp</span>(), <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">800</span>)</span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">view</span>()</span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"attitude"</span>)</span>
+<span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a>  app_values <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_values</span>()</span>
+<span id="cb70-6"><a href="#cb70-6" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb70-7"><a href="#cb70-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_values<span class="sc">$</span>input<span class="sc">$</span><span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span>,</span>
+<span id="cb70-8"><a href="#cb70-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> <span class="st">"attitude"</span>)</span>
+<span id="cb70-9"><a href="#cb70-9" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To conclude the test, I’ll end with a call to <a href="https://rstudio.github.io/shinytest2/articles/zzz-faq.html#should-i-manually-shut-down-my-appdriver"><code>app$stop()</code></a>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: datasetApp"</span>, {</span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(msst2ap<span class="sc">::</span><span class="fu">datasetApp</span>(), <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">800</span>)</span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">view</span>()</span>
+<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"attitude"</span>)</span>
+<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a>  app_values <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_values</span>()</span>
+<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb71-7"><a href="#cb71-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_values<span class="sc">$</span>input<span class="sc">$</span><span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span>,</span>
+<span id="cb71-8"><a href="#cb71-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> <span class="st">"attitude"</span>)</span>
+<span id="cb71-9"><a href="#cb71-9" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">stop</span>()</span>
+<span id="cb71-10"><a href="#cb71-10" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>I’ll save the <code>test-shinytest2-datasetApp.R</code> file and run the test with <code>testthat::test_file()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_file</span>(<span class="st">"tests/testthat/test-shinytest2-datasetApp.R"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This is the initial run of the test for <code>datasetApp()</code>, and no snapshot files are generated because the test doesn’t include a call to <code>app$export_values()</code>. I see the tests passes:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 1 ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="exporting-test-values" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="exporting-test-values">Exporting test values</h2>
+<p>The <code>shinytest2</code> documentation <a href="https://rstudio.github.io/shinytest2/articles/in-depth.html#exported-values">repeatedly</a> <a href="https://rstudio.github.io/shinytest2/articles/robust.html#exported-values">recommends</a> exporting test values from shiny applications with <code>shiny::exportTestValues()</code>.</p>
+<p>I’ll demonstrate exporting test values from <code>selectVarApp()</code> by adding the following to the <code>server</code> function in <code>R/selectVarApp.R</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>  server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">&lt;-</span> <span class="fu">datasetServer</span>(<span class="st">"data"</span>)</span>
+<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a>    var <span class="ot">&lt;-</span> <span class="fu">selectVarServer</span>(<span class="st">"var"</span>, data, <span class="at">filter =</span> filter)</span>
+<span id="cb74-5"><a href="#cb74-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-6"><a href="#cb74-6" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>out <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderTable</span>(<span class="fu">head</span>(<span class="fu">var</span>()))</span>
+<span id="cb74-7"><a href="#cb74-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-8"><a href="#cb74-8" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>vals <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderPrint</span>({</span>
+<span id="cb74-9"><a href="#cb74-9" aria-hidden="true" tabindex="-1"></a>      x <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">reactiveValuesToList</span>(input,</span>
+<span id="cb74-10"><a href="#cb74-10" aria-hidden="true" tabindex="-1"></a>                              <span class="at">all.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb74-11"><a href="#cb74-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">print</span>(x)</span>
+<span id="cb74-12"><a href="#cb74-12" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb74-13"><a href="#cb74-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-14"><a href="#cb74-14" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">exportTestValues</span>(</span>
+<span id="cb74-15"><a href="#cb74-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">var =</span> <span class="fu">var</span>(),</span>
+<span id="cb74-16"><a href="#cb74-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">data =</span> <span class="fu">data</span>()</span>
+<span id="cb74-17"><a href="#cb74-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb74-18"><a href="#cb74-18" aria-hidden="true" tabindex="-1"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>After saving, loading and building the package, I’ll create the <code>test-shinytest2-selectVarApp.R</code> test file and add the initial contents:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: selectVarApp"</span>, {</span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(msst2ap<span class="sc">::</span><span class="fu">selectVarApp</span>(), <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">600</span>)</span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">view</span>()</span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The application opens in the Chromium headless browser:</p>
+<div class="column-body-outset-right">
+<div id="fig-app_view_selectVarApp" class="quarto-layout-panel">
+<figure class="figure">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 100.0%;justify-content: center;">
+<div id="fig-app_view_selectVarApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="app_view_selectVarApp.png" class="img-fluid figure-img" data-ref-parent="fig-app_view_selectVarApp"></p>
+<figcaption class="figure-caption">(a) <code>app$view()</code></figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p></p><figcaption class="figure-caption">Figure&nbsp;15: View <code>selectVarApp()</code> application with <code>app$view()</code></figcaption><p></p>
+</figure>
+</div>
+</div>
+<p>In the test file, I’ll use <code>app$get_values()</code> to store the exported test values in <code>app_values</code>, then verify the structure of each exported object:</p>
+<ul>
+<li><code>data</code> should be a <code>data.frame()</code></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_true</span>(</span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> <span class="fu">is.data.frame</span>(app_values<span class="sc">$</span>export<span class="sc">$</span>data))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li><code>var</code> should be a single column <code>data.frame()</code></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_true</span>(</span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> <span class="fu">ncol</span>(app_values<span class="sc">$</span>export<span class="sc">$</span>var) <span class="sc">==</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The completed test for <code>selectVarApp()</code> is below:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: selectVarApp"</span>, {</span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(msst2ap<span class="sc">::</span><span class="fu">selectVarApp</span>(), <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">600</span>)</span>
+<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">view</span>()</span>
+<span id="cb78-4"><a href="#cb78-4" aria-hidden="true" tabindex="-1"></a>  app_values <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_values</span>()</span>
+<span id="cb78-5"><a href="#cb78-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb78-6"><a href="#cb78-6" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_true</span>(</span>
+<span id="cb78-7"><a href="#cb78-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> <span class="fu">is.data.frame</span>(app_values<span class="sc">$</span>export<span class="sc">$</span>data))</span>
+<span id="cb78-8"><a href="#cb78-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb78-9"><a href="#cb78-9" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_true</span>(</span>
+<span id="cb78-10"><a href="#cb78-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> <span class="fu">ncol</span>(app_values<span class="sc">$</span>export<span class="sc">$</span>var) <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb78-11"><a href="#cb78-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb78-12"><a href="#cb78-12" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">stop</span>()</span>
+<span id="cb78-13"><a href="#cb78-13" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Once again, I end the test with a call to <code>app$stop()</code>, then run the test with <code>testthat::test_file()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_file</span>(<span class="at">path =</span> <span class="st">"tests/testthat/test-shinytest2-selectVarApp.R"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The results are below:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 2 ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
-</section>
-</section>
 </section>
 
 </main> <!-- /main -->

@@ -157,7 +157,7 @@ co_box(
 
 [`shinytest2`](https://rstudio.github.io/shinytest2/index.html) requires a few steps to get up and running, so I've included my start up steps below (in hopes that someone might find them useful).
 
-## Chromium
+### Chromium
 
 First make sure you have [Chromium headless browser](https://www.chromium.org/chromium-projects/) installed. Chromium is the browser used to test and debug shiny apps with `shinytest2`.
 
@@ -184,7 +184,7 @@ Warning: No checksum defined for cask 'chromium', skipping verification.
 ```
 
 
-## [`chromote`]{style="font-size: 1.20em"}
+### [`chromote`]{style="font-size: 1.20em"}
 
 The [`chromote` package](https://rstudio.github.io/chromote/index.html) allows R to open Chromium. I had to make sure R knew where to find the Chromium application ([this section helps](https://rstudio.github.io/chromote/#specifying-which-browser-to-use)) by passing the path to the app to `Sys.setenv()` (*you can locate the path to Chromium using by holding <kbd>command (⌘)</kbd> and clicking on the application icon*)
 
@@ -294,7 +294,7 @@ shinytest2::use_shinytest2()
 
 The `setup-shinytest2.R` file contains a single call to `shinytest2::load_app_env()`, which "*Executes all `./R` files and `global.R` into the current environment*"
 
-### Recording tests
+## Recording tests
 
 New tests with [`shinytest2`](https://rstudio.github.io/shinytest2/index.html) can be created by launching the test event recorder, which allows us interact with our application, observe it's behavior, and record inputs, reactive values, and outputs. To record a test, run `shinytest2::record_test()`.
 
@@ -379,7 +379,7 @@ This opens Chromium with our shiny app:
 
 The test event recorder displays the `shiny` app, but also includes a window for recording each application 'event.' 
 
-#### Expectations
+### Expectations
 
 I'll start by recording a test for `histogramApp()`. On the right-hand side of the Chromium headless browser, you'll see the **`shinytest2` expectations** window:
 
@@ -395,7 +395,7 @@ I'll start by recording a test for `histogramApp()`. On the right-hand side of t
 
 The initial value in the **Code** window displays the dimensions of the application in Chromium (`app$set_window_size(width = , height = )`).
 
-#### Events
+### Events
 
 When I interact with the application (i.e., make changes to the inputs), each change is an 'event' that is recorded in the test:
 
@@ -409,7 +409,7 @@ Changing app inputs
 
 ::::
 
-#### Code 
+### Code 
 
 All events are recorded as code in the **Code** section of **`shinytest2` expectations**:
 
@@ -424,7 +424,7 @@ Recorded code for each event
 
 ::::
 
-#### Expect Shiny values 
+### Expect Shiny values 
 
 When I've finished interacting with the application, I click on the **Expect Shiny values** button at the top of **`shinytest2` expectations**. This will add `app$expect_values()` to the **Code** section:
 
@@ -440,7 +440,7 @@ When I've finished interacting with the application, I click on the **Expect Shi
 
 ::::
 
-#### Save test and exit
+### Save test and exit
 
 Finally, to save the test, enter a **Test name** and click **Save test and exit**
 
@@ -457,7 +457,7 @@ Name, save and exit `record_test()`
 
 Let's examine the output of the test!
 
-### Console output
+## Console output
 
 Back in the Console, the `shinytest2` test recorder is performing the following actions behind the scenes:
 
@@ -533,7 +533,7 @@ Back in the Console, the `shinytest2` test recorder is performing the following 
     • Running recorded test: tests/testthat/test-shinytest2.R
     ```
 
-### Test results
+## Test results
 
 The results from running the new test file (`test-shinytest2.R`) are below: 
 
@@ -714,7 +714,7 @@ The contents of the `.json` snapshot should look *somewhat* familiar for the thr
     
 Namespaces and `inputId`s will come up again if you start writing your own tests, which I'll cover below. 
 
-### [`shinytest2`]{style="font-size: 1.20em"} test contents
+## [`shinytest2`]{style="font-size: 1.20em"} test contents
 
 The contents of the test file generated from the test recorder are below: 
 
@@ -765,7 +765,7 @@ As noted above, this warning is [known by the `shinytest2` package authors](http
 
 Now that I know the first `shinytest2` test is passing, I'll dive into each line in the test. 
 
-#### [`AppDriver`]{style="font-size: 1.15em"}
+### [`AppDriver`]{style="font-size: 1.15em"}
 
 `shinytest2` uses the [`AppDriver`](https://rstudio.github.io/shinytest2/reference/AppDriver.html) to create "*a full simulation of a Shiny app*". When recording tests, this will be the first argument (along with the `name` of the `.png` and `.json` snapshot `testthat` files, and the `height` and `width` of the [`ChromoteSession`](https://rstudio.github.io/chromote/reference/ChromoteSession.html)).
 
@@ -779,7 +779,7 @@ Now that I know the first `shinytest2` test is passing, I'll dive into each line
     ```
 
 
-#### [`set_inputs()`]{style="font-size: 1.15em"}
+### [`set_inputs()`]{style="font-size: 1.15em"}
 
 When recording `shinytest2` tests, every change to the applications inputs will result in a call to `app$set_inputs()`. This function is similar to the `testServer()` call to `session$setInputs()` (i.e., the inputs are provided as "*name-value pairs*", i.e., `inputId` = `"value"`). 
 
@@ -798,7 +798,7 @@ When recording `shinytest2` tests, every change to the applications inputs will 
       app$set_inputs(`hist-bins` = 15)
     ```
 
-#### [`expect_values()`]{style="font-size: 1.15em"}
+### [`expect_values()`]{style="font-size: 1.15em"}
 
 [The documentation](https://rstudio.github.io/shinytest2/articles/in-depth.html#making-expectations) on `expect_values()` is definitely worth reading. `expect_values()` is added to the test file when **Expect Shiny values** is clicked in the test recorder and "*creates a list of values and compares them to the current values of the application*."
 
@@ -811,11 +811,9 @@ When recording `shinytest2` tests, every change to the applications inputs will 
       app$expect_values()
     ```
 
-### Running interactive tests
+## Writing tests
 
-The great thing about testing with `shinytest2` is the ability to be view the `AppDriver` interactively. 
-
-I'll demo building a test for the `datasetApp()` by adapting the code in `tests/testthat/test-shinytest2.R` in a new `tests/testthat/test-shinytest2-datasetApp.R` file.
+The great thing about testing with `shinytest2` is the ability to be view the `AppDriver` interactively as you write tests. I'll demo writing a test for the `datasetApp()` by adapting the contents of `tests/testthat/test-shinytest2.R` into a new `tests/testthat/test-shinytest2-datasetApp.R` file.
 
 -   First I want to make sure I have the development version of Chromium: 
 
@@ -828,7 +826,8 @@ I'll demo building a test for the `datasetApp()` by adapting the code in `tests/
     library(chromote)
     ```
 
-In the test file, I'll start by creating and viewing the `app` object with the Chromium headless browser. I've adjusted the height and weight to fit the `datasetApp()`.
+In the new test `test-shinytest2-datasetApp.R` file, I'll start with a call to `testthat::test_that(),` then create and view a new `app` object with the Chromium headless browser. The namespaced standalone app function can be passed to the first argument of `AppDriver$new()`, followed by the `height` and `weight` (which I've adjusted to fit the `datasetApp()`).
+
 
 ```{r}
 #| eval: false
@@ -840,12 +839,11 @@ test_that("{shinytest2}: datasetApp", {
 })
 ```
 
-
-This results in the following Chromium window: 
+This opens the following Chromium window: 
 
 ::::{.column-body-outset-right}
 
-::: {#fig-app_view.png layout-ncol=1}
+::: {#fig-app_view layout-ncol=1}
 
 ![`app$view()`](app_view.png){#fig-app_view}
 
@@ -854,9 +852,9 @@ View application with `app$view()`
 
 ::::
 
-This is the same application I see in when I run `msst2ap::datasetApp()` in the console. 
+I can see the same app I see when I run `msst2ap::datasetApp()` in the console, but with some additional developer tools.  
 
-#### Setting inputs 
+### Setting inputs 
 
 If I continue to adapt each line of `test-shinytest2.R`, I see that next lines set the `inputId`s for `dataset-dataset` to the `attitude` dataset with `app$set_input()` (*Note that this uses the module notation above (i.e., `"id-inputId"`)*):
 
@@ -884,60 +882,214 @@ Set application inputs with `app$set_inputs()`
 
 ::::
 
-#### Exporting outputs 
+### Checking inputs
 
-If I want to narrow the scope of the test, I can adjust `expect_values()` to only include specific the `input`s and `output`s, but because `datasetApp()` only includes a single input and output, I'll export both values with `app$expect_values()`
+I'll include a call to `app$get_values()` and assign the output to `app_values`:
 
 ```{r}
 #| eval: false
 #| echo: true 
 #| code-fold: false
-test_that("{shinytest2}: datasetApp", {
+testthat::test_that("{shinytest2}: datasetApp", {
   app <- AppDriver$new(msst2ap::datasetApp(), height = 600, width = 800)
   app$view()
   app$set_inputs(`dataset-dataset` = "attitude")
-  app$expect_values()
+  app_values <- app$get_values()
 })
 ```
 
-If I save and run the `test-shinytest2-datasetApp.R` file, I see the following results: 
+The contents of `app_values` is a list with the same three value types in the `.json` snapshot covered above (`input`, `output`, and `export`):
 
-```{bash}
+```{r}
 #| eval: false
 #| echo: true 
 #| code-fold: false
-ℹ Loading msst2ap
-Loading required package: shiny
-Loading required package: shinytest2
-Loading required package: testthat
-[ FAIL 0 | WARN 2 | SKIP 0 | PASS 1 ]
-
-── Warning (test-shinytest2-datasetApp.R:6:3): {shinytest2}: datasetApp ────────
-Adding new file snapshot: 'tests/testthat/_snaps/001_.png'
-
-── Warning (test-shinytest2-datasetApp.R:6:3): {shinytest2}: datasetApp ────────
-Adding new file snapshot: 'tests/testthat/_snaps/001.json'
-[ FAIL 0 | WARN 2 | SKIP 0 | PASS 1 ]
-
-Test complete
+str(app_values)
 ```
 
-This is the initial run of the test for `datasetApp()`, so the snapshots are generated with a warning. When I run `test-shinytest2-datasetApp.R` a second time, I see the tests passes:  
+```{bash}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+List of 3
+ $ input :List of 1
+  ..$ dataset-dataset: chr "attitude"
+ $ output:List of 2
+  ..$ data: chr "<table  class = 'table shiny-table table- "| __truncated__
+  ..$ vals: chr "$`dataset-dataset`\n[1] \"attitude\"\n"
+ $ export: Named list()
+```
+
+I can narrow the scope of the test and verify only the `input` that was changed with `app$set_inputs()`:
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+testthat::test_that("{shinytest2}: datasetApp", {
+  app <- AppDriver$new(msst2ap::datasetApp(), height = 600, width = 800)
+  app$view()
+  app$set_inputs(`dataset-dataset` = "attitude")
+  app_values <- app$get_values()
+  testthat::expect_equal(
+    object = app_values$input$`dataset-dataset`,
+    expected = "attitude")
+})
+```
+
+To conclude the test, I'll end with a call to [`app$stop()`](https://rstudio.github.io/shinytest2/articles/zzz-faq.html#should-i-manually-shut-down-my-appdriver).
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+testthat::test_that("{shinytest2}: datasetApp", {
+  app <- AppDriver$new(msst2ap::datasetApp(), height = 600, width = 800)
+  app$view()
+  app$set_inputs(`dataset-dataset` = "attitude")
+  app_values <- app$get_values()
+  testthat::expect_equal(
+    object = app_values$input$`dataset-dataset`,
+    expected = "attitude")
+  app$stop()
+})
+```
+
+I'll save the `test-shinytest2-datasetApp.R` file and run the test with `testthat::test_file()`:
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+test_file("tests/testthat/test-shinytest2-datasetApp.R")
+```
+
+This is the initial run of the test for `datasetApp()`, and no snapshot files are generated because the test doesn't include a call to `app$export_values()`. I see the tests passes:  
 
 ```{bash}
 #| eval: false
 #| echo: true 
 #| code-fold: false
-ℹ Loading msst2ap
-Loading required package: shiny
-Loading required package: shinytest2
-Loading required package: testthat
 [ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
+```
 
-Test complete
+## Exporting test values 
+
+The `shinytest2` documentation [repeatedly](https://rstudio.github.io/shinytest2/articles/in-depth.html#exported-values) [recommends](https://rstudio.github.io/shinytest2/articles/robust.html#exported-values) exporting test values from shiny applications with `shiny::exportTestValues()`. 
+
+I'll demonstrate exporting test values from `selectVarApp()` by adding the following to the `server` function in `R/selectVarApp.R`:
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+  server <- function(input, output, session) {
+
+    data <- datasetServer("data")
+    var <- selectVarServer("var", data, filter = filter)
+
+    output$out <- shiny::renderTable(head(var()))
+
+    output$vals <- shiny::renderPrint({
+      x <- shiny::reactiveValuesToList(input,
+                              all.names = TRUE)
+      print(x)
+    })
+
+    shiny::exportTestValues(
+      var = var(),
+      data = data()
+    )
+  }
 ```
 
 
+After saving, loading and building the package, I'll create the `test-shinytest2-selectVarApp.R` test file and add the initial contents:
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+testthat::test_that("{shinytest2}: selectVarApp", {
+  app <- AppDriver$new(msst2ap::selectVarApp(), height = 600, width = 600)
+  app$view()
+  
+})
+```
+
+The application opens in the Chromium headless browser:
+
+::::{.column-body-outset-right}
+
+::: {#fig-app_view_selectVarApp layout-ncol=1}
+
+![`app$view()`](app_view_selectVarApp.png){#fig-app_view_selectVarApp}
+
+View `selectVarApp()` application with `app$view()`
+:::
+
+::::
+
+In the test file, I'll use `app$get_values()` to store the exported test values in `app_values`, then verify the structure of each exported object: 
+
+-   `data` should be a `data.frame()`
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+  testthat::expect_true(
+    object = is.data.frame(app_values$export$data))
+```
+
+-   `var` should be a single column `data.frame()`
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+  testthat::expect_true(
+    object = ncol(app_values$export$var) == 1)
+```
+
+The completed test for `selectVarApp()` is below: 
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+testthat::test_that("{shinytest2}: selectVarApp", {
+  app <- AppDriver$new(msst2ap::selectVarApp(), height = 600, width = 600)
+  app$view()
+  app_values <- app$get_values()
+  
+  testthat::expect_true(
+    object = is.data.frame(app_values$export$data))
+
+  testthat::expect_true(
+    object = ncol(app_values$export$var) == 1)
+  
+  app$stop()
+})
+```
+
+Once again, I end the test with a call to `app$stop()`, then run the test with `testthat::test_file()`:
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+testthat::test_file(path = "tests/testthat/test-shinytest2-selectVarApp.R")
+```
+
+The results are below: 
+
+```{bash}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 2 ]
+```
 
 
 
