@@ -17,7 +17,6 @@ execute:
 #| eval: true 
 #| echo: false 
 #| include: false
-source("https://raw.githubusercontent.com/mjfrigaard/msst2ap/main/tests/testthat/helper.R")
 co_box <- function(color, header, contents = "Your text") {
   class <- switch(color,
     b = "note",
