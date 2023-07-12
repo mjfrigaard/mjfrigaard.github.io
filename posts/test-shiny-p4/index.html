@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Martin Frigaard">
-<meta name="dcterms.date" content="2023-06-30">
+<meta name="dcterms.date" content="2023-07-04">
 
 <title>@mjfrigaard - Testing shiny apps with shinytest2</title>
 <style>
@@ -184,7 +184,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">June 30, 2023</p>
+        <p class="date">July 4, 2023</p>
       </div>
     </div>
     
@@ -262,10 +262,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#checking-inputs" id="toc-checking-inputs" class="nav-link" data-scroll-target="#checking-inputs">Checking inputs</a></li>
   <li><a href="#running-tests" id="toc-running-tests" class="nav-link" data-scroll-target="#running-tests">Running tests</a></li>
   </ul></li>
-  <li><a href="#exporting-test-values" id="toc-exporting-test-values" class="nav-link" data-scroll-target="#exporting-test-values">Exporting test values</a></li>
+  <li><a href="#exporting-test-values" id="toc-exporting-test-values" class="nav-link" data-scroll-target="#exporting-test-values">Exporting test values</a>
+  <ul>
+  <li><a href="#exporttestvalues" id="toc-exporttestvalues" class="nav-link" data-scroll-target="#exporttestvalues"><span style="font-size: 1.20em"><code>exportTestValues()</code></span></a></li>
+  <li><a href="#using-system.file" id="toc-using-system.file" class="nav-link" data-scroll-target="#using-system.file">Using <span style="font-size: 1.20em"><code>system.file()</code></span></a></li>
+  <li><a href="#get_values" id="toc-get_values" class="nav-link" data-scroll-target="#get_values"><span style="font-size: 1.20em"><code>get_values()</code></span></a></li>
+  <li><a href="#exported-expectations" id="toc-exported-expectations" class="nav-link" data-scroll-target="#exported-expectations"><span style="font-size: 1.20em"><code>export</code></span>ed expectations</a></li>
+  </ul></li>
   <li><a href="#testing-complex-outputs" id="toc-testing-complex-outputs" class="nav-link" data-scroll-target="#testing-complex-outputs">Testing complex outputs</a>
   <ul>
-  <li><a href="#expectations-1" id="toc-expectations-1" class="nav-link" data-scroll-target="#expectations-1">Expectations</a></li>
+  <li><a href="#verify-initial-input" id="toc-verify-initial-input" class="nav-link" data-scroll-target="#verify-initial-input">Verify initial <span style="font-size: 1.20em"><code>input</code></span></a></li>
+  <li><a href="#set-and-verify-export" id="toc-set-and-verify-export" class="nav-link" data-scroll-target="#set-and-verify-export">Set and verify <span style="font-size: 1.20em"><code>export</code></span></a></li>
+  <li><a href="#verify-plot-with-vdiffr" id="toc-verify-plot-with-vdiffr" class="nav-link" data-scroll-target="#verify-plot-with-vdiffr">Verify plot with <span style="font-size: 1.20em"><code>vdiffr</code></span></a></li>
+  <li><a href="#set_-get_-expect_" id="toc-set_-get_-expect_" class="nav-link" data-scroll-target="#set_-get_-expect_"><span style="font-size: 1.10em"><code>set_</code>, <code>get_</code>, <code>expect_</code></span></a></li>
   <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
   </ul></li>
   <li><a href="#recap" id="toc-recap" class="nav-link" data-scroll-target="#recap">Recap</a></li>
@@ -292,7 +301,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(vdiffr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
+<p>This is the fourth post in a <a href="https://mjfrigaard.github.io/series.html#testing-shiny-applications">series on testing</a> shiny applications. My previous posts have covered <a href="https://mjfrigaard.github.io/posts/test-shiny-p1/">unit testing utility functions</a> and <a href="https://mjfrigaard.github.io/posts/test-shiny-p3/">testing module server functions with <code>testServer()</code></a>. In this post, I’ll be covering testing shiny applications using <code>testthat</code> and <code>shinytest2</code>.</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><img src="image.svg" class="img-fluid" style="width:70.0%"></p>
+</div></div><div class="callout callout-style-default callout-important no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
@@ -306,29 +319,6 @@ ALERT!
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em; font-weight: bold; color: #696969;">
 <p>This post is currently under development. Thank you for your patience.</p>
-</div>
-</div>
-</div>
-</div>
-<p>This is the fourth post in a <a href="https://mjfrigaard.github.io/series.html#testing-shiny-applications">series on testing</a> shiny applications. My previous posts have covered <a href="https://mjfrigaard.github.io/posts/test-shiny-p1/">unit testing utility functions</a> and <a href="https://mjfrigaard.github.io/posts/test-shiny-p3/">testing module server functions with <code>testServer()</code></a>. In this post, I’ll be covering testing shiny applications using <code>testthat</code> and <code>shinytest2</code>.</p>
-
-<div class="no-row-height column-margin column-container"><div class="">
-<p><img src="image.svg" class="img-fluid" style="width:70.0%"></p>
-</div></div><div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Why <code>shinytest2</code>?
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<div style="font-size: 1.10em; color: #696969;">
-<p><strong>What happened to <code>shinytest</code>?</strong></p>
-<p><code>shinytest2</code> replaced <code>shinytest</code> on 2022-04-27. If you’ve previously written tests with <code>shinytest</code>–or are curious how <code>shinytest2</code> if different–I recommend going through the <a href="https://cran.r-project.org/web/packages/shinytest2/vignettes/z-migration.html#:~:text">Migrating from <code>shinytest</code></a> vignette.</p>
 </div>
 </div>
 </div>
@@ -905,6 +895,25 @@ Why <code>shinytest2</code>?
 </div>
 <p>## Using <span style="font-size: 1.20em"><code>shinytest2</code></span></p>
 <p><code>shinytest2</code> is extremely <a href="https://rstudio.github.io/shinytest2/index.html">well documentation</a>. I highly recommended the <a href="https://rstudio.github.io/shinytest2/articles/shinytest2.html">Get Started vignette</a>. In the next sections, I’ll cover some examples for what I’ve included in the <code>msst2ap</code>.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why <code>shinytest2</code>?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #696969;">
+<p><strong>What happened to <code>shinytest</code>?</strong></p>
+<p><code>shinytest2</code> replaced <code>shinytest</code> on 2022-04-27. If you’ve previously written tests with <code>shinytest</code>–or are curious how <code>shinytest2</code> if different–I recommend going through the <a href="https://cran.r-project.org/web/packages/shinytest2/vignettes/z-migration.html#:~:text">Migrating from <code>shinytest</code></a> vignette.</p>
+</div>
+</div>
+</div>
+</div>
 <p>Run <code>shinytest2::use_shinytest2()</code> to create the initial files for <code>shinytest2</code>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>shinytest2<span class="sc">::</span><span class="fu">use_shinytest2</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1437,13 +1446,18 @@ WARNING
 <span id="cb66-9"><a href="#cb66-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb66-10"><a href="#cb66-10" aria-hidden="true" tabindex="-1"></a><span class="ex">3</span> directories, 5 files</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>In the new test <code>test-shinytest2-datasetApp.R</code> file, I’ll start with a call to <code>testthat::test_that(),</code> then create a new <code>app</code> object with the Chromium headless browser. The namespaced standalone app function can be passed to the first argument of <code>AppDriver$new()</code>, followed by the <code>height</code> and <code>weight</code> (which I’ve adjusted to fit the <code>datasetApp()</code>).</p>
+<p>In the new test <code>test-shinytest2-datasetApp.R</code> file, I’ll start with a call to <code>testthat::test_that(),</code> then create a new <code>app</code> object with the Chromium headless browser.</p>
+<p>The namespaced standalone app function can be used to create a <code>ds_app</code> object, then <code>ds_app</code> is passed to the first argument of <code>AppDriver$new()</code> (I’ve adjusted the <code>height</code> and <code>weight</code> to fit the <code>datasetApp()</code>).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">"{shinytest2}: datasetApp"</span>, {</span>
-<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(msst2ap<span class="sc">::</span><span class="fu">datasetApp</span>(), <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">800</span>)</span>
-<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>  ds_app <span class="ot">&lt;-</span> msst2ap<span class="sc">::</span><span class="fu">datasetApp</span>()</span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">app_dir =</span> ds_app, <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">800</span>)</span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>In the <strong>Console</strong>, I can use <code>app$view()</code> to open the Chromium browser:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>app<span class="sc">$</span><span class="fu">view</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <div class="column-body-outset-right">
 <div id="fig-app_view" class="quarto-layout-panel">
 <figure class="figure">
@@ -1466,10 +1480,11 @@ WARNING
 <h3 class="anchored" data-anchor-id="setting-inputs">Setting inputs</h3>
 <p>If I continue to adapt each line in <code>test-shinytest2.R</code> to the <code>datasetApp()</code>, I see that next lines set the <code>inputId</code>s for <code>dataset-dataset</code> to the <code>attitude</code> dataset with <code>app$set_input()</code> (<em>Note that this uses the module notation above (i.e., <code>"id-inputId"</code></em>):</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">"{shinytest2}: datasetApp"</span>, {</span>
-<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(msst2ap<span class="sc">::</span><span class="fu">datasetApp</span>(), <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">800</span>)</span>
-<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"attitude"</span>)</span>
-<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">"{shinytest2}: datasetApp"</span>, {</span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>  ds_app <span class="ot">&lt;-</span> msst2ap<span class="sc">::</span><span class="fu">datasetApp</span>()</span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">app_dir =</span> ds_app, <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">800</span>)</span>
+<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"attitude"</span>)</span>
+<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>If you can see both windows, you’ll see the application values change in the Chromium browser:</p>
 <div class="column-page-right">
@@ -1494,54 +1509,57 @@ WARNING
 <h3 class="anchored" data-anchor-id="checking-inputs">Checking inputs</h3>
 <p>In the previous test, I used the <code>expect_values()</code> to capture a list of all the app values (<code>input</code>, <code>output</code>, <code>export</code>). I can also capture these values in a list <em>inside</em> the test by including a call to <code>app$get_values()</code> and assigning the output to <code>app_values</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: datasetApp"</span>, {</span>
-<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(msst2ap<span class="sc">::</span><span class="fu">datasetApp</span>(), <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">800</span>)</span>
-<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"attitude"</span>)</span>
-<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a>  app_values <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_values</span>()</span>
-<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: datasetApp"</span>, {</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>  ds_app <span class="ot">&lt;-</span> msst2ap<span class="sc">::</span><span class="fu">datasetApp</span>()</span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">app_dir =</span> ds_app, <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">800</span>)</span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"attitude"</span>)</span>
+<span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a>  app_values <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_values</span>()</span>
+<span id="cb70-6"><a href="#cb70-6" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><code>app_values</code> has a similar structure to the <code>.json</code> snapshot covered above (i.e., with <code>input</code>, <code>output</code>, and <code>export</code>):</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(app_values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(app_values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="ex">List</span> of 3</span>
-<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> input :List of 1</span>
-<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">..$</span> dataset-dataset: chr <span class="st">"attitude"</span></span>
-<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> output:List of 2</span>
-<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a>  <span class="ex">..$</span> data: chr <span class="st">"&lt;table  class = 'table shiny-table table- "</span><span class="kw">|</span> <span class="ex">__truncated__</span></span>
-<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a>  <span class="ex">..$</span> vals: chr <span class="st">"$</span><span class="kw">`</span><span class="ex">dataset-dataset</span><span class="kw">`</span><span class="st">\n[1] </span><span class="dt">\"</span><span class="st">attitude</span><span class="dt">\"</span><span class="st">\n"</span></span>
-<span id="cb71-7"><a href="#cb71-7" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> export: Named list<span class="er">(</span><span class="kw">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="ex">List</span> of 3</span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> input :List of 1</span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">..$</span> dataset-dataset: chr <span class="st">"attitude"</span></span>
+<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> output:List of 2</span>
+<span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a>  <span class="ex">..$</span> data: chr <span class="st">"&lt;table  class = 'table shiny-table table- "</span><span class="kw">|</span> <span class="ex">__truncated__</span></span>
+<span id="cb72-6"><a href="#cb72-6" aria-hidden="true" tabindex="-1"></a>  <span class="ex">..$</span> vals: chr <span class="st">"$</span><span class="kw">`</span><span class="ex">dataset-dataset</span><span class="kw">`</span><span class="st">\n[1] </span><span class="dt">\"</span><span class="st">attitude</span><span class="dt">\"</span><span class="st">\n"</span></span>
+<span id="cb72-7"><a href="#cb72-7" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> export: Named list<span class="er">(</span><span class="kw">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>I can narrow the scope of the test by using <code>app_values</code> to verify only the <code>input</code> that was changed with <code>app$set_inputs()</code>::</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: datasetApp"</span>, {</span>
-<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(msst2ap<span class="sc">::</span><span class="fu">datasetApp</span>(), <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">800</span>)</span>
-<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"attitude"</span>)</span>
-<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a>  app_values <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_values</span>()</span>
-<span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
-<span id="cb72-6"><a href="#cb72-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_values<span class="sc">$</span>input<span class="sc">$</span><span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span>,</span>
-<span id="cb72-7"><a href="#cb72-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> <span class="st">"attitude"</span>)</span>
-<span id="cb72-8"><a href="#cb72-8" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: datasetApp"</span>, {</span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>  ds_app <span class="ot">&lt;-</span> msst2ap<span class="sc">::</span><span class="fu">datasetApp</span>()</span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">app_dir =</span> ds_app, <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">800</span>)</span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"attitude"</span>)</span>
+<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>  app_values <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_values</span>()</span>
+<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_values<span class="sc">$</span>input<span class="sc">$</span><span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span>,</span>
+<span id="cb73-8"><a href="#cb73-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> <span class="st">"attitude"</span>)</span>
+<span id="cb73-9"><a href="#cb73-9" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>At the end of the test, I’ll add a call <a href="https://rstudio.github.io/shinytest2/articles/zzz-faq.html#should-i-manually-shut-down-my-appdriver"><code>app$stop()</code></a> to close the Chromium app.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: datasetApp"</span>, {</span>
-<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(msst2ap<span class="sc">::</span><span class="fu">datasetApp</span>(), <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">800</span>)</span>
-<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"attitude"</span>)</span>
-<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>  app_values <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_values</span>()</span>
-<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
-<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_values<span class="sc">$</span>input<span class="sc">$</span><span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span>,</span>
-<span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> <span class="st">"attitude"</span>)</span>
-<span id="cb73-8"><a href="#cb73-8" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">stop</span>()</span>
-<span id="cb73-9"><a href="#cb73-9" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: datasetApp"</span>, {</span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>  ds_app <span class="ot">&lt;-</span> msst2ap<span class="sc">::</span><span class="fu">datasetApp</span>()</span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">app_dir =</span> ds_app, <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">800</span>)</span>
+<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"attitude"</span>)</span>
+<span id="cb74-5"><a href="#cb74-5" aria-hidden="true" tabindex="-1"></a>  app_values <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_values</span>()</span>
+<span id="cb74-6"><a href="#cb74-6" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb74-7"><a href="#cb74-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_values<span class="sc">$</span>input<span class="sc">$</span><span class="st">`</span><span class="at">dataset-dataset</span><span class="st">`</span>,</span>
+<span id="cb74-8"><a href="#cb74-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> <span class="st">"attitude"</span>)</span>
+<span id="cb74-9"><a href="#cb74-9" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">stop</span>()</span>
+<span id="cb74-10"><a href="#cb74-10" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="running-tests" class="level3">
 <h3 class="anchored" data-anchor-id="running-tests">Running tests</h3>
 <p>I’ll save the <code>test-shinytest2-datasetApp.R</code> file and run the test with <code>testthat::test_file()</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_file</span>(<span class="st">"tests/testthat/test-shinytest2-datasetApp.R"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_file</span>(<span class="st">"tests/testthat/test-shinytest2-datasetApp.R"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="WARNING">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="true" aria-label="Toggle callout">
@@ -1558,69 +1576,74 @@ WARNING
 <div style="font-size: 1.10em; color: #000000;">
 <p>If you encounter the error message below:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 0 ]</span>
-<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Error</span> : Chromote: timed out waiting for response to command Target.createTarget</span>
-<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 1 <span class="kw">|</span> <span class="ex">PASS</span> 0 ]</span>
-<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a><span class="ex">──</span> Skipped tests <span class="er">(</span><span class="ex">1</span><span class="kw">)</span> <span class="ex">───────────────────────────────────────────────────────────</span></span>
-<span id="cb75-6"><a href="#cb75-6" aria-hidden="true" tabindex="-1"></a><span class="ex">•</span> <span class="kw">`</span><span class="ex">shinytest2::AppDriver</span><span class="kw">`</span> can not be initialized as {chromote} can not be </span>
-<span id="cb75-7"><a href="#cb75-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">started</span> <span class="er">(</span><span class="ex">1</span><span class="kw">)</span><span class="bu">:</span> test-shinytest2-selectVarApp.R:4:3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 0 ]</span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Error</span> : Chromote: timed out waiting for response to command Target.createTarget</span>
+<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 1 <span class="kw">|</span> <span class="ex">PASS</span> 0 ]</span>
+<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb76-5"><a href="#cb76-5" aria-hidden="true" tabindex="-1"></a><span class="ex">──</span> Skipped tests <span class="er">(</span><span class="ex">1</span><span class="kw">)</span> <span class="ex">───────────────────────────────────────────────────────────</span></span>
+<span id="cb76-6"><a href="#cb76-6" aria-hidden="true" tabindex="-1"></a><span class="ex">•</span> <span class="kw">`</span><span class="ex">shinytest2::AppDriver</span><span class="kw">`</span> can not be initialized as {chromote} can not be </span>
+<span id="cb76-7"><a href="#cb76-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">started</span> <span class="er">(</span><span class="ex">1</span><span class="kw">)</span><span class="bu">:</span> test-shinytest2-selectVarApp.R:4:3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Try installing and loading <code>chromote</code> and <code>shinytest2</code> again (this seemed to work for me).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"rstudio/chromote"</span>, </span>
-<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">force =</span> <span class="cn">TRUE</span>, <span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(chromote)</span>
-<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shinytest2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"rstudio/chromote"</span>, </span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">force =</span> <span class="cn">TRUE</span>, <span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(chromote)</span>
+<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shinytest2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
 </div>
 </div>
 <p>In the initial run of the test for <code>datasetApp()</code>, no snapshot files are generated because the test didn’t include a call to <code>app$export_values()</code>.</p>
-<p>I see the tests passes:</p>
+<p>I see this initial test passes:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 1 ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 1 ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="exporting-test-values" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="exporting-test-values">Exporting test values</h2>
 <p>The <code>shinytest2</code> documentation <a href="https://rstudio.github.io/shinytest2/articles/in-depth.html#exported-values">repeatedly</a> <a href="https://rstudio.github.io/shinytest2/articles/robust.html#exported-values">recommends</a> exporting test values from shiny applications with <code>shiny::exportTestValues()</code>.</p>
+<section id="exporttestvalues" class="level3">
+<h3 class="anchored" data-anchor-id="exporttestvalues"><span style="font-size: 1.20em"><code>exportTestValues()</code></span></h3>
 <p>I’ll demonstrate exporting test values from <code>selectVarApp()</code> by adding the following to the <code>server</code> function in <code>inst/dev/app.R</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>  server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output, session) {</span>
-<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">&lt;-</span> <span class="fu">datasetServer</span>(<span class="st">"data"</span>)</span>
-<span id="cb78-4"><a href="#cb78-4" aria-hidden="true" tabindex="-1"></a>    var <span class="ot">&lt;-</span> <span class="fu">selectVarServer</span>(<span class="st">"var"</span>, data, <span class="at">filter =</span> filter)</span>
-<span id="cb78-5"><a href="#cb78-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb78-6"><a href="#cb78-6" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>out <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderTable</span>(<span class="fu">head</span>(<span class="fu">var</span>()))</span>
-<span id="cb78-7"><a href="#cb78-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb78-8"><a href="#cb78-8" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>vals <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderPrint</span>({</span>
-<span id="cb78-9"><a href="#cb78-9" aria-hidden="true" tabindex="-1"></a>      x <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">reactiveValuesToList</span>(input,</span>
-<span id="cb78-10"><a href="#cb78-10" aria-hidden="true" tabindex="-1"></a>                              <span class="at">all.names =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb78-11"><a href="#cb78-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">print</span>(x)</span>
-<span id="cb78-12"><a href="#cb78-12" aria-hidden="true" tabindex="-1"></a>    })</span>
-<span id="cb78-13"><a href="#cb78-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb78-14"><a href="#cb78-14" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">exportTestValues</span>(</span>
-<span id="cb78-15"><a href="#cb78-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">var =</span> <span class="fu">var</span>(),</span>
-<span id="cb78-16"><a href="#cb78-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">data =</span> <span class="fu">data</span>()</span>
-<span id="cb78-17"><a href="#cb78-17" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb78-18"><a href="#cb78-18" aria-hidden="true" tabindex="-1"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>  server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">&lt;-</span> <span class="fu">datasetServer</span>(<span class="st">"data"</span>)</span>
+<span id="cb79-4"><a href="#cb79-4" aria-hidden="true" tabindex="-1"></a>    var <span class="ot">&lt;-</span> <span class="fu">selectVarServer</span>(<span class="st">"var"</span>, data, <span class="at">filter =</span> filter)</span>
+<span id="cb79-5"><a href="#cb79-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb79-6"><a href="#cb79-6" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>out <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderTable</span>(<span class="fu">head</span>(<span class="fu">var</span>()))</span>
+<span id="cb79-7"><a href="#cb79-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb79-8"><a href="#cb79-8" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>vals <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderPrint</span>({</span>
+<span id="cb79-9"><a href="#cb79-9" aria-hidden="true" tabindex="-1"></a>      x <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">reactiveValuesToList</span>(input,</span>
+<span id="cb79-10"><a href="#cb79-10" aria-hidden="true" tabindex="-1"></a>                              <span class="at">all.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb79-11"><a href="#cb79-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">print</span>(x)</span>
+<span id="cb79-12"><a href="#cb79-12" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb79-13"><a href="#cb79-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb79-14"><a href="#cb79-14" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">exportTestValues</span>(</span>
+<span id="cb79-15"><a href="#cb79-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">var =</span> <span class="fu">var</span>(),</span>
+<span id="cb79-16"><a href="#cb79-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">data =</span> <span class="fu">data</span>()</span>
+<span id="cb79-17"><a href="#cb79-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb79-18"><a href="#cb79-18" aria-hidden="true" tabindex="-1"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>After saving, loading and building the package, I’ll create the <code>test-shinytest2-selectVarApp.R</code> test file and add the initial contents to create the <code>AppDriver</code> object:</p>
+</section>
+<section id="using-system.file" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="using-system.file">Using <span style="font-size: 1.20em"><code>system.file()</code></span></h3>
+<p>After loading, documenting and installing the package, I’ll create a <code>test-shinytest2-selectVarApp.R</code> test file and add the initial contents to create the <code>AppDriver</code> object:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: selectVarApp"</span>, {</span>
-<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">app_dir =</span> <span class="fu">system.file</span>(<span class="st">"dev"</span>, <span class="st">"selectVarApp"</span>,</span>
-<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">package =</span> <span class="st">"msst2ap"</span>),</span>
-<span id="cb79-4"><a href="#cb79-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">600</span>)</span>
-<span id="cb79-5"><a href="#cb79-5" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb79-6"><a href="#cb79-6" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: selectVarApp"</span>, {</span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">app_dir =</span> <span class="fu">system.file</span>(<span class="st">"dev"</span>, <span class="st">"selectVarApp"</span>,</span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">package =</span> <span class="st">"msst2ap"</span>),</span>
+<span id="cb80-4"><a href="#cb80-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">600</span>)</span>
+<span id="cb80-5"><a href="#cb80-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb80-6"><a href="#cb80-6" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Note that in this test, I can load the development version of <code>selectVarApp()</code> with <code>system.file()</code> (this is a similar folder structure to apps built with <a href="https://thinkr-open.github.io/golem/articles/a_start.html"><code>golem</code></a> and <a href="https://leprechaun.opifex.org/#/guide/build"><code>leprechaun</code></a> frameworks)</p>
+<p>Note that to test the development version of <code>selectVarApp()</code>, I pass a call to <code>system.file()</code> to the <code>app_dir</code> argument (this is a similar folder structure to apps built with <a href="https://thinkr-open.github.io/golem/articles/a_start.html"><code>golem</code></a> and <a href="https://leprechaun.opifex.org/#/guide/build"><code>leprechaun</code></a> frameworks)</p>
 <p>After entering <code>app$view()</code> in the <strong>Console</strong>, the application opens in the Chromium headless browser again:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>app<span class="sc">$</span><span class="fu">view</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>app<span class="sc">$</span><span class="fu">view</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="column-body-outset-right">
 <div id="fig-app_view_selectVarApp" class="quarto-layout-panel">
@@ -1640,95 +1663,152 @@ WARNING
 </div>
 </div>
 <p>In the test file, I’ll use <code>app$set_values()</code> to change the <code>$`data-dataset`</code> and <code>$`var-var`</code> inputs:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: selectVarApp"</span>, {</span>
-<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">app_dir =</span> <span class="fu">system.file</span>(<span class="st">"dev"</span>, <span class="st">"selectVarApp"</span>,</span>
-<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">package =</span> <span class="st">"msst2ap"</span>),</span>
-<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">600</span>)</span>
-<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a>    app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">data-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"mtcars"</span>)</span>
-<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a>    app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">var-var</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"wt"</span>)</span>
-<span id="cb81-8"><a href="#cb81-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb81-9"><a href="#cb81-9" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>I’ll use <code>app$get_values()</code> to store the exported <code>input</code>/<code>output</code>/<code>export</code> test values in <code>app_values</code>:</p>
+<ul>
+<li><p>Change <code>$`data-dataset`</code> to <code>mtcars</code>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: selectVarApp"</span>, {</span>
 <span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">app_dir =</span> <span class="fu">system.file</span>(<span class="st">"dev"</span>, <span class="st">"selectVarApp"</span>,</span>
 <span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">package =</span> <span class="st">"msst2ap"</span>),</span>
 <span id="cb82-4"><a href="#cb82-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">600</span>)</span>
-<span id="cb82-5"><a href="#cb82-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb82-5"><a href="#cb82-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb82-6"><a href="#cb82-6" aria-hidden="true" tabindex="-1"></a>    app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">data-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"mtcars"</span>)</span>
-<span id="cb82-7"><a href="#cb82-7" aria-hidden="true" tabindex="-1"></a>    app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">var-var</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"wt"</span>)</span>
-<span id="cb82-8"><a href="#cb82-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb82-9"><a href="#cb82-9" aria-hidden="true" tabindex="-1"></a>    app_values <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_values</span>()</span>
-<span id="cb82-10"><a href="#cb82-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb82-11"><a href="#cb82-11" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb82-7"><a href="#cb82-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-8"><a href="#cb82-8" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+</ul>
+<div class="column-body-outset-right">
+<div id="fig-app_view_set_data_selectVarApp" class="quarto-layout-panel">
+<figure class="figure">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 100.0%;justify-content: center;">
+<div id="fig-app_view_set_data_selectVarApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="app_view_set_data_selectVarApp.png" class="img-fluid figure-img" data-ref-parent="fig-app_view_set_data_selectVarApp"></p>
+<figcaption class="figure-caption">(a) Set <code>data-dataset</code></figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p></p><figcaption class="figure-caption">Figure&nbsp;16: View <code>selectVarApp()</code> after setting <code>data-dataset</code> with <code>app$set_inputs()</code></figcaption><p></p>
+</figure>
+</div>
+</div>
+<ul>
+<li><p>Change <code>$`var-var`</code> to <code>wt</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: selectVarApp"</span>, {</span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">app_dir =</span> <span class="fu">system.file</span>(<span class="st">"dev"</span>, <span class="st">"selectVarApp"</span>,</span>
+<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">package =</span> <span class="st">"msst2ap"</span>),</span>
+<span id="cb83-4"><a href="#cb83-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">600</span>)</span>
+<span id="cb83-5"><a href="#cb83-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb83-6"><a href="#cb83-6" aria-hidden="true" tabindex="-1"></a>    app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">data-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"mtcars"</span>)</span>
+<span id="cb83-7"><a href="#cb83-7" aria-hidden="true" tabindex="-1"></a>    app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">var-var</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"wt"</span>)</span>
+<span id="cb83-8"><a href="#cb83-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb83-9"><a href="#cb83-9" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+</ul>
+<div class="column-body-outset-right">
+<div id="fig-app_view_set_var_selectVarApp" class="quarto-layout-panel">
+<figure class="figure">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 100.0%;justify-content: center;">
+<div id="fig-app_view_set_var_selectVarApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="app_view_set_var_selectVarApp.png" class="img-fluid figure-img" data-ref-parent="fig-app_view_set_var_selectVarApp"></p>
+<figcaption class="figure-caption">(a) Set <code>var-var</code></figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p></p><figcaption class="figure-caption">Figure&nbsp;17: View <code>selectVarApp()</code> after setting <code>var-var</code> with <code>app$set_inputs()</code></figcaption><p></p>
+</figure>
+</div>
+</div>
+</section>
+<section id="get_values" class="level3">
+<h3 class="anchored" data-anchor-id="get_values"><span style="font-size: 1.20em"><code>get_values()</code></span></h3>
+<p>I’ll use <code>app$get_values()</code> to store the exported <code>input</code>, <code>output</code>, and <code>export</code> test values in <code>app_values</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: selectVarApp"</span>, {</span>
+<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">app_dir =</span> <span class="fu">system.file</span>(<span class="st">"dev"</span>, <span class="st">"selectVarApp"</span>,</span>
+<span id="cb84-3"><a href="#cb84-3" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">package =</span> <span class="st">"msst2ap"</span>),</span>
+<span id="cb84-4"><a href="#cb84-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">600</span>)</span>
+<span id="cb84-5"><a href="#cb84-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb84-6"><a href="#cb84-6" aria-hidden="true" tabindex="-1"></a>    app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">data-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"mtcars"</span>)</span>
+<span id="cb84-7"><a href="#cb84-7" aria-hidden="true" tabindex="-1"></a>    app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">var-var</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"wt"</span>)</span>
+<span id="cb84-8"><a href="#cb84-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb84-9"><a href="#cb84-9" aria-hidden="true" tabindex="-1"></a>    app_values <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_values</span>()</span>
+<span id="cb84-10"><a href="#cb84-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb84-11"><a href="#cb84-11" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><code>app_values</code> is a list (similar to the <code>.json</code> snapshot file), but now we’ve explicitly <code>export</code>ed values from the server in <code>selectVarApp()</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(app_values<span class="sc">$</span>export)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(app_values<span class="sc">$</span>export)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="ex">[1]</span> <span class="st">"data"</span> <span class="st">"var"</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="ex">[1]</span> <span class="st">"data"</span> <span class="st">"var"</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="exported-expectations" class="level3">
+<h3 class="anchored" data-anchor-id="exported-expectations"><span style="font-size: 1.20em"><code>export</code></span>ed expectations</h3>
 <p>I can use <code>app_values</code> to verify the structure of each exported object:</p>
 <ul>
 <li><code>data</code> should be a <code>data.frame()</code></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_true</span>(</span>
-<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> <span class="fu">is.data.frame</span>(app_values<span class="sc">$</span>export<span class="sc">$</span>data))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_true</span>(</span>
+<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> <span class="fu">is.data.frame</span>(app_values<span class="sc">$</span>export<span class="sc">$</span>data))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <ul>
 <li><code>var</code> should be a single column <code>data.frame()</code></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_true</span>(</span>
-<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> <span class="fu">ncol</span>(app_values<span class="sc">$</span>export<span class="sc">$</span>var) <span class="sc">==</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_true</span>(</span>
+<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> <span class="fu">ncol</span>(app_values<span class="sc">$</span>export<span class="sc">$</span>var) <span class="sc">==</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Once again, I end the test with a call to <code>app$stop()</code>. The completed test for <code>selectVarApp()</code> is below:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: selectVarApp"</span>, {</span>
-<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">app_dir =</span> <span class="fu">system.file</span>(<span class="st">"dev"</span>, <span class="st">"selectVarApp"</span>,</span>
-<span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">package =</span> <span class="st">"msst2ap"</span>),</span>
-<span id="cb87-4"><a href="#cb87-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">600</span>)</span>
-<span id="cb87-5"><a href="#cb87-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb87-6"><a href="#cb87-6" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">data-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"mtcars"</span>)</span>
-<span id="cb87-7"><a href="#cb87-7" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">var-var</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"wt"</span>)</span>
-<span id="cb87-8"><a href="#cb87-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb87-9"><a href="#cb87-9" aria-hidden="true" tabindex="-1"></a>  app_values <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_values</span>()</span>
-<span id="cb87-10"><a href="#cb87-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb87-11"><a href="#cb87-11" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_true</span>(</span>
-<span id="cb87-12"><a href="#cb87-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> <span class="fu">is.data.frame</span>(app_values<span class="sc">$</span>export<span class="sc">$</span>data))</span>
-<span id="cb87-13"><a href="#cb87-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb87-14"><a href="#cb87-14" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_true</span>(</span>
-<span id="cb87-15"><a href="#cb87-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> <span class="fu">ncol</span>(app_values<span class="sc">$</span>export<span class="sc">$</span>var) <span class="sc">==</span> <span class="dv">1</span>)</span>
-<span id="cb87-16"><a href="#cb87-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb87-17"><a href="#cb87-17" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">stop</span>()</span>
-<span id="cb87-18"><a href="#cb87-18" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: selectVarApp"</span>, {</span>
+<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">app_dir =</span> <span class="fu">system.file</span>(<span class="st">"dev"</span>, <span class="st">"selectVarApp"</span>,</span>
+<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">package =</span> <span class="st">"msst2ap"</span>),</span>
+<span id="cb89-4"><a href="#cb89-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">height =</span> <span class="dv">600</span>, <span class="at">width =</span> <span class="dv">600</span>)</span>
+<span id="cb89-5"><a href="#cb89-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-6"><a href="#cb89-6" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">data-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"mtcars"</span>)</span>
+<span id="cb89-7"><a href="#cb89-7" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">var-var</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"wt"</span>)</span>
+<span id="cb89-8"><a href="#cb89-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-9"><a href="#cb89-9" aria-hidden="true" tabindex="-1"></a>  app_values <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_values</span>()</span>
+<span id="cb89-10"><a href="#cb89-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-11"><a href="#cb89-11" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_true</span>(</span>
+<span id="cb89-12"><a href="#cb89-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> <span class="fu">is.data.frame</span>(app_values<span class="sc">$</span>export<span class="sc">$</span>data))</span>
+<span id="cb89-13"><a href="#cb89-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-14"><a href="#cb89-14" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_true</span>(</span>
+<span id="cb89-15"><a href="#cb89-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> <span class="fu">ncol</span>(app_values<span class="sc">$</span>export<span class="sc">$</span>var) <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb89-16"><a href="#cb89-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb89-17"><a href="#cb89-17" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">stop</span>()</span>
+<span id="cb89-18"><a href="#cb89-18" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>I can run the test with <code>testthat::test_file()</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_file</span>(<span class="at">path =</span> <span class="st">"tests/testthat/test-shinytest2-selectVarApp.R"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_file</span>(<span class="at">path =</span> <span class="st">"tests/testthat/test-shinytest2-selectVarApp.R"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The results are below:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 2 ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 2 ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
 </section>
 <section id="testing-complex-outputs" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="testing-complex-outputs">Testing complex outputs</h2>
 <p>I’ve created an adapted version of the <code>histogramApp()</code> in the <code>inst/dev/gghistApp/</code> folder (view contents <a href="https://github.com/mjfrigaard/msst2ap/tree/main/inst/dev/gghistApp#gghistapp">here</a>):</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="ex">inst/dev/gghistApp/</span></span>
-<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a>            <span class="ex">├──</span> DESCRIPTION</span>
-<span id="cb90-3"><a href="#cb90-3" aria-hidden="true" tabindex="-1"></a>            <span class="ex">├──</span> R/</span>
-<span id="cb90-4"><a href="#cb90-4" aria-hidden="true" tabindex="-1"></a>            <span class="ex">│</span>   └── modules.R</span>
-<span id="cb90-5"><a href="#cb90-5" aria-hidden="true" tabindex="-1"></a>            <span class="ex">├──</span> README.md</span>
-<span id="cb90-6"><a href="#cb90-6" aria-hidden="true" tabindex="-1"></a>            <span class="ex">└──</span> app.R</span>
-<span id="cb90-7"><a href="#cb90-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb90-8"><a href="#cb90-8" aria-hidden="true" tabindex="-1"></a><span class="ex">2</span> directories, 4 files</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="ex">inst/dev/gghistApp/</span></span>
+<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a>            <span class="ex">├──</span> DESCRIPTION</span>
+<span id="cb92-3"><a href="#cb92-3" aria-hidden="true" tabindex="-1"></a>            <span class="ex">├──</span> R/</span>
+<span id="cb92-4"><a href="#cb92-4" aria-hidden="true" tabindex="-1"></a>            <span class="ex">│</span>   └── modules.R</span>
+<span id="cb92-5"><a href="#cb92-5" aria-hidden="true" tabindex="-1"></a>            <span class="ex">├──</span> README.md</span>
+<span id="cb92-6"><a href="#cb92-6" aria-hidden="true" tabindex="-1"></a>            <span class="ex">└──</span> app.R</span>
+<span id="cb92-7"><a href="#cb92-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb92-8"><a href="#cb92-8" aria-hidden="true" tabindex="-1"></a><span class="ex">2</span> directories, 4 files</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><code>gghistApp()</code> renders a <code>ggplot2</code> graph, which makes it easier to demonstrate <a href="https://rstudio.github.io/shinytest2/articles/robust.html#example">this example of checking a plot</a> from the <code>shinytest2</code> package website.</p>
 <div class="column-page-inset-right">
@@ -1752,7 +1832,7 @@ WARNING
 </div>
 </div>
 </div>
-<p></p><figcaption class="figure-caption">Figure&nbsp;16: <code>histogramApp()</code> vs.&nbsp;<code>gghistApp()</code></figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;18: <code>histogramApp()</code> vs.&nbsp;<code>gghistApp()</code></figcaption><p></p>
 </figure>
 </div>
 </div>
@@ -1761,43 +1841,43 @@ WARNING
 <div class="cell">
 <details open="">
 <summary>show/hide gghistServer()</summary>
-<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>gghistServer <span class="ot">&lt;-</span> <span class="cf">function</span>(id, x, <span class="at">title =</span> <span class="fu">reactive</span>(<span class="st">"Histogram"</span>)) {</span>
-<span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb91-3"><a href="#cb91-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stopifnot</span>(shiny<span class="sc">::</span><span class="fu">is.reactive</span>(x))</span>
-<span id="cb91-4"><a href="#cb91-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stopifnot</span>(shiny<span class="sc">::</span><span class="fu">is.reactive</span>(title))</span>
-<span id="cb91-5"><a href="#cb91-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb91-6"><a href="#cb91-6" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">moduleServer</span>(id, <span class="cf">function</span>(input, output, session) {</span>
-<span id="cb91-7"><a href="#cb91-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb91-8"><a href="#cb91-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># create plot object</span></span>
-<span id="cb91-9"><a href="#cb91-9" aria-hidden="true" tabindex="-1"></a>    plot_obj <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">reactive</span>({</span>
-<span id="cb91-10"><a href="#cb91-10" aria-hidden="true" tabindex="-1"></a>                  shiny<span class="sc">::</span><span class="fu">req</span>(<span class="fu">x</span>())</span>
-<span id="cb91-11"><a href="#cb91-11" aria-hidden="true" tabindex="-1"></a>                  purrr<span class="sc">::</span><span class="fu">as_vector</span>(<span class="fu">x</span>())</span>
-<span id="cb91-12"><a href="#cb91-12" aria-hidden="true" tabindex="-1"></a>                  })</span>
-<span id="cb91-13"><a href="#cb91-13" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb91-14"><a href="#cb91-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># render plot object</span></span>
-<span id="cb91-15"><a href="#cb91-15" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>hist <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderPlot</span>({</span>
-<span id="cb91-16"><a href="#cb91-16" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">req</span>(<span class="fu">x</span>())</span>
-<span id="cb91-17"><a href="#cb91-17" aria-hidden="true" tabindex="-1"></a>      ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(</span>
-<span id="cb91-18"><a href="#cb91-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">mapping =</span></span>
-<span id="cb91-19"><a href="#cb91-19" aria-hidden="true" tabindex="-1"></a>          ggplot2<span class="sc">::</span><span class="fu">aes</span>(<span class="fu">plot_obj</span>())) <span class="sc">+</span></span>
-<span id="cb91-20"><a href="#cb91-20" aria-hidden="true" tabindex="-1"></a>          ggplot2<span class="sc">::</span><span class="fu">geom_histogram</span>(<span class="at">bins =</span> input<span class="sc">$</span>bins) <span class="sc">+</span></span>
-<span id="cb91-21"><a href="#cb91-21" aria-hidden="true" tabindex="-1"></a>          ggplot2<span class="sc">::</span><span class="fu">labs</span>(</span>
-<span id="cb91-22"><a href="#cb91-22" aria-hidden="true" tabindex="-1"></a>            <span class="at">title =</span> <span class="fu">paste0</span>(<span class="fu">title</span>(), <span class="st">" [bins = "</span>, input<span class="sc">$</span>bins, <span class="st">"]"</span>),</span>
-<span id="cb91-23"><a href="#cb91-23" aria-hidden="true" tabindex="-1"></a>            <span class="at">y =</span> <span class="st">"Count"</span>,</span>
-<span id="cb91-24"><a href="#cb91-24" aria-hidden="true" tabindex="-1"></a>            <span class="at">x =</span> <span class="fu">names</span>(<span class="fu">x</span>())) <span class="sc">+</span></span>
-<span id="cb91-25"><a href="#cb91-25" aria-hidden="true" tabindex="-1"></a>          ggplot2<span class="sc">::</span><span class="fu">theme_minimal</span>()</span>
-<span id="cb91-26"><a href="#cb91-26" aria-hidden="true" tabindex="-1"></a>    }, <span class="at">res =</span> <span class="dv">124</span>) <span class="sc">|&gt;</span></span>
-<span id="cb91-27"><a href="#cb91-27" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">bindEvent</span>(<span class="fu">c</span>(<span class="fu">x</span>(), input<span class="sc">$</span>bins),</span>
-<span id="cb91-28"><a href="#cb91-28" aria-hidden="true" tabindex="-1"></a>        <span class="at">ignoreNULL =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb91-29"><a href="#cb91-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb91-30"><a href="#cb91-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># export app values</span></span>
-<span id="cb91-31"><a href="#cb91-31" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">exportTestValues</span>(</span>
-<span id="cb91-32"><a href="#cb91-32" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="fu">x</span>(),</span>
-<span id="cb91-33"><a href="#cb91-33" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot_obj =</span> <span class="fu">plot_obj</span>()</span>
-<span id="cb91-34"><a href="#cb91-34" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb91-35"><a href="#cb91-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb91-36"><a href="#cb91-36" aria-hidden="true" tabindex="-1"></a>  })</span>
-<span id="cb91-37"><a href="#cb91-37" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a>gghistServer <span class="ot">&lt;-</span> <span class="cf">function</span>(id, x, <span class="at">title =</span> <span class="fu">reactive</span>(<span class="st">"Histogram"</span>)) {</span>
+<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stopifnot</span>(shiny<span class="sc">::</span><span class="fu">is.reactive</span>(x))</span>
+<span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stopifnot</span>(shiny<span class="sc">::</span><span class="fu">is.reactive</span>(title))</span>
+<span id="cb93-5"><a href="#cb93-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-6"><a href="#cb93-6" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">moduleServer</span>(id, <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb93-7"><a href="#cb93-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb93-8"><a href="#cb93-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># create plot object</span></span>
+<span id="cb93-9"><a href="#cb93-9" aria-hidden="true" tabindex="-1"></a>    plot_obj <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">reactive</span>({</span>
+<span id="cb93-10"><a href="#cb93-10" aria-hidden="true" tabindex="-1"></a>                  shiny<span class="sc">::</span><span class="fu">req</span>(<span class="fu">x</span>())</span>
+<span id="cb93-11"><a href="#cb93-11" aria-hidden="true" tabindex="-1"></a>                  purrr<span class="sc">::</span><span class="fu">as_vector</span>(<span class="fu">x</span>())</span>
+<span id="cb93-12"><a href="#cb93-12" aria-hidden="true" tabindex="-1"></a>                  })</span>
+<span id="cb93-13"><a href="#cb93-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb93-14"><a href="#cb93-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># render plot object</span></span>
+<span id="cb93-15"><a href="#cb93-15" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>hist <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderPlot</span>({</span>
+<span id="cb93-16"><a href="#cb93-16" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">req</span>(<span class="fu">x</span>())</span>
+<span id="cb93-17"><a href="#cb93-17" aria-hidden="true" tabindex="-1"></a>      ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(</span>
+<span id="cb93-18"><a href="#cb93-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">mapping =</span></span>
+<span id="cb93-19"><a href="#cb93-19" aria-hidden="true" tabindex="-1"></a>          ggplot2<span class="sc">::</span><span class="fu">aes</span>(<span class="fu">plot_obj</span>())) <span class="sc">+</span></span>
+<span id="cb93-20"><a href="#cb93-20" aria-hidden="true" tabindex="-1"></a>          ggplot2<span class="sc">::</span><span class="fu">geom_histogram</span>(<span class="at">bins =</span> input<span class="sc">$</span>bins) <span class="sc">+</span></span>
+<span id="cb93-21"><a href="#cb93-21" aria-hidden="true" tabindex="-1"></a>          ggplot2<span class="sc">::</span><span class="fu">labs</span>(</span>
+<span id="cb93-22"><a href="#cb93-22" aria-hidden="true" tabindex="-1"></a>            <span class="at">title =</span> <span class="fu">paste0</span>(<span class="fu">title</span>(), <span class="st">" [bins = "</span>, input<span class="sc">$</span>bins, <span class="st">"]"</span>),</span>
+<span id="cb93-23"><a href="#cb93-23" aria-hidden="true" tabindex="-1"></a>            <span class="at">y =</span> <span class="st">"Count"</span>,</span>
+<span id="cb93-24"><a href="#cb93-24" aria-hidden="true" tabindex="-1"></a>            <span class="at">x =</span> <span class="fu">names</span>(<span class="fu">x</span>())) <span class="sc">+</span></span>
+<span id="cb93-25"><a href="#cb93-25" aria-hidden="true" tabindex="-1"></a>          ggplot2<span class="sc">::</span><span class="fu">theme_minimal</span>()</span>
+<span id="cb93-26"><a href="#cb93-26" aria-hidden="true" tabindex="-1"></a>    }, <span class="at">res =</span> <span class="dv">124</span>) <span class="sc">|&gt;</span></span>
+<span id="cb93-27"><a href="#cb93-27" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">bindEvent</span>(<span class="fu">c</span>(<span class="fu">x</span>(), input<span class="sc">$</span>bins),</span>
+<span id="cb93-28"><a href="#cb93-28" aria-hidden="true" tabindex="-1"></a>        <span class="at">ignoreNULL =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb93-29"><a href="#cb93-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-30"><a href="#cb93-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># export app values</span></span>
+<span id="cb93-31"><a href="#cb93-31" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">exportTestValues</span>(</span>
+<span id="cb93-32"><a href="#cb93-32" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="fu">x</span>(),</span>
+<span id="cb93-33"><a href="#cb93-33" aria-hidden="true" tabindex="-1"></a>      <span class="at">plot_obj =</span> <span class="fu">plot_obj</span>()</span>
+<span id="cb93-34"><a href="#cb93-34" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb93-35"><a href="#cb93-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-36"><a href="#cb93-36" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb93-37"><a href="#cb93-37" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <ul>
@@ -1805,54 +1885,54 @@ WARNING
 <div class="cell">
 <details>
 <summary>show/hide gghistApp()</summary>
-<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>gghistApp <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a>  ui <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">fluidPage</span>(</span>
-<span id="cb92-3"><a href="#cb92-3" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">sidebarLayout</span>(</span>
-<span id="cb92-4"><a href="#cb92-4" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">sidebarPanel</span>(</span>
-<span id="cb92-5"><a href="#cb92-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">datasetInput</span>(<span class="st">"data"</span>, is.data.frame),</span>
-<span id="cb92-6"><a href="#cb92-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">selectVarInput</span>(<span class="st">"var"</span>),</span>
-<span id="cb92-7"><a href="#cb92-7" aria-hidden="true" tabindex="-1"></a>      ),</span>
-<span id="cb92-8"><a href="#cb92-8" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">mainPanel</span>(</span>
-<span id="cb92-9"><a href="#cb92-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">histogramOutput</span>(<span class="st">"hist"</span>),</span>
-<span id="cb92-10"><a href="#cb92-10" aria-hidden="true" tabindex="-1"></a>        shiny<span class="sc">::</span><span class="fu">verbatimTextOutput</span>(<span class="st">"vals"</span>)</span>
-<span id="cb92-11"><a href="#cb92-11" aria-hidden="true" tabindex="-1"></a>      )</span>
-<span id="cb92-12"><a href="#cb92-12" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb92-13"><a href="#cb92-13" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb92-14"><a href="#cb92-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb92-15"><a href="#cb92-15" aria-hidden="true" tabindex="-1"></a>  server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output, session) {</span>
-<span id="cb92-16"><a href="#cb92-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb92-17"><a href="#cb92-17" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">&lt;-</span> <span class="fu">datasetServer</span>(<span class="st">"data"</span>)</span>
-<span id="cb92-18"><a href="#cb92-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb92-19"><a href="#cb92-19" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> <span class="fu">selectVarServer</span>(<span class="st">"var"</span>, data)</span>
-<span id="cb92-20"><a href="#cb92-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb92-21"><a href="#cb92-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">gghistServer</span>(<span class="st">"hist"</span>, x)</span>
-<span id="cb92-22"><a href="#cb92-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb92-23"><a href="#cb92-23" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>vals <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderPrint</span>({</span>
-<span id="cb92-24"><a href="#cb92-24" aria-hidden="true" tabindex="-1"></a>      x <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">reactiveValuesToList</span>(input,</span>
-<span id="cb92-25"><a href="#cb92-25" aria-hidden="true" tabindex="-1"></a>                          <span class="at">all.names =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb92-26"><a href="#cb92-26" aria-hidden="true" tabindex="-1"></a>      <span class="fu">print</span>(x, <span class="at">width =</span> <span class="dv">30</span>, <span class="at">max.levels =</span> <span class="cn">NULL</span>)</span>
-<span id="cb92-27"><a href="#cb92-27" aria-hidden="true" tabindex="-1"></a>      }, <span class="at">width =</span> <span class="dv">30</span>)</span>
-<span id="cb92-28"><a href="#cb92-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb92-29"><a href="#cb92-29" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb92-30"><a href="#cb92-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb92-31"><a href="#cb92-31" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">shinyApp</span>(ui, server)</span>
-<span id="cb92-32"><a href="#cb92-32" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>gghistApp <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a>  ui <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">fluidPage</span>(</span>
+<span id="cb94-3"><a href="#cb94-3" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">sidebarLayout</span>(</span>
+<span id="cb94-4"><a href="#cb94-4" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">sidebarPanel</span>(</span>
+<span id="cb94-5"><a href="#cb94-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">datasetInput</span>(<span class="st">"data"</span>, is.data.frame),</span>
+<span id="cb94-6"><a href="#cb94-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">selectVarInput</span>(<span class="st">"var"</span>),</span>
+<span id="cb94-7"><a href="#cb94-7" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb94-8"><a href="#cb94-8" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">mainPanel</span>(</span>
+<span id="cb94-9"><a href="#cb94-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">histogramOutput</span>(<span class="st">"hist"</span>),</span>
+<span id="cb94-10"><a href="#cb94-10" aria-hidden="true" tabindex="-1"></a>        shiny<span class="sc">::</span><span class="fu">verbatimTextOutput</span>(<span class="st">"vals"</span>)</span>
+<span id="cb94-11"><a href="#cb94-11" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb94-12"><a href="#cb94-12" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb94-13"><a href="#cb94-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb94-14"><a href="#cb94-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb94-15"><a href="#cb94-15" aria-hidden="true" tabindex="-1"></a>  server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb94-16"><a href="#cb94-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb94-17"><a href="#cb94-17" aria-hidden="true" tabindex="-1"></a>    data <span class="ot">&lt;-</span> <span class="fu">datasetServer</span>(<span class="st">"data"</span>)</span>
+<span id="cb94-18"><a href="#cb94-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb94-19"><a href="#cb94-19" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> <span class="fu">selectVarServer</span>(<span class="st">"var"</span>, data)</span>
+<span id="cb94-20"><a href="#cb94-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb94-21"><a href="#cb94-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">gghistServer</span>(<span class="st">"hist"</span>, x)</span>
+<span id="cb94-22"><a href="#cb94-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb94-23"><a href="#cb94-23" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>vals <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">renderPrint</span>({</span>
+<span id="cb94-24"><a href="#cb94-24" aria-hidden="true" tabindex="-1"></a>      x <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">reactiveValuesToList</span>(input,</span>
+<span id="cb94-25"><a href="#cb94-25" aria-hidden="true" tabindex="-1"></a>                          <span class="at">all.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb94-26"><a href="#cb94-26" aria-hidden="true" tabindex="-1"></a>      <span class="fu">print</span>(x, <span class="at">width =</span> <span class="dv">30</span>, <span class="at">max.levels =</span> <span class="cn">NULL</span>)</span>
+<span id="cb94-27"><a href="#cb94-27" aria-hidden="true" tabindex="-1"></a>      }, <span class="at">width =</span> <span class="dv">30</span>)</span>
+<span id="cb94-28"><a href="#cb94-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb94-29"><a href="#cb94-29" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb94-30"><a href="#cb94-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb94-31"><a href="#cb94-31" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">shinyApp</span>(ui, server)</span>
+<span id="cb94-32"><a href="#cb94-32" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div></li>
 </ul>
 <p>In the <code>test-shinytest2-gghistApp.R</code> test file, I’ll verify the <a href="https://vdiffr.r-lib.org/"><code>vdiffr</code> package</a> is installed with <code>testthat::skip_if_not_installed()</code>, then create the <code>AppDriver</code> object with a call to <code>system.file()</code> and set the <code>height</code> and <code>width</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: gghistApp"</span>, {</span>
-<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">skip_if_not_installed</span>(<span class="st">"vdiffr"</span>)</span>
-<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">app_dir =</span> <span class="fu">system.file</span>(<span class="st">"dev"</span>, <span class="st">"gghistApp"</span>,</span>
-<span id="cb93-5"><a href="#cb93-5" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">package =</span> <span class="st">"msst2ap"</span>),</span>
-<span id="cb93-6"><a href="#cb93-6" aria-hidden="true" tabindex="-1"></a>                       <span class="at">height =</span> <span class="dv">750</span>, <span class="at">width =</span> <span class="dv">1200</span>)</span>
-<span id="cb93-7"><a href="#cb93-7" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_that</span>(<span class="st">"{shinytest2}: gghistApp"</span>, {</span>
+<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">skip_if_not_installed</span>(<span class="st">"vdiffr"</span>)</span>
+<span id="cb95-3"><a href="#cb95-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-4"><a href="#cb95-4" aria-hidden="true" tabindex="-1"></a>  app <span class="ot">&lt;-</span> AppDriver<span class="sc">$</span><span class="fu">new</span>(<span class="at">app_dir =</span> <span class="fu">system.file</span>(<span class="st">"dev"</span>, <span class="st">"gghistApp"</span>,</span>
+<span id="cb95-5"><a href="#cb95-5" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">package =</span> <span class="st">"msst2ap"</span>),</span>
+<span id="cb95-6"><a href="#cb95-6" aria-hidden="true" tabindex="-1"></a>                       <span class="at">height =</span> <span class="dv">750</span>, <span class="at">width =</span> <span class="dv">1200</span>)</span>
+<span id="cb95-7"><a href="#cb95-7" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>View the application in the Chromium browser by running <code>app$view()</code> in the <strong>Console</strong>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>app<span class="sc">$</span><span class="fu">view</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a>app<span class="sc">$</span><span class="fu">view</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="column-body-outset-right">
 <div id="fig-app_view_gghistApp" class="quarto-layout-panel">
@@ -1867,107 +1947,142 @@ WARNING
 </div>
 </div>
 </div>
-<p></p><figcaption class="figure-caption">Figure&nbsp;17: View <code>gghistApp()</code> application with <code>app$view()</code></figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;19: View <code>gghistApp()</code> application with <code>app$view()</code></figcaption><p></p>
 </figure>
 </div>
 </div>
-<section id="expectations-1" class="level3">
-<h3 class="anchored" data-anchor-id="expectations-1">Expectations</h3>
-<p>I’ll replicate the example from the website using the <code>gghistApp()</code>:</p>
+<p>I’ll replicate the <a href="https://rstudio.github.io/shinytest2/articles/robust.html#example">example</a> from the website using the <code>gghistApp()</code>:</p>
+<section id="verify-initial-input" class="level3">
+<h3 class="anchored" data-anchor-id="verify-initial-input">Verify initial <span style="font-size: 1.20em"><code>input</code></span></h3>
 <ul>
 <li><p>The first expectations in the example test the default <code>input</code> values with <strong><code>app$get_value(input = )</code></strong>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Verify initial data</span></span>
-<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a>  app_init_data <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">input =</span> <span class="st">"data-dataset"</span>)</span>
-<span id="cb95-3"><a href="#cb95-3" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
-<span id="cb95-4"><a href="#cb95-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_init_data, </span>
-<span id="cb95-5"><a href="#cb95-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> <span class="st">"BOD"</span>)</span>
-<span id="cb95-6"><a href="#cb95-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb95-7"><a href="#cb95-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Verify initial variable</span></span>
-<span id="cb95-8"><a href="#cb95-8" aria-hidden="true" tabindex="-1"></a>  app_init_var <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">input =</span> <span class="st">"var-var"</span>)</span>
-<span id="cb95-9"><a href="#cb95-9" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
-<span id="cb95-10"><a href="#cb95-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_init_var, </span>
-<span id="cb95-11"><a href="#cb95-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> <span class="st">"Time"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb97"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Verify initial data</span></span>
+<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a>  app_init_data <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">input =</span> <span class="st">"data-dataset"</span>)</span>
+<span id="cb97-3"><a href="#cb97-3" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb97-4"><a href="#cb97-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_init_data,</span>
+<span id="cb97-5"><a href="#cb97-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> <span class="st">"BOD"</span>)</span>
+<span id="cb97-6"><a href="#cb97-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb97-7"><a href="#cb97-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Verify initial variable</span></span>
+<span id="cb97-8"><a href="#cb97-8" aria-hidden="true" tabindex="-1"></a>  app_init_var <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">input =</span> <span class="st">"var-var"</span>)</span>
+<span id="cb97-9"><a href="#cb97-9" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb97-10"><a href="#cb97-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_init_var,</span>
+<span id="cb97-11"><a href="#cb97-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> <span class="st">"Time"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></li>
-<li><p>Next, the expectations check the exported values after changing inputs with <code>app$set_values()</code> and <strong><code>app$get_value(export = )</code></strong></p>
+</ul>
+</section>
+<section id="set-and-verify-export" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="set-and-verify-export">Set and verify <span style="font-size: 1.20em"><code>export</code></span></h3>
+<ul>
+<li><p>Next, we check the exported values after changing the inputs with <code>app$set_values()</code> and <strong><code>app$get_value(export = )</code></strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Verify exported `x()` data</span></span>
-<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">data-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"mtcars"</span>)</span>
-<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a>  app_exp_x_01 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">export =</span> <span class="st">"hist-x"</span>)</span>
-<span id="cb96-4"><a href="#cb96-4" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
-<span id="cb96-5"><a href="#cb96-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_exp_x_01, </span>
-<span id="cb96-6"><a href="#cb96-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> mtcars[<span class="dv">1</span>])</span>
-<span id="cb96-7"><a href="#cb96-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb96-8"><a href="#cb96-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Verify exported `plot_obj()` data</span></span>
-<span id="cb96-9"><a href="#cb96-9" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">var-var</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"wt"</span>)</span>
-<span id="cb96-10"><a href="#cb96-10" aria-hidden="true" tabindex="-1"></a>  app_exp_plot_obj_01 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">export =</span> <span class="st">"hist-plot_obj"</span>)</span>
-<span id="cb96-11"><a href="#cb96-11" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
-<span id="cb96-12"><a href="#cb96-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_exp_plot_obj_01,</span>
-<span id="cb96-13"><a href="#cb96-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> purrr<span class="sc">::</span><span class="fu">as_vector</span>(app_exp_plot_obj_01))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Verify exported `x()` data</span></span>
+<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">data-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"mtcars"</span>)</span>
+<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a>  app_exp_x_01 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">export =</span> <span class="st">"hist-x"</span>)</span>
+<span id="cb98-4"><a href="#cb98-4" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb98-5"><a href="#cb98-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_exp_x_01, </span>
+<span id="cb98-6"><a href="#cb98-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> mtcars[<span class="dv">1</span>])</span>
+<span id="cb98-7"><a href="#cb98-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb98-8"><a href="#cb98-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Verify exported `plot_obj()` data</span></span>
+<span id="cb98-9"><a href="#cb98-9" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">var-var</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"wt"</span>)</span>
+<span id="cb98-10"><a href="#cb98-10" aria-hidden="true" tabindex="-1"></a>  app_exp_plot_obj_01 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">export =</span> <span class="st">"hist-plot_obj"</span>)</span>
+<span id="cb98-11"><a href="#cb98-11" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb98-12"><a href="#cb98-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_exp_plot_obj_01,</span>
+<span id="cb98-13"><a href="#cb98-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> purrr<span class="sc">::</span><span class="fu">as_vector</span>(app_exp_plot_obj_01))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></li>
-<li><p>The <code>bins</code> are set to a new value <em>after</em> verifying the exported values with <code>app$set_values()</code> and <strong><code>app$get_value(input = )</code></strong></p>
+<li><p>The <code>bins</code> are also set to a new value with <code>app$set_inputs()</code> <em>after</em> verifying the exported values:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb97"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Verify `hist-bins` changes</span></span>
-<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">hist-bins</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">15</span>)</span>
-<span id="cb97-3"><a href="#cb97-3" aria-hidden="true" tabindex="-1"></a>  app_set_bins_01 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">input =</span> <span class="st">"hist-bins"</span>)</span>
-<span id="cb97-4"><a href="#cb97-4" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
-<span id="cb97-5"><a href="#cb97-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_set_bins_01,</span>
-<span id="cb97-6"><a href="#cb97-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> <span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb99"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Verify `hist-bins` changes</span></span>
+<span id="cb99-2"><a href="#cb99-2" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">hist-bins</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">15</span>)</span>
+<span id="cb99-3"><a href="#cb99-3" aria-hidden="true" tabindex="-1"></a>  app_set_bins_01 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">input =</span> <span class="st">"hist-bins"</span>)</span>
+<span id="cb99-4"><a href="#cb99-4" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb99-5"><a href="#cb99-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_set_bins_01,</span>
+<span id="cb99-6"><a href="#cb99-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> <span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></li>
-<li><p>The plot is verified with the exported <code>hist-plot_obj</code> and <code>expect_doppelganger()</code> from the <code>vdiffr</code> package.</p>
+</ul>
+<div class="column-page-inset-right">
+<div id="fig-app_view_set_inputs_gghistApp" class="quarto-layout-panel">
+<figure class="figure">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 100.0%;justify-content: center;">
+<div id="fig-app_view_set_inputs_gghistApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="app_view_set_inputs_gghistApp.png" class="img-fluid figure-img" data-ref-parent="fig-app_view_set_inputs_gghistApp"></p>
+<figcaption class="figure-caption">(a) <code>set_inputs()</code> and <code>get_value()</code> in <code>gghistApp()</code></figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p></p><figcaption class="figure-caption">Figure&nbsp;20: Set <code>input</code>s and get <code>export</code>ed values in <code>gghistApp()</code></figcaption><p></p>
+</figure>
+</div>
+</div>
+</section>
+<section id="verify-plot-with-vdiffr" class="level3">
+<h3 class="anchored" data-anchor-id="verify-plot-with-vdiffr">Verify plot with <span style="font-size: 1.20em"><code>vdiffr</code></span></h3>
+<ul>
+<li><p>Now we verify the plot with the exported <code>plot_obj</code> (in the <code>hist</code> module) with <code>expect_doppelganger()</code> from the <code>vdiffr</code> package.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify `hist-plot_obj` changes</span></span>
-<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a>plot_obj_15 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">export =</span> <span class="st">"hist-plot_obj"</span>)</span>
-<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a>vdiffr<span class="sc">::</span><span class="fu">expect_doppelganger</span>(</span>
-<span id="cb98-4"><a href="#cb98-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"hist-plot_obj-15"</span>,</span>
-<span id="cb98-5"><a href="#cb98-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">fig =</span> plot_obj_15)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Verify `hist-plot_obj` changes</span></span>
+<span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a>  plot_obj_15 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">export =</span> <span class="st">"hist-plot_obj"</span>)</span>
+<span id="cb100-3"><a href="#cb100-3" aria-hidden="true" tabindex="-1"></a>  vdiffr<span class="sc">::</span><span class="fu">expect_doppelganger</span>(</span>
+<span id="cb100-4"><a href="#cb100-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"hist-plot_obj-15"</span>,</span>
+<span id="cb100-5"><a href="#cb100-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">fig =</span> plot_obj_15)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <ul>
-<li>I saved the test file and ran the test to confirm the snapshot file was created in <code>tests/testthat/_snaps/</code>:</li>
+<li><em>I saved the test file and ran the test to confirm the snapshot file was created in <code>tests/testthat/_snaps/</code></em>:</li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb99"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">1</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 6 ]</span>
-<span id="cb99-2"><a href="#cb99-2" aria-hidden="true" tabindex="-1"></a><span class="ex">──</span> Warning <span class="er">(</span><span class="ex">_test-shinytest2-gghistApp.R:45:3</span><span class="kw">)</span><span class="bu">:</span> {shinytest2}: gghistApp ───</span>
-<span id="cb99-3"><a href="#cb99-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Adding</span> new file snapshot: <span class="st">'tests/testthat/_snaps/hist-plot-obj-15.svg'</span></span>
-<span id="cb99-4"><a href="#cb99-4" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">1</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 6 ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb101"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">1</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 6 ]</span>
+<span id="cb101-2"><a href="#cb101-2" aria-hidden="true" tabindex="-1"></a><span class="ex">──</span> Warning <span class="er">(</span><span class="ex">_test-shinytest2-gghistApp.R:45:3</span><span class="kw">)</span><span class="bu">:</span> {shinytest2}: gghistApp ───</span>
+<span id="cb101-3"><a href="#cb101-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Adding</span> new file snapshot: <span class="st">'tests/testthat/_snaps/hist-plot-obj-15.svg'</span></span>
+<span id="cb101-4"><a href="#cb101-4" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">1</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 6 ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></li>
+</ul>
+</section>
+<section id="set_-get_-expect_" class="level3">
+<h3 class="anchored" data-anchor-id="set_-get_-expect_"><span style="font-size: 1.10em"><code>set_</code>, <code>get_</code>, <code>expect_</code></span></h3>
+<p>The process above is repeated with new values passed to <strong><code>app$set_inputs()</code></strong> and verified with <strong><code>app$get_value(export = )</code></strong>:</p>
+<ul>
 <li><p>The <code>x()</code>, <code>plot_obj()</code> and <code>hist-bins</code> are updated again with new values:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a>  <span class="do">## Update `data` to USArrests</span></span>
-<span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">data-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"USArrests"</span>)</span>
-<span id="cb100-3"><a href="#cb100-3" aria-hidden="true" tabindex="-1"></a>  app_exp_x_02 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">export =</span> <span class="st">"hist-x"</span>)</span>
-<span id="cb100-4"><a href="#cb100-4" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
-<span id="cb100-5"><a href="#cb100-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_exp_x_02,</span>
-<span id="cb100-6"><a href="#cb100-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> USArrests[<span class="dv">1</span>])</span>
-<span id="cb100-7"><a href="#cb100-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb100-8"><a href="#cb100-8" aria-hidden="true" tabindex="-1"></a>  <span class="do">## Update `var` to UrbanPop</span></span>
-<span id="cb100-9"><a href="#cb100-9" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">var-var</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"UrbanPop"</span>)</span>
-<span id="cb100-10"><a href="#cb100-10" aria-hidden="true" tabindex="-1"></a>  app_exp_plot_obj_02 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">export =</span> <span class="st">"hist-plot_obj"</span>)</span>
-<span id="cb100-11"><a href="#cb100-11" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
-<span id="cb100-12"><a href="#cb100-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_exp_plot_obj_02,</span>
-<span id="cb100-13"><a href="#cb100-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> purrr<span class="sc">::</span><span class="fu">as_vector</span>(app_exp_plot_obj_02))</span>
-<span id="cb100-14"><a href="#cb100-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb100-15"><a href="#cb100-15" aria-hidden="true" tabindex="-1"></a>  <span class="do">## Update `bins` to 12</span></span>
-<span id="cb100-16"><a href="#cb100-16" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">hist-bins</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">12</span>)</span>
-<span id="cb100-17"><a href="#cb100-17" aria-hidden="true" tabindex="-1"></a>  app_set_bins_02 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">input =</span> <span class="st">"hist-bins"</span>)</span>
-<span id="cb100-18"><a href="#cb100-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">expect_equal</span>(</span>
-<span id="cb100-19"><a href="#cb100-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_set_bins_02,</span>
-<span id="cb100-20"><a href="#cb100-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> <span class="dv">12</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a>  <span class="do">## Update `data` to USArrests</span></span>
+<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">data-dataset</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"USArrests"</span>)</span>
+<span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a>  app_exp_x_02 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">export =</span> <span class="st">"hist-x"</span>)</span>
+<span id="cb102-4"><a href="#cb102-4" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb102-5"><a href="#cb102-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_exp_x_02,</span>
+<span id="cb102-6"><a href="#cb102-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> USArrests[<span class="dv">1</span>])</span>
+<span id="cb102-7"><a href="#cb102-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb102-8"><a href="#cb102-8" aria-hidden="true" tabindex="-1"></a>  <span class="do">## Update `var` to UrbanPop</span></span>
+<span id="cb102-9"><a href="#cb102-9" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">var-var</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"UrbanPop"</span>)</span>
+<span id="cb102-10"><a href="#cb102-10" aria-hidden="true" tabindex="-1"></a>  app_exp_plot_obj_02 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">export =</span> <span class="st">"hist-plot_obj"</span>)</span>
+<span id="cb102-11"><a href="#cb102-11" aria-hidden="true" tabindex="-1"></a>  testthat<span class="sc">::</span><span class="fu">expect_equal</span>(</span>
+<span id="cb102-12"><a href="#cb102-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_exp_plot_obj_02,</span>
+<span id="cb102-13"><a href="#cb102-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> purrr<span class="sc">::</span><span class="fu">as_vector</span>(app_exp_plot_obj_02))</span>
+<span id="cb102-14"><a href="#cb102-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb102-15"><a href="#cb102-15" aria-hidden="true" tabindex="-1"></a>  <span class="do">## Update `bins` to 12</span></span>
+<span id="cb102-16"><a href="#cb102-16" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">set_inputs</span>(<span class="st">`</span><span class="at">hist-bins</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">12</span>)</span>
+<span id="cb102-17"><a href="#cb102-17" aria-hidden="true" tabindex="-1"></a>  app_set_bins_02 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">input =</span> <span class="st">"hist-bins"</span>)</span>
+<span id="cb102-18"><a href="#cb102-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">expect_equal</span>(</span>
+<span id="cb102-19"><a href="#cb102-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> app_set_bins_02,</span>
+<span id="cb102-20"><a href="#cb102-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">expected =</span> <span class="dv">12</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></li>
 <li><p>The new plot is verified again with <code>expect_doppelganger()</code></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb101"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Verify `hist-plot_obj` changes</span></span>
-<span id="cb101-2"><a href="#cb101-2" aria-hidden="true" tabindex="-1"></a>  plot_obj_12 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">export =</span> <span class="st">"hist-plot_obj"</span>)</span>
-<span id="cb101-3"><a href="#cb101-3" aria-hidden="true" tabindex="-1"></a>  vdiffr<span class="sc">::</span><span class="fu">expect_doppelganger</span>(</span>
-<span id="cb101-4"><a href="#cb101-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"hist-plot_obj-12"</span>,</span>
-<span id="cb101-5"><a href="#cb101-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">fig =</span> plot_obj_12)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div></li>
-<li><p>This initial run of this test will show a warning again as the snapshot file is saved to <code>tests/testthat/_snaps/</code>:</p>
+<div class="sourceCode cell-code" id="cb103"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a>  <span class="do">## Verify updates to `hist-plot_obj`</span></span>
+<span id="cb103-2"><a href="#cb103-2" aria-hidden="true" tabindex="-1"></a>  plot_obj_12 <span class="ot">&lt;-</span> app<span class="sc">$</span><span class="fu">get_value</span>(<span class="at">export =</span> <span class="st">"hist-plot_obj"</span>)</span>
+<span id="cb103-3"><a href="#cb103-3" aria-hidden="true" tabindex="-1"></a>  vdiffr<span class="sc">::</span><span class="fu">expect_doppelganger</span>(</span>
+<span id="cb103-4"><a href="#cb103-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"hist-plot_obj-12"</span>,</span>
+<span id="cb103-5"><a href="#cb103-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">fig =</span> plot_obj_12)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li><em>This initial run of this test will show a warning again as the snapshot file is saved to <code>tests/testthat/_snaps/</code></em>:</li>
+</ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">1</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 10 ]</span>
-<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a><span class="ex">──</span> Warning <span class="er">(</span><span class="ex">_test-shinytest2-gghistApp.R:77:3</span><span class="kw">)</span><span class="bu">:</span> {shinytest2}: gghistApp ───</span>
-<span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Adding</span> new file snapshot: <span class="st">'tests/testthat/_snaps/hist-plot-obj-12.svg'</span></span>
-<span id="cb102-4"><a href="#cb102-4" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">1</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 10 ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">1</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 10 ]</span>
+<span id="cb104-2"><a href="#cb104-2" aria-hidden="true" tabindex="-1"></a><span class="ex">──</span> Warning <span class="er">(</span><span class="ex">_test-shinytest2-gghistApp.R:77:3</span><span class="kw">)</span><span class="bu">:</span> {shinytest2}: gghistApp ───</span>
+<span id="cb104-3"><a href="#cb104-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Adding</span> new file snapshot: <span class="st">'tests/testthat/_snaps/hist-plot-obj-12.svg'</span></span>
+<span id="cb104-4"><a href="#cb104-4" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">1</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 10 ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></li>
 </ul>
 </section>
@@ -1975,40 +2090,53 @@ WARNING
 <h3 class="anchored" data-anchor-id="results">Results</h3>
 <p>The final results of the <code>test-shinytest2-gghistApp.R</code> are below:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb103"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_file</span>(<span class="st">"tests/testthat/_test-shinytest2-gghistApp.R"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb105"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_file</span>(<span class="st">"tests/testthat/_test-shinytest2-gghistApp.R"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 5 ]</span>
-<span id="cb104-2"><a href="#cb104-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">wt1</span>   wt2   wt3   wt4   wt5   wt6   wt7   wt8   wt9  wt10  wt11  wt12  wt13 </span>
-<span id="cb104-3"><a href="#cb104-3" aria-hidden="true" tabindex="-1"></a><span class="ex">2.620</span> 2.875 2.320 3.215 3.440 3.460 3.570 3.190 3.150 3.440 3.440 4.070 3.730 </span>
-<span id="cb104-4"><a href="#cb104-4" aria-hidden="true" tabindex="-1"></a> <span class="ex">wt14</span>  wt15  wt16  wt17  wt18  wt19  wt20  wt21  wt22  wt23  wt24  wt25  wt26 </span>
-<span id="cb104-5"><a href="#cb104-5" aria-hidden="true" tabindex="-1"></a><span class="ex">3.780</span> 5.250 5.424 5.345 2.200 1.615 1.835 2.465 3.520 3.435 3.840 3.845 1.935 </span>
-<span id="cb104-6"><a href="#cb104-6" aria-hidden="true" tabindex="-1"></a> <span class="ex">wt27</span>  wt28  wt29  wt30  wt31  wt32 </span>
-<span id="cb104-7"><a href="#cb104-7" aria-hidden="true" tabindex="-1"></a><span class="ex">2.140</span> 1.513 3.170 2.770 3.570 2.780 </span>
-<span id="cb104-8"><a href="#cb104-8" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 9 ] </span>
-<span id="cb104-9"><a href="#cb104-9" aria-hidden="true" tabindex="-1"></a> <span class="ex">UrbanPop1</span>  UrbanPop2  UrbanPop3  UrbanPop4  UrbanPop5  UrbanPop6  UrbanPop7 </span>
-<span id="cb104-10"><a href="#cb104-10" aria-hidden="true" tabindex="-1"></a>        <span class="ex">58</span>         48         80         50         91         78         77 </span>
-<span id="cb104-11"><a href="#cb104-11" aria-hidden="true" tabindex="-1"></a> <span class="ex">UrbanPop8</span>  UrbanPop9 UrbanPop10 UrbanPop11 UrbanPop12 UrbanPop13 UrbanPop14 </span>
-<span id="cb104-12"><a href="#cb104-12" aria-hidden="true" tabindex="-1"></a>        <span class="ex">72</span>         80         60         83         54         83         65 </span>
-<span id="cb104-13"><a href="#cb104-13" aria-hidden="true" tabindex="-1"></a><span class="ex">UrbanPop15</span> UrbanPop16 UrbanPop17 UrbanPop18 UrbanPop19 UrbanPop20 UrbanPop21 </span>
-<span id="cb104-14"><a href="#cb104-14" aria-hidden="true" tabindex="-1"></a>        <span class="ex">57</span>         66         52         66         51         67         85 </span>
-<span id="cb104-15"><a href="#cb104-15" aria-hidden="true" tabindex="-1"></a><span class="ex">UrbanPop22</span> UrbanPop23 UrbanPop24 UrbanPop25 UrbanPop26 UrbanPop27 UrbanPop28 </span>
-<span id="cb104-16"><a href="#cb104-16" aria-hidden="true" tabindex="-1"></a>        <span class="ex">74</span>         66         44         70         53         62         81 </span>
-<span id="cb104-17"><a href="#cb104-17" aria-hidden="true" tabindex="-1"></a><span class="ex">UrbanPop29</span> UrbanPop30 UrbanPop31 UrbanPop32 UrbanPop33 UrbanPop34 UrbanPop35 </span>
-<span id="cb104-18"><a href="#cb104-18" aria-hidden="true" tabindex="-1"></a>        <span class="ex">56</span>         89         70         86         45         44         75 </span>
-<span id="cb104-19"><a href="#cb104-19" aria-hidden="true" tabindex="-1"></a><span class="ex">UrbanPop36</span> UrbanPop37 UrbanPop38 UrbanPop39 UrbanPop40 UrbanPop41 UrbanPop42 </span>
-<span id="cb104-20"><a href="#cb104-20" aria-hidden="true" tabindex="-1"></a>        <span class="ex">68</span>         67         72         87         48         45         59 </span>
-<span id="cb104-21"><a href="#cb104-21" aria-hidden="true" tabindex="-1"></a><span class="ex">UrbanPop43</span> UrbanPop44 UrbanPop45 UrbanPop46 UrbanPop47 UrbanPop48 UrbanPop49 </span>
-<span id="cb104-22"><a href="#cb104-22" aria-hidden="true" tabindex="-1"></a>        <span class="ex">80</span>         80         32         63         73         39         66 </span>
-<span id="cb104-23"><a href="#cb104-23" aria-hidden="true" tabindex="-1"></a><span class="ex">UrbanPop50</span> </span>
-<span id="cb104-24"><a href="#cb104-24" aria-hidden="true" tabindex="-1"></a>        <span class="ex">60</span> </span>
-<span id="cb104-25"><a href="#cb104-25" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 10 ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb106"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 5 ]</span>
+<span id="cb106-2"><a href="#cb106-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">wt1</span>   wt2   wt3   wt4   wt5   wt6   wt7   wt8   wt9  wt10  wt11  wt12  wt13 </span>
+<span id="cb106-3"><a href="#cb106-3" aria-hidden="true" tabindex="-1"></a><span class="ex">2.620</span> 2.875 2.320 3.215 3.440 3.460 3.570 3.190 3.150 3.440 3.440 4.070 3.730 </span>
+<span id="cb106-4"><a href="#cb106-4" aria-hidden="true" tabindex="-1"></a> <span class="ex">wt14</span>  wt15  wt16  wt17  wt18  wt19  wt20  wt21  wt22  wt23  wt24  wt25  wt26 </span>
+<span id="cb106-5"><a href="#cb106-5" aria-hidden="true" tabindex="-1"></a><span class="ex">3.780</span> 5.250 5.424 5.345 2.200 1.615 1.835 2.465 3.520 3.435 3.840 3.845 1.935 </span>
+<span id="cb106-6"><a href="#cb106-6" aria-hidden="true" tabindex="-1"></a> <span class="ex">wt27</span>  wt28  wt29  wt30  wt31  wt32 </span>
+<span id="cb106-7"><a href="#cb106-7" aria-hidden="true" tabindex="-1"></a><span class="ex">2.140</span> 1.513 3.170 2.770 3.570 2.780 </span>
+<span id="cb106-8"><a href="#cb106-8" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 9 ] </span>
+<span id="cb106-9"><a href="#cb106-9" aria-hidden="true" tabindex="-1"></a> <span class="ex">UrbanPop1</span>  UrbanPop2  UrbanPop3  UrbanPop4  UrbanPop5  UrbanPop6  UrbanPop7 </span>
+<span id="cb106-10"><a href="#cb106-10" aria-hidden="true" tabindex="-1"></a>        <span class="ex">58</span>         48         80         50         91         78         77 </span>
+<span id="cb106-11"><a href="#cb106-11" aria-hidden="true" tabindex="-1"></a> <span class="ex">UrbanPop8</span>  UrbanPop9 UrbanPop10 UrbanPop11 UrbanPop12 UrbanPop13 UrbanPop14 </span>
+<span id="cb106-12"><a href="#cb106-12" aria-hidden="true" tabindex="-1"></a>        <span class="ex">72</span>         80         60         83         54         83         65 </span>
+<span id="cb106-13"><a href="#cb106-13" aria-hidden="true" tabindex="-1"></a><span class="ex">UrbanPop15</span> UrbanPop16 UrbanPop17 UrbanPop18 UrbanPop19 UrbanPop20 UrbanPop21 </span>
+<span id="cb106-14"><a href="#cb106-14" aria-hidden="true" tabindex="-1"></a>        <span class="ex">57</span>         66         52         66         51         67         85 </span>
+<span id="cb106-15"><a href="#cb106-15" aria-hidden="true" tabindex="-1"></a><span class="ex">UrbanPop22</span> UrbanPop23 UrbanPop24 UrbanPop25 UrbanPop26 UrbanPop27 UrbanPop28 </span>
+<span id="cb106-16"><a href="#cb106-16" aria-hidden="true" tabindex="-1"></a>        <span class="ex">74</span>         66         44         70         53         62         81 </span>
+<span id="cb106-17"><a href="#cb106-17" aria-hidden="true" tabindex="-1"></a><span class="ex">UrbanPop29</span> UrbanPop30 UrbanPop31 UrbanPop32 UrbanPop33 UrbanPop34 UrbanPop35 </span>
+<span id="cb106-18"><a href="#cb106-18" aria-hidden="true" tabindex="-1"></a>        <span class="ex">56</span>         89         70         86         45         44         75 </span>
+<span id="cb106-19"><a href="#cb106-19" aria-hidden="true" tabindex="-1"></a><span class="ex">UrbanPop36</span> UrbanPop37 UrbanPop38 UrbanPop39 UrbanPop40 UrbanPop41 UrbanPop42 </span>
+<span id="cb106-20"><a href="#cb106-20" aria-hidden="true" tabindex="-1"></a>        <span class="ex">68</span>         67         72         87         48         45         59 </span>
+<span id="cb106-21"><a href="#cb106-21" aria-hidden="true" tabindex="-1"></a><span class="ex">UrbanPop43</span> UrbanPop44 UrbanPop45 UrbanPop46 UrbanPop47 UrbanPop48 UrbanPop49 </span>
+<span id="cb106-22"><a href="#cb106-22" aria-hidden="true" tabindex="-1"></a>        <span class="ex">80</span>         80         32         63         73         39         66 </span>
+<span id="cb106-23"><a href="#cb106-23" aria-hidden="true" tabindex="-1"></a><span class="ex">UrbanPop50</span> </span>
+<span id="cb106-24"><a href="#cb106-24" aria-hidden="true" tabindex="-1"></a>        <span class="ex">60</span> </span>
+<span id="cb106-25"><a href="#cb106-25" aria-hidden="true" tabindex="-1"></a><span class="bu">[</span> FAIL 0 <span class="er">|</span> <span class="er">WARN</span> <span class="ex">0</span> <span class="kw">|</span> <span class="ex">SKIP</span> 0 <span class="kw">|</span> <span class="ex">PASS</span> 10 ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The vector in each <code>plot_obj()</code> test is printed with <code>expect_doppelganger()</code>, but this doesn’t interfere with the results.</p>
+<p>I can run <code>devtools::test()</code> to run all the tests in <code>msst2ap</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb107"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">test</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="recap" class="level2">
 <h2 class="anchored" data-anchor-id="recap">Recap</h2>
-<p>This post has covered tests with <code>shinytest2</code> for an app-package containing a shiny application with modules. The test recorder simplifies testing specific behaviors, and the <code>AppDriver</code> makes it possible to build a set of test expectations iteratively.</p>
+<p>This post has covered creating tests with <code>testthat</code> and <code>shinytest2</code> for an app-package containing a shiny application (with modules!). As you can see, the test recorder makes it easier to test specific app behaviors, and the <code>AppDriver</code> makes it possible to build a set of test expectations iteratively. Other items to consider when writing <code>shinytest2</code> tests include:</p>
+<ol type="1">
+<li><p><strong>Define What to Test</strong>: Since Shiny apps are interactive, so <code>shinytest2</code> tests should simulate user interaction as much as possible. The tests should focus on key user interactions and the output they should generate. <code>shinytest2</code> provides functions for simulating user clicks, inputs, and other interactions. Not every interaction needs to be tested, but crucial ones and those that handle complex logic should be.</p></li>
+<li><p><strong>Organize Your Tests &amp; Use Descriptive Test Names</strong>: Organize your tests into separate files based on what they are testing. Each test should have a descriptive name that clarifies what the test is for. Organizing your test files with unambiguous names will make it easier to manage multiple tests, and it will make it easier to understand what’s going wrong when a test fails.</p></li>
+<li><p><strong>Create snapshots for expected outputs</strong>: Use snapshot files to verify that an app’s output matches the expected results. <code>AppDriver$expect_values()</code> generates <code>.json</code> and <code>.png</code> snapshot files for the application. The .json file contains <code>input</code>, <code>output</code>, and <code>export</code> values, and the .png file is a <em>debug</em> screenshot, which records how the app looked when the values where captured. These files can then be compared to a baseline snapshot.</p></li>
+<li><p><strong>Export app values</strong>: While snapshot files are great for detecting changes, it’s important to remember that “<em>differences in the captured screenshot will never cause test failures.</em>” Manually inspecting the snapshot .png files during test development can also be time-consuming and tedious. Wherever possible, export app values and compare them against expected reference values.</p></li>
+</ol>
+<p>In general, <code>shinytest2</code> is designed for end-to-end testing of shiny applications. These tests can capture the state of a shiny app (input, output, and exported values) during user interactions and compare them with a previous state (i.e., snapshots), which is useful for regression testing.</p>
+<p><code>shinytest2</code> tests can also simulate user interaction in a way that <code>shiny::testServer()</code> tests can’t, such as waiting for reactive outputs to update after the input changes, clicking on action buttons, etc. <code>shinytest2</code> can also be resource-intensive, so it’s recommended to write these tests after you’ve completed the standard <code>testthat</code> unit tests and <code>testServer()</code> tests.</p>
 
 
 </section>
