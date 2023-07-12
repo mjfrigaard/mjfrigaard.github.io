@@ -1726,7 +1726,11 @@ font-style: inherit;">"airquality"</span></span></code></pre></div></li>
 </section>
 </div>
 </div>
-<p>## Using <span style="font-size: 1.20em"><code>shinytest2</code></span></p>
+</section>
+</section>
+</section>
+<section id="using-shinytest2" class="level2">
+<h2 class="anchored" data-anchor-id="using-shinytest2">Using <span style="font-size: 1.20em"><code>shinytest2</code></span></h2>
 <p><code>shinytest2</code> is extremely <a href="https://rstudio.github.io/shinytest2/index.html">well documentation</a>. I highly recommended the <a href="https://rstudio.github.io/shinytest2/articles/shinytest2.html">Get Started vignette</a>. In the next sections, I’ll cover some examples for what I’ve included in the <code>msst2ap</code>.</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
@@ -1840,8 +1844,6 @@ font-style: inherit;">└──</span> setup-shinytest2.R</span></code></pre></d
 </div></li>
 </ul>
 <p>The <code>setup-shinytest2.R</code> file contains a single call to <code>shinytest2::load_app_env()</code>, which “<em>Executes all <code>./R</code> files and <code>global.R</code> into the current environment</em>”</p>
-</section>
-</section>
 </section>
 <section id="recording-tests" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="recording-tests">Recording tests</h2>
