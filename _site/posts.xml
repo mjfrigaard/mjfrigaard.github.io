@@ -40,7 +40,11 @@ background-color: null;
 font-style: inherit;">library</span>(vdiffr)</span></code></pre></div>
 </details>
 </div>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
+<p>This is the fourth post in a <a href="https://mjfrigaard.github.io/series.html#testing-shiny-applications">series on testing</a> shiny applications. My previous posts have covered <a href="https://mjfrigaard.github.io/posts/test-shiny-p1/">unit testing utility functions</a> and <a href="https://mjfrigaard.github.io/posts/test-shiny-p3/">testing module server functions with <code>testServer()</code></a>. In this post, I’ll be covering testing shiny applications using <code>testthat</code> and <code>shinytest2</code>.</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><img src="https://mjfrigaard.github.io/posts/test-shiny-p4/image.svg" class="img-fluid" style="width:70.0%"></p>
+</div></div><div class="callout callout-style-default callout-important no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
@@ -54,29 +58,6 @@ ALERT!
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em; font-weight: bold; color: #696969;">
 <p>This post is currently under development. Thank you for your patience.</p>
-</div>
-</div>
-</div>
-</div>
-<p>This is the fourth post in a <a href="https://mjfrigaard.github.io/series.html#testing-shiny-applications">series on testing</a> shiny applications. My previous posts have covered <a href="https://mjfrigaard.github.io/posts/test-shiny-p1/">unit testing utility functions</a> and <a href="https://mjfrigaard.github.io/posts/test-shiny-p3/">testing module server functions with <code>testServer()</code></a>. In this post, I’ll be covering testing shiny applications using <code>testthat</code> and <code>shinytest2</code>.</p>
-
-<div class="no-row-height column-margin column-container"><div class="">
-<p><img src="https://mjfrigaard.github.io/posts/test-shiny-p4/image.svg" class="img-fluid" style="width:70.0%"></p>
-</div></div><div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Why <code>shinytest2</code>?
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<div style="font-size: 1.10em; color: #696969;">
-<p><strong>What happened to <code>shinytest</code>?</strong></p>
-<p><code>shinytest2</code> replaced <code>shinytest</code> on 2022-04-27. If you’ve previously written tests with <code>shinytest</code>–or are curious how <code>shinytest2</code> if different–I recommend going through the <a href="https://cran.r-project.org/web/packages/shinytest2/vignettes/z-migration.html#:~:text">Migrating from <code>shinytest</code></a> vignette.</p>
 </div>
 </div>
 </div>
@@ -1747,6 +1728,25 @@ font-style: inherit;">"airquality"</span></span></code></pre></div></li>
 </div>
 <p>## Using <span style="font-size: 1.20em"><code>shinytest2</code></span></p>
 <p><code>shinytest2</code> is extremely <a href="https://rstudio.github.io/shinytest2/index.html">well documentation</a>. I highly recommended the <a href="https://rstudio.github.io/shinytest2/articles/shinytest2.html">Get Started vignette</a>. In the next sections, I’ll cover some examples for what I’ve included in the <code>msst2ap</code>.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why <code>shinytest2</code>?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #696969;">
+<p><strong>What happened to <code>shinytest</code>?</strong></p>
+<p><code>shinytest2</code> replaced <code>shinytest</code> on 2022-04-27. If you’ve previously written tests with <code>shinytest</code>–or are curious how <code>shinytest2</code> if different–I recommend going through the <a href="https://cran.r-project.org/web/packages/shinytest2/vignettes/z-migration.html#:~:text">Migrating from <code>shinytest</code></a> vignette.</p>
+</div>
+</div>
+</div>
+</div>
 <p>Run <code>shinytest2::use_shinytest2()</code> to create the initial files for <code>shinytest2</code>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb38" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1">shinytest2<span class="sc" style="color: #5E5E5E;
@@ -3107,24 +3107,30 @@ font-style: inherit;">└──</span> test-shinytest2.R</span>
 background-color: null;
 font-style: inherit;">3</span> directories, 5 files</span></code></pre></div>
 </div>
-<p>In the new test <code>test-shinytest2-datasetApp.R</code> file, I’ll start with a call to <code>testthat::test_that(),</code> then create a new <code>app</code> object with the Chromium headless browser. The namespaced standalone app function can be passed to the first argument of <code>AppDriver$new()</code>, followed by the <code>height</code> and <code>weight</code> (which I’ve adjusted to fit the <code>datasetApp()</code>).</p>
+<p>In the new test <code>test-shinytest2-datasetApp.R</code> file, I’ll start with a call to <code>testthat::test_that(),</code> then create a new <code>app</code> object with the Chromium headless browser.</p>
+<p>The namespaced standalone app function can be used to create a <code>ds_app</code> object, then <code>ds_app</code> is passed to the first argument of <code>AppDriver$new()</code> (I’ve adjusted the <code>height</code> and <code>weight</code> to fit the <code>datasetApp()</code>).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb67" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"{shinytest2}: datasetApp"</span>, {</span>
-<span id="cb67-2">  app <span class="ot" style="color: #003B4F;
+<span id="cb67-2">  ds_app <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> msst2ap<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">datasetApp</span>()</span>
+<span id="cb67-3">  app <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> AppDriver<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">new</span>(msst2ap<span class="sc" style="color: #5E5E5E;
+font-style: inherit;">new</span>(<span class="at" style="color: #657422;
 background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">datasetApp</span>(), <span class="at" style="color: #657422;
+font-style: inherit;">app_dir =</span> ds_app, <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">height =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
@@ -3133,9 +3139,16 @@ background-color: null;
 font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">800</span>)</span>
-<span id="cb67-3">})</span></code></pre></div>
+<span id="cb67-4">})</span></code></pre></div>
 </div>
 <p>In the <strong>Console</strong>, I can use <code>app$view()</code> to open the Chromium browser:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb68" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1">app<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">view</span>()</span></code></pre></div>
+</div>
 <div class="column-body-outset-right">
 <div id="fig-app_view" class="quarto-layout-panel">
 <figure class="figure">
@@ -3158,22 +3171,27 @@ font-style: inherit;">800</span>)</span>
 <h3 class="anchored" data-anchor-id="setting-inputs">Setting inputs</h3>
 <p>If I continue to adapt each line in <code>test-shinytest2.R</code> to the <code>datasetApp()</code>, I see that next lines set the <code>inputId</code>s for <code>dataset-dataset</code> to the <code>attitude</code> dataset with <code>app$set_input()</code> (<em>Note that this uses the module notation above (i.e., <code>"id-inputId"</code></em>):</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb68" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><span class="fu" style="color: #4758AB;
+<div class="sourceCode cell-code" id="cb69" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"{shinytest2}: datasetApp"</span>, {</span>
-<span id="cb68-2">  app <span class="ot" style="color: #003B4F;
+<span id="cb69-2">  ds_app <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> msst2ap<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">datasetApp</span>()</span>
+<span id="cb69-3">  app <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> AppDriver<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">new</span>(msst2ap<span class="sc" style="color: #5E5E5E;
+font-style: inherit;">new</span>(<span class="at" style="color: #657422;
 background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">datasetApp</span>(), <span class="at" style="color: #657422;
+font-style: inherit;">app_dir =</span> ds_app, <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">height =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
@@ -3182,7 +3200,7 @@ background-color: null;
 font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">800</span>)</span>
-<span id="cb68-3">  app<span class="sc" style="color: #5E5E5E;
+<span id="cb69-4">  app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3197,7 +3215,7 @@ background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"attitude"</span>)</span>
-<span id="cb68-4">})</span></code></pre></div>
+<span id="cb69-5">})</span></code></pre></div>
 </div>
 <p>If you can see both windows, you’ll see the application values change in the Chromium browser:</p>
 <div class="column-page-right">
@@ -3222,24 +3240,29 @@ font-style: inherit;">"attitude"</span>)</span>
 <h3 class="anchored" data-anchor-id="checking-inputs">Checking inputs</h3>
 <p>In the previous test, I used the <code>expect_values()</code> to capture a list of all the app values (<code>input</code>, <code>output</code>, <code>export</code>). I can also capture these values in a list <em>inside</em> the test by including a call to <code>app$get_values()</code> and assigning the output to <code>app_values</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb69" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1">testthat<span class="sc" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb70" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1">testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"{shinytest2}: datasetApp"</span>, {</span>
-<span id="cb69-2">  app <span class="ot" style="color: #003B4F;
+<span id="cb70-2">  ds_app <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> msst2ap<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">datasetApp</span>()</span>
+<span id="cb70-3">  app <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> AppDriver<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">new</span>(msst2ap<span class="sc" style="color: #5E5E5E;
+font-style: inherit;">new</span>(<span class="at" style="color: #657422;
 background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">datasetApp</span>(), <span class="at" style="color: #657422;
+font-style: inherit;">app_dir =</span> ds_app, <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">height =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
@@ -3248,7 +3271,7 @@ background-color: null;
 font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">800</span>)</span>
-<span id="cb69-3">  app<span class="sc" style="color: #5E5E5E;
+<span id="cb70-4">  app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3263,37 +3286,37 @@ background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"attitude"</span>)</span>
-<span id="cb69-4">  app_values <span class="ot" style="color: #003B4F;
+<span id="cb70-5">  app_values <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">get_values</span>()</span>
-<span id="cb69-5">})</span></code></pre></div>
+<span id="cb70-6">})</span></code></pre></div>
 </div>
 <p><code>app_values</code> has a similar structure to the <code>.json</code> snapshot covered above (i.e., with <code>input</code>, <code>output</code>, and <code>export</code>):</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb70" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><span class="fu" style="color: #4758AB;
+<div class="sourceCode cell-code" id="cb71" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">str</span>(app_values)</span></code></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb71" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb71-1"><span class="ex" style="color: null;
+<div class="sourceCode cell-code" id="cb72" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb72-1"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">List</span> of 3</span>
-<span id="cb71-2"> <span class="ex" style="color: null;
+<span id="cb72-2"> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">$</span> input :List of 1</span>
-<span id="cb71-3">  <span class="ex" style="color: null;
+<span id="cb72-3">  <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">..$</span> dataset-dataset: chr <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"attitude"</span></span>
-<span id="cb71-4"> <span class="ex" style="color: null;
+<span id="cb72-4"> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">$</span> output:List of 2</span>
-<span id="cb71-5">  <span class="ex" style="color: null;
+<span id="cb72-5">  <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">..$</span> data: chr <span class="st" style="color: #20794D;
 background-color: null;
@@ -3302,7 +3325,7 @@ background-color: null;
 font-style: inherit;">|</span> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">__truncated__</span></span>
-<span id="cb71-6">  <span class="ex" style="color: null;
+<span id="cb72-6">  <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">..$</span> vals: chr <span class="st" style="color: #20794D;
 background-color: null;
@@ -3323,7 +3346,7 @@ background-color: null;
 font-style: inherit;">\"</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">\n"</span></span>
-<span id="cb71-7"> <span class="ex" style="color: null;
+<span id="cb72-7"> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">$</span> export: Named list<span class="er" style="color: #AD0000;
 background-color: null;
@@ -3333,81 +3356,6 @@ font-style: inherit;">)</span></span></code></pre></div>
 </div>
 <p>I can narrow the scope of the test by using <code>app_values</code> to verify only the <code>input</code> that was changed with <code>app$set_inputs()</code>::</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb72" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1">testthat<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"{shinytest2}: datasetApp"</span>, {</span>
-<span id="cb72-2">  app <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> AppDriver<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">new</span>(msst2ap<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">datasetApp</span>(), <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">height =</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">600</span>, <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">800</span>)</span>
-<span id="cb72-3">  app<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">set_inputs</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">`</span><span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">dataset-dataset</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">`</span> <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"attitude"</span>)</span>
-<span id="cb72-4">  app_values <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">get_values</span>()</span>
-<span id="cb72-5">  testthat<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">expect_equal</span>(</span>
-<span id="cb72-6">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">object =</span> app_values<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>input<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">`</span><span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">dataset-dataset</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">`</span>,</span>
-<span id="cb72-7">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">expected =</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"attitude"</span>)</span>
-<span id="cb72-8">})</span></code></pre></div>
-</div>
-<p>At the end of the test, I’ll add a call <a href="https://rstudio.github.io/shinytest2/articles/zzz-faq.html#should-i-manually-shut-down-my-appdriver"><code>app$stop()</code></a> to close the Chromium app.</p>
-<div class="cell">
 <div class="sourceCode cell-code" id="cb73" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1">testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -3415,17 +3363,22 @@ background-color: null;
 font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"{shinytest2}: datasetApp"</span>, {</span>
-<span id="cb73-2">  app <span class="ot" style="color: #003B4F;
+<span id="cb73-2">  ds_app <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> msst2ap<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">datasetApp</span>()</span>
+<span id="cb73-3">  app <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> AppDriver<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">new</span>(msst2ap<span class="sc" style="color: #5E5E5E;
+font-style: inherit;">new</span>(<span class="at" style="color: #657422;
 background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">datasetApp</span>(), <span class="at" style="color: #657422;
+font-style: inherit;">app_dir =</span> ds_app, <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">height =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
@@ -3434,7 +3387,7 @@ background-color: null;
 font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">800</span>)</span>
-<span id="cb73-3">  app<span class="sc" style="color: #5E5E5E;
+<span id="cb73-4">  app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3449,19 +3402,19 @@ background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"attitude"</span>)</span>
-<span id="cb73-4">  app_values <span class="ot" style="color: #003B4F;
+<span id="cb73-5">  app_values <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">get_values</span>()</span>
-<span id="cb73-5">  testthat<span class="sc" style="color: #5E5E5E;
+<span id="cb73-6">  testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_equal</span>(</span>
-<span id="cb73-6">    <span class="at" style="color: #657422;
+<span id="cb73-7">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">object =</span> app_values<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -3474,24 +3427,104 @@ background-color: null;
 font-style: inherit;">dataset-dataset</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">`</span>,</span>
-<span id="cb73-7">    <span class="at" style="color: #657422;
+<span id="cb73-8">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">expected =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"attitude"</span>)</span>
-<span id="cb73-8">  app<span class="sc" style="color: #5E5E5E;
+<span id="cb73-9">})</span></code></pre></div>
+</div>
+<p>At the end of the test, I’ll add a call <a href="https://rstudio.github.io/shinytest2/articles/zzz-faq.html#should-i-manually-shut-down-my-appdriver"><code>app$stop()</code></a> to close the Chromium app.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb74" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1">testthat<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"{shinytest2}: datasetApp"</span>, {</span>
+<span id="cb74-2">  ds_app <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> msst2ap<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">datasetApp</span>()</span>
+<span id="cb74-3">  app <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> AppDriver<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">new</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">app_dir =</span> ds_app, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">height =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">600</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">800</span>)</span>
+<span id="cb74-4">  app<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">set_inputs</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">`</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">dataset-dataset</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">`</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"attitude"</span>)</span>
+<span id="cb74-5">  app_values <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">get_values</span>()</span>
+<span id="cb74-6">  testthat<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">expect_equal</span>(</span>
+<span id="cb74-7">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">object =</span> app_values<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">`</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">dataset-dataset</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">`</span>,</span>
+<span id="cb74-8">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">expected =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"attitude"</span>)</span>
+<span id="cb74-9">  app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">stop</span>()</span>
-<span id="cb73-9">})</span></code></pre></div>
+<span id="cb74-10">})</span></code></pre></div>
 </div>
 </section>
 <section id="running-tests" class="level3">
 <h3 class="anchored" data-anchor-id="running-tests">Running tests</h3>
 <p>I’ll save the <code>test-shinytest2-datasetApp.R</code> file and run the test with <code>testthat::test_file()</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb74" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><span class="fu" style="color: #4758AB;
+<div class="sourceCode cell-code" id="cb75" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">test_file</span>(<span class="st" style="color: #20794D;
 background-color: null;
@@ -3512,7 +3545,7 @@ WARNING
 <div style="font-size: 1.10em; color: #000000;">
 <p>If you encounter the error message below:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb75" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb75-1"><span class="bu" style="color: null;
+<div class="sourceCode cell-code" id="cb76" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb76-1"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">[</span> FAIL 0 <span class="er" style="color: #AD0000;
 background-color: null;
@@ -3529,10 +3562,10 @@ background-color: null;
 font-style: inherit;">|</span> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">PASS</span> 0 ]</span>
-<span id="cb75-2"><span class="ex" style="color: null;
+<span id="cb76-2"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">Error</span> : Chromote: timed out waiting for response to command Target.createTarget</span>
-<span id="cb75-3"><span class="bu" style="color: null;
+<span id="cb76-3"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">[</span> FAIL 0 <span class="er" style="color: #AD0000;
 background-color: null;
@@ -3549,8 +3582,8 @@ background-color: null;
 font-style: inherit;">|</span> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">PASS</span> 0 ]</span>
-<span id="cb75-4"></span>
-<span id="cb75-5"><span class="ex" style="color: null;
+<span id="cb76-4"></span>
+<span id="cb76-5"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">──</span> Skipped tests <span class="er" style="color: #AD0000;
 background-color: null;
@@ -3561,7 +3594,7 @@ background-color: null;
 font-style: inherit;">)</span> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">───────────────────────────────────────────────────────────</span></span>
-<span id="cb75-6"><span class="ex" style="color: null;
+<span id="cb76-6"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">•</span> <span class="kw" style="color: #003B4F;
 background-color: null;
@@ -3570,7 +3603,7 @@ background-color: null;
 font-style: inherit;">shinytest2::AppDriver</span><span class="kw" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">`</span> can not be initialized as {chromote} can not be </span>
-<span id="cb75-7">  <span class="ex" style="color: null;
+<span id="cb76-7">  <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">started</span> <span class="er" style="color: #AD0000;
 background-color: null;
@@ -3584,14 +3617,14 @@ font-style: inherit;">:</span> test-shinytest2-selectVarApp.R:4:3</span></code><
 </div>
 <p>Try installing and loading <code>chromote</code> and <code>shinytest2</code> again (this seemed to work for me).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb76" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1">remotes<span class="sc" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb77" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1">remotes<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">install_github</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"rstudio/chromote"</span>, </span>
-<span id="cb76-2">  <span class="at" style="color: #657422;
+<span id="cb77-2">  <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">force =</span> <span class="cn" style="color: #8f5902;
 background-color: null;
@@ -3600,10 +3633,10 @@ background-color: null;
 font-style: inherit;">quiet =</span> <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">TRUE</span>)</span>
-<span id="cb76-3"><span class="fu" style="color: #4758AB;
+<span id="cb77-3"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">library</span>(chromote)</span>
-<span id="cb76-4"><span class="fu" style="color: #4758AB;
+<span id="cb77-4"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">library</span>(shinytest2)</span></code></pre></div>
 </div>
@@ -3612,9 +3645,9 @@ font-style: inherit;">library</span>(shinytest2)</span></code></pre></div>
 </div>
 </div>
 <p>In the initial run of the test for <code>datasetApp()</code>, no snapshot files are generated because the test didn’t include a call to <code>app$export_values()</code>.</p>
-<p>I see the tests passes:</p>
+<p>I see this initial test passes:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb77" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb77-1"><span class="bu" style="color: null;
+<div class="sourceCode cell-code" id="cb78" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb78-1"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">[</span> FAIL 0 <span class="er" style="color: #AD0000;
 background-color: null;
@@ -3637,22 +3670,24 @@ font-style: inherit;">PASS</span> 1 ]</span></code></pre></div>
 <section id="exporting-test-values" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="exporting-test-values">Exporting test values</h2>
 <p>The <code>shinytest2</code> documentation <a href="https://rstudio.github.io/shinytest2/articles/in-depth.html#exported-values">repeatedly</a> <a href="https://rstudio.github.io/shinytest2/articles/robust.html#exported-values">recommends</a> exporting test values from shiny applications with <code>shiny::exportTestValues()</code>.</p>
+<section id="exporttestvalues" class="level3">
+<h3 class="anchored" data-anchor-id="exporttestvalues"><span style="font-size: 1.20em"><code>exportTestValues()</code></span></h3>
 <p>I’ll demonstrate exporting test values from <code>selectVarApp()</code> by adding the following to the <code>server</code> function in <code>inst/dev/app.R</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb78" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1">  server <span class="ot" style="color: #003B4F;
+<div class="sourceCode cell-code" id="cb79" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1">  server <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">function</span>(input, output, session) {</span>
-<span id="cb78-2"></span>
-<span id="cb78-3">    data <span class="ot" style="color: #003B4F;
+<span id="cb79-2"></span>
+<span id="cb79-3">    data <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">datasetServer</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"data"</span>)</span>
-<span id="cb78-4">    var <span class="ot" style="color: #003B4F;
+<span id="cb79-4">    var <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3661,8 +3696,8 @@ background-color: null;
 font-style: inherit;">"var"</span>, data, <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">filter =</span> filter)</span>
-<span id="cb78-5"></span>
-<span id="cb78-6">    output<span class="sc" style="color: #5E5E5E;
+<span id="cb79-5"></span>
+<span id="cb79-6">    output<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>out <span class="ot" style="color: #003B4F;
 background-color: null;
@@ -3675,8 +3710,8 @@ background-color: null;
 font-style: inherit;">head</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">var</span>()))</span>
-<span id="cb78-7"></span>
-<span id="cb78-8">    output<span class="sc" style="color: #5E5E5E;
+<span id="cb79-7"></span>
+<span id="cb79-8">    output<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>vals <span class="ot" style="color: #003B4F;
 background-color: null;
@@ -3685,51 +3720,54 @@ background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">renderPrint</span>({</span>
-<span id="cb78-9">      x <span class="ot" style="color: #003B4F;
+<span id="cb79-9">      x <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">reactiveValuesToList</span>(input,</span>
-<span id="cb78-10">                              <span class="at" style="color: #657422;
+<span id="cb79-10">                              <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">all.names =</span> <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">TRUE</span>)</span>
-<span id="cb78-11">      <span class="fu" style="color: #4758AB;
+<span id="cb79-11">      <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">print</span>(x)</span>
-<span id="cb78-12">    })</span>
-<span id="cb78-13"></span>
-<span id="cb78-14">    shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb79-12">    })</span>
+<span id="cb79-13"></span>
+<span id="cb79-14">    shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">exportTestValues</span>(</span>
-<span id="cb78-15">      <span class="at" style="color: #657422;
+<span id="cb79-15">      <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">var =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">var</span>(),</span>
-<span id="cb78-16">      <span class="at" style="color: #657422;
+<span id="cb79-16">      <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">data =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">data</span>()</span>
-<span id="cb78-17">    )</span>
-<span id="cb78-18">  }</span></code></pre></div>
+<span id="cb79-17">    )</span>
+<span id="cb79-18">  }</span></code></pre></div>
 </div>
-<p>After saving, loading and building the package, I’ll create the <code>test-shinytest2-selectVarApp.R</code> test file and add the initial contents to create the <code>AppDriver</code> object:</p>
+</section>
+<section id="using-system.file" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="using-system.file">Using <span style="font-size: 1.20em"><code>system.file()</code></span></h3>
+<p>After loading, documenting and installing the package, I’ll create a <code>test-shinytest2-selectVarApp.R</code> test file and add the initial contents to create the <code>AppDriver</code> object:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb79" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1">testthat<span class="sc" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb80" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1">testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"{shinytest2}: selectVarApp"</span>, {</span>
-<span id="cb79-2">  app <span class="ot" style="color: #003B4F;
+<span id="cb80-2">  app <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> AppDriver<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -3744,12 +3782,12 @@ background-color: null;
 font-style: inherit;">"dev"</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"selectVarApp"</span>,</span>
-<span id="cb79-3">                                           <span class="at" style="color: #657422;
+<span id="cb80-3">                                           <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">package =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"msst2ap"</span>),</span>
-<span id="cb79-4">                     <span class="at" style="color: #657422;
+<span id="cb80-4">                     <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">height =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
@@ -3758,13 +3796,13 @@ background-color: null;
 font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">600</span>)</span>
-<span id="cb79-5">  </span>
-<span id="cb79-6">})</span></code></pre></div>
+<span id="cb80-5">  </span>
+<span id="cb80-6">})</span></code></pre></div>
 </div>
-<p>Note that in this test, I can load the development version of <code>selectVarApp()</code> with <code>system.file()</code> (this is a similar folder structure to apps built with <a href="https://thinkr-open.github.io/golem/articles/a_start.html"><code>golem</code></a> and <a href="https://leprechaun.opifex.org/#/guide/build"><code>leprechaun</code></a> frameworks)</p>
+<p>Note that to test the development version of <code>selectVarApp()</code>, I pass a call to <code>system.file()</code> to the <code>app_dir</code> argument (this is a similar folder structure to apps built with <a href="https://thinkr-open.github.io/golem/articles/a_start.html"><code>golem</code></a> and <a href="https://leprechaun.opifex.org/#/guide/build"><code>leprechaun</code></a> frameworks)</p>
 <p>After entering <code>app$view()</code> in the <strong>Console</strong>, the application opens in the Chromium headless browser again:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb80" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1">app<span class="sc" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb81" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1">app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3788,78 +3826,8 @@ font-style: inherit;">view</span>()</span></code></pre></div>
 </div>
 </div>
 <p>In the test file, I’ll use <code>app$set_values()</code> to change the <code>$`data-dataset`</code> and <code>$`var-var`</code> inputs:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb81" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1">testthat<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"{shinytest2}: selectVarApp"</span>, {</span>
-<span id="cb81-2">  app <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> AppDriver<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">new</span>(<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">app_dir =</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">system.file</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"dev"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"selectVarApp"</span>,</span>
-<span id="cb81-3">                                             <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">package =</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"msst2ap"</span>),</span>
-<span id="cb81-4">                       <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">height =</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">600</span>, <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">600</span>)</span>
-<span id="cb81-5">  </span>
-<span id="cb81-6">    app<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">set_inputs</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">`</span><span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">data-dataset</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">`</span> <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"mtcars"</span>)</span>
-<span id="cb81-7">    app<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">set_inputs</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">`</span><span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">var-var</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">`</span> <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">=</span> <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"wt"</span>)</span>
-<span id="cb81-8">    </span>
-<span id="cb81-9">})</span></code></pre></div>
-</div>
-<p>I’ll use <code>app$get_values()</code> to store the exported <code>input</code>/<code>output</code>/<code>export</code> test values in <code>app_values</code>:</p>
+<ul>
+<li><p>Change <code>$`data-dataset`</code> to <code>mtcars</code>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb82" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1">testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -3897,7 +3865,7 @@ background-color: null;
 font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">600</span>)</span>
-<span id="cb82-5">  </span>
+<span id="cb82-5"></span>
 <span id="cb82-6">    app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
@@ -3913,7 +3881,83 @@ background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"mtcars"</span>)</span>
-<span id="cb82-7">    app<span class="sc" style="color: #5E5E5E;
+<span id="cb82-7"></span>
+<span id="cb82-8">})</span></code></pre></div>
+</div></li>
+</ul>
+<div class="column-body-outset-right">
+<div id="fig-app_view_set_data_selectVarApp" class="quarto-layout-panel">
+<figure class="figure">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 100.0%;justify-content: center;">
+<div id="fig-app_view_set_data_selectVarApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="https://mjfrigaard.github.io/posts/test-shiny-p4/app_view_set_data_selectVarApp.png" class="img-fluid figure-img" data-ref-parent="fig-app_view_set_data_selectVarApp"></p>
+<figcaption class="figure-caption">(a) Set <code>data-dataset</code></figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p></p><figcaption class="figure-caption">Figure&nbsp;16: View <code>selectVarApp()</code> after setting <code>data-dataset</code> with <code>app$set_inputs()</code></figcaption><p></p>
+</figure>
+</div>
+</div>
+<ul>
+<li><p>Change <code>$`var-var`</code> to <code>wt</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb83" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1">testthat<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"{shinytest2}: selectVarApp"</span>, {</span>
+<span id="cb83-2">  app <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> AppDriver<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">new</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">app_dir =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">system.file</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"dev"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"selectVarApp"</span>,</span>
+<span id="cb83-3">                                             <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">package =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"msst2ap"</span>),</span>
+<span id="cb83-4">                       <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">height =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">600</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">600</span>)</span>
+<span id="cb83-5"></span>
+<span id="cb83-6">    app<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">set_inputs</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">`</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data-dataset</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">`</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"mtcars"</span>)</span>
+<span id="cb83-7">    app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3928,27 +3972,120 @@ background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"wt"</span>)</span>
-<span id="cb82-8">    </span>
-<span id="cb82-9">    app_values <span class="ot" style="color: #003B4F;
+<span id="cb83-8"></span>
+<span id="cb83-9">})</span></code></pre></div>
+</div></li>
+</ul>
+<div class="column-body-outset-right">
+<div id="fig-app_view_set_var_selectVarApp" class="quarto-layout-panel">
+<figure class="figure">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 100.0%;justify-content: center;">
+<div id="fig-app_view_set_var_selectVarApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="https://mjfrigaard.github.io/posts/test-shiny-p4/app_view_set_var_selectVarApp.png" class="img-fluid figure-img" data-ref-parent="fig-app_view_set_var_selectVarApp"></p>
+<figcaption class="figure-caption">(a) Set <code>var-var</code></figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p></p><figcaption class="figure-caption">Figure&nbsp;17: View <code>selectVarApp()</code> after setting <code>var-var</code> with <code>app$set_inputs()</code></figcaption><p></p>
+</figure>
+</div>
+</div>
+</section>
+<section id="get_values" class="level3">
+<h3 class="anchored" data-anchor-id="get_values"><span style="font-size: 1.20em"><code>get_values()</code></span></h3>
+<p>I’ll use <code>app$get_values()</code> to store the exported <code>input</code>, <code>output</code>, and <code>export</code> test values in <code>app_values</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb84" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1">testthat<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"{shinytest2}: selectVarApp"</span>, {</span>
+<span id="cb84-2">  app <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> AppDriver<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">new</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">app_dir =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">system.file</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"dev"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"selectVarApp"</span>,</span>
+<span id="cb84-3">                                             <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">package =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"msst2ap"</span>),</span>
+<span id="cb84-4">                       <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">height =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">600</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">600</span>)</span>
+<span id="cb84-5">  </span>
+<span id="cb84-6">    app<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">set_inputs</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">`</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data-dataset</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">`</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"mtcars"</span>)</span>
+<span id="cb84-7">    app<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">set_inputs</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">`</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">var-var</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">`</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"wt"</span>)</span>
+<span id="cb84-8">    </span>
+<span id="cb84-9">    app_values <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">get_values</span>()</span>
-<span id="cb82-10">    </span>
-<span id="cb82-11">})</span></code></pre></div>
+<span id="cb84-10">    </span>
+<span id="cb84-11">})</span></code></pre></div>
 </div>
 <p><code>app_values</code> is a list (similar to the <code>.json</code> snapshot file), but now we’ve explicitly <code>export</code>ed values from the server in <code>selectVarApp()</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb83" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><span class="fu" style="color: #4758AB;
+<div class="sourceCode cell-code" id="cb85" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">names</span>(app_values<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>export)</span></code></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb84" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb84-1"><span class="ex" style="color: null;
+<div class="sourceCode cell-code" id="cb86" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb86-1"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">[1]</span> <span class="st" style="color: #20794D;
 background-color: null;
@@ -3956,17 +4093,20 @@ font-style: inherit;">"data"</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"var"</span> </span></code></pre></div>
 </div>
+</section>
+<section id="exported-expectations" class="level3">
+<h3 class="anchored" data-anchor-id="exported-expectations"><span style="font-size: 1.20em"><code>export</code></span>ed expectations</h3>
 <p>I can use <code>app_values</code> to verify the structure of each exported object:</p>
 <ul>
 <li><code>data</code> should be a <code>data.frame()</code></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb85" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1">  testthat<span class="sc" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb87" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1">  testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_true</span>(</span>
-<span id="cb85-2">    <span class="at" style="color: #657422;
+<span id="cb87-2">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">object =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -3980,12 +4120,12 @@ font-style: inherit;">$</span>data))</span></code></pre></div>
 <li><code>var</code> should be a single column <code>data.frame()</code></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb86" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1">  testthat<span class="sc" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb88" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1">  testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_true</span>(</span>
-<span id="cb86-2">    <span class="at" style="color: #657422;
+<span id="cb88-2">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">object =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4001,14 +4141,14 @@ font-style: inherit;">1</span>)</span></code></pre></div>
 </div>
 <p>Once again, I end the test with a call to <code>app$stop()</code>. The completed test for <code>selectVarApp()</code> is below:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb87" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1">testthat<span class="sc" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb89" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1">testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"{shinytest2}: selectVarApp"</span>, {</span>
-<span id="cb87-2">  app <span class="ot" style="color: #003B4F;
+<span id="cb89-2">  app <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> AppDriver<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -4023,12 +4163,12 @@ background-color: null;
 font-style: inherit;">"dev"</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"selectVarApp"</span>,</span>
-<span id="cb87-3">                                             <span class="at" style="color: #657422;
+<span id="cb89-3">                                             <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">package =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"msst2ap"</span>),</span>
-<span id="cb87-4">                       <span class="at" style="color: #657422;
+<span id="cb89-4">                       <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">height =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
@@ -4037,8 +4177,8 @@ background-color: null;
 font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">600</span>)</span>
-<span id="cb87-5"></span>
-<span id="cb87-6">  app<span class="sc" style="color: #5E5E5E;
+<span id="cb89-5"></span>
+<span id="cb89-6">  app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4053,7 +4193,7 @@ background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"mtcars"</span>)</span>
-<span id="cb87-7">  app<span class="sc" style="color: #5E5E5E;
+<span id="cb89-7">  app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4068,21 +4208,21 @@ background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"wt"</span>)</span>
-<span id="cb87-8"></span>
-<span id="cb87-9">  app_values <span class="ot" style="color: #003B4F;
+<span id="cb89-8"></span>
+<span id="cb89-9">  app_values <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">get_values</span>()</span>
-<span id="cb87-10"></span>
-<span id="cb87-11">  testthat<span class="sc" style="color: #5E5E5E;
+<span id="cb89-10"></span>
+<span id="cb89-11">  testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_true</span>(</span>
-<span id="cb87-12">    <span class="at" style="color: #657422;
+<span id="cb89-12">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">object =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4091,13 +4231,13 @@ background-color: null;
 font-style: inherit;">$</span>export<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>data))</span>
-<span id="cb87-13"></span>
-<span id="cb87-14">  testthat<span class="sc" style="color: #5E5E5E;
+<span id="cb89-13"></span>
+<span id="cb89-14">  testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_true</span>(</span>
-<span id="cb87-15">    <span class="at" style="color: #657422;
+<span id="cb89-15">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">object =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4110,17 +4250,17 @@ background-color: null;
 font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>)</span>
-<span id="cb87-16"></span>
-<span id="cb87-17">  app<span class="sc" style="color: #5E5E5E;
+<span id="cb89-16"></span>
+<span id="cb89-17">  app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">stop</span>()</span>
-<span id="cb87-18">})</span></code></pre></div>
+<span id="cb89-18">})</span></code></pre></div>
 </div>
 <p>I can run the test with <code>testthat::test_file()</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb88" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1">testthat<span class="sc" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb90" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1">testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4132,7 +4272,7 @@ font-style: inherit;">"tests/testthat/test-shinytest2-selectVarApp.R"</span>)</s
 </div>
 <p>The results are below:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb89" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb89-1"><span class="bu" style="color: null;
+<div class="sourceCode cell-code" id="cb91" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb91-1"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">[</span> FAIL 0 <span class="er" style="color: #AD0000;
 background-color: null;
@@ -4151,30 +4291,31 @@ background-color: null;
 font-style: inherit;">PASS</span> 2 ]</span></code></pre></div>
 </div>
 </section>
+</section>
 <section id="testing-complex-outputs" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="testing-complex-outputs">Testing complex outputs</h2>
 <p>I’ve created an adapted version of the <code>histogramApp()</code> in the <code>inst/dev/gghistApp/</code> folder (view contents <a href="https://github.com/mjfrigaard/msst2ap/tree/main/inst/dev/gghistApp#gghistapp">here</a>):</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb90" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb90-1"><span class="ex" style="color: null;
+<div class="sourceCode cell-code" id="cb92" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb92-1"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">inst/dev/gghistApp/</span></span>
-<span id="cb90-2">            <span class="ex" style="color: null;
+<span id="cb92-2">            <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">├──</span> DESCRIPTION</span>
-<span id="cb90-3">            <span class="ex" style="color: null;
+<span id="cb92-3">            <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">├──</span> R/</span>
-<span id="cb90-4">            <span class="ex" style="color: null;
+<span id="cb92-4">            <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">│</span>   └── modules.R</span>
-<span id="cb90-5">            <span class="ex" style="color: null;
+<span id="cb92-5">            <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">├──</span> README.md</span>
-<span id="cb90-6">            <span class="ex" style="color: null;
+<span id="cb92-6">            <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">└──</span> app.R</span>
-<span id="cb90-7"></span>
-<span id="cb90-8"><span class="ex" style="color: null;
+<span id="cb92-7"></span>
+<span id="cb92-8"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">2</span> directories, 4 files</span></code></pre></div>
 </div>
@@ -4200,7 +4341,7 @@ font-style: inherit;">2</span> directories, 4 files</span></code></pre></div>
 </div>
 </div>
 </div>
-<p></p><figcaption class="figure-caption">Figure&nbsp;16: <code>histogramApp()</code> vs.&nbsp;<code>gghistApp()</code></figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;18: <code>histogramApp()</code> vs.&nbsp;<code>gghistApp()</code></figcaption><p></p>
 </figure>
 </div>
 </div>
@@ -4209,7 +4350,7 @@ font-style: inherit;">2</span> directories, 4 files</span></code></pre></div>
 <div class="cell">
 <details open="">
 <summary>show/hide gghistServer()</summary>
-<div class="sourceCode cell-code" id="cb91" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1">gghistServer <span class="ot" style="color: #003B4F;
+<div class="sourceCode cell-code" id="cb93" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1">gghistServer <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
 background-color: null;
@@ -4220,60 +4361,60 @@ background-color: null;
 font-style: inherit;">reactive</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"Histogram"</span>)) {</span>
-<span id="cb91-2"></span>
-<span id="cb91-3">    <span class="fu" style="color: #4758AB;
+<span id="cb93-2"></span>
+<span id="cb93-3">    <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">stopifnot</span>(shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">is.reactive</span>(x))</span>
-<span id="cb91-4">    <span class="fu" style="color: #4758AB;
+<span id="cb93-4">    <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">stopifnot</span>(shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">is.reactive</span>(title))</span>
-<span id="cb91-5"></span>
-<span id="cb91-6">  shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb93-5"></span>
+<span id="cb93-6">  shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">moduleServer</span>(id, <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">function</span>(input, output, session) {</span>
-<span id="cb91-7">    </span>
-<span id="cb91-8">    <span class="co" style="color: #5E5E5E;
+<span id="cb93-7">    </span>
+<span id="cb93-8">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># create plot object</span></span>
-<span id="cb91-9">    plot_obj <span class="ot" style="color: #003B4F;
+<span id="cb93-9">    plot_obj <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">reactive</span>({</span>
-<span id="cb91-10">                  shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb93-10">                  shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">req</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">x</span>())</span>
-<span id="cb91-11">                  purrr<span class="sc" style="color: #5E5E5E;
+<span id="cb93-11">                  purrr<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">as_vector</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">x</span>())</span>
-<span id="cb91-12">                  })</span>
-<span id="cb91-13">    </span>
-<span id="cb91-14">    <span class="co" style="color: #5E5E5E;
+<span id="cb93-12">                  })</span>
+<span id="cb93-13">    </span>
+<span id="cb93-14">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># render plot object</span></span>
-<span id="cb91-15">    output<span class="sc" style="color: #5E5E5E;
+<span id="cb93-15">    output<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>hist <span class="ot" style="color: #003B4F;
 background-color: null;
@@ -4282,22 +4423,22 @@ background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">renderPlot</span>({</span>
-<span id="cb91-16">      shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb93-16">      shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">req</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">x</span>())</span>
-<span id="cb91-17">      ggplot2<span class="sc" style="color: #5E5E5E;
+<span id="cb93-17">      ggplot2<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">ggplot</span>(</span>
-<span id="cb91-18">        <span class="at" style="color: #657422;
+<span id="cb93-18">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">mapping =</span></span>
-<span id="cb91-19">          ggplot2<span class="sc" style="color: #5E5E5E;
+<span id="cb93-19">          ggplot2<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4306,7 +4447,7 @@ background-color: null;
 font-style: inherit;">plot_obj</span>())) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb91-20">          ggplot2<span class="sc" style="color: #5E5E5E;
+<span id="cb93-20">          ggplot2<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4317,12 +4458,12 @@ background-color: null;
 font-style: inherit;">$</span>bins) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb91-21">          ggplot2<span class="sc" style="color: #5E5E5E;
+<span id="cb93-21">          ggplot2<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">labs</span>(</span>
-<span id="cb91-22">            <span class="at" style="color: #657422;
+<span id="cb93-22">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">title =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4335,12 +4476,12 @@ background-color: null;
 font-style: inherit;">$</span>bins, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"]"</span>),</span>
-<span id="cb91-23">            <span class="at" style="color: #657422;
+<span id="cb93-23">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">y =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"Count"</span>,</span>
-<span id="cb91-24">            <span class="at" style="color: #657422;
+<span id="cb93-24">            <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">x =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4349,19 +4490,19 @@ background-color: null;
 font-style: inherit;">x</span>())) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span></span>
-<span id="cb91-25">          ggplot2<span class="sc" style="color: #5E5E5E;
+<span id="cb93-25">          ggplot2<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">theme_minimal</span>()</span>
-<span id="cb91-26">    }, <span class="at" style="color: #657422;
+<span id="cb93-26">    }, <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">res =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">124</span>) <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span></span>
-<span id="cb91-27">      shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb93-27">      shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4372,34 +4513,34 @@ background-color: null;
 font-style: inherit;">x</span>(), input<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>bins),</span>
-<span id="cb91-28">        <span class="at" style="color: #657422;
+<span id="cb93-28">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">ignoreNULL =</span> <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">TRUE</span>)</span>
-<span id="cb91-29"></span>
-<span id="cb91-30">    <span class="co" style="color: #5E5E5E;
+<span id="cb93-29"></span>
+<span id="cb93-30">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># export app values</span></span>
-<span id="cb91-31">    shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb93-31">    shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">exportTestValues</span>(</span>
-<span id="cb91-32">      <span class="at" style="color: #657422;
+<span id="cb93-32">      <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">x =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">x</span>(),</span>
-<span id="cb91-33">      <span class="at" style="color: #657422;
+<span id="cb93-33">      <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">plot_obj =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">plot_obj</span>()</span>
-<span id="cb91-34">    )</span>
-<span id="cb91-35"></span>
-<span id="cb91-36">  })</span>
-<span id="cb91-37">}</span></code></pre></div>
+<span id="cb93-34">    )</span>
+<span id="cb93-35"></span>
+<span id="cb93-36">  })</span>
+<span id="cb93-37">}</span></code></pre></div>
 </details>
 </div>
 <ul>
@@ -4407,89 +4548,89 @@ font-style: inherit;">plot_obj</span>()</span>
 <div class="cell">
 <details>
 <summary>show/hide gghistApp()</summary>
-<div class="sourceCode cell-code" id="cb92" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1">gghistApp <span class="ot" style="color: #003B4F;
+<div class="sourceCode cell-code" id="cb94" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1">gghistApp <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">function</span>() {</span>
-<span id="cb92-2">  ui <span class="ot" style="color: #003B4F;
+<span id="cb94-2">  ui <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">fluidPage</span>(</span>
-<span id="cb92-3">    shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb94-3">    shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">sidebarLayout</span>(</span>
-<span id="cb92-4">      shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb94-4">      shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">sidebarPanel</span>(</span>
-<span id="cb92-5">        <span class="fu" style="color: #4758AB;
+<span id="cb94-5">        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">datasetInput</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"data"</span>, is.data.frame),</span>
-<span id="cb92-6">        <span class="fu" style="color: #4758AB;
+<span id="cb94-6">        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">selectVarInput</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"var"</span>),</span>
-<span id="cb92-7">      ),</span>
-<span id="cb92-8">      shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb94-7">      ),</span>
+<span id="cb94-8">      shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">mainPanel</span>(</span>
-<span id="cb92-9">        <span class="fu" style="color: #4758AB;
+<span id="cb94-9">        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">histogramOutput</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"hist"</span>),</span>
-<span id="cb92-10">        shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb94-10">        shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">verbatimTextOutput</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"vals"</span>)</span>
-<span id="cb92-11">      )</span>
-<span id="cb92-12">    )</span>
-<span id="cb92-13">  )</span>
-<span id="cb92-14"></span>
-<span id="cb92-15">  server <span class="ot" style="color: #003B4F;
+<span id="cb94-11">      )</span>
+<span id="cb94-12">    )</span>
+<span id="cb94-13">  )</span>
+<span id="cb94-14"></span>
+<span id="cb94-15">  server <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">function</span>(input, output, session) {</span>
-<span id="cb92-16"></span>
-<span id="cb92-17">    data <span class="ot" style="color: #003B4F;
+<span id="cb94-16"></span>
+<span id="cb94-17">    data <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">datasetServer</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"data"</span>)</span>
-<span id="cb92-18"></span>
-<span id="cb92-19">    x <span class="ot" style="color: #003B4F;
+<span id="cb94-18"></span>
+<span id="cb94-19">    x <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">selectVarServer</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"var"</span>, data)</span>
-<span id="cb92-20"></span>
-<span id="cb92-21">    <span class="fu" style="color: #4758AB;
+<span id="cb94-20"></span>
+<span id="cb94-21">    <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">gghistServer</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"hist"</span>, x)</span>
-<span id="cb92-22"></span>
-<span id="cb92-23">    output<span class="sc" style="color: #5E5E5E;
+<span id="cb94-22"></span>
+<span id="cb94-23">    output<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>vals <span class="ot" style="color: #003B4F;
 background-color: null;
@@ -4498,19 +4639,19 @@ background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">renderPrint</span>({</span>
-<span id="cb92-24">      x <span class="ot" style="color: #003B4F;
+<span id="cb94-24">      x <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">reactiveValuesToList</span>(input,</span>
-<span id="cb92-25">                          <span class="at" style="color: #657422;
+<span id="cb94-25">                          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">all.names =</span> <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">TRUE</span>)</span>
-<span id="cb92-26">      <span class="fu" style="color: #4758AB;
+<span id="cb94-26">      <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">print</span>(x, <span class="at" style="color: #657422;
 background-color: null;
@@ -4521,39 +4662,39 @@ background-color: null;
 font-style: inherit;">max.levels =</span> <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">NULL</span>)</span>
-<span id="cb92-27">      }, <span class="at" style="color: #657422;
+<span id="cb94-27">      }, <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">30</span>)</span>
-<span id="cb92-28"></span>
-<span id="cb92-29">  }</span>
-<span id="cb92-30"></span>
-<span id="cb92-31">  shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb94-28"></span>
+<span id="cb94-29">  }</span>
+<span id="cb94-30"></span>
+<span id="cb94-31">  shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">shinyApp</span>(ui, server)</span>
-<span id="cb92-32">}</span></code></pre></div>
+<span id="cb94-32">}</span></code></pre></div>
 </details>
 </div></li>
 </ul>
 <p>In the <code>test-shinytest2-gghistApp.R</code> test file, I’ll verify the <a href="https://vdiffr.r-lib.org/"><code>vdiffr</code> package</a> is installed with <code>testthat::skip_if_not_installed()</code>, then create the <code>AppDriver</code> object with a call to <code>system.file()</code> and set the <code>height</code> and <code>width</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb93" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1">testthat<span class="sc" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb95" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1">testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"{shinytest2}: gghistApp"</span>, {</span>
-<span id="cb93-2">  <span class="fu" style="color: #4758AB;
+<span id="cb95-2">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">skip_if_not_installed</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"vdiffr"</span>)</span>
-<span id="cb93-3"></span>
-<span id="cb93-4">  app <span class="ot" style="color: #003B4F;
+<span id="cb95-3"></span>
+<span id="cb95-4">  app <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> AppDriver<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -4568,12 +4709,12 @@ background-color: null;
 font-style: inherit;">"dev"</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"gghistApp"</span>,</span>
-<span id="cb93-5">                                             <span class="at" style="color: #657422;
+<span id="cb95-5">                                             <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">package =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"msst2ap"</span>),</span>
-<span id="cb93-6">                       <span class="at" style="color: #657422;
+<span id="cb95-6">                       <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">height =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
@@ -4582,11 +4723,11 @@ background-color: null;
 font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1200</span>)</span>
-<span id="cb93-7">})</span></code></pre></div>
+<span id="cb95-7">})</span></code></pre></div>
 </div>
 <p>View the application in the Chromium browser by running <code>app$view()</code> in the <strong>Console</strong>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb94" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1">app<span class="sc" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb96" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1">app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4605,20 +4746,20 @@ font-style: inherit;">view</span>()</span></code></pre></div>
 </div>
 </div>
 </div>
-<p></p><figcaption class="figure-caption">Figure&nbsp;17: View <code>gghistApp()</code> application with <code>app$view()</code></figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;19: View <code>gghistApp()</code> application with <code>app$view()</code></figcaption><p></p>
 </figure>
 </div>
 </div>
-<section id="expectations-1" class="level3">
-<h3 class="anchored" data-anchor-id="expectations-1">Expectations</h3>
-<p>I’ll replicate the example from the website using the <code>gghistApp()</code>:</p>
+<p>I’ll replicate the <a href="https://rstudio.github.io/shinytest2/articles/robust.html#example">example</a> from the website using the <code>gghistApp()</code>:</p>
+<section id="verify-initial-input" class="level3">
+<h3 class="anchored" data-anchor-id="verify-initial-input">Verify initial <span style="font-size: 1.20em"><code>input</code></span></h3>
 <ul>
 <li><p>The first expectations in the example test the default <code>input</code> values with <strong><code>app$get_value(input = )</code></strong>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb95" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1">  <span class="co" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb97" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb97-1">  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Verify initial data</span></span>
-<span id="cb95-2">  app_init_data <span class="ot" style="color: #003B4F;
+<span id="cb97-2">  app_init_data <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -4629,24 +4770,24 @@ background-color: null;
 font-style: inherit;">input =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"data-dataset"</span>)</span>
-<span id="cb95-3">  testthat<span class="sc" style="color: #5E5E5E;
+<span id="cb97-3">  testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_equal</span>(</span>
-<span id="cb95-4">    <span class="at" style="color: #657422;
+<span id="cb97-4">    <span class="at" style="color: #657422;
 background-color: null;
-font-style: inherit;">object =</span> app_init_data, </span>
-<span id="cb95-5">    <span class="at" style="color: #657422;
+font-style: inherit;">object =</span> app_init_data,</span>
+<span id="cb97-5">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">expected =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"BOD"</span>)</span>
-<span id="cb95-6"></span>
-<span id="cb95-7">  <span class="co" style="color: #5E5E5E;
+<span id="cb97-6"></span>
+<span id="cb97-7">  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Verify initial variable</span></span>
-<span id="cb95-8">  app_init_var <span class="ot" style="color: #003B4F;
+<span id="cb97-8">  app_init_var <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -4657,26 +4798,31 @@ background-color: null;
 font-style: inherit;">input =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"var-var"</span>)</span>
-<span id="cb95-9">  testthat<span class="sc" style="color: #5E5E5E;
+<span id="cb97-9">  testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_equal</span>(</span>
-<span id="cb95-10">    <span class="at" style="color: #657422;
+<span id="cb97-10">    <span class="at" style="color: #657422;
 background-color: null;
-font-style: inherit;">object =</span> app_init_var, </span>
-<span id="cb95-11">    <span class="at" style="color: #657422;
+font-style: inherit;">object =</span> app_init_var,</span>
+<span id="cb97-11">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">expected =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"Time"</span>)</span></code></pre></div>
 </div></li>
-<li><p>Next, the expectations check the exported values after changing inputs with <code>app$set_values()</code> and <strong><code>app$get_value(export = )</code></strong></p>
+</ul>
+</section>
+<section id="set-and-verify-export" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="set-and-verify-export">Set and verify <span style="font-size: 1.20em"><code>export</code></span></h3>
+<ul>
+<li><p>Next, we check the exported values after changing the inputs with <code>app$set_values()</code> and <strong><code>app$get_value(export = )</code></strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb96" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1">  <span class="co" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb98" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1">  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Verify exported `x()` data</span></span>
-<span id="cb96-2">  app<span class="sc" style="color: #5E5E5E;
+<span id="cb98-2">  app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4691,7 +4837,7 @@ background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"mtcars"</span>)</span>
-<span id="cb96-3">  app_exp_x_01 <span class="ot" style="color: #003B4F;
+<span id="cb98-3">  app_exp_x_01 <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -4702,24 +4848,24 @@ background-color: null;
 font-style: inherit;">export =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"hist-x"</span>)</span>
-<span id="cb96-4">  testthat<span class="sc" style="color: #5E5E5E;
+<span id="cb98-4">  testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_equal</span>(</span>
-<span id="cb96-5">    <span class="at" style="color: #657422;
+<span id="cb98-5">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">object =</span> app_exp_x_01, </span>
-<span id="cb96-6">    <span class="at" style="color: #657422;
+<span id="cb98-6">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">expected =</span> mtcars[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>])</span>
-<span id="cb96-7"></span>
-<span id="cb96-8">  <span class="co" style="color: #5E5E5E;
+<span id="cb98-7"></span>
+<span id="cb98-8">  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Verify exported `plot_obj()` data</span></span>
-<span id="cb96-9">  app<span class="sc" style="color: #5E5E5E;
+<span id="cb98-9">  app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4734,7 +4880,7 @@ background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"wt"</span>)</span>
-<span id="cb96-10">  app_exp_plot_obj_01 <span class="ot" style="color: #003B4F;
+<span id="cb98-10">  app_exp_plot_obj_01 <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -4745,15 +4891,15 @@ background-color: null;
 font-style: inherit;">export =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"hist-plot_obj"</span>)</span>
-<span id="cb96-11">  testthat<span class="sc" style="color: #5E5E5E;
+<span id="cb98-11">  testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_equal</span>(</span>
-<span id="cb96-12">    <span class="at" style="color: #657422;
+<span id="cb98-12">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">object =</span> app_exp_plot_obj_01,</span>
-<span id="cb96-13">    <span class="at" style="color: #657422;
+<span id="cb98-13">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">expected =</span> purrr<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -4761,12 +4907,12 @@ font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">as_vector</span>(app_exp_plot_obj_01))</span></code></pre></div>
 </div></li>
-<li><p>The <code>bins</code> are set to a new value <em>after</em> verifying the exported values with <code>app$set_values()</code> and <strong><code>app$get_value(input = )</code></strong></p>
+<li><p>The <code>bins</code> are also set to a new value with <code>app$set_inputs()</code> <em>after</em> verifying the exported values:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb97" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb97-1">  <span class="co" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb99" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1">  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Verify `hist-bins` changes</span></span>
-<span id="cb97-2">  app<span class="sc" style="color: #5E5E5E;
+<span id="cb99-2">  app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4781,7 +4927,7 @@ background-color: null;
 font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">15</span>)</span>
-<span id="cb97-3">  app_set_bins_01 <span class="ot" style="color: #003B4F;
+<span id="cb99-3">  app_set_bins_01 <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -4792,26 +4938,48 @@ background-color: null;
 font-style: inherit;">input =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"hist-bins"</span>)</span>
-<span id="cb97-4">  testthat<span class="sc" style="color: #5E5E5E;
+<span id="cb99-4">  testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_equal</span>(</span>
-<span id="cb97-5">    <span class="at" style="color: #657422;
+<span id="cb99-5">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">object =</span> app_set_bins_01,</span>
-<span id="cb97-6">    <span class="at" style="color: #657422;
+<span id="cb99-6">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">expected =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">15</span>)</span></code></pre></div>
 </div></li>
-<li><p>The plot is verified with the exported <code>hist-plot_obj</code> and <code>expect_doppelganger()</code> from the <code>vdiffr</code> package.</p>
+</ul>
+<div class="column-page-inset-right">
+<div id="fig-app_view_set_inputs_gghistApp" class="quarto-layout-panel">
+<figure class="figure">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 100.0%;justify-content: center;">
+<div id="fig-app_view_set_inputs_gghistApp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="https://mjfrigaard.github.io/posts/test-shiny-p4/app_view_set_inputs_gghistApp.png" class="img-fluid figure-img" data-ref-parent="fig-app_view_set_inputs_gghistApp"></p>
+<figcaption class="figure-caption">(a) <code>set_inputs()</code> and <code>get_value()</code> in <code>gghistApp()</code></figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p></p><figcaption class="figure-caption">Figure&nbsp;20: Set <code>input</code>s and get <code>export</code>ed values in <code>gghistApp()</code></figcaption><p></p>
+</figure>
+</div>
+</div>
+</section>
+<section id="verify-plot-with-vdiffr" class="level3">
+<h3 class="anchored" data-anchor-id="verify-plot-with-vdiffr">Verify plot with <span style="font-size: 1.20em"><code>vdiffr</code></span></h3>
+<ul>
+<li><p>Now we verify the plot with the exported <code>plot_obj</code> (in the <code>hist</code> module) with <code>expect_doppelganger()</code> from the <code>vdiffr</code> package.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb98" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><span class="co" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb100" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1">  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Verify `hist-plot_obj` changes</span></span>
-<span id="cb98-2">plot_obj_15 <span class="ot" style="color: #003B4F;
+<span id="cb100-2">  plot_obj_15 <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -4822,25 +4990,25 @@ background-color: null;
 font-style: inherit;">export =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"hist-plot_obj"</span>)</span>
-<span id="cb98-3">vdiffr<span class="sc" style="color: #5E5E5E;
+<span id="cb100-3">  vdiffr<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_doppelganger</span>(</span>
-<span id="cb98-4">  <span class="at" style="color: #657422;
+<span id="cb100-4">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">title =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"hist-plot_obj-15"</span>,</span>
-<span id="cb98-5">  <span class="at" style="color: #657422;
+<span id="cb100-5">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">fig =</span> plot_obj_15)</span></code></pre></div>
 </div>
 <ul>
-<li>I saved the test file and ran the test to confirm the snapshot file was created in <code>tests/testthat/_snaps/</code>:</li>
+<li><em>I saved the test file and ran the test to confirm the snapshot file was created in <code>tests/testthat/_snaps/</code></em>:</li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb99" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb99-1"><span class="bu" style="color: null;
+<div class="sourceCode cell-code" id="cb101" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb101-1"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">[</span> FAIL 0 <span class="er" style="color: #AD0000;
 background-color: null;
@@ -4857,7 +5025,7 @@ background-color: null;
 font-style: inherit;">|</span> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">PASS</span> 6 ]</span>
-<span id="cb99-2"><span class="ex" style="color: null;
+<span id="cb101-2"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">──</span> Warning <span class="er" style="color: #AD0000;
 background-color: null;
@@ -4868,12 +5036,12 @@ background-color: null;
 font-style: inherit;">)</span><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">:</span> {shinytest2}: gghistApp ───</span>
-<span id="cb99-3"><span class="ex" style="color: null;
+<span id="cb101-3"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">Adding</span> new file snapshot: <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'tests/testthat/_snaps/hist-plot-obj-15.svg'</span></span>
-<span id="cb99-4"><span class="bu" style="color: null;
+<span id="cb101-4"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">[</span> FAIL 0 <span class="er" style="color: #AD0000;
 background-color: null;
@@ -4891,12 +5059,18 @@ font-style: inherit;">|</span> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">PASS</span> 6 ]</span></code></pre></div>
 </div></li>
+</ul>
+</section>
+<section id="set_-get_-expect_" class="level3">
+<h3 class="anchored" data-anchor-id="set_-get_-expect_"><span style="font-size: 1.10em"><code>set_</code>, <code>get_</code>, <code>expect_</code></span></h3>
+<p>The process above is repeated with new values passed to <strong><code>app$set_inputs()</code></strong> and verified with <strong><code>app$get_value(export = )</code></strong>:</p>
+<ul>
 <li><p>The <code>x()</code>, <code>plot_obj()</code> and <code>hist-bins</code> are updated again with new values:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb100" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1">  <span class="do" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb102" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1">  <span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Update `data` to USArrests</span></span>
-<span id="cb100-2">  app<span class="sc" style="color: #5E5E5E;
+<span id="cb102-2">  app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4911,7 +5085,7 @@ background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"USArrests"</span>)</span>
-<span id="cb100-3">  app_exp_x_02 <span class="ot" style="color: #003B4F;
+<span id="cb102-3">  app_exp_x_02 <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -4922,24 +5096,24 @@ background-color: null;
 font-style: inherit;">export =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"hist-x"</span>)</span>
-<span id="cb100-4">  testthat<span class="sc" style="color: #5E5E5E;
+<span id="cb102-4">  testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_equal</span>(</span>
-<span id="cb100-5">    <span class="at" style="color: #657422;
+<span id="cb102-5">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">object =</span> app_exp_x_02,</span>
-<span id="cb100-6">    <span class="at" style="color: #657422;
+<span id="cb102-6">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">expected =</span> USArrests[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>])</span>
-<span id="cb100-7"></span>
-<span id="cb100-8">  <span class="do" style="color: #5E5E5E;
+<span id="cb102-7"></span>
+<span id="cb102-8">  <span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Update `var` to UrbanPop</span></span>
-<span id="cb100-9">  app<span class="sc" style="color: #5E5E5E;
+<span id="cb102-9">  app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4954,7 +5128,7 @@ background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"UrbanPop"</span>)</span>
-<span id="cb100-10">  app_exp_plot_obj_02 <span class="ot" style="color: #003B4F;
+<span id="cb102-10">  app_exp_plot_obj_02 <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -4965,26 +5139,26 @@ background-color: null;
 font-style: inherit;">export =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"hist-plot_obj"</span>)</span>
-<span id="cb100-11">  testthat<span class="sc" style="color: #5E5E5E;
+<span id="cb102-11">  testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_equal</span>(</span>
-<span id="cb100-12">    <span class="at" style="color: #657422;
+<span id="cb102-12">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">object =</span> app_exp_plot_obj_02,</span>
-<span id="cb100-13">    <span class="at" style="color: #657422;
+<span id="cb102-13">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">expected =</span> purrr<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">as_vector</span>(app_exp_plot_obj_02))</span>
-<span id="cb100-14"></span>
-<span id="cb100-15">  <span class="do" style="color: #5E5E5E;
+<span id="cb102-14"></span>
+<span id="cb102-15">  <span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Update `bins` to 12</span></span>
-<span id="cb100-16">  app<span class="sc" style="color: #5E5E5E;
+<span id="cb102-16">  app<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4999,7 +5173,7 @@ background-color: null;
 font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">12</span>)</span>
-<span id="cb100-17">  app_set_bins_02 <span class="ot" style="color: #003B4F;
+<span id="cb102-17">  app_set_bins_02 <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -5010,13 +5184,13 @@ background-color: null;
 font-style: inherit;">input =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"hist-bins"</span>)</span>
-<span id="cb100-18">  <span class="fu" style="color: #4758AB;
+<span id="cb102-18">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_equal</span>(</span>
-<span id="cb100-19">    <span class="at" style="color: #657422;
+<span id="cb102-19">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">object =</span> app_set_bins_02,</span>
-<span id="cb100-20">    <span class="at" style="color: #657422;
+<span id="cb102-20">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">expected =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
@@ -5024,10 +5198,10 @@ font-style: inherit;">12</span>)</span></code></pre></div>
 </div></li>
 <li><p>The new plot is verified again with <code>expect_doppelganger()</code></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb101" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb101-1">  <span class="co" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb103" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb103-1">  <span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;"># Verify `hist-plot_obj` changes</span></span>
-<span id="cb101-2">  plot_obj_12 <span class="ot" style="color: #003B4F;
+font-style: italic;">## Verify updates to `hist-plot_obj`</span></span>
+<span id="cb103-2">  plot_obj_12 <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> app<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -5038,23 +5212,25 @@ background-color: null;
 font-style: inherit;">export =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"hist-plot_obj"</span>)</span>
-<span id="cb101-3">  vdiffr<span class="sc" style="color: #5E5E5E;
+<span id="cb103-3">  vdiffr<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_doppelganger</span>(</span>
-<span id="cb101-4">    <span class="at" style="color: #657422;
+<span id="cb103-4">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">title =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"hist-plot_obj-12"</span>,</span>
-<span id="cb101-5">    <span class="at" style="color: #657422;
+<span id="cb103-5">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">fig =</span> plot_obj_12)</span></code></pre></div>
-</div></li>
-<li><p>This initial run of this test will show a warning again as the snapshot file is saved to <code>tests/testthat/_snaps/</code>:</p>
+</div>
+<ul>
+<li><em>This initial run of this test will show a warning again as the snapshot file is saved to <code>tests/testthat/_snaps/</code></em>:</li>
+</ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb102" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb102-1"><span class="bu" style="color: null;
+<div class="sourceCode cell-code" id="cb104" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb104-1"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">[</span> FAIL 0 <span class="er" style="color: #AD0000;
 background-color: null;
@@ -5071,7 +5247,7 @@ background-color: null;
 font-style: inherit;">|</span> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">PASS</span> 10 ]</span>
-<span id="cb102-2"><span class="ex" style="color: null;
+<span id="cb104-2"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">──</span> Warning <span class="er" style="color: #AD0000;
 background-color: null;
@@ -5082,12 +5258,12 @@ background-color: null;
 font-style: inherit;">)</span><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">:</span> {shinytest2}: gghistApp ───</span>
-<span id="cb102-3"><span class="ex" style="color: null;
+<span id="cb104-3"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">Adding</span> new file snapshot: <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'tests/testthat/_snaps/hist-plot-obj-12.svg'</span></span>
-<span id="cb102-4"><span class="bu" style="color: null;
+<span id="cb104-4"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">[</span> FAIL 0 <span class="er" style="color: #AD0000;
 background-color: null;
@@ -5111,14 +5287,14 @@ font-style: inherit;">PASS</span> 10 ]</span></code></pre></div>
 <h3 class="anchored" data-anchor-id="results">Results</h3>
 <p>The final results of the <code>test-shinytest2-gghistApp.R</code> are below:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb103" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb103-1"><span class="fu" style="color: #4758AB;
+<div class="sourceCode cell-code" id="cb105" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb105-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">test_file</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"tests/testthat/_test-shinytest2-gghistApp.R"</span>)</span></code></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb104" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb104-1"><span class="bu" style="color: null;
+<div class="sourceCode cell-code" id="cb106" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb106-1"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">[</span> FAIL 0 <span class="er" style="color: #AD0000;
 background-color: null;
@@ -5135,25 +5311,25 @@ background-color: null;
 font-style: inherit;">|</span> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">PASS</span> 5 ]</span>
-<span id="cb104-2">  <span class="ex" style="color: null;
+<span id="cb106-2">  <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">wt1</span>   wt2   wt3   wt4   wt5   wt6   wt7   wt8   wt9  wt10  wt11  wt12  wt13 </span>
-<span id="cb104-3"><span class="ex" style="color: null;
+<span id="cb106-3"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">2.620</span> 2.875 2.320 3.215 3.440 3.460 3.570 3.190 3.150 3.440 3.440 4.070 3.730 </span>
-<span id="cb104-4"> <span class="ex" style="color: null;
+<span id="cb106-4"> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">wt14</span>  wt15  wt16  wt17  wt18  wt19  wt20  wt21  wt22  wt23  wt24  wt25  wt26 </span>
-<span id="cb104-5"><span class="ex" style="color: null;
+<span id="cb106-5"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">3.780</span> 5.250 5.424 5.345 2.200 1.615 1.835 2.465 3.520 3.435 3.840 3.845 1.935 </span>
-<span id="cb104-6"> <span class="ex" style="color: null;
+<span id="cb106-6"> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">wt27</span>  wt28  wt29  wt30  wt31  wt32 </span>
-<span id="cb104-7"><span class="ex" style="color: null;
+<span id="cb106-7"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">2.140</span> 1.513 3.170 2.770 3.570 2.780 </span>
-<span id="cb104-8"><span class="bu" style="color: null;
+<span id="cb106-8"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">[</span> FAIL 0 <span class="er" style="color: #AD0000;
 background-color: null;
@@ -5170,55 +5346,55 @@ background-color: null;
 font-style: inherit;">|</span> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">PASS</span> 9 ] </span>
-<span id="cb104-9"> <span class="ex" style="color: null;
+<span id="cb106-9"> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">UrbanPop1</span>  UrbanPop2  UrbanPop3  UrbanPop4  UrbanPop5  UrbanPop6  UrbanPop7 </span>
-<span id="cb104-10">        <span class="ex" style="color: null;
+<span id="cb106-10">        <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">58</span>         48         80         50         91         78         77 </span>
-<span id="cb104-11"> <span class="ex" style="color: null;
+<span id="cb106-11"> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">UrbanPop8</span>  UrbanPop9 UrbanPop10 UrbanPop11 UrbanPop12 UrbanPop13 UrbanPop14 </span>
-<span id="cb104-12">        <span class="ex" style="color: null;
+<span id="cb106-12">        <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">72</span>         80         60         83         54         83         65 </span>
-<span id="cb104-13"><span class="ex" style="color: null;
+<span id="cb106-13"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">UrbanPop15</span> UrbanPop16 UrbanPop17 UrbanPop18 UrbanPop19 UrbanPop20 UrbanPop21 </span>
-<span id="cb104-14">        <span class="ex" style="color: null;
+<span id="cb106-14">        <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">57</span>         66         52         66         51         67         85 </span>
-<span id="cb104-15"><span class="ex" style="color: null;
+<span id="cb106-15"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">UrbanPop22</span> UrbanPop23 UrbanPop24 UrbanPop25 UrbanPop26 UrbanPop27 UrbanPop28 </span>
-<span id="cb104-16">        <span class="ex" style="color: null;
+<span id="cb106-16">        <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">74</span>         66         44         70         53         62         81 </span>
-<span id="cb104-17"><span class="ex" style="color: null;
+<span id="cb106-17"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">UrbanPop29</span> UrbanPop30 UrbanPop31 UrbanPop32 UrbanPop33 UrbanPop34 UrbanPop35 </span>
-<span id="cb104-18">        <span class="ex" style="color: null;
+<span id="cb106-18">        <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">56</span>         89         70         86         45         44         75 </span>
-<span id="cb104-19"><span class="ex" style="color: null;
+<span id="cb106-19"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">UrbanPop36</span> UrbanPop37 UrbanPop38 UrbanPop39 UrbanPop40 UrbanPop41 UrbanPop42 </span>
-<span id="cb104-20">        <span class="ex" style="color: null;
+<span id="cb106-20">        <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">68</span>         67         72         87         48         45         59 </span>
-<span id="cb104-21"><span class="ex" style="color: null;
+<span id="cb106-21"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">UrbanPop43</span> UrbanPop44 UrbanPop45 UrbanPop46 UrbanPop47 UrbanPop48 UrbanPop49 </span>
-<span id="cb104-22">        <span class="ex" style="color: null;
+<span id="cb106-22">        <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">80</span>         80         32         63         73         39         66 </span>
-<span id="cb104-23"><span class="ex" style="color: null;
+<span id="cb106-23"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">UrbanPop50</span> </span>
-<span id="cb104-24">        <span class="ex" style="color: null;
+<span id="cb106-24">        <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">60</span> </span>
-<span id="cb104-25"><span class="bu" style="color: null;
+<span id="cb106-25"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">[</span> FAIL 0 <span class="er" style="color: #AD0000;
 background-color: null;
@@ -5236,11 +5412,28 @@ font-style: inherit;">|</span> <span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">PASS</span> 10 ]</span></code></pre></div>
 </div>
+<p>The vector in each <code>plot_obj()</code> test is printed with <code>expect_doppelganger()</code>, but this doesn’t interfere with the results.</p>
+<p>I can run <code>devtools::test()</code> to run all the tests in <code>msst2ap</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb107" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb107-1">devtools<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">test</span>()</span></code></pre></div>
+</div>
 </section>
 </section>
 <section id="recap" class="level2">
 <h2 class="anchored" data-anchor-id="recap">Recap</h2>
-<p>This post has covered tests with <code>shinytest2</code> for an app-package containing a shiny application with modules. The test recorder simplifies testing specific behaviors, and the <code>AppDriver</code> makes it possible to build a set of test expectations iteratively.</p>
+<p>This post has covered creating tests with <code>testthat</code> and <code>shinytest2</code> for an app-package containing a shiny application (with modules!). As you can see, the test recorder makes it easier to test specific app behaviors, and the <code>AppDriver</code> makes it possible to build a set of test expectations iteratively. Other items to consider when writing <code>shinytest2</code> tests include:</p>
+<ol type="1">
+<li><p><strong>Define What to Test</strong>: Since Shiny apps are interactive, so <code>shinytest2</code> tests should simulate user interaction as much as possible. The tests should focus on key user interactions and the output they should generate. <code>shinytest2</code> provides functions for simulating user clicks, inputs, and other interactions. Not every interaction needs to be tested, but crucial ones and those that handle complex logic should be.</p></li>
+<li><p><strong>Organize Your Tests &amp; Use Descriptive Test Names</strong>: Organize your tests into separate files based on what they are testing. Each test should have a descriptive name that clarifies what the test is for. Organizing your test files with unambiguous names will make it easier to manage multiple tests, and it will make it easier to understand what’s going wrong when a test fails.</p></li>
+<li><p><strong>Create snapshots for expected outputs</strong>: Use snapshot files to verify that an app’s output matches the expected results. <code>AppDriver$expect_values()</code> generates <code>.json</code> and <code>.png</code> snapshot files for the application. The .json file contains <code>input</code>, <code>output</code>, and <code>export</code> values, and the .png file is a <em>debug</em> screenshot, which records how the app looked when the values where captured. These files can then be compared to a baseline snapshot.</p></li>
+<li><p><strong>Export app values</strong>: While snapshot files are great for detecting changes, it’s important to remember that “<em>differences in the captured screenshot will never cause test failures.</em>” Manually inspecting the snapshot .png files during test development can also be time-consuming and tedious. Wherever possible, export app values and compare them against expected reference values.</p></li>
+</ol>
+<p>In general, <code>shinytest2</code> is designed for end-to-end testing of shiny applications. These tests can capture the state of a shiny app (input, output, and exported values) during user interactions and compare them with a previous state (i.e., snapshots), which is useful for regression testing.</p>
+<p><code>shinytest2</code> tests can also simulate user interaction in a way that <code>shiny::testServer()</code> tests can’t, such as waiting for reactive outputs to update after the input changes, clicking on action buttons, etc. <code>shinytest2</code> can also be resource-intensive, so it’s recommended to write these tests after you’ve completed the standard <code>testthat</code> unit tests and <code>testServer()</code> tests.</p>
 
 
 </section>
@@ -5253,7 +5446,7 @@ font-style: inherit;">PASS</span> 10 ]</span></code></pre></div>
   <media:content url="https://mjfrigaard.github.io/posts/test-shiny-p4/image.svg" medium="image" type="image/svg+xml"/>
 </item>
 <item>
-  <title>How do I test shiny modules?</title>
+  <title>Testing shiny module server functions</title>
   <dc:creator>Martin Frigaard</dc:creator>
   <link>https://mjfrigaard.github.io/posts/test-shiny-p3/index.html</link>
   <description><![CDATA[ 
@@ -5262,24 +5455,6 @@ font-style: inherit;">PASS</span> 10 ]</span></code></pre></div>
 
 
 <p>This is the third post in a <a href="https://mjfrigaard.github.io/series.html">series on testing</a> shiny applications. I’ll cover testing shiny module server functions using the <a href="https://testthat.r-lib.org/"><code>testhat</code> package</a> and shiny’s <a href="https://shiny.rstudio.com/reference/shiny/1.7.0/testserver"><code>testServer()</code> function</a>.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-STATUS: Under Development
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
-<div class="callout-body-container callout-body">
-<div style="font-size: 1.10em; font-weight: bold; color: #696969;">
-<p>This post is currently under development. Thank you for your patience!</p>
-</div>
-</div>
-</div>
-</div>
 <section id="testing-shiny-modules" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="testing-shiny-modules">Testing shiny modules</h2>
 
@@ -5290,7 +5465,7 @@ STATUS: Under Development
 </section>
 <section id="shiny-app-package" class="level2">
 <h2 class="anchored" data-anchor-id="shiny-app-package">Shiny app-package</h2>
-<p><code>testthat</code> is designed to work within an R package, so I’ve put together the <a href="https://github.com/mjfrigaard/mstsap"><code>mstsap</code></a>, (i.e., a <strong>M</strong>astering <strong>S</strong>hiny <strong>t</strong>est<strong>S</strong>erver <strong>a</strong>pp-<strong>p</strong>ackage) to demonstrate writing tests with <code>testServer()</code>. The functions, modules, and applications in <code>mstsap</code> come from the <a href="https://mastering-shiny.org/scaling-modules.html">Shiny Modules chapter</a> of Mastering Shiny. Specifically, sections <a href="https://mastering-shiny.org/scaling-modules.html#inputs-and-outputs">19.3</a> through <a href="https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules">19.3.4</a>. If you haven’t read this chapter–start there.</p>
+<p><code>testthat</code> is designed to work within an R package, so I’ve put together the <a href="https://mjfrigaard.github.io/mstsap/index.html"><code>mstsap</code></a>, (i.e., a <strong>M</strong>astering <strong>S</strong>hiny <strong>t</strong>est<strong>S</strong>erver <strong>a</strong>pp-<strong>p</strong>ackage) to demonstrate writing tests with <code>testServer()</code>. The functions, modules, and applications in <code>mstsap</code> come from the <a href="https://mastering-shiny.org/scaling-modules.html">Shiny Modules chapter</a> of Mastering Shiny. Specifically, sections <a href="https://mastering-shiny.org/scaling-modules.html#inputs-and-outputs">19.3</a> through <a href="https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules">19.3.4</a>. If you haven’t read this chapter–start there.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
@@ -5311,7 +5486,7 @@ background-color: null;
 font-style: inherit;">library</span>(mstsap)</span></code></pre></div>
 </div>
 <div class="callout callout-style-default callout-tip no-icon callout-titled" title="Why create an app-package?">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -5320,7 +5495,7 @@ Why create an app-package?
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em;">
 <p>A shiny app-package is a shiny application that’s been developed as (or converted to) an R package. The benefits of storing shiny apps in R packages have been <a href="https://mastering-shiny.org/scaling-packaging.html">well</a> <a href="https://engineering-shiny.org/structuring-project.html#shiny-app-as-a-package">documented</a>, but I’ll summarize just a few that are specific to testing:</p>
@@ -5374,7 +5549,7 @@ Why create an app-package?
 </blockquote>
 <p>Modules can also be broken into discrete ‘units of work’ with expected ‘end results.’ However, the ‘unit of work’ for a shiny module is usually accomplished using a combination of three functions: a module UI function, a module server function, and any helper/utility functions.</p>
 <div class="callout callout-style-default callout-tip no-icon callout-titled" title="Shiny module refresher">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -5383,7 +5558,7 @@ Shiny module refresher
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>Module UI functions typically wrap the layout, input, and output functions in <code>tagList()</code>. Module server functions contain the ‘backend’ code that typically goes in a shiny <code>server</code> function. Both the UI and server module functions are linked by an <code>id</code> argument, which is created using <code>NS()</code> (namespace) in the UI function, and called in the server function with <code>moduleServer()</code>.</p>
 <section id="module-ui-functions" class="level3">
@@ -5707,7 +5882,7 @@ font-style: inherit;">1</span>))]</span>
 </figure>
 </div>
 <div class="callout callout-style-default callout-tip no-icon callout-titled" title="Naming modules">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -5716,7 +5891,7 @@ Naming modules
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.15em; color: #063E23;">
 <p>When creating an app-packages, modules are stored in the <code>R/</code> folder as a single file, typically following a <a href="https://mastering-shiny.org/scaling-modules.html#naming-conventions">naming convention</a> that differentiates modules from the other package functions. The modules in this post use <a href="https://en.wikipedia.org/wiki/Camel_case">camelCase</a>, with suffix variations (i.e., <code>Input</code>/<code>Server</code> and <code>UI</code>/<code>Server</code>) for each functions. Other options come from the <a href="https://thinkr-open.github.io/golem/"><code>golem</code></a> and <a href="https://leprechaun.opifex.org/#/"><code>leprechaun</code></a> packages.</p>
@@ -6147,7 +6322,7 @@ font-style: inherit;">"tests/testthat/test-datasetServer.R"</span>)</span></code
 <span id="cb18-2">datasetServer: dataset$input is NULL </span></code></pre></div></li>
 </ul>
 <div class="callout callout-style-default callout-note no-icon callout-titled" title="Creating test messages with `testServer()`">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -6156,7 +6331,7 @@ Creating test messages with <code>testServer()</code>
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-5" class="callout-5-contents callout-collapse collapse show">
+<div id="callout-4" class="callout-4-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em;">
 <p>The <code>testServer()</code> documentation has <a href="https://shiny.posit.co/r/articles/improve/server-function-testing/">examples</a> of using <code>cat()</code> to create custom messages. I put a function for creating <code>testServer()</code> messages (<code>test_cmt()</code>) in the <a href="https://github.com/mjfrigaard/mstsap/blob/main/tests/testthat/helper.R"><code>helper.R</code></a> file (<a href="https://r-pkgs.org/testing-advanced.html">read more about test helpers here</a>).</p>
@@ -6452,7 +6627,7 @@ font-style: inherit;">"tests/testthat/test-selectVarServer.R"</span>)</span></co
 <h4 class="anchored" data-anchor-id="testing-module-communication">Testing module communication</h4>
 <p>The error message above tells me the issue is originating from the <code>stopifnot()</code> calls in <code>selectVarServer()</code>.</p>
 <div class="callout callout-style-default callout-important no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -6461,7 +6636,7 @@ Updating selectVarServer() and find_vars()
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em;">
 <p>Both <code>selectVarServer()</code> and <code>find_vars()</code> are updated from their original versions to include <code>stopifnot()</code> checks for <code>is.reactive()</code>, <code>is.data.frame()</code> and <code>is.function()</code>:</p>
@@ -10283,7 +10458,7 @@ font-style: inherit;">"lubridate"</span>)))</span></code></pre></div>
   <media:content url="https://mjfrigaard.github.io/posts/debugging/image.png" medium="image" type="image/png" height="168" width="144"/>
 </item>
 <item>
-  <title>How do I test my (non-package) shiny application?</title>
+  <title>Unit tests for (non-package) shiny apps</title>
   <dc:creator>Martin Frigaard</dc:creator>
   <link>https://mjfrigaard.github.io/posts/test-shiny-p2/index.html</link>
   <description><![CDATA[ 
@@ -11141,7 +11316,7 @@ font-style: inherit;">"/path/to/app/tests/testthat/"</span>)</span></code></pre>
   <media:content url="https://mjfrigaard.github.io/posts/test-shiny-p2/image.png" medium="image" type="image/png" height="78" width="144"/>
 </item>
 <item>
-  <title>How do I test shiny utility functions?</title>
+  <title>Unit testing shiny utility functions</title>
   <dc:creator>Martin Frigaard</dc:creator>
   <link>https://mjfrigaard.github.io/posts/test-shiny-p1/index.html</link>
   <description><![CDATA[ 
