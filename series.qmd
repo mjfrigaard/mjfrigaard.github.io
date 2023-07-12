@@ -43,11 +43,17 @@ In summary, use `testthat` for unit testing utility/helper functions, then `test
 
 -   **Unit testing shiny utility functions**: This post covers unit testing a set of utility functions with testthat. You can also read the documentation from the [package website](https://testthat.r-lib.org/), in [R packages](https://r-pkgs.org/testing-basics.html), and in [Mastering Shiny](https://mastering-shiny.org/scaling-testing.html). The app-package for this post is stored in [this Github Repo](https://github.com/mjfrigaard/utap).
 
+    -   [Package website](https://mjfrigaard.github.io/utap/)
+
 -   **Unit tests for (non-package) shiny apps**: Your shiny app *should* be developed as a package, but this isn't always the case. If you'd like to test your application's code *without* converting it to a package, check out the second post ([GitHub repo](https://github.com/mjfrigaard/noap) with the code).
 
 -   **Testing shiny module server functions**: If you've built your shiny application as a package and it contains modules, this post covers **testing module server functions** using the examples from the ['Modules' chapter of Mastering Shiny](https://mastering-shiny.org/scaling-modules.html). The code and examples are in [this GitHub repo](https://github.com/mjfrigaard/mstsap)
 
+    -   [Package website](https://mjfrigaard.github.io/mstsap/)
+
 -   **Testing shiny apps with `shinytest2`**: This post picks up where the previous post left off with the [`shinytest2` package](https://rstudio.github.io/shinytest2/index.html). The app-package used in the examples is stored in [this GitHub repo](https://github.com/mjfrigaard/msst2ap). 
+
+    -   [Package website](https://mjfrigaard.github.io/msst2ap/)
 
 
 
