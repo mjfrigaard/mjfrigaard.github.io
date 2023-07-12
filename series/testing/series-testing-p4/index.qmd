@@ -839,18 +839,29 @@ tests/testthat/
 ```
 
 
-In the new test `test-shinytest2-datasetApp.R` file, I'll start with a call to `testthat::test_that(),` then create a new `app` object with the Chromium headless browser. The namespaced standalone app function can be passed to the first argument of `AppDriver$new()`, followed by the `height` and `weight` (which I've adjusted to fit the `datasetApp()`).
+In the new test `test-shinytest2-datasetApp.R` file, I'll start with a call to `testthat::test_that(),` then create a new `app` object with the Chromium headless browser. 
+
+The namespaced standalone app function can be used to create a `ds_app` object, then `ds_app` is passed to the first argument of `AppDriver$new()` (I've adjusted the `height` and `weight` to fit the `datasetApp()`).
 
 ```{r}
 #| eval: false
 #| echo: true 
 #| code-fold: false
 test_that("{shinytest2}: datasetApp", {
-  app <- AppDriver$new(msst2ap::datasetApp(), height = 600, width = 800)
+  ds_app <- msst2ap::datasetApp()
+  app <- AppDriver$new(app_dir = ds_app, height = 600, width = 800)
 })
 ```
 
 In the **Console**, I can use `app$view()` to open the Chromium browser: 
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+app$view()
+```
+
 
 ::::{.column-body-outset-right}
 
@@ -874,7 +885,8 @@ If I continue to adapt each line in `test-shinytest2.R` to the `datasetApp()`, I
 #| echo: true 
 #| code-fold: false
 test_that("{shinytest2}: datasetApp", {
-  app <- AppDriver$new(msst2ap::datasetApp(), height = 600, width = 800)
+  ds_app <- msst2ap::datasetApp()
+  app <- AppDriver$new(app_dir = ds_app, height = 600, width = 800)
   app$set_inputs(`dataset-dataset` = "attitude")
 })
 ```
@@ -901,7 +913,8 @@ In the previous test, I used the `expect_values()` to capture a list of all the 
 #| echo: true 
 #| code-fold: false
 testthat::test_that("{shinytest2}: datasetApp", {
-  app <- AppDriver$new(msst2ap::datasetApp(), height = 600, width = 800)
+  ds_app <- msst2ap::datasetApp()
+  app <- AppDriver$new(app_dir = ds_app, height = 600, width = 800)
   app$set_inputs(`dataset-dataset` = "attitude")
   app_values <- app$get_values()
 })
@@ -936,7 +949,8 @@ I can narrow the scope of the test by using `app_values` to verify only the `inp
 #| echo: true 
 #| code-fold: false
 testthat::test_that("{shinytest2}: datasetApp", {
-  app <- AppDriver$new(msst2ap::datasetApp(), height = 600, width = 800)
+  ds_app <- msst2ap::datasetApp()
+  app <- AppDriver$new(app_dir = ds_app, height = 600, width = 800)
   app$set_inputs(`dataset-dataset` = "attitude")
   app_values <- app$get_values()
   testthat::expect_equal(
@@ -952,7 +966,8 @@ At the end of the test, I'll add a call [`app$stop()`](https://rstudio.github.io
 #| echo: true 
 #| code-fold: false
 testthat::test_that("{shinytest2}: datasetApp", {
-  app <- AppDriver$new(msst2ap::datasetApp(), height = 600, width = 800)
+  ds_app <- msst2ap::datasetApp()
+  app <- AppDriver$new(app_dir = ds_app, height = 600, width = 800)
   app$set_inputs(`dataset-dataset` = "attitude")
   app_values <- app$get_values()
   testthat::expect_equal(
@@ -1010,7 +1025,7 @@ library(shinytest2)
 
 In the initial run of the test for `datasetApp()`, no snapshot files are generated because the test didn't include a call to `app$export_values()`. 
 
-I see the tests passes:  
+I see this initial test passes:  
 
 ```{bash}
 #| eval: false
@@ -1022,6 +1037,8 @@ I see the tests passes:
 ## Exporting test values 
 
 The `shinytest2` documentation [repeatedly](https://rstudio.github.io/shinytest2/articles/in-depth.html#exported-values) [recommends](https://rstudio.github.io/shinytest2/articles/robust.html#exported-values) exporting test values from shiny applications with `shiny::exportTestValues()`. 
+
+### [`exportTestValues()`]{style="font-size: 1.20em"}
 
 I'll demonstrate exporting test values from `selectVarApp()` by adding the following to the `server` function in `inst/dev/app.R`:
 
@@ -1049,8 +1066,9 @@ I'll demonstrate exporting test values from `selectVarApp()` by adding the follo
   }
 ```
 
+### Using [`system.file()`]{style="font-size: 1.20em"}
 
-After saving, loading and building the package, I'll create the `test-shinytest2-selectVarApp.R` test file and add the initial contents to create the `AppDriver` object:
+After loading, documenting and installing the package, I'll create a `test-shinytest2-selectVarApp.R` test file and add the initial contents to create the `AppDriver` object:
 
 ```{r}
 #| eval: false
@@ -1064,7 +1082,7 @@ testthat::test_that("{shinytest2}: selectVarApp", {
 })
 ```
 
-Note that in this test, I can load the development version of `selectVarApp()` with `system.file()` (this is a similar folder structure to apps built with [`golem`](https://thinkr-open.github.io/golem/articles/a_start.html) and [`leprechaun`](https://leprechaun.opifex.org/#/guide/build) frameworks) 
+Note that to test the development version of `selectVarApp()`, I pass a call to `system.file()` to the `app_dir` argument (this is a similar folder structure to apps built with [`golem`](https://thinkr-open.github.io/golem/articles/a_start.html) and [`leprechaun`](https://leprechaun.opifex.org/#/guide/build) frameworks) 
 
 
 After entering `app$view()` in the **Console**, the application opens in the Chromium headless browser again:
@@ -1090,24 +1108,66 @@ View `selectVarApp()` application with `app$view()`
 
 In the test file, I'll use `app$set_values()` to change the ```` $`data-dataset` ```` and ```` $`var-var` ```` inputs:
 
-```{r}
-#| eval: false
-#| echo: true 
-#| code-fold: false
-testthat::test_that("{shinytest2}: selectVarApp", {
-  app <- AppDriver$new(app_dir = system.file("dev", "selectVarApp",
-                                             package = "msst2ap"),
-                       height = 600, width = 600)
-  
-    app$set_inputs(`data-dataset` = "mtcars")
-    app$set_inputs(`var-var` = "wt")
-    
-})
-```
+-   Change ```` $`data-dataset` ```` to `mtcars`:
+
+    ```{r}
+    #| eval: false
+    #| echo: true 
+    #| code-fold: false
+    testthat::test_that("{shinytest2}: selectVarApp", {
+      app <- AppDriver$new(app_dir = system.file("dev", "selectVarApp",
+                                                 package = "msst2ap"),
+                           height = 600, width = 600)
+      
+        app$set_inputs(`data-dataset` = "mtcars")
+        
+    })
+    ```
 
 
 
-I'll use `app$get_values()` to store the exported `input`/`output`/`export` test values in `app_values`:
+::::{.column-body-outset-right}
+
+::: {#fig-app_view_set_data_selectVarApp layout-ncol=1}
+
+![Set `data-dataset`](app_view_set_data_selectVarApp.png){#fig-app_view_set_data_selectVarApp}
+
+View `selectVarApp()` after setting `data-dataset` with `app$set_inputs()`
+:::
+
+::::
+
+-   Change ```` $`var-var` ```` to `wt`:
+
+    ```{r}
+    #| eval: false
+    #| echo: true 
+    #| code-fold: false
+    testthat::test_that("{shinytest2}: selectVarApp", {
+      app <- AppDriver$new(app_dir = system.file("dev", "selectVarApp",
+                                                 package = "msst2ap"),
+                           height = 600, width = 600)
+      
+        app$set_inputs(`data-dataset` = "mtcars")
+        app$set_inputs(`var-var` = "wt")
+        
+    })
+    ```
+
+::::{.column-body-outset-right}
+
+::: {#fig-app_view_set_var_selectVarApp layout-ncol=1}
+
+![Set `var-var`](app_view_set_var_selectVarApp.png){#fig-app_view_set_var_selectVarApp}
+
+View `selectVarApp()` after setting `var-var` with `app$set_inputs()`
+:::
+
+::::
+
+### [`get_values()`]{style="font-size: 1.20em"} 
+
+I'll use `app$get_values()` to store the exported `input`, `output`, and `export` test values in `app_values`:
 
 ```{r}
 #| eval: false
@@ -1141,6 +1201,8 @@ names(app_values$export)
 #| code-fold: false
 [1] "data" "var" 
 ```
+
+### [`export`]{style="font-size: 1.20em"}ed expectations
 
 I can use `app_values` to verify the structure of each exported object: 
 
@@ -1367,9 +1429,9 @@ View `gghistApp()` application with `app$view()`
 
 ::::
 
-### Expectations
+I'll replicate the [example](https://rstudio.github.io/shinytest2/articles/robust.html#example) from the website using the `gghistApp()`:
 
-I'll replicate the example from the website using the `gghistApp()`:
+### Verify initial [`input`]{style="font-size: 1.20em"}
 
 -   The first expectations in the example test the default `input` values with **`app$get_value(input = )`**:
 
@@ -1380,17 +1442,19 @@ I'll replicate the example from the website using the `gghistApp()`:
       # Verify initial data
       app_init_data <- app$get_value(input = "data-dataset")
       testthat::expect_equal(
-        object = app_init_data, 
+        object = app_init_data,
         expected = "BOD")
     
       # Verify initial variable
       app_init_var <- app$get_value(input = "var-var")
       testthat::expect_equal(
-        object = app_init_var, 
+        object = app_init_var,
         expected = "Time")
     ```
     
--   Next, the expectations check the exported values after changing inputs with `app$set_values()` and **`app$get_value(export = )`**
+### Set and verify [`export`]{style="font-size: 1.20em"}
+    
+-   Next, we check the exported values after changing the inputs with `app$set_values()` and **`app$get_value(export = )`**
 
     ```{r}
     #| eval: false
@@ -1411,7 +1475,7 @@ I'll replicate the example from the website using the `gghistApp()`:
         expected = purrr::as_vector(app_exp_plot_obj_01))
     ```
     
--   The `bins` are set to a new value *after* verifying the exported values with `app$set_values()` and **`app$get_value(input = )`**
+-   The `bins` are also set to a new value with `app$set_inputs()` *after* verifying the exported values:
     
     ```{r}
     #| eval: false
@@ -1425,20 +1489,33 @@ I'll replicate the example from the website using the `gghistApp()`:
         expected = 15)
     ```
     
--   The plot is verified with the exported `hist-plot_obj` and `expect_doppelganger()` from the `vdiffr` package. 
+::::{.column-page-inset-right}
+
+::: {#fig-app_view_set_inputs_gghistApp layout-ncol=1}
+
+![`set_inputs()` and `get_value()` in `gghistApp()` ](app_view_set_inputs_gghistApp.png){#fig-app_view_set_inputs_gghistApp width=100%}
+
+Set `input`s and get `export`ed values in `gghistApp()`
+:::
+
+::::
+    
+### Verify plot with [`vdiffr`]{style="font-size: 1.20em"}
+
+-   Now we verify the plot with the exported `plot_obj` (in the `hist` module) with `expect_doppelganger()` from the `vdiffr` package. 
     
     ```{r}
     #| eval: false
     #| echo: true 
     #| code-fold: false
-    # Verify `hist-plot_obj` changes
-    plot_obj_15 <- app$get_value(export = "hist-plot_obj")
-    vdiffr::expect_doppelganger(
-      title = "hist-plot_obj-15",
-      fig = plot_obj_15)
+      # Verify `hist-plot_obj` changes
+      plot_obj_15 <- app$get_value(export = "hist-plot_obj")
+      vdiffr::expect_doppelganger(
+        title = "hist-plot_obj-15",
+        fig = plot_obj_15)
     ```
     
-    -   I saved the test file and ran the test to confirm the snapshot file was created in `tests/testthat/_snaps/`:
+    -   *I saved the test file and ran the test to confirm the snapshot file was created in `tests/testthat/_snaps/`*:
     
     ```{bash}
     #| eval: false
@@ -1449,6 +1526,10 @@ I'll replicate the example from the website using the `gghistApp()`:
     Adding new file snapshot: 'tests/testthat/_snaps/hist-plot-obj-15.svg'
     [ FAIL 0 | WARN 1 | SKIP 0 | PASS 6 ]
     ```
+    
+### [`set_`, `get_`, `expect_`]{style="font-size: 1.10em"}
+
+The process above is repeated with new values passed to **`app$set_inputs()`** and verified with **`app$get_value(export = )`**:
     
 -   The `x()`, `plot_obj()` and `hist-bins` are updated again with new values: 
 
@@ -1484,14 +1565,14 @@ I'll replicate the example from the website using the `gghistApp()`:
     #| eval: false
     #| echo: true 
     #| code-fold: false
-      # Verify `hist-plot_obj` changes
+      ## Verify updates to `hist-plot_obj`
       plot_obj_12 <- app$get_value(export = "hist-plot_obj")
       vdiffr::expect_doppelganger(
         title = "hist-plot_obj-12",
         fig = plot_obj_12)
     ```
 
--   This initial run of this test will show a warning again as the snapshot file is saved to `tests/testthat/_snaps/`:
+    -   *This initial run of this test will show a warning again as the snapshot file is saved to `tests/testthat/_snaps/`*:
     
     ```{bash}
     #| eval: false
@@ -1545,8 +1626,33 @@ UrbanPop50
 [ FAIL 0 | WARN 0 | SKIP 0 | PASS 10 ]
 ```
 
+The vector in each `plot_obj()` test is printed with `expect_doppelganger()`, but this doesn't interfere with the results. 
+
+I can run `devtools::test()` to run all the tests in `msst2ap`: 
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+devtools::test()
+```
+
 
 ## Recap
 
-This post has covered tests with `shinytest2` for an app-package containing a shiny application with modules. The test recorder simplifies testing specific behaviors, and the `AppDriver` makes it possible to build a set of test expectations iteratively.
+This post has covered creating tests with `testthat` and `shinytest2` for an app-package containing a shiny application (with modules!). As you can see, the test recorder makes it easier to test specific app behaviors, and the `AppDriver` makes it possible to build a set of test expectations iteratively. Other items to consider when writing `shinytest2` tests include: 
+
+1. **Define What to Test**: Since Shiny apps are interactive, so `shinytest2` tests should simulate user interaction as much as possible. The tests should focus on key user interactions and the output they should generate. `shinytest2` provides functions for simulating user clicks, inputs, and other interactions. Not every interaction needs to be tested, but crucial ones and those that handle complex logic should be.
+
+2. **Organize Your Tests & Use Descriptive Test Names**: Organize your tests into separate files based on what they are testing. Each test should have a descriptive name that clarifies what the test is for. Organizing your test files with unambiguous names will make it easier to manage multiple tests, and it will make it easier to understand what's going wrong when a test fails.
+
+3. **Create snapshots for expected outputs**: Use snapshot files to verify that an app's output matches the expected results. `AppDriver$expect_values()` generates `.json` and `.png` snapshot files for the application. The .json file contains `input`, `output`, and `export` values, and the .png file is a *debug* screenshot, which records how the app looked when the values where captured. These files can then be compared to a baseline snapshot.
+
+4. **Export app values**: While snapshot files are great for detecting changes, it's important to remember that "*differences in the captured screenshot will never cause test failures.*" Manually inspecting the snapshot .png files during test development can also be time-consuming and tedious. Wherever possible, export app values and compare them against expected reference values.
+
+In general, `shinytest2` is designed for end-to-end testing of shiny applications. These tests can capture the state of a shiny app (input, output, and exported values) during user interactions and compare them with a previous state (i.e., snapshots), which is useful for regression testing. 
+
+`shinytest2` tests can also simulate user interaction in a way that `shiny::testServer()` tests can't, such as waiting for reactive outputs to update after the input changes, clicking on action buttons, etc. `shinytest2` can also be resource-intensive, so it's recommended to write these tests after you've completed the standard `testthat` unit tests and `testServer()` tests.
+
+
 

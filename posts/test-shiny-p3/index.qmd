@@ -1,5 +1,5 @@
 ---
-title: "How do I test shiny modules?" 
+title: "Testing shiny module server functions" 
 subtitle: "Part 3: Using testthat and testServer()"
 author: "Martin Frigaard"
 date: "2023-06-20"
@@ -96,7 +96,7 @@ This is the third post in a [series on testing](https://mjfrigaard.github.io/ser
 #| label: co_box_dev
 #| echo: false
 #| results: asis
-#| eval: true
+#| eval: false
 co_box(color = "r", 
   header = "STATUS: Under Development", 
   contents = "This post is currently under development. Thank you for your patience!")
@@ -115,7 +115,7 @@ Shiny functions pose a couple of unique challenges for testing. First, we can't 
 
 ## Shiny app-package
 
-`testthat` is designed to work within an R package, so I've put together the [`mstsap`](https://github.com/mjfrigaard/mstsap), (i.e., a **M**astering **S**hiny **t**est**S**erver **a**pp-**p**ackage) to demonstrate writing tests with `testServer()`. The functions, modules, and applications in `mstsap` come from the [Shiny Modules chapter](https://mastering-shiny.org/scaling-modules.html) of Mastering Shiny. Specifically, sections [19.3](https://mastering-shiny.org/scaling-modules.html#inputs-and-outputs) through [19.3.4](https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules). If you haven't read this chapter--start there. 
+`testthat` is designed to work within an R package, so I've put together the [`mstsap`](https://mjfrigaard.github.io/mstsap/index.html), (i.e., a **M**astering **S**hiny **t**est**S**erver **a**pp-**p**ackage) to demonstrate writing tests with `testServer()`. The functions, modules, and applications in `mstsap` come from the [Shiny Modules chapter](https://mastering-shiny.org/scaling-modules.html) of Mastering Shiny. Specifically, sections [19.3](https://mastering-shiny.org/scaling-modules.html#inputs-and-outputs) through [19.3.4](https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules). If you haven't read this chapter--start there. 
 
 ```{r}
 #| eval: true 

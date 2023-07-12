@@ -9,7 +9,7 @@
 <meta name="author" content="Martin Frigaard">
 <meta name="dcterms.date" content="2023-06-20">
 
-<title>@mjfrigaard - How do I test shiny modules?</title>
+<title>@mjfrigaard - Testing shiny module server functions</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -97,7 +97,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
 
-<meta name="twitter:title" content="@mjfrigaard - How do I test shiny modules?">
+<meta name="twitter:title" content="@mjfrigaard - Testing shiny module server functions">
 <meta name="twitter:description" content="Part 3: Using testthat and testServer()">
 <meta name="twitter:image" content="https://mjfrigaard.github.io/posts/test-shiny-p3/image.png">
 <meta name="twitter:image-height" content="749">
@@ -164,7 +164,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">How do I test shiny modules?</h1>
+      <h1 class="title">Testing shiny module server functions</h1>
             <p class="subtitle lead">Part 3: Using testthat and testServer()</p>
                                 <div class="quarto-categories">
                 <div class="quarto-category">shiny</div>
@@ -256,24 +256,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <p>This is the third post in a <a href="https://mjfrigaard.github.io/series.html">series on testing</a> shiny applications. I’ll cover testing shiny module server functions using the <a href="https://testthat.r-lib.org/"><code>testhat</code> package</a> and shiny’s <a href="https://shiny.rstudio.com/reference/shiny/1.7.0/testserver"><code>testServer()</code> function</a>.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-STATUS: Under Development
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
-<div class="callout-body-container callout-body">
-<div style="font-size: 1.10em; font-weight: bold; color: #696969;">
-<p>This post is currently under development. Thank you for your patience!</p>
-</div>
-</div>
-</div>
-</div>
 <section id="testing-shiny-modules" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="testing-shiny-modules">Testing shiny modules</h2>
 
@@ -284,14 +266,14 @@ STATUS: Under Development
 </section>
 <section id="shiny-app-package" class="level2">
 <h2 class="anchored" data-anchor-id="shiny-app-package">Shiny app-package</h2>
-<p><code>testthat</code> is designed to work within an R package, so I’ve put together the <a href="https://github.com/mjfrigaard/mstsap"><code>mstsap</code></a>, (i.e., a <strong>M</strong>astering <strong>S</strong>hiny <strong>t</strong>est<strong>S</strong>erver <strong>a</strong>pp-<strong>p</strong>ackage) to demonstrate writing tests with <code>testServer()</code>. The functions, modules, and applications in <code>mstsap</code> come from the <a href="https://mastering-shiny.org/scaling-modules.html">Shiny Modules chapter</a> of Mastering Shiny. Specifically, sections <a href="https://mastering-shiny.org/scaling-modules.html#inputs-and-outputs">19.3</a> through <a href="https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules">19.3.4</a>. If you haven’t read this chapter–start there.</p>
+<p><code>testthat</code> is designed to work within an R package, so I’ve put together the <a href="https://mjfrigaard.github.io/mstsap/index.html"><code>mstsap</code></a>, (i.e., a <strong>M</strong>astering <strong>S</strong>hiny <strong>t</strong>est<strong>S</strong>erver <strong>a</strong>pp-<strong>p</strong>ackage) to demonstrate writing tests with <code>testServer()</code>. The functions, modules, and applications in <code>mstsap</code> come from the <a href="https://mastering-shiny.org/scaling-modules.html">Shiny Modules chapter</a> of Mastering Shiny. Specifically, sections <a href="https://mastering-shiny.org/scaling-modules.html#inputs-and-outputs">19.3</a> through <a href="https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules">19.3.4</a>. If you haven’t read this chapter–start there.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># to get the mstsap package used in this post:</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>renv<span class="sc">::</span><span class="fu">install</span>(<span class="st">"mjfrigaard/mstsap"</span>, <span class="at">prompt =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mstsap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="callout callout-style-default callout-tip no-icon callout-titled" title="Why create an app-package?">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -300,7 +282,7 @@ Why create an app-package?
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em;">
 <p>A shiny app-package is a shiny application that’s been developed as (or converted to) an R package. The benefits of storing shiny apps in R packages have been <a href="https://mastering-shiny.org/scaling-packaging.html">well</a> <a href="https://engineering-shiny.org/structuring-project.html#shiny-app-as-a-package">documented</a>, but I’ll summarize just a few that are specific to testing:</p>
@@ -354,7 +336,7 @@ Why create an app-package?
 </blockquote>
 <p>Modules can also be broken into discrete ‘units of work’ with expected ‘end results.’ However, the ‘unit of work’ for a shiny module is usually accomplished using a combination of three functions: a module UI function, a module server function, and any helper/utility functions.</p>
 <div class="callout callout-style-default callout-tip no-icon callout-titled" title="Shiny module refresher">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -363,7 +345,7 @@ Shiny module refresher
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>Module UI functions typically wrap the layout, input, and output functions in <code>tagList()</code>. Module server functions contain the ‘backend’ code that typically goes in a shiny <code>server</code> function. Both the UI and server module functions are linked by an <code>id</code> argument, which is created using <code>NS()</code> (namespace) in the UI function, and called in the server function with <code>moduleServer()</code>.</p>
 <section id="module-ui-functions" class="level3">
@@ -559,7 +541,7 @@ Shiny module refresher
 </figure>
 </div>
 <div class="callout callout-style-default callout-tip no-icon callout-titled" title="Naming modules">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -568,7 +550,7 @@ Naming modules
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.15em; color: #063E23;">
 <p>When creating an app-packages, modules are stored in the <code>R/</code> folder as a single file, typically following a <a href="https://mastering-shiny.org/scaling-modules.html#naming-conventions">naming convention</a> that differentiates modules from the other package functions. The modules in this post use <a href="https://en.wikipedia.org/wiki/Camel_case">camelCase</a>, with suffix variations (i.e., <code>Input</code>/<code>Server</code> and <code>UI</code>/<code>Server</code>) for each functions. Other options come from the <a href="https://thinkr-open.github.io/golem/"><code>golem</code></a> and <a href="https://leprechaun.opifex.org/#/"><code>leprechaun</code></a> packages.</p>
@@ -869,7 +851,7 @@ Naming modules
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>datasetServer: dataset$input is NULL </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
 </ul>
 <div class="callout callout-style-default callout-note no-icon callout-titled" title="Creating test messages with `testServer()`">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -878,7 +860,7 @@ Creating test messages with <code>testServer()</code>
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-5" class="callout-5-contents callout-collapse collapse show">
+<div id="callout-4" class="callout-4-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em;">
 <p>The <code>testServer()</code> documentation has <a href="https://shiny.posit.co/r/articles/improve/server-function-testing/">examples</a> of using <code>cat()</code> to create custom messages. I put a function for creating <code>testServer()</code> messages (<code>test_cmt()</code>) in the <a href="https://github.com/mjfrigaard/mstsap/blob/main/tests/testthat/helper.R"><code>helper.R</code></a> file (<a href="https://r-pkgs.org/testing-advanced.html">read more about test helpers here</a>).</p>
@@ -1002,7 +984,7 @@ Creating test messages with <code>testServer()</code>
 <h4 class="anchored" data-anchor-id="testing-module-communication">Testing module communication</h4>
 <p>The error message above tells me the issue is originating from the <code>stopifnot()</code> calls in <code>selectVarServer()</code>.</p>
 <div class="callout callout-style-default callout-important no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1011,7 +993,7 @@ Updating selectVarServer() and find_vars()
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em;">
 <p>Both <code>selectVarServer()</code> and <code>find_vars()</code> are updated from their original versions to include <code>stopifnot()</code> checks for <code>is.reactive()</code>, <code>is.data.frame()</code> and <code>is.function()</code>:</p>
