@@ -35,7 +35,7 @@ pkgs <- c("AsioHeaders", "askpass", "assertthat", "attempt", "backports",
 
 pak::pkg_install(pkgs)  
 
-pak::pkg_install("mjfrigaard/utap")
-pak::pkg_install("mjfrigaard/dbap")
-pak::pkg_install("mjfrigaard/tsap")
-pak::pkg_install("mjfrigaard/st2ap")
+# pak::pkg_install("mjfrigaard/utap")
+# pak::pkg_install("mjfrigaard/dbap")
+# pak::pkg_install("mjfrigaard/tsap")
+# pak::pkg_install("mjfrigaard/st2ap")
