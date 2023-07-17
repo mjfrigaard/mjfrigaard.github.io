@@ -1,9 +1,9 @@
 ---
-title: "Creating a shiny app-package"
-subtitle: "Building a shiny app-package with `devtools` & `usethis`"
+title: "leprechaun shiny app-packages"
+subtitle: "Building a `golem`-light shiny app-package: whole-game"
 author: "Martin Frigaard"
-date: "2023-05-01"
-categories: [shiny, golem, packages]
+date: "2023-07-20"
+categories: [shiny, leprechaun]
 image: "image.png"
 
 callout-icon: false
@@ -73,3 +73,21 @@ co_box <- function(color, header, contents = "Your text") {
   )
 }
 ```
+
+This post is another walk-through of a shiny application using the  [`leprechaun` framework](https://leprechaun.opifex.org/#/). `leprechaun` apps are lightweight [`golem` apps](https://golemverse.org/), "*this means applications are leaner, and smaller; hence the name 'leprechaun.'*"--I'll go through developing a `leprechaun` shiny app-package (and how it's different from `golem` and regular (`devtools`) app-packages).
+
+```{r}
+#| eval: false 
+#| message: false 
+#| warning: false 
+#| results: hide
+#| code-fold: false
+install.packages("remotes")
+remotes::install_github("devOpifex/leprechaun")
+```
+
+For consistency, I'll be using the application from the RStudio's [Building Web Applications with Shiny](https://rstudio-education.github.io/shiny-course/) course. These materials are a great resource if you're new to shiny--even if you're aren't, it's still worth checking out--plus it's free!
+
+::: {.column-margin}
+![](image.png){width=70%}
+:::
