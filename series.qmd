@@ -9,6 +9,14 @@ listing:
     filter-ui: false
     fields: [title, date]
     table-striped: true
+  - id: shiny-frameworks
+    contents: series/shiny-frameworks
+    type: table
+    sort: "date asc"
+    sort-ui: false
+    filter-ui: false
+    fields: [title, date]
+    table-striped: true
     
 page-layout: full
 title-block-banner: false
@@ -16,11 +24,11 @@ execute:
     freeze: auto
 ---
 
-## Testing shiny applications
+## Testing shiny apps
 
 These posts focus on testing shiny applications with `testthat`, `shiny::testServer()`, and `shinytest2`. 
 
-:::: {.callout-note collapse="false" title="Types of tests"}
+:::: {.callout-note collapse="true" title="Types of tests"}
 
 ::: {style="font-size: 1.10em"}
 
@@ -39,7 +47,11 @@ In summary, use `testthat` for unit testing utility/helper functions, then `test
 ::: {#testing}
 :::
 
-### Posts
+
+:::: {.callout-tip collapse="true" title="Post details"}
+
+::: {style="font-size: 1.10em"}
+
 
 -   **Unit testing shiny utility functions**: This post covers unit testing a set of utility functions with testthat. You can also read the documentation from the [package website](https://testthat.r-lib.org/), in [R packages](https://r-pkgs.org/testing-basics.html), and in [Mastering Shiny](https://mastering-shiny.org/scaling-testing.html). The app-package for this post is stored in [this Github Repo](https://github.com/mjfrigaard/utap).
 
@@ -55,5 +67,14 @@ In summary, use `testthat` for unit testing utility/helper functions, then `test
 
     -   [Package website](https://mjfrigaard.github.io/msst2ap/)
 
+:::
+
+::::
 
 
+## Shiny frameworks
+
+This series covers building shiny app-packages [`devtools`](https://mastering-shiny.org/scaling-packaging.html) and other popular shiny frameworks ([`golem`](https://thinkr-open.github.io/golem/), [`rhino`](https://appsilon.github.io/rhino/), and [`leprechaun`](https://leprechaun.opifex.org/#/)).
+
+::: {#shiny-frameworks}
+:::
