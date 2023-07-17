@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.353">
+<meta name="generator" content="quarto-1.3.433">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -92,7 +92,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 
@@ -282,7 +283,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"glue"</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="do">## The downloaded binary packages are in</span></span>
@@ -297,7 +298,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>name <span class="ot">&lt;-</span> <span class="st">"Fred"</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">glue</span>(<span class="st">'My name is {name}.'</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Error in glue("My name is {name}."): could not find function "glue"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -309,7 +310,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>name <span class="ot">&lt;-</span> <span class="st">"Fred"</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">'My name is {name}.'</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="do">## My name is Fred.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -320,7 +321,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>base<span class="sc">::</span><span class="fu">search</span>()</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] ".GlobalEnv"        "package:stats"     "package:graphics" </span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [4] "package:grDevices" "package:utils"     "package:datasets" </span></span>
@@ -332,7 +333,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glue)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>base<span class="sc">::</span><span class="fu">search</span>()</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] ".GlobalEnv"        "package:glue"      "package:stats"    </span></span>
@@ -360,7 +361,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>my_name <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  name <span class="ot">&lt;-</span> x</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">'My name is {name}.'</span>)</span>
@@ -374,7 +375,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#' Introduce yourself </span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param x a name </span></span>
@@ -399,7 +400,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#' Introduce yourself </span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param x a name </span></span>
@@ -520,7 +521,7 @@ Nothing to list
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pkg/</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">└──</span> pkg.Rproj</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -567,7 +568,7 @@ Nothing to list
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> box </span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">touch</span> box/fun.R</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
@@ -577,7 +578,7 @@ Nothing to list
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pkg/</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">├──</span> box</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">│</span>    └── fun.R</span>
@@ -597,7 +598,7 @@ Nothing to list
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># box/fun.R</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co">#' @export</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>box<span class="sc">::</span><span class="fu">use</span>(</span>
@@ -611,7 +612,7 @@ Nothing to list
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>box<span class="sc">::</span><span class="fu">use</span>(box<span class="sc">/</span>fun)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
@@ -620,14 +621,14 @@ Nothing to list
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># print</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>fun</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>module: <span class="ex">box/fun</span><span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
@@ -640,7 +641,7 @@ Nothing to list
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># use </span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="st">"module"</span></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>fun<span class="sc">$</span><span class="fu">glue</span>(<span class="st">'This is a box {x}.'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -648,7 +649,7 @@ Nothing to list
 </div>
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">This</span> is a box module.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
@@ -699,7 +700,7 @@ Nothing to list
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># import</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>box<span class="sc">::</span><span class="fu">use</span>(box<span class="sc">/</span>import)</span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(import<span class="sc">$</span><span class="fu">get_raw_csv</span>(), <span class="at">give.attr =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -709,7 +710,7 @@ Nothing to list
 <div style="font-size: 0.75em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">spc_tbl_</span> [344 × 17] <span class="er">(</span><span class="ex">S3:</span> spec_tbl_df/tbl_df/tbl/data.frame<span class="kw">)</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> studyName          : chr <span class="pp">[</span><span class="ss">1:344</span><span class="pp">]</span> <span class="st">"PAL0708"</span> <span class="st">"PAL0708"</span> <span class="st">"PAL0708"</span> <span class="st">"PAL0708"</span> ...</span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> Sample Number      : num <span class="pp">[</span><span class="ss">1:344</span><span class="pp">]</span> 1 2 3 4 5 6 7 8 9 10 ...</span>
@@ -754,7 +755,7 @@ Nothing to list
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># import</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>box<span class="sc">::</span><span class="fu">use</span>(box<span class="sc">/</span>import)</span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(import<span class="sc">$</span><span class="fu">raw</span>(), <span class="at">give.attr =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -764,7 +765,7 @@ Nothing to list
 <div style="font-size: 0.75em;">
 <div class="cell">
 <details>
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="ex">spc_tbl_</span> [344 × 17] <span class="er">(</span><span class="ex">S3:</span> spec_tbl_df/tbl_df/tbl/data.frame<span class="kw">)</span></span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> studyName          : chr <span class="pp">[</span><span class="ss">1:344</span><span class="pp">]</span> <span class="st">"PAL0708"</span> <span class="st">"PAL0708"</span> <span class="st">"PAL0708"</span> <span class="st">"PAL0708"</span> ...</span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> Sample Number      : num <span class="pp">[</span><span class="ss">1:344</span><span class="pp">]</span> 1 2 3 4 5 6 7 8 9 10 ...</span>
@@ -914,7 +915,7 @@ Nothing to list
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot</span></span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>box<span class="sc">::</span><span class="fu">use</span>(box<span class="sc">/</span>plot)</span>
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>plot<span class="sc">$</span><span class="fu">scatter</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -930,7 +931,7 @@ Nothing to list
 <div style="font-size: 1.10em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pengbox/</span></span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">├──</span> box</span>
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">│</span>   ├── import.R</span>
@@ -1019,7 +1020,7 @@ imports ‘pkg’ with alias for ‘foo’ (‘my_foo’) and attaches all expor
 <div style="font-size: 1.10em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pengbox/</span></span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">├──</span> box</span>
 <span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">│</span>   └── graph</span>
@@ -1043,7 +1044,7 @@ imports ‘pkg’ with alias for ‘foo’ (‘my_foo’) and attaches all expor
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pengbox/box/graph/wrangle/clean/import</span></span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>                                    <span class="ex">└──</span> raw.R</span>
 <span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1084,7 +1085,7 @@ imports ‘pkg’ with alias for ‘foo’ (‘my_foo’) and attaches all expor
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># in use.R</span></span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>box<span class="sc">::</span><span class="fu">use</span>(box<span class="sc">/</span>graph<span class="sc">/</span>wrangle<span class="sc">/</span>clean<span class="sc">/</span>import<span class="sc">/</span>raw)</span>
 <span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(raw<span class="sc">$</span><span class="fu">csv</span>(), <span class="at">give.attr =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1125,7 +1126,7 @@ imports ‘pkg’ with alias for ‘foo’ (‘my_foo’) and attaches all expor
 <div style="font-size: 1.10em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="ex">box/graph/wrangle/</span></span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>              <span class="ex">├──</span> clean</span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>              <span class="ex">│</span>   ├── <span class="co">#import</span></span>
@@ -1209,7 +1210,7 @@ imports ‘pkg’ with alias for ‘foo’ (‘my_foo’) and attaches all expor
 <div style="font-size: 1.10em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="ex">box/graph/wrangle/</span></span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>            <span class="ex">├──</span> <span class="co">#clean</span></span>
 <span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>            <span class="ex">│</span>   <span class="co">#├── #import</span></span>
@@ -1265,7 +1266,7 @@ imports ‘pkg’ with alias for ‘foo’ (‘my_foo’) and attaches all expor
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># in run.R</span></span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="co"># wrangle variables </span></span>
 <span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>box<span class="sc">::</span><span class="fu">use</span>(box<span class="sc">/</span>graph<span class="sc">/</span>wrangle<span class="sc">/</span>vars)</span>
