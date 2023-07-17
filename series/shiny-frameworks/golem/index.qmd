@@ -1,8 +1,8 @@
 ---
-title: "Creating shiny app-packages (`golem`)"
-subtitle: "Building a `golem` app-package: whole-game"
+title: "golem shiny app-packages"
+subtitle: "Building a production-grade shiny app: whole-game"
 author: "Martin Frigaard"
-date: "2023-05-01"
+date: "2023-06-01"
 categories: [shiny, golem, packages]
 image: "image.png"
 
@@ -55,7 +55,7 @@ co_box <- function(color, header, contents = "Your text") {
       "\n",
       ":::: {.callout-", class, " collapse='false'}", "\n\n",
       "## ", header, "\n\n",
-      "::: {style='font-size: 1.05em; color: #696969;'}\n\n",
+      "::: {style='font-size: 1.05em; font-style: italic; color: #696969;'}\n\n",
       glue::glue_collapse(contents), "\n\n",
       "::: \n\n",
       "::::", "\n"
@@ -131,7 +131,11 @@ For consistency, I'll be using the application from the RStudio's [Building Web 
 
 The [golem text](https://engineering-shiny.org/) is also a fantastic resource, but I found myself using the [`golem` website](https://thinkr-open.github.io/golem/) as a great 'quick reference.' If you're unfamiliar with R package development, I recommend bookmarking [R packages](https://r-pkgs.org/)--this is a great resource you'll return to often. 
 
- 
+
+::: {.column-margin}
+![](image.png){width=70%}
+:::
+
 ## Outline
 
 I've organized the app-package development process into three areas: **Start**, **Build**, and **Use**. 
@@ -1454,11 +1458,17 @@ The functions in `golem_utils_ui.R` and `golem_utils_server.R` are created with 
 
 #### [`Documentation`]{style="font-size: 1.10em"}
 
+
 R package vignettes contain high-level, long-form documentation for your package. These R Markdown documents combine narrative text and code that describe how the 'parts' (functions, data, etc.) of the package behave. In app-packages, vignettes might included the following information:
 
-::: {layout-ncol=2}
+
+For `shiny` app-packages, the following types of documentation might be included in the vignettes:
+
+:::: {layout-ncol=2}
 
 #### 
+
+:::{style="font-size: 0.85em"}
 
 1. Introduction to the package   
 
@@ -1472,7 +1482,13 @@ R package vignettes contain high-level, long-form documentation for your package
 
 6. Data preparation
 
+
 ####
+
+:::
+
+### 
+
 
 7. Troubleshooting
 
@@ -1486,7 +1502,12 @@ R package vignettes contain high-level, long-form documentation for your package
 
 :::
 
+
 To create a new vignette in your package, run:
+
+::::
+
+To create a new vignette, run `usethis::use_vignette("NAME OF VIGNETTE")`:
 
 ```{r}
 #| eval: false
@@ -1508,6 +1529,7 @@ usethis::use_vignette("gap")
 • Modify 'vignettes/gap.Rmd'
 ```
 
+
 The vignette file opens with the title matching the argument passed to `use_vignette()`. To build the vignettes in your package, run: 
 
 
@@ -1518,7 +1540,23 @@ devtools::build_vignettes()
 ```
 
 
+
 #### [`Code Coverage`]{style="font-size: 1.10em"}
+
+```{r}
+#| label: golem_R_documentation
+#| eval: true
+#| echo: false
+#| results: asis
+co_box(color = "g", "`golem` package vignettes", contents = "
+As described in ['Rmd, Vignettes, and documentation first'](https://engineering-shiny.org/building-ispum-app.html#rmd-vignettes-and-documentation-first), R markdown vignettes are a perfect sandbox for building and testing shiny apps. 
+  
+> 'the good news is that when checking a package, i.e. when running `check()` from `devtools` (Wickham, Hester, and Chang 2020) or `R CMD check`, the Vignettes are going to be built, and the process will fail if at least one of the Vignettes fails to render. That way, you can use the documentation of the back-end as an extra tool for doing unit testing!'
+> 
+> 'One radical approach to the 'Rmd first' philosophy is to write everything in an Rmd from the very beginning of your project: write the function code, their roxygen tags, their tests, etc., then move everything to the correct spot in the package infrastructure once you are happy with everything. And of course, when you need to add another feature to your app, open a new markdown and start the process of development and documentation again'
+  ")
+```
+
 
 Test code coverage measures the extent to which the test cases cover the possible execution paths in the package codebase--its a way to ensure that the tests are robust enough to verify that the code behaves as expected.
 
@@ -1549,11 +1587,19 @@ Install `covrpage` using the following:
 #| eval: false
 #| code-fold: false
 # install.packages("remotes")
-remotes::install_github('yonicd/covrpage')
+# remotes::install_github('yonicd/covrpage', 
+#   force = TRUE, quiet = TRUE)
 library(covrpage)
 ```
 
-To use `covrpage`, run the following 
+To use `covrpage`, run the following: 
+
+```{r}
+#| eval: false
+#| code-fold: false
+covrpage::covrpage()
+```
+
 
 ```{r}
 #| eval: false 

@@ -89,6 +89,34 @@ ul.task-list li input[type="checkbox"] {
       window['quarto-listing-loaded']();
     }
   })
+  
+
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    const listingTargetEl = window.document.querySelector('#listing-shiny-frameworks .list');
+    if (!listingTargetEl) {
+      // No listing discovered, do not attach.
+      return; 
+    }
+
+    const options = {
+      valueNames: ['listing-title','listing-date',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-title-sort'] }],
+      
+      searchColumns: ["listing-date","listing-title","listing-author"],
+    };
+
+    window['quarto-listings'] = window['quarto-listings'] || {};
+    window['quarto-listings']['listing-shiny-frameworks'] = new List('listing-shiny-frameworks', options);
+
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  });
+
+  window.addEventListener('hashchange',() => {
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  })
   </script>
 
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
@@ -162,10 +190,8 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Contents</h2>
    
   <ul>
-  <li><a href="#testing-shiny-applications" id="toc-testing-shiny-applications" class="nav-link active" data-scroll-target="#testing-shiny-applications">Testing shiny applications</a>
-  <ul>
-  <li><a href="#posts" id="toc-posts" class="nav-link" data-scroll-target="#posts">Posts</a></li>
-  </ul></li>
+  <li><a href="#testing-shiny-apps" id="toc-testing-shiny-apps" class="nav-link active" data-scroll-target="#testing-shiny-apps">Testing shiny apps</a></li>
+  <li><a href="#shiny-frameworks" id="toc-shiny-frameworks" class="nav-link" data-scroll-target="#shiny-frameworks">Shiny frameworks</a></li>
   </ul>
 </nav>
 </nav>
@@ -193,11 +219,11 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<section id="testing-shiny-applications" class="level2">
-<h2 class="anchored" data-anchor-id="testing-shiny-applications">Testing shiny applications</h2>
+<section id="testing-shiny-apps" class="level2">
+<h2 class="anchored" data-anchor-id="testing-shiny-apps">Testing shiny apps</h2>
 <p>These posts focus on testing shiny applications with <code>testthat</code>, <code>shiny::testServer()</code>, and <code>shinytest2</code>.</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled" title="Types of tests">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -206,7 +232,7 @@ Types of tests
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em">
 <ul>
@@ -272,8 +298,19 @@ Date
 No matching items
 </div>
 </div>
-<section id="posts" class="level3">
-<h3 class="anchored" data-anchor-id="posts">Posts</h3>
+<div class="callout callout-style-default callout-tip no-icon callout-titled" title="Post details">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Post details
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em">
 <ul>
 <li><p><strong>Unit testing shiny utility functions</strong>: This post covers unit testing a set of utility functions with testthat. You can also read the documentation from the <a href="https://testthat.r-lib.org/">package website</a>, in <a href="https://r-pkgs.org/testing-basics.html">R packages</a>, and in <a href="https://mastering-shiny.org/scaling-testing.html">Mastering Shiny</a>. The app-package for this post is stored in <a href="https://github.com/mjfrigaard/utap">this Github Repo</a>.</p>
 <ul>
@@ -289,10 +326,70 @@ No matching items
 <li><a href="https://mjfrigaard.github.io/msst2ap/">Package website</a></li>
 </ul></li>
 </ul>
-
-
-
+</div>
+</div>
+</div>
+</div>
 </section>
+<section id="shiny-frameworks" class="level2">
+<h2 class="anchored" data-anchor-id="shiny-frameworks">Shiny frameworks</h2>
+<p>This series covers building shiny app-packages <a href="https://mastering-shiny.org/scaling-packaging.html"><code>devtools</code></a> and other popular shiny frameworks (<a href="https://thinkr-open.github.io/golem/"><code>golem</code></a>, <a href="https://appsilon.github.io/rhino/"><code>rhino</code></a>, and <a href="https://leprechaun.opifex.org/#/"><code>leprechaun</code></a>).</p>
+<div id="listing-shiny-frameworks" class="quarto-listing quarto-listing-container-table">
+
+<table class="quarto-listing-table table table-striped">
+<thead>
+<tr>
+<th>
+Title
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody class="list">
+<tr data-index="0" data-categories="shiny,golem,packages" data-listing-date-sort="1682924400000" data-listing-file-modified-sort="1689193766946" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-title-sort="Creating a shiny app-package" data-listing-filename-sort="index.qmd">
+<td>
+<a href="./series/shiny-frameworks/devtools/index.html" class="title listing-title">Creating a shiny app-package</a>
+</td>
+<td>
+<span class="listing-date">May 1, 2023</span>
+</td>
+</tr>
+<tr data-index="1" data-categories="shiny,golem,packages" data-listing-date-sort="1685602800000" data-listing-file-modified-sort="1689227573219" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="46" data-listing-title-sort="golem shiny app-packages" data-listing-filename-sort="index.qmd">
+<td>
+<a href="./series/shiny-frameworks/golem/index.html" class="title listing-title">golem shiny app-packages</a>
+</td>
+<td>
+<span class="listing-date">Jun 1, 2023</span>
+</td>
+</tr>
+<tr data-index="2" data-categories="shiny,rhino" data-listing-date-sort="1688194800000" data-listing-file-modified-sort="1689193918658" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-title-sort="rhino shiny apps" data-listing-filename-sort="index.qmd">
+<td>
+<a href="./series/shiny-frameworks/rhino/index.html" class="title listing-title">rhino shiny apps</a>
+</td>
+<td>
+<span class="listing-date">Jul 1, 2023</span>
+</td>
+</tr>
+<tr data-index="3" data-categories="shiny,leprechaun" data-listing-date-sort="1689836400000" data-listing-file-modified-sort="1689193878458" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-title-sort="leprechaun shiny app-packages" data-listing-filename-sort="index.qmd">
+<td>
+<a href="./series/shiny-frameworks/leprechaun/index.html" class="title listing-title">leprechaun shiny app-packages</a>
+</td>
+<td>
+<span class="listing-date">Jul 20, 2023</span>
+</td>
+</tr>
+</tbody>
+
+</table>
+<div class="listing-no-matching d-none">
+No matching items
+</div>
+</div>
+
+
+
 </section>
 
 </main> <!-- /main -->

@@ -1,9 +1,9 @@
 ---
-title: "Creating a shiny app-package"
-subtitle: "Building a shiny app-package with `devtools` & `usethis`"
+title: "rhino shiny apps"
+subtitle: "Building a `rhino` shiny app with `box` modules: whole-game"
 author: "Martin Frigaard"
-date: "2023-05-01"
-categories: [shiny, golem, packages]
+date: "2023-07-01"
+categories: [shiny, rhino]
 image: "image.png"
 
 callout-icon: false
@@ -73,3 +73,21 @@ co_box <- function(color, header, contents = "Your text") {
   )
 }
 ```
+
+This post is another walk-through of a shiny application using the  [`rhino` framework](https://appsilon.github.io/rhino/index.html). `rhino` is designed to, '*Build high quality, enterprise-grade Shiny apps at speed.'*--I'll go through developing a rhino shiny app (and how it's different from other app-packages).
+
+```{r}
+#| eval: false 
+#| message: false 
+#| warning: false 
+#| results: hide
+#| code-fold: false
+install.packages("remotes")
+remotes::install_github("Appsilon/rhino")
+```
+
+For consistency, I'll be using the application from the RStudio's [Building Web Applications with Shiny](https://rstudio-education.github.io/shiny-course/) course. These materials are a great resource if you're new to shiny--even if you're aren't, it's still worth checking out--plus it's free!
+
+::: {.column-margin}
+![](image.png){width=70%}
+:::
