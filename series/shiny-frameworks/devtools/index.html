@@ -9,7 +9,7 @@
 <meta name="author" content="Martin Frigaard">
 <meta name="dcterms.date" content="2023-05-01">
 
-<title>@mjfrigaard - Creating a shiny app-packages</title>
+<title>@mjfrigaard - Creating a shiny app-package</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -21,6 +21,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -63,11 +97,11 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
-<meta name="twitter:title" content="@mjfrigaard - Creating a shiny app-packages">
+<meta name="twitter:title" content="@mjfrigaard - Creating a shiny app-package">
 <meta name="twitter:description" content="Building a shiny app-package with devtools &amp; usethis">
 <meta name="twitter:image" content="https://mjfrigaard.github.io/series/shiny-frameworks/devtools/image.png">
-<meta name="twitter:image-height" content="708">
-<meta name="twitter:image-width" content="1820">
+<meta name="twitter:image-height" content="1142">
+<meta name="twitter:image-width" content="2040">
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
@@ -130,18 +164,102 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
-    
+    <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#why-an-app-package" id="toc-why-an-app-package" class="nav-link active" data-scroll-target="#why-an-app-package">Why an app-package?</a>
+  <ul>
+  <li><a href="#what-makes-a-package" id="toc-what-makes-a-package" class="nav-link" data-scroll-target="#what-makes-a-package">What makes a package?</a>
+  <ul>
+  <li><a href="#initial-.rproj-file" id="toc-initial-.rproj-file" class="nav-link" data-scroll-target="#initial-.rproj-file">Initial <span style="font-size: 1.10em"><code>.Rproj</code></span> file</a></li>
+  <li><a href="#r-description" id="toc-r-description" class="nav-link" data-scroll-target="#r-description"><span style="font-size: 1.10em"><code>R/</code></span> &amp; <span style="font-size: 1.10em"><code>DESCRIPTION</code></span></a></li>
+  <li><a href="#package-.rproj-file" id="toc-package-.rproj-file" class="nav-link" data-scroll-target="#package-.rproj-file">Package <span style="font-size: 1.10em"><code>.Rproj</code></span> file</a></li>
+  <li><a href="#what-happened-to-rutils.r" id="toc-what-happened-to-rutils.r" class="nav-link" data-scroll-target="#what-happened-to-rutils.r">What happened to <code>R/utils.R</code>?</a></li>
+  </ul></li>
+  <li><a href="#recap" id="toc-recap" class="nav-link" data-scroll-target="#recap">Recap</a></li>
+  </ul></li>
+  <li><a href="#start" id="toc-start" class="nav-link" data-scroll-target="#start">Start</a>
+  <ul>
+  <li><a href="#from-the-console" id="toc-from-the-console" class="nav-link" data-scroll-target="#from-the-console">From the Console</a></li>
+  <li><a href="#from-a-shiny-app" id="toc-from-a-shiny-app" class="nav-link" data-scroll-target="#from-a-shiny-app">From a Shiny app</a></li>
+  <li><a href="#from-the-project-wizard" id="toc-from-the-project-wizard" class="nav-link" data-scroll-target="#from-the-project-wizard">From the Project Wizard</a></li>
+  </ul></li>
+  <li><a href="#build" id="toc-build" class="nav-link" data-scroll-target="#build">Build</a>
+  <ul>
+  <li><a href="#metadata-files" id="toc-metadata-files" class="nav-link" data-scroll-target="#metadata-files">Metadata files</a>
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link" data-scroll-target="#description">DESCRIPTION</a></li>
+  </ul></li>
+  <li><a href="#application-code" id="toc-application-code" class="nav-link" data-scroll-target="#application-code">Application code</a>
+  <ul>
+  <li><a href="#use_r" id="toc-use_r" class="nav-link" data-scroll-target="#use_r">use_r()</a></li>
+  <li><a href="#standalone-app-function" id="toc-standalone-app-function" class="nav-link" data-scroll-target="#standalone-app-function">Standalone app function</a></li>
+  <li><a href="#roxygen2" id="toc-roxygen2" class="nav-link" data-scroll-target="#roxygen2">roxygen2</a></li>
+  </ul></li>
+  <li><a href="#test-drive" id="toc-test-drive" class="nav-link" data-scroll-target="#test-drive">Test drive</a>
+  <ul>
+  <li><a href="#load_all" id="toc-load_all" class="nav-link" data-scroll-target="#load_all">load_all()</a></li>
+  </ul></li>
+  <li><a href="#namespace-help-pages" id="toc-namespace-help-pages" class="nav-link" data-scroll-target="#namespace-help-pages">NAMESPACE &amp; Help pages</a>
+  <ul>
+  <li><a href="#document" id="toc-document" class="nav-link" data-scroll-target="#document">document()</a>
+  <ul class="collapse">
+  <li><a href="#namespace-description" id="toc-namespace-description" class="nav-link" data-scroll-target="#namespace-description"><strong><em>NAMESPACE != DESCRIPTION</em></strong></a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#checking-installation" id="toc-checking-installation" class="nav-link" data-scroll-target="#checking-installation">Checking installation</a>
+  <ul>
+  <li><a href="#install" id="toc-install" class="nav-link" data-scroll-target="#install">install()</a>
+  <ul class="collapse">
+  <li><a href="#recap-the-r-folder" id="toc-recap-the-r-folder" class="nav-link" data-scroll-target="#recap-the-r-folder"><strong>Recap: the <code>R/</code> folder</strong></a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#additional-package-files" id="toc-additional-package-files" class="nav-link" data-scroll-target="#additional-package-files">Additional package files</a>
+  <ul>
+  <li><a href="#use_data_raw" id="toc-use_data_raw" class="nav-link" data-scroll-target="#use_data_raw">use_data_raw()</a></li>
+  </ul></li>
+  <li><a href="#installed-package-files" id="toc-installed-package-files" class="nav-link" data-scroll-target="#installed-package-files">Installed package files</a>
+  <ul>
+  <li><a href="#inst" id="toc-inst" class="nav-link" data-scroll-target="#inst">inst/</a>
+  <ul class="collapse">
+  <li><a href="#recap-data-and-installed-files" id="toc-recap-data-and-installed-files" class="nav-link" data-scroll-target="#recap-data-and-installed-files"><strong>Recap: data and installed files</strong></a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#documentation" id="toc-documentation" class="nav-link" data-scroll-target="#documentation">Documentation</a>
+  <ul>
+  <li><a href="#use_readme_rmd" id="toc-use_readme_rmd" class="nav-link" data-scroll-target="#use_readme_rmd">use_readme_rmd()</a></li>
+  <li><a href="#use_vignette" id="toc-use_vignette" class="nav-link" data-scroll-target="#use_vignette">use_vignette()</a>
+  <ul class="collapse">
+  <li><a href="#recap-documentation" id="toc-recap-documentation" class="nav-link" data-scroll-target="#recap-documentation"><strong>Recap: documentation</strong></a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#tests" id="toc-tests" class="nav-link" data-scroll-target="#tests">Tests</a>
+  <ul>
+  <li><a href="#use_testthat" id="toc-use_testthat" class="nav-link" data-scroll-target="#use_testthat">use_testthat()</a>
+  <ul class="collapse">
+  <li><a href="#writing-tests" id="toc-writing-tests" class="nav-link" data-scroll-target="#writing-tests">Writing tests</a></li>
+  <li><a href="#recap-testing" id="toc-recap-testing" class="nav-link" data-scroll-target="#recap-testing"><strong>Recap: testing</strong></a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#use" id="toc-use" class="nav-link" data-scroll-target="#use">Use</a>
+  <ul>
+  <li><a href="#recap-1" id="toc-recap-1" class="nav-link" data-scroll-target="#recap-1">Recap</a></li>
+  </ul></li>
+  </ul>
+</nav>
 </nav>
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
+<main class="content page-columns page-full" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Creating a shiny app-packages</h1>
+<h1 class="title">Creating a shiny app-package</h1>
 <p class="subtitle lead">Building a shiny app-package with <code>devtools</code> &amp; <code>usethis</code></p>
   <div class="quarto-categories">
     <div class="quarto-category">shiny</div>
@@ -174,8 +292,1146 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
+<p>In this post, I’ll be using <a href="https://devtools.r-lib.org/"><code>devtools</code></a> and <a href="https://usethis.r-lib.org/"><code>usethis</code></a> to develop <a href="https://github.com/mjfrigaard/duap"><code>duap</code></a>, an R package that <em>contains</em> a shiny application (i.e., <em><code>devtools</code>/<code>usethis</code> app-package</em>).</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.05em; font-weight: bold; color: #696969;">
+<p><em>This is a long post because I cover many of the steps used to build R packages. If you’d prefer to more information on developing R packages, I suggest starting with <a href="https://r-pkgs.org/whole-game.html">the whole game section</a>.</em></p>
+</div>
+</div>
+</div>
+</div>
+<p>The R package development workflow is well documented in <a href="https://r-pkgs.org/whole-game.html">R Packages</a>. I’ve written this post because I frequently encountered R developers who are comfortable with shiny application development, but have never developed an R package.</p>
+<p>This post walks through converting an existing shiny application into an app-package <em>in detail</em> because R package development differs from creating a standalone shiny application. My hope is that by reading this will prevent you from having to rebuild your application entirely from scratch.</p>
+<p>I’ve organized the app-package development process into three areas: <strong>Start</strong>, <strong>Build</strong>, and <strong>Use</strong>.</p>
+<ul>
+<li><p><strong>Start</strong> covers the steps required to begin building a shiny app withing a package framework (from the console and IDE).</p></li>
+<li><p><strong>Build</strong> covers the development process, which includes writing and storing code, data, external resources (i.e., data), documentation, and testing.</p></li>
+<li><p><strong>Use</strong> shows how developers can launch their application using the given framework/package locally (i.e., within the RStudio (Posit) IDE).</p></li>
+</ul>
+<p>The GitHub repo with the code for <code>duap</code> is located <a href="https://github.com/mjfrigaard/duap">here</a> if you’d like to follow along.</p>
+<section id="why-an-app-package" class="level1 page-columns page-full">
+<h1>Why an app-package?</h1>
+<p>Building a shiny app as a package is <a href="https://mastering-shiny.org/scaling-packaging.html?q=highly%20recommend#scaling-packaging">highly recommended</a>. Both the <a href="https://thinkr-open.github.io/golem/"><code>golem</code></a> and <a href="https://leprechaun.opifex.org/#/"><code>leprechaun</code></a> frameworks convert your shiny application into an R package, and while a package might seem like overkill, when you consider the additional development tools accessible with R packages, I think you’ll agree shiny applications are a great fit for R packages.</p>
+<section id="what-makes-a-package" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="what-makes-a-package">What makes a package?</h2>
+<p>You’ve probably seen one of the following quotes,</p>
+<blockquote class="blockquote">
+<p>“<em>’RStudio and <code>devtools</code> consider any directory containing <code>DESCRIPTION</code> to be a package</em>’ - <a href="https://r-pkgs.org/description.html#the-description-file">R Packages</a></p>
+</blockquote>
+<blockquote class="blockquote">
+<p>‘<em>all a project needs to be a package is a directory of <code>R/</code> files and a <code>DESCRIPTION</code> file.</em>’ - <a href="https://mastering-shiny.org/scaling-packaging.html#summary-18">Packages Chapter of Mastering Shiny</a></p>
+</blockquote>
+<p>So which is it–a <code>DESCRIPTION</code> file or a <code>DESCRIPTION</code> file <em>and</em> a directory of <code>R/</code> files?</p>
+<p>We can use the app stored in <a href="https://github.com/mjfrigaard/bbsa"><code>bbsa</code></a> to conduct an experiment. Below are the initial files:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">bbsa/</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">├──</span> README.md</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">├──</span> app.R</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">├──</span> bbsa.Rproj</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="ex">├──</span> movies.RData</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="ex">└──</span> utils.R</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span> directory, 5 files</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Note that there is no <code>DESCRIPTION</code> file in <code>bbsa</code>.</p>
+<section id="initial-.rproj-file" class="level3">
+<h3 class="anchored" data-anchor-id="initial-.rproj-file">Initial <span style="font-size: 1.10em"><code>.Rproj</code></span> file</h3>
+<p>If we open the <code>bbsa.Rproj</code> file with a text-editor, we see the following:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Version:</span> 1.0</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">RestoreWorkspace:</span> Default</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">SaveWorkspace:</span> Default</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">AlwaysSaveHistory:</span> Default</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">EnableCodeIndexing:</span> Yes</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">UseSpacesForTab:</span> Yes</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="ex">NumSpacesForTab:</span> 2</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="ex">Encoding:</span> UTF-8</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="ex">RnwWeave:</span> Sweave</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="ex">LaTeX:</span> XeLaTeX</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>These are settings for our shiny app project. Lets see what happens if we create an <code>R/</code> folder (with a <code>utils.R</code> file) and a <code>DESCRIPTION</code> file.</p>
+</section>
+<section id="r-description" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="r-description"><span style="font-size: 1.10em"><code>R/</code></span> &amp; <span style="font-size: 1.10em"><code>DESCRIPTION</code></span></h3>
+<p>The <code>R/utils.R</code> file will hold the contents of <code>utils.R</code> in the root folder:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>point_plot <span class="ot">&lt;-</span> <span class="cf">function</span>(df, x_var, y_var, col_var, alpha_var, size_var) {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(<span class="at">data =</span> df,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>      ggplot2<span class="sc">::</span><span class="fu">aes</span>(<span class="at">x =</span> .data[[x_var]],</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">y =</span> .data[[y_var]],</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">color =</span> .data[[col_var]])) <span class="sc">+</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>      ggplot2<span class="sc">::</span><span class="fu">geom_point</span>(<span class="at">alpha =</span> alpha_var, <span class="at">size =</span> size_var)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The contents of the <code>DESCRIPTION</code> file are below (adapted from <a href="https://r-pkgs.org/description.html#the-description-file">R Packages</a>):</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>Package: myShinyAppPkg</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>Title: What the Package Does (One Line, Title Case)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>Version: 0.0.0.9000</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>Authors@R: </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    person("First", "Last", , "first.last@example.com", </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    role = c("aut", "cre"))</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>Description: What the package does (one paragraph).</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    license</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>Encoding: UTF-8</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>Roxygen: list(markdown = TRUE)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>RoxygenNote: 7.2.3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>bbsa</code> now has the following files and folders:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">bbsa/</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> DESCRIPTION</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> R</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   └── utils.R</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> README.md</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> app.R</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> bbsa.Rproj</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> movies.RData</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> utils.R</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="ex">2</span> directories, 7 files</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s take a quick look at the IDE to confirm none of the <strong>Build</strong> tools are available:</p>
+<div class="column-page-inset-right">
+<div id="fig-shiny_app_ide" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-shiny_app_ide" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="shiny_app_ide.png" style="width:100.0%;height:100.0%" data-ref-parent="fig-shiny_app_ide" class="figure-img"></p>
+<figcaption class="figure-caption">(a) shiny app IDE</figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;1: Default IDE project panes</figcaption>
+</figure>
+</div>
+</div>
+<p>Click on <strong>Session</strong> &gt; <strong>Terminate R…</strong> &gt; <strong>Yes</strong> and open the <code>bbsa.Rproj</code> file with a text-editor again:</p>
+</section>
+<section id="package-.rproj-file" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="package-.rproj-file">Package <span style="font-size: 1.10em"><code>.Rproj</code></span> file</h3>
+<p>Expand the code below to view the new <code>bbsa.Rproj</code>:</p>
+<div class="cell">
+<details>
+<summary>show/hide package .Rproj</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Version:</span> 1.0</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">RestoreWorkspace:</span> Default</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">SaveWorkspace:</span> Default</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">AlwaysSaveHistory:</span> Default</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">EnableCodeIndexing:</span> Yes</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ex">UseSpacesForTab:</span> Yes</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ex">NumSpacesForTab:</span> 2</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ex">Encoding:</span> UTF-8</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="ex">RnwWeave:</span> Sweave</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="ex">LaTeX:</span> XeLaTeX</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="ex">BuildType:</span> Package</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="ex">PackageUseDevtools:</span> Yes</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="ex">PackageInstallArgs:</span> <span class="at">--no-multiarch</span> <span class="at">--with-keep.source</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>We can see three new lines have been added to <code>bbsa.Rproj</code>:</p>
+<ol type="1">
+<li><code>BuildType: Package</code><br>
+</li>
+<li><code>PackageUseDevtools: Yes</code><br>
+</li>
+<li><code>PackageInstallArgs: --no-multiarch --with-keep.source</code></li>
+</ol>
+<p>It’s not important that you know what each of these mean in detail (but you’ll see the third one again during package development)</p>
+<p>Let’s take another look at RStudio to review the available panes:</p>
+<div class="column-page-inset-right">
+<div id="fig-shiny_app_pkg_ide" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-shiny_app_pkg_ide" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="shiny_app_pkg_ide.png" style="width:100.0%;height:100.0%" data-ref-parent="fig-shiny_app_pkg_ide" class="figure-img"></p>
+<figcaption class="figure-caption">(a) shiny app-package IDE</figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;2: App-package IDE panes</figcaption>
+</figure>
+</div>
+</div>
+<p>We can see the <strong>Build</strong> pane has been added to the IDE!</p>
+</section>
+<section id="what-happened-to-rutils.r" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="what-happened-to-rutils.r">What happened to <code>R/utils.R</code>?</h3>
+<p>But wait–if you open <code>R/utils.R</code>, you’ll notice the file is now empty:</p>
+<div class="column-page-inset-right">
+<div id="fig-clean_out_R" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div id="fig-clean_out_R" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="clean_out_R.png" style="width:100.0%;height:100.0%" data-ref-parent="fig-clean_out_R" class="figure-img"></p>
+<figcaption class="figure-caption">(a) Empty R/ file</figcaption>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;3: <code>R/utils.R</code> has been cleared out!</figcaption>
+</figure>
+</div>
+</div>
+</section>
+</section>
+<section id="recap" class="level2">
+<h2 class="anchored" data-anchor-id="recap">Recap</h2>
+<p>Adding a <code>DESCRIPTION</code> file to your project will convert it to an R package, but don’t store any <code>.R</code> files in the <code>R/</code> directory until it’s been converted to a package (i.e., until the <strong>Build</strong> pane is available).</p>
+</section>
+</section>
+<section id="start" class="level1">
+<h1>Start</h1>
+<p>Below I’ll cover creating an R package from the <strong>Console</strong> and using the <strong>New Project Wizard</strong></p>
+<section id="from-the-console" class="level2">
+<h2 class="anchored" data-anchor-id="from-the-console">From the Console</h2>
+<p>If I am creating a package from the console, the function for building a new package is <code>usethis::create_package()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">create_package</span>(<span class="at">path =</span> <span class="st">"path/to/app-package/folder"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>A new RStudio session will open (and the name of the project–i.e., the name of the <code>.Rproj</code> file–will be identical to the package name).</p>
+<p>To create a shiny app package, I’ll install <a href="https://devtools.r-lib.org/"><code>devtools</code></a> (which also installs <a href="https://usethis.r-lib.org/"><code>usethis</code></a>).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"devtools"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(devtools)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="from-a-shiny-app" class="level2">
+<h2 class="anchored" data-anchor-id="from-a-shiny-app">From a Shiny app</h2>
+<p>Converting an existing shiny app into an R package is covered in <a href="https://mastering-shiny.org/scaling-packaging.html#converting-an-existing-app">Mastering Shiny</a>, but it doesn’t cover <em>how</em> this conversion happens. This section will assume your app is a bare-bones shiny app (like this bare-bones shiny app <a href="https://github.com/mjfrigaard/bbsa"><code>bbsa</code></a>).</p>
+</section>
+<section id="from-the-project-wizard" class="level2">
+<h2 class="anchored" data-anchor-id="from-the-project-wizard">From the Project Wizard</h2>
+<p>If I am using RStudio’s <strong>New Project Wizard</strong> to create a new shiny app package, I’d see the following defaults:</p>
+<div id="fig-rpkg-setup" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="rpkg-setup.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;4: Default <code>usethis::create_package</code> project setup</figcaption>
+</figure>
+</div>
+<p>The new package built from the console will have the following folder and files:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>duap/</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  ├── DESCRIPTION</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  ├── NAMESPACE</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  ├── R/</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  └── duap.Rproj</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>1 directory, 3 files</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Packages built from the <strong>New Project Wizard</strong> will have a few additional folders and files:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>duap/</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  ├── DESCRIPTION</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  ├── NAMESPACE</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  ├── R/</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  │   └── hello.R</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  ├── man/</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  │   └── hello.Rd</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  ├── myRPkg.Rproj</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  └── renv/</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>      ├── activate.R</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>      ├── sandbox/</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>      │   └── R-4.2</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>      └── settings.dcf</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>4 directories, 7 files</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>These additional files are:</p>
+<ul>
+<li><code>hello.R</code> in the <code>R/</code> folder<br>
+</li>
+<li><code>hello.Rd</code> in the <code>man/</code> folder<br>
+</li>
+<li>a <code>renv/</code> folder for package management</li>
+</ul>
+<p><code>R/hello.R</code> and <code>man/hello.Rd</code> are boilerplate files and can be deleted, but both package setups have a <code>DESCRIPTION</code>, <code>NAMESPACE</code>, <code>R/</code> folder, and <code>.Rproj</code> file. These four items can be thought of as the ‘minimal package’ setup required to access RStudio’s <strong>Build</strong> tools.</p>
+</section>
+</section>
+<section id="build" class="level1">
+<h1>Build</h1>
+<p>I’ll work through a ’minimum viable product (MVP) using the app code in the <a href="https://github.com/mjfrigaard/shiny-app-setups/tree/main/vanilla-shiny"><code>vanilla-shiny</code></a> repo.</p>
+<section id="metadata-files" class="level2">
+<h2 class="anchored" data-anchor-id="metadata-files">Metadata files</h2>
+<p>R packages have two metadata files: <code>DESCRIPTION</code> and <code>NAMESPACE</code>. Neither of these files have extensions, and both contain vital information for your package to function properly.</p>
+<p>We’ll manually edit the <code>DESCRIPTION</code> file, but the <code>NAMESPACE</code> file is automatically generated during the development process.</p>
+<section id="description" class="level3">
+<h3 class="anchored" data-anchor-id="description">DESCRIPTION</h3>
+<p>The <code>DESCRIPTION</code> file plays an important role in R packages (as we learned above)–that’s why creating this file is the first step when <a href="https://mastering-shiny.org/scaling-packaging.html#converting-an-existing-app">converting an existing app</a> (and when creating a <a href="https://thinkr-open.github.io/golem/articles/a_start.html#fill-the-description">new <code>golem</code> apps</a>).</p>
+<p>The initial <code>DESCRIPTION</code> file in <code>duap</code> is below:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>Package: duap</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>Title: What the Package Does (One Line, Title Case)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>Version: 0.0.0.9000</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>Authors@R: </span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    person("First", "Last", , "first.last@example.com", </span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    role = c("aut", "cre"),</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    comment = c(ORCID = "YOUR-ORCID-ID"))</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>Description: What the package does (one paragraph).</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    license</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>Encoding: UTF-8</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>Roxygen: list(markdown = TRUE)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>RoxygenNote: 7.2.3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The package name is automatically added, but the remaining fields need to be completed (consult <a href="https://r-pkgs.org/description.html#the-description-file">R packages</a> for more information on filling out the <code>DESCRIPTION</code> file).</p>
+<p>The <code>DESCRIPTION</code> file in the <code>duap</code> prompts the RStudio IDE to activate the <strong>Build</strong> tools pane (see below):</p>
+<div id="fig-rpkg-ide" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="rpkg-ide.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;5: Package <strong>Build</strong> tools</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="application-code" class="level2">
+<h2 class="anchored" data-anchor-id="application-code">Application code</h2>
+<p>The contents of the <code>app.R</code> and <code>utils.R</code> need to be moved into the <code>R/</code> folder. When developing R packages, new <code>.R</code> files are created with <code>usethis::use_r()</code>.</p>
+<section id="use_r" class="level3">
+<h3 class="anchored" data-anchor-id="use_r">use_r()</h3>
+<p>I’m going to create <code>duap</code> using <a href="https://mastering-shiny.org/scaling-modules.html#module-motivation">modules</a> to separate the app into the following digestible mental ‘chunks’:</p>
+<ul>
+<li><p>The app collects the inputs in the <code>shiny::sidebarPanel()</code></p></li>
+<li><p>These values are then used to create a plot in the <code>shiny::mainPanel()</code></p></li>
+</ul>
+<p>Based on this layout, I’ll create one module to collect and return the user-inputs (<code>mod_var_input</code>), and another module to display the plot (<code>mod_display_plot</code>).</p>
+<p>I’ll create these files using <a href="https://usethis.r-lib.org/reference/use_r.html"><code>usethis::use_r()</code></a> below:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_r</span>(<span class="st">"mod_var_input"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>✔ Setting active project to '/Users/mjfrigaard/projects/duap'</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>• Modify 'R/mod_var_input.R'</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>• Call `use_test()` to create a matching test file</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_r</span>(<span class="st">"mod_display_plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>• Modify 'R/mod_display_plot.R'</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>• Call `use_test()` to create a matching test file</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The display module also relies on a utility function (<code>plot_points()</code>), so I need to create a script for the utility function, which I put in a file with a name similar to the module it belongs to (i.e., <code>utils_display_plot</code>).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_r</span>(<span class="st">"utils_display_plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>• Modify 'R/utils_display_plot.R'</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>• Call `use_test()` to create a matching test file</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Finally, I’ll place the modules into basic ui and server arguments in a call to <code>shiny::shinyApp()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_r</span>(<span class="st">"moviesApp"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>• Modify 'R/moviesApp.R'</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>• Call `use_test()` to create a matching test file</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Modules consist of two functions; one in the UI (with a <code>_ui</code> suffix), and another in the server (with a <code>_server</code> suffix), but it’s common practice to combine them in a single file.</p>
+<p>Below is the <code>mod_var_input</code> module:</p>
+<ul>
+<li><p>The ui function is stored in <code>mod_var_input_ui</code>:</p>
+<div style="font-size: 0.80em; ; color: #696969;">
+<p><em>Click on Code to view the UI function in <code>R/mod_var_input/R</code></em></p>
+</div>
+<div class="cell">
+<details>
+<summary>show/hide</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>mod_var_input_ui <span class="ot">&lt;-</span> <span class="cf">function</span>(id) {</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  ns <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">NS</span>(id)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">tagList</span>(</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">selectInput</span>(</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">inputId =</span> <span class="fu">ns</span>(<span class="st">"y"</span>),</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">label =</span> <span class="st">"Y-axis:"</span>,</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">choices =</span> <span class="fu">c</span>(</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"IMDB rating"</span> <span class="ot">=</span> <span class="st">"imdb_rating"</span>,</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"IMDB number of votes"</span> <span class="ot">=</span> <span class="st">"imdb_num_votes"</span>,</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Critics Score"</span> <span class="ot">=</span> <span class="st">"critics_score"</span>,</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Audience Score"</span> <span class="ot">=</span> <span class="st">"audience_score"</span>,</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Runtime"</span> <span class="ot">=</span> <span class="st">"runtime"</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">selected =</span> <span class="st">"audience_score"</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">selectInput</span>(</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">inputId =</span> <span class="fu">ns</span>(<span class="st">"x"</span>),</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">label =</span> <span class="st">"X-axis:"</span>,</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">choices =</span> <span class="fu">c</span>(</span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>        <span class="st">"IMDB rating"</span> <span class="ot">=</span> <span class="st">"imdb_rating"</span>,</span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"IMDB number of votes"</span> <span class="ot">=</span> <span class="st">"imdb_num_votes"</span>,</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Critics Score"</span> <span class="ot">=</span> <span class="st">"critics_score"</span>,</span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Audience Score"</span> <span class="ot">=</span> <span class="st">"audience_score"</span>,</span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Runtime"</span> <span class="ot">=</span> <span class="st">"runtime"</span></span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>      <span class="at">selected =</span> <span class="st">"imdb_rating"</span></span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">selectInput</span>(</span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>      <span class="at">inputId =</span> <span class="fu">ns</span>(<span class="st">"z"</span>),</span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>      <span class="at">label =</span> <span class="st">"Color by:"</span>,</span>
+<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a>      <span class="at">choices =</span> <span class="fu">c</span>(</span>
+<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Title Type"</span> <span class="ot">=</span> <span class="st">"title_type"</span>,</span>
+<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Genre"</span> <span class="ot">=</span> <span class="st">"genre"</span>,</span>
+<span id="cb20-34"><a href="#cb20-34" aria-hidden="true" tabindex="-1"></a>        <span class="st">"MPAA Rating"</span> <span class="ot">=</span> <span class="st">"mpaa_rating"</span>,</span>
+<span id="cb20-35"><a href="#cb20-35" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Critics Rating"</span> <span class="ot">=</span> <span class="st">"critics_rating"</span>,</span>
+<span id="cb20-36"><a href="#cb20-36" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Audience Rating"</span> <span class="ot">=</span> <span class="st">"audience_rating"</span></span>
+<span id="cb20-37"><a href="#cb20-37" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb20-38"><a href="#cb20-38" aria-hidden="true" tabindex="-1"></a>      <span class="at">selected =</span> <span class="st">"mpaa_rating"</span></span>
+<span id="cb20-39"><a href="#cb20-39" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">sliderInput</span>(</span>
+<span id="cb20-41"><a href="#cb20-41" aria-hidden="true" tabindex="-1"></a>      <span class="at">inputId =</span> <span class="fu">ns</span>(<span class="st">"alpha"</span>),</span>
+<span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a>      <span class="at">label =</span> <span class="st">"Alpha:"</span>,</span>
+<span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a>      <span class="at">min =</span> <span class="dv">0</span>, <span class="at">max =</span> <span class="dv">1</span>, <span class="at">step =</span> <span class="fl">0.1</span>,</span>
+<span id="cb20-44"><a href="#cb20-44" aria-hidden="true" tabindex="-1"></a>      <span class="at">value =</span> <span class="fl">0.5</span></span>
+<span id="cb20-45"><a href="#cb20-45" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb20-46"><a href="#cb20-46" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">sliderInput</span>(</span>
+<span id="cb20-47"><a href="#cb20-47" aria-hidden="true" tabindex="-1"></a>      <span class="at">inputId =</span> <span class="fu">ns</span>(<span class="st">"size"</span>),</span>
+<span id="cb20-48"><a href="#cb20-48" aria-hidden="true" tabindex="-1"></a>      <span class="at">label =</span> <span class="st">"Size:"</span>,</span>
+<span id="cb20-49"><a href="#cb20-49" aria-hidden="true" tabindex="-1"></a>      <span class="at">min =</span> <span class="dv">0</span>, <span class="at">max =</span> <span class="dv">5</span>,</span>
+<span id="cb20-50"><a href="#cb20-50" aria-hidden="true" tabindex="-1"></a>      <span class="at">value =</span> <span class="dv">2</span></span>
+<span id="cb20-51"><a href="#cb20-51" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a>    shiny<span class="sc">::</span><span class="fu">textInput</span>(</span>
+<span id="cb20-53"><a href="#cb20-53" aria-hidden="true" tabindex="-1"></a>      <span class="at">inputId =</span> <span class="fu">ns</span>(<span class="st">"plot_title"</span>),</span>
+<span id="cb20-54"><a href="#cb20-54" aria-hidden="true" tabindex="-1"></a>      <span class="at">label =</span> <span class="st">"Plot title"</span>,</span>
+<span id="cb20-55"><a href="#cb20-55" aria-hidden="true" tabindex="-1"></a>      <span class="at">placeholder =</span> <span class="st">"Enter plot title"</span></span>
+<span id="cb20-56"><a href="#cb20-56" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb20-57"><a href="#cb20-57" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb20-58"><a href="#cb20-58" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div></li>
+<li><p>The server function is stored in <code>mod_var_input_server</code>:</p>
+<div style="font-size: 0.80em; ; color: #696969;">
+<p><em>Click on Code to view the server function in <code>R/mod_var_input/R</code></em></p>
+</div>
+<div class="cell">
+<details>
+<summary>show/hide</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>mod_var_input_server <span class="ot">&lt;-</span> <span class="cf">function</span>(id) {</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">moduleServer</span>(id, <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">list</span>(</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"x"</span> <span class="ot">=</span> shiny<span class="sc">::</span><span class="fu">reactive</span>({</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>          input<span class="sc">$</span>x</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>        }),</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">"y"</span> <span class="ot">=</span> shiny<span class="sc">::</span><span class="fu">reactive</span>({</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>          input<span class="sc">$</span>y</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>        }),</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>        <span class="st">"z"</span> <span class="ot">=</span> shiny<span class="sc">::</span><span class="fu">reactive</span>({</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>          input<span class="sc">$</span>z</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>        }),</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>        <span class="st">"alpha"</span> <span class="ot">=</span> shiny<span class="sc">::</span><span class="fu">reactive</span>({</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>          input<span class="sc">$</span>alpha</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>        }),</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>        <span class="st">"size"</span> <span class="ot">=</span> shiny<span class="sc">::</span><span class="fu">reactive</span>({</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>          input<span class="sc">$</span>size</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>        }),</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"plot_title"</span> <span class="ot">=</span> shiny<span class="sc">::</span><span class="fu">reactive</span>({</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>          input<span class="sc">$</span>plot_title</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>        })</span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<ul>
+<li>View the display module <a href="https://github.com/mjfrigaard/shiny-app-setups/blob/main/duap/R/mod_display_plot.R">here.</a></li>
+</ul></li>
+</ul>
+</section>
+<section id="standalone-app-function" class="level3">
+<h3 class="anchored" data-anchor-id="standalone-app-function">Standalone app function</h3>
+<p>After I’ve written the modules and utility functions, I need to add these into a <a href="https://mastering-shiny.org/scaling-packaging.html#converting-an-existing-app">standalone app function</a> <code>moviesApp()</code> (stored in <code>R/moviesApp.R</code>).</p>
+<ul>
+<li><p>This file contains a call to <code>shiny::shinyApp()</code> and includes the module functions (in their relative positions)</p>
+<ul>
+<li>Note the <code>id</code>s in each module function pair must match to create the shared namespace.</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>moviesApp <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># call to shinyApp()</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">shinyApp</span>(</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># UI ----</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">ui =</span> shiny<span class="sc">::</span><span class="fu">fluidPage</span>(</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>      shiny<span class="sc">::</span><span class="fu">sidebarLayout</span>(</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>        shiny<span class="sc">::</span><span class="fu">sidebarPanel</span>(</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>          <span class="co"># UI input module ----</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mod_var_input_ui</span>(<span class="st">"vars"</span>)</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>        ),</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>        <span class="co"># UI display module ----</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>        shiny<span class="sc">::</span><span class="fu">mainPanel</span>(</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>          <span class="fu">mod_display_plot_ui</span>(<span class="st">"plot"</span>)</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">server =</span> <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>      <span class="co"># server input module (capturing inputs) ----</span></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>      selected_vars <span class="ot">&lt;-</span> <span class="fu">mod_var_input_server</span>(<span class="st">"vars"</span>)</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>      <span class="co"># server display module (rendering outputs) ----</span></span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mod_display_plot_server</span>(<span class="st">"plot"</span>, </span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>                              <span class="at">var_inputs =</span> selected_vars)</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+</ul>
+</section>
+<section id="roxygen2" class="level3">
+<h3 class="anchored" data-anchor-id="roxygen2">roxygen2</h3>
+<p>When I’m confident my code works (and the app renders), I want to make sure these functions are properly documented by describing each function with <a href="https://roxygen2.r-lib.org/"><code>roxygen2</code></a> tags. To quickly insert a <code>roxygen2</code> skeleton, use the RStudio IDE (or the keyboard shortcut: <code>Option</code> + <code>Shift</code> + <code>Command</code> + <code>R</code>)</p>
+<p>The standard <code>roxygen2</code> skeleton tags include <code>@param</code>, <code>@return</code>, <code>@export</code>, and <code>@examples</code></p>
+<ul>
+<li><p><code>@param</code> lists the existing arguments (or variables) for the function</p></li>
+<li><p><code>@return</code> should be a description of the object/side-effect/thing the function produces (and any warnings or errors if used incorrectly)</p></li>
+</ul>
+<p>The following <a href="https://roxygen2.r-lib.org/"><code>roxygen2</code></a> tags will be used to update the <code>NAMESPACE</code> file (which you should never edit manually!)</p>
+<ul>
+<li><p><code>@export</code> will make the function available to other people when they use your package</p></li>
+<li><p><code>@importFrom</code> vs.&nbsp;<code>@import</code></p>
+<ul>
+<li>it’s always a good idea to be explicit about the external functions and packages you’re using, so most of the time you should use <code>@importFrom</code> (there’s even a handy helper <code>usethis::use_import_from("package", "function")</code>)<br>
+</li>
+<li><code>@import</code> should only be used when <a href="https://r-pkgs.org/dependencies-in-practice.html#in-code-below-r">“<em>you make such heavy use of so many functions from another package that you want to import its entire namespace. This should be relatively rare.</em>”</a></li>
+</ul></li>
+</ul>
+<p><code>roxygen2</code> imports and exports are covered in more depth <a href="https://r-pkgs.org/dependencies-in-practice.html#sec-dependencies-in-imports">in R packages.</a>.</p>
+<p>You can see the full code for <code>point_plot()</code> below (or follow <a href="https://github.com/mjfrigaard/shiny-app-setups/blob/main/duap/R/">this link</a> to view all the modules in the <code>R/</code> folder):</p>
+<div style="font-size: 0.80em; ; color: #696969;">
+<p><em>Click on Code to view</em></p>
+</div>
+<div class="cell">
+<details>
+<summary>show/hide</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#' Plot points (shiny)</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param df input dataset (tibble or data.frame)</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param x_var x variable</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param y_var y variable</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param col_var color variable</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param alpha_var alpha value</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param size_var size value</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="co">#' @return plot object</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="co">#' @export point_plot</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="co">#' @importFrom ggplot2 ggplot aes geom_point</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a><span class="co">#' @examples</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="co">#' require(duap)</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a><span class="co">#' movies &lt;- duap::movies</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a><span class="co">#' point_plot(df = movies,</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a><span class="co">#'   x_var = "critics_score",</span></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a><span class="co">#'   y_var = "imdb_rating",</span></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a><span class="co">#'   col_var = "critics_rating",</span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a><span class="co">#'   alpha_var = 1/3,</span></span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a><span class="co">#'   size_var = 2)</span></span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a><span class="co">#' }</span></span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>point_plot <span class="ot">&lt;-</span> <span class="cf">function</span>(df, x_var, y_var, col_var, alpha_var, size_var) {</span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>    ggplot2<span class="sc">::</span><span class="fu">ggplot</span>(<span class="at">data =</span> df,</span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>      ggplot2<span class="sc">::</span><span class="fu">aes</span>(<span class="at">x =</span> .data[[x_var]],</span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>          <span class="at">y =</span> .data[[y_var]],</span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>          <span class="at">color =</span> .data[[col_var]])) <span class="sc">+</span></span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>      ggplot2<span class="sc">::</span><span class="fu">geom_point</span>(<span class="at">alpha =</span> alpha_var, <span class="at">size =</span> size_var)</span>
+<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip: <code>roxygen2</code> skeleton
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.05em; font-style: italic; color: #696969;">
+<p><em>As well as generating <code>.Rd</code> files, <code>roxygen</code> will also create a <code>NAMESPACE</code> for you, and will manage the <code>Collate</code> field in <code>DESCRIPTION</code></em></p>
+<div id="fig-roxygen2-tags" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="ide-roxygen-skeleton.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;6: Standard <code>roxygen2</code> skeleton</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="test-drive" class="level2">
+<h2 class="anchored" data-anchor-id="test-drive">Test drive</h2>
+<div style="font-size: 1.10em; font-weight: bold;">
+<blockquote class="blockquote">
+<p>“The <code>load_all()</code> function is arguably the most important part of the devtools workflow.” - <a href="https://r-pkgs.org/workflow101.html#sec-workflow101-load-all">R Packages, 2ed</a></p>
+</blockquote>
+</div>
+<p>You’ll use the <code>devtools::load_all()</code> function frequently while you’re developing your app-package. <code>load_all()</code> simulates how your functions will work when someone else uses your package. This removes the need to define them in the global workspace. It also gives you access to the functions from any add-on packages you’ve imported into your <code>NAMESPACE</code> (i.e., you won’t need to run <code>library()</code>).</p>
+<p>I highly recommend using the keyboard shortcuts:</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="`devtools::load_all()` keyboard shortcuts">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<code>devtools::load_all()</code> keyboard shortcuts
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.25em; font-weight: bold;">
+<ul>
+<li><p>macOS: <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd></p></li>
+<li><p>Windows/Linux: <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd></p></li>
+</ul>
+</div>
+</div>
+</div>
+<p>The full benefits of using <code>load_all()</code> are covered in <a href="https://r-pkgs.org/workflow101.html#benefits-of-load_all">R packages.</a></p>
+<section id="load_all" class="level3">
+<h3 class="anchored" data-anchor-id="load_all">load_all()</h3>
+<p>After documenting everything with <code>roxygen2</code>, I want to make sure none of the functions are in my <strong>Environment</strong> (remove with <code>rm()</code> if necessary) and load the functions with <a href="https://r-pkgs.org/whole-game.html#sec-whole-game-load-all"><code>devtools::load_all()</code></a>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">load_all</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>ℹ Loading duap</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="namespace-help-pages" class="level2">
+<h2 class="anchored" data-anchor-id="namespace-help-pages">NAMESPACE &amp; Help pages</h2>
+<p><code>devtools::document()</code> processes the <code>roxygen2</code> tags to generate the <code>NAMESPACE</code> and the <code>.Rd</code> files in the <code>man/</code> folder. The <code>.Rd</code> files are used to access the help files (i.e., <code>package::function()</code> can be accessed with <code>??function</code>).</p>
+<p>Managing your package <a href="https://r-pkgs.org/dependencies-in-practice.html#sec-dependencies-NAMESPACE-workflow">NAMESPACE file</a> is not something you do directly: it’s handled with the <code>roxygen2</code> tags we covered above. The keyboard shortcuts for <code>devtools::document()</code> are below:</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="`devtools::document()` keyboard shortcuts">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<code>devtools::document()</code> keyboard shortcuts
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.25em; font-weight: bold;">
+<ul>
+<li><p>macOS: <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd></p></li>
+<li><p>Windows/Linux: <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd></p></li>
+</ul>
+</div>
+</div>
+</div>
+<section id="document" class="level3">
+<h3 class="anchored" data-anchor-id="document">document()</h3>
+<p>Run <code>devtools::document()</code> when you’ve written a new function with <code>roxygen2</code> tags or included a package in the <code>DESCRIPTION</code> file under <code>Imports:</code></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">document</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>ℹ Updating duap documentation</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>First time using roxygen2. Upgrading automatically...</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>Setting `RoxygenNote` to "7.2.3"</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>ℹ Loading duap</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>Writing NAMESPACE</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>Writing mod_plot_ui.Rd</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>Writing mod_plot_server.Rd</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>Writing point_plot.Rd</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>Writing mod_var_input_ui.Rd</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>Writing mod_var_input_server.Rd</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>Writing moviesApp.Rd</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="namespace-description" class="level4">
+<h4 class="anchored" data-anchor-id="namespace-description"><strong><em>NAMESPACE != DESCRIPTION</em></strong></h4>
+<p>It’s important to understand that <code>devtools::document()</code> will use the <code>roxygen2</code> tags to create the <code>man/*.Rd</code> files and update the <code>NAMESPACE</code>, but <strong><code>devtools::document()</code> does not update the <code>Imports:</code> section in the <code>DESCRIPTION</code>.</strong></p>
+<p>To add packages dependencies to the <code>DESCRIPTION</code>, you’ll need to use the <a href="https://usethis.r-lib.org/reference/use_package.html"><code>usethis::use_package()</code> function</a>. Read more on this topic in <a href="https://r-pkgs.org/dependencies-in-practice.html#confusion-about-imports">Confusion about <code>Imports</code></a>.</p>
+<p>The table below shows the connection between <code>roxygen2</code> tags, the resulting <code>NAMESPACE</code> entry, and what should be listed in the <code>DESCRIPTION</code>.</p>
+<div style="font-size: 0.80em;">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<code>roxygen2</code>, <code>NAMESPACE</code> &amp; <code>DESCRPTION</code>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.05em; color: #696969;">
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+roxygen2 tag
+</th>
+<th style="text-align:left;">
+NAMESPACE directive
+</th>
+<th style="text-align:right;">
+Added in DESCRIPTION
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<span class="citation" data-cites="importFrom">@importFrom</span>
+</td>
+<td style="text-align:left;">
+importFrom() : import selected object from another NAMESPACE
+</td>
+<td style="text-align:right;">
+Nothing
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span class="citation" data-cites="import">@import</span>
+</td>
+<td style="text-align:left;">
+import(): import all objects from another package’s NAMESPACE.
+</td>
+<td style="text-align:right;">
+Imports:
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span class="citation" data-cites="export">@export</span>
+</td>
+<td style="text-align:left;">
+export() : export the function, method, generic, or class so it’s available outside of the package (in the NAMESPACE)
+</td>
+<td style="text-align:right;">
+Nothing
+</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="checking-installation" class="level2">
+<h2 class="anchored" data-anchor-id="checking-installation">Checking installation</h2>
+<p>After loading and documenting the <code>duap</code> package, I want to make sure I can install the package into my library with <a href="https://r-pkgs.org/whole-game.html#install"><code>devtools::install()</code></a>. The keyboard shortcut for <code>devtools::install()</code> is below:</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="`devtools::document()` keyboard shortcuts">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<code>devtools::document()</code> keyboard shortcuts
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.25em; font-weight: bold;">
+<ul>
+<li><p>macOS: <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd></p></li>
+<li><p>Windows/Linux: <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd></p></li>
+</ul>
+</div>
+</div>
+</div>
+<section id="install" class="level3">
+<h3 class="anchored" data-anchor-id="install">install()</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>── R CMD build ────────────────────────────────────────────────────────────────</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>✔  checking for file ‘/Users/mjfrigaard/projects/duap/DESCRIPTION’ ...</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>─  preparing ‘duap’: (1.8s)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>✔  checking DESCRIPTION meta-information</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>─  checking for LF line-endings in source and make files and shell scripts (520ms)</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>─  checking for empty or unneeded directories</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>   Omitted ‘LazyData’ from DESCRIPTION</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>─  building ‘duap_0.1.0.tar.gz’</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>   </span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>Running /Library/Frameworks/R.framework/Resources/bin/R CMD INSTALL </span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>  --install-tests </span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>* installing to library ...</span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>* installing *source* package ‘duap’ ...</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>** using staged installation ...</span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>** R</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>** byte-compile and prepare package for lazy loading</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>** help</span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>*** installing help indices</span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>** building package indices</span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>** testing if installed package can be loaded from temporary location</span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>** testing if installed package can be loaded from final location</span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>** testing if installed package keeps a record of temporary installation path</span>
+<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>* DONE (duap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Restart your R session and ensure you have a clean workspace:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>   Restarting R session...</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>* Project '~/projects/duap' loaded. [renv 0.16.0]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Then load your package with <code>library()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(duap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>You can also use <strong>Install</strong> icon in the <strong>Build</strong> pane, which installs the package, restarts the R session, and loads the package all with one click!</p>
+<div id="fig-build-install" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="build-install.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;7: <strong>Build</strong> install package</figcaption>
+</figure>
+</div>
+<div id="fig-build-restart" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="build-restart.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;8: <strong>Build</strong> restart and load</figcaption>
+</figure>
+</div>
+<section id="recap-the-r-folder" class="level4">
+<h4 class="anchored" data-anchor-id="recap-the-r-folder"><strong>Recap: the <code>R/</code> folder</strong></h4>
+<p>The sequence I’ve demonstrated above (create <code>.R</code> file, write function, document with <code>roxygen2</code>, load, document, install) is the ‘minimal version’ of the <a href="https://r-pkgs.org/whole-game.html">full development workflow</a>.</p>
+<p>Once a ‘beta’ version of the app is deployed, you will want to come back to the app to refactor, write tests, and make sure all the items in <code>devtools::check()</code> pass.</p>
+<p>Storing the application’s code in the <code>R/</code> folder and (using RStudio’s build tools) keeps files organized, well documented, and self-contained:</p>
+<ul>
+<li><p>All the code is stored in the <code>R/</code> folder</p></li>
+<li><p>I’ve separated my code into smaller pieces (modules) that can be tested independently (more on this later)</p></li>
+<li><p>My dependencies are being managed by <code>roxygen2</code> and <code>devtools::document()</code>, which will update the <code>NAMESPACE</code> with any functions tagged with <code>@importFrom</code> (or <code>@import</code>)</p>
+<ul>
+<li>I can also access functions I’ve written <em>outside</em> by adding <code>@export</code></li>
+</ul></li>
+</ul>
+<div id="fig-pkg-man" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pkg-man.png" class="img-fluid figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;9: Function documentation in <code>man/</code> folder</figcaption>
+</figure>
+</div>
+<p>Now that I have the R version/package management being tracked and stored with <code>renv/</code> &amp; <code>renv.lock</code>, function documentation in the <code>.Rd</code> files, the <code>DESCRIPTION</code> and <code>NAMESPACE</code>, I can move onto adding and using <strong>data</strong> in a shiny app package.</p>
+</section>
+</section>
+</section>
+<section id="additional-package-files" class="level2">
+<h2 class="anchored" data-anchor-id="additional-package-files">Additional package files</h2>
+<p>Most app-packages will require files beyond the <code>.R</code> files in the <code>R/</code> folder. Apps will often use data files when they’re deployed, which we’ll cover next.</p>
+<section id="use_data_raw" class="level3">
+<h3 class="anchored" data-anchor-id="use_data_raw">use_data_raw()</h3>
+<p><a href="https://usethis.r-lib.org/reference/use_data.html"><code>usethis::use_data()</code> or <code>usethis::use_data_raw()</code></a> make it simple to add data to the application package:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_data_raw</span>(<span class="st">"movies"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>✔ Creating 'data-raw/'</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>✔ Writing 'data-raw/movies.R'</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>• Modify 'data-raw/movies.R'</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>• Finish the data preparation script in 'data-raw/movies.R'</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>• Use `usethis::use_data()` to add prepared data to package</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In the <code>data-raw/movies.R</code> script, I want to import the <code>movies.RData</code> file, but where should I import it from? It depends. In R packages, data is stored in either <a href="https://r-pkgs.org/data.html"><code>data/</code> or <code>data-raw/</code></a>. To access a copy of the <code>movies</code> dataset in <code>duap</code> (i.e., with <code>duap::movies</code>), I can place the <code>movies.RData</code> file in <code>data-raw/</code> and import it by adding the following to <code>data-raw/movies.R</code>:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>## code to prepare `movies` dataset goes here</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>load("data-raw/movies.RData")</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>usethis::use_data(movies, overwrite = TRUE)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Note <code>data-raw/movies.R</code> includes a call to <code>usethis::use_data()</code>, and when it’s executed, I can see a <code>data/</code> folder is created and <code>movies</code> is saved as <code>movies.rda</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"data-raw/movies.RData"</span>)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_data</span>(movies, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>✔ Adding 'R' to Depends field in DESCRIPTION</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>✔ Creating 'data/'</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>✔ Saving 'movies' to 'data/movies.rda'</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>• Document your data (see 'https://r-pkgs.org/data.html')</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="installed-package-files" class="level2">
+<h2 class="anchored" data-anchor-id="installed-package-files">Installed package files</h2>
+<p>The <code>inst/</code> folder plays a special role when developing R packages:</p>
+<div style="font-size: 1.10em; font-weight: bold;">
+<blockquote class="blockquote">
+<p>“<em>When a package is installed, everything in <code>inst/</code> is copied into the top-level directory of the installed package</em>” - <a href="https://r-pkgs.org/misc.html#sec-misc-inst">R Packages, 2ed</a></p>
+</blockquote>
+</div>
+<p>Consider the example folder and files below: <code>file.txt</code>, <code>CITATION</code>, and <code>extdata/my_data.csv</code>:</p>
+<div class="quarto-layout-panel">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<section id="source-development-form" class="level5 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<h5 class="anchored" data-anchor-id="source-development-form">Source (development) form</h5>
+<div class="sourceCode" id="cb37"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>inst/</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  ├── file.txt</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  ├── CITATION</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  └── extdata/</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>        └── my_data.csv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="binary-installed-form" class="level5 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<h5 class="anchored" data-anchor-id="binary-installed-form">Binary (installed) form</h5>
+<div class="sourceCode" id="cb38"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>file.txt</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>CITATION</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>extdata/</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  └── my_data.csv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</div>
+</div>
+<p>The neat thing about the <code>inst/</code> folder is that after we’ve loaded and installed our package, we can access the files in <code>inst/extdata/</code> with the <a href="https://pkgload.r-lib.org/reference/system.file.html"><code>system.file()</code> function</a>:</p>
+<p>If I want to test functions in <code>duap</code> using <code>movies.RData</code> (or another dataset), those should be placed in <code>inst/extdata/</code></p>
+<section id="inst" class="level3">
+<h3 class="anchored" data-anchor-id="inst">inst/</h3>
+<p>A great way to understand what files are available in <code>inst/</code> when your package is to pass <code>system.file()</code> to <code>fs::dir_tree()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>fs<span class="sc">::</span><span class="fu">dir_tree</span>( <span class="co"># wrap this in a folder tree</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">system.file</span>(<span class="at">package =</span> <span class="st">"duap"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<details>
+<summary>expand to see inst/ folder contents</summary>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/path/to/installed/package/duap</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> DESCRIPTION</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> INDEX</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> LICENSE</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> Meta</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   ├── Rd.rds</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   ├── data.rds</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   ├── features.rds</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   ├── hsearch.rds</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   ├── links.rds</span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   ├── nsInfo.rds</span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   └── package.rds</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> NAMESPACE</span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> R</span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   ├── duap</span>
+<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   ├── duap.rdb</span>
+<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   └── duap.rdx</span>
+<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> data</span>
+<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   ├── Rdata.rdb</span>
+<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   ├── Rdata.rds</span>
+<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   └── Rdata.rdx</span>
+<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> extdata</span>
+<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   └── movies.RData</span>
+<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> help</span>
+<span id="cb40-25"><a href="#cb40-25" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   ├── AnIndex</span>
+<span id="cb40-26"><a href="#cb40-26" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   ├── aliases.rds</span>
+<span id="cb40-27"><a href="#cb40-27" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   ├── duap.rdb</span>
+<span id="cb40-28"><a href="#cb40-28" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   ├── duap.rdx</span>
+<span id="cb40-29"><a href="#cb40-29" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   ├── figures</span>
+<span id="cb40-30"><a href="#cb40-30" aria-hidden="true" tabindex="-1"></a><span class="ex">│</span>   └── paths.rds</span>
+<span id="cb40-31"><a href="#cb40-31" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> html</span>
+<span id="cb40-32"><a href="#cb40-32" aria-hidden="true" tabindex="-1"></a>    <span class="ex">├──</span> 00Index.html</span>
+<span id="cb40-33"><a href="#cb40-33" aria-hidden="true" tabindex="-1"></a>    <span class="ex">└──</span> R.css</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>The <code>system.file()</code> function will show me the path to the locally installed version of the package (hence the <code>/path/to/installed/package/</code> at the beginning of the path).</p>
+<p>The <code>inst/exdata/</code> folder comes in handy for adding example data, but it’s also useful for application development (more on that later).</p>
+<div class="callout callout-style-default callout-tip no-icon callout-titled" title="The `inst/` folder">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The <code>inst/</code> folder
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em;">
+<p>Take a look at the <code>inst/extdata/</code> folder <a href="https://github.com/tidyverse/readr/blob/5ac729aa9a70fef297a634d2332ff8ff1af874fb/R/example.R"><code>readr::readr_example()</code></a> function to understand more about how this works.</p>
+</div>
+</div>
+</div>
+<section id="recap-data-and-installed-files" class="level4">
+<h4 class="anchored" data-anchor-id="recap-data-and-installed-files"><strong>Recap: data and installed files</strong></h4>
+<p>R Packages have a consistent and standardized way of storing data, and have designated locations for internal and external data.</p>
+<div id="fig-pkg-data" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pkg-data.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;10: Package data folders</figcaption>
+</figure>
+</div>
+</section>
+</section>
+</section>
+<section id="documentation" class="level2">
+<h2 class="anchored" data-anchor-id="documentation">Documentation</h2>
+<p>Function documentation is handled with the <code>R/</code> folder and <code>roxygen2</code> comments/tags, but <code>duap</code> needs a <code>README</code> file, and a place for long-form documentation. Fortuntely, <a href="https://rmarkdown.rstudio.com/">RMarkdown</a> handles each of these well:</p>
+<section id="use_readme_rmd" class="level3">
+<h3 class="anchored" data-anchor-id="use_readme_rmd">use_readme_rmd()</h3>
+<p>I can create a <code>README</code> file using <a href="https://usethis.r-lib.org/reference/use_readme_rmd.html"><code>usethis::use_readme_md()</code></a> or <a href="https://usethis.r-lib.org/reference/use_readme_rmd.html"><code>usethis::use_readme_rmd()</code></a></p>
+<ul>
+<li><p>I prefer the <code>.Rmd</code> file because it comes with executable code chunks.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_readme_rmd</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>✔ Setting active project to '/Users/mjfrigaard/projects/duap'</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>✔ Writing 'README.Rmd'</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>✔ Adding '^README\\.Rmd$' to '.Rbuildignore'</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>• Modify 'README.Rmd'</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>• Update 'README.Rmd' to include installation instructions.</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>✔ Writing '.git/hooks/pre-commit'</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>When I knit <code>README.Rmd</code>, it automatically generates the <code>README.md</code> for the package.</li>
+</ul></li>
+</ul>
+</section>
+<section id="use_vignette" class="level3">
+<h3 class="anchored" data-anchor-id="use_vignette">use_vignette()</h3>
+<p>For long-form documentation I can use <a href="https://r-pkgs.org/vignettes.html#introduction">vignettes.</a></p>
+<ul>
+<li><p>Vignettes can be created with <a href="https://usethis.r-lib.org/reference/use_vignette.html"><code>usethis::use_vignette()</code></a></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_vignette</span>(<span class="st">"duap"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb44"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>✔ Adding 'knitr' to Suggests field in DESCRIPTION</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>✔ Setting VignetteBuilder field in DESCRIPTION to 'knitr'</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>✔ Adding 'inst/doc' to '.gitignore'</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>✔ Creating 'vignettes/'</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>✔ Adding '*.html', '*.R' to 'vignettes/.gitignore'</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>✔ Adding 'rmarkdown' to Suggests field in DESCRIPTION</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>✔ Writing 'vignettes/duap.Rmd'</span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>• Modify 'vignettes/duap.Rmd'</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul>
+<p>Vignettes are also written in RMarkdown and rendered whenever the package is built/installed.</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>duap/</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>    └── vignettes/</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>            └── duap.Rmd</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>1 directory, 1 file</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>By combining <code>rmarkdown</code> and <code>knitr</code>, R packages have a documentation framework that has the added benefit of being somewhat fool-proof: vignettes have to successfully render for the package to be installed.</p>
+<div id="fig-build-vignettes" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="install-vignettes.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;11: Package vignettes</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Vignette figures
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.05em; color: #696969;">
+<p>Images in vignettes are kept in <code>man/figures/</code></p>
+<pre>duap/
+  ├── vignettes/
+  │       └── duap.Rmd
+  └── man/
+      └── figures/
+          └── duap-img-1.png
+</pre>
+</div>
+</div>
+</div>
+</div>
+<section id="recap-documentation" class="level4">
+<h4 class="anchored" data-anchor-id="recap-documentation"><strong>Recap: documentation</strong></h4>
+<p>The vignettes folder will long-form documentation about how the application works, use cases, and features (and <code>roxygen2</code> will document each function).</p>
+<div id="fig-pkg-docs" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pkg-docs.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;12: Documentation in <code>README</code> and <code>vignettes/</code></figcaption>
+</figure>
+</div>
+</section>
+</section>
+</section>
+<section id="tests" class="level2">
+<h2 class="anchored" data-anchor-id="tests">Tests</h2>
+<p>Testing is an important part of any package, and apps tend to require additional tests (especially when they’re moving from ‘development’ into ‘production’ environments).</p>
+<section id="use_testthat" class="level3">
+<h3 class="anchored" data-anchor-id="use_testthat">use_testthat()</h3>
+<p>To apply the testing framework provided by the <a href="https://testthat.r-lib.org/"><code>testthat</code> package.</a> package, I’ll use <code>usethis::use_testthat()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_testthat</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="sourceCode" id="cb47"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>✔ Adding 'testthat' to Suggests field in DESCRIPTION</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>✔ Setting Config/testthat/edition field in DESCRIPTION to '3'</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>✔ Creating 'tests/testthat/'</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>✔ Writing 'tests/testthat.R'</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>• Call `use_test()` to initialize a basic test file and open it for editing.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This creates a new <code>tests/</code> folder, with a <code>testthat/</code> sub-folder and script.</p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>duap/</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>    └── tests/</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>          ├── testthat/</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>          └── testthat.R</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>2 directories, 1 file</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="writing-tests" class="level4">
+<h4 class="anchored" data-anchor-id="writing-tests">Writing tests</h4>
+<p><a href="https://testthat.r-lib.org/"><code>testthat</code></a> is designed for unit tests (i.e., testing each functional ‘unit’ in the code), but for shiny apps, we need to think beyond standard unit testing. We need to confirm the functions work and return predictable results, but we also need to make sure they play well with each other (integration tests), and that the application can be deployed (system tests).</p>
+</section>
+<section id="recap-testing" class="level4">
+<h4 class="anchored" data-anchor-id="recap-testing"><strong>Recap: testing</strong></h4>
+<p>Testing is well described in the <a href="https://shiny.rstudio.com/articles/testing-overview.html">shiny documentation</a> and in <a href="https://mastering-shiny.org/scaling-testing.html">Mastering Shiny</a>. Generally speaking, unit tests are performed with <a href="https://testthat.r-lib.org/"><code>testthat</code></a>, and module testing can be done with <a href="https://shiny.rstudio.com/reference/shiny/1.7.0/testserver"><code>shiny::testServer()</code></a>. To test the full application (or a specific behavior) use the <a href="https://rstudio.github.io/shinytest2/"><code>shinytest2</code></a> package.</p>
+<div id="fig-pkg-tests" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pkg-tests.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;13: Testing framework from <code>testthat</code></figcaption>
+</figure>
+</div>
+</section>
+</section>
+</section>
+</section>
+<section id="use" class="level1">
+<h1>Use</h1>
+<p>Using an app built as a package is similar to using any R function we’ve loaded from a package. After successfully loading, documenting, and installing the package, I can run the app by loading the <code>duap</code> (with <code>library(duap)</code>) and <code>moviesApp()</code>:</p>
+<div id="fig-duap-inst-app" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="duap-app.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
+</figure>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;14: <code>duap::moviesApp()</code></figcaption>
+</figure>
+</div>
+<section id="recap-1" class="level2">
+<h2 class="anchored" data-anchor-id="recap-1">Recap</h2>
+<p>I’ve skipped over some important development steps covered in <a href="https://r-pkgs.org/">R packages</a> (license, using Git/GitHub, code coverage, NEWS, etc.), and you should bookmark this text as you start developing shiny app-packages. Hopefully this post has demonstrated that by building shiny apps as R packages, a suite of developer tools are available in the RStudio IDE (and the application files and folders have a uniform structure).</p>
+<p><code>duap</code> is a substantial improvement over a vanilla shiny application–the app-package holds the code, data, documentation, <em>and</em> includes explicit information on the dependencies and requirements (in the <code>DESCRIPTION</code> and <code>NAMESPACE</code>).</p>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
