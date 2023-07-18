@@ -127,7 +127,7 @@ install.packages("devtools")
 devtools::install_github("mjfrigaard/gap")
 ```
 
-For consistency, I'll be using the application from the RStudio's [Building Web Applications with Shiny](https://rstudio-education.github.io/shiny-course/) course. These materials are a great resource if you're new to shiny--even if you're aren't, it's still worth checking out--plus it's free!
+For consistency, I'll continue using the application from RStudio's [Building Web Applications with Shiny](https://rstudio-education.github.io/shiny-course/) course. These materials are a great resource if you're new to shiny (and even if you aren't, it's still worth checking out!).
 
 The [golem text](https://engineering-shiny.org/) is also a fantastic resource, but I found myself using the [`golem` website](https://thinkr-open.github.io/golem/) as a great 'quick reference.' If you're unfamiliar with R package development, I recommend bookmarking [R packages](https://r-pkgs.org/)--this is a great resource you'll return to often. 
 
@@ -1397,60 +1397,6 @@ Locations of data in `golem` app-packages
 
 External data you'd like to make available in your package should be stored in `inst/extdata/`
 
-> "*store data in some raw, non-R-specific form and make it available to the user...in `inst/extdata/`*"
-
-This is where I've placed the `movies` file:
-
-```{verbatim}
-#| eval: false 
-#| code-fold: false
-inst/extdata/
-└── movies.RData
-
-1 directory, 1 file
-```
-
-##### [`use_data_raw()`]{style="font-size: 1.10em"}
-
--   I'll create a raw data file for `movies`.
-
-```{r}
-#| eval: false 
-#| code-fold: false
-usethis::use_data_raw("movies")
-```
-
--   The output is below:
-
-    ```{bash}
-    #| eval: false 
-    #| code-fold: false
-    ✔ Writing 'data-raw/movies.R'
-    • Modify 'data-raw/movies.R'
-    • Finish the data preparation script in 'data-raw/movies.R'
-    • Use `usethis::use_data()` to add prepared data to package
-    ```
-
-##### [`use_data()`]{style="font-size: 1.10em"}
-
-The `data/` folder stores the data files created from the scripts in `data-raw/` (and any other data you need in your app-package). 
-
-> "*store R objects and make them available to the user...in `data/`*"
-
-In `data-raw/movies.R`, I'll load and add the movies data to the `data/` folder
-
-```{r}
-#| eval: false 
-#| code-fold: false
-## code to prepare `movies` dataset goes here
-load("inst/extdata/movies.RData")
-usethis::use_data(movies, overwrite = TRUE)
-```
-
-##### [`inst/extdata`]{style="font-size: 1.10em"}
-
-External data you'd like to make available in your package should be stored in `inst/extdata/`
-
 This is where I've placed the `movies` file:
 
 ```{verbatim}
@@ -1582,11 +1528,21 @@ Documentation for `gap::movies` stored in `R/data.R`
 
 #### [`Tests`]{style="font-size: 1.10em"}
 
-The `tests/` folder was created in `dev/01_start.R` with [`golem::use_recommended_tests()`](https://thinkr-open.github.io/golem/reference/use_recommended.html), which is a wrapper around `usethis::use_testthat()`
+The `tests/` folder was created in `dev/01_start.R` with [`golem::use_recommended_tests()`](https://thinkr-open.github.io/golem/reference/use_recommended.html). This function is a wrapper around `usethis::use_testthat()`, and it sets up the `tests/` folder:
+
+```{verbatim}
+#| eval: false 
+#| code-fold: false
+tests
+├── spelling.R
+├── testthat/
+└── testthat.R
+```
+
 
 In `dev/02_dev.R`, the  [`golem::add_module()`](https://thinkr-open.github.io/golem/reference/add_module.html) and [`golem::add_utils()`/`golem::add_fct()`](https://thinkr-open.github.io/golem/reference/utils_files.html) functions also include a `with_test = TRUE` argument, which creates a test file in the `tests/` folder.
 
-There are three test files in `tests/testthat/` at this point: 
+These functions add two test files in `tests/testthat/`: 
 
 ```{verbatim}
 #| eval: false 
@@ -1599,7 +1555,31 @@ tests/testthat
 1 directory, 3 files
 ```
 
-These files test the functions in the files `golem_utils_ui.R` and `golem_utils_server.R`. 
+These files test the functions in the files `golem_utils_ui.R` and `golem_utils_server.R`, and we can run them independently with `testthat::test_file()`
+
+```{r}
+#| eval: false 
+#| code-fold: false
+test_file("tests/testthat/test-golem_utils_server.R")
+```
+
+```{bash}
+#| eval: false 
+#| code-fold: false
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 13 ]
+```
+
+```{r}
+#| eval: false 
+#| code-fold: false
+test_file("tests/testthat/test-golem_utils_ui.R")
+```
+
+```{bash}
+#| eval: false 
+#| code-fold: false
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 51 ]
+```
 
 #### [`Documentation`]{style="font-size: 1.10em"}
 
@@ -1888,7 +1868,7 @@ add_module(name = "plot", utils = "server", with_test = TRUE)
 #| code-fold: false
 ✔ File created at R/mod_plot.R
 ✔ File created at R/mod_plot_utils_server.R
-✔ File created at /projects/apps/gap/tests/testthat/test-mod_plot.R
+✔ File created at tests/testthat/test-mod_plot.R
 ```
 
 -   The functions added to the `R/` folder include [`@noRd`](https://style.tidyverse.org/documentation.html#internal-functions) by default (which must be removed create the `.Rd` files in the `man/` folder)
@@ -2382,7 +2362,6 @@ rhub::check_for_cran()
     ```
     
     -   [`testthat.R`]{style="font-size: 0.90em"}
-<<<<<<< HEAD
 
     ```{bash}
     #| code-fold: true 

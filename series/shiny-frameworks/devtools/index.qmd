@@ -44,9 +44,9 @@ co_box <- function(color, header, contents = "Your text") {
     )),
     g = cat(paste0(
       "\n",
-      ":::: {.callout-", class, " collapse='true'}", "\n\n",
+      ":::: {.callout-", class, " collapse='false'}", "\n\n",
       "## ", header, "\n\n",
-      "::: {style='font-size: 1.05em; font-style: italic; color: #696969;'}\n\n",
+      "::: {style='font-size: 1.05em; color: #696969;'}\n\n",
       glue::glue_collapse(contents), "\n\n",
       "::: \n\n",
       "::::", "\n"
@@ -64,7 +64,7 @@ co_box <- function(color, header, contents = "Your text") {
       "\n",
       ":::: {.callout-", class, " collapse='false'}", "\n\n",
       "## ", header, "\n\n",
-      "::: {style='font-size: 1.05em; font-weight: bold; color: #696969;'}\n\n",
+      "::: {style='font-size: 1.05em; color: #696969;'}\n\n",
       glue::glue_collapse(contents), "\n\n",
       "::: \n\n",
       "::::", "\n"
@@ -85,11 +85,11 @@ In this post, I'll be using [`devtools`](https://devtools.r-lib.org/) and [`uset
 co_box(color = "r", "Warning", "_This is a long post because I cover many of the steps used to build R packages. If you'd prefer to more information on developing R packages, I suggest starting with [the whole game section](https://r-pkgs.org/whole-game.html)._")
 ```
 
-The R package development workflow is well documented in [R Packages ](https://r-pkgs.org/whole-game.html). I've written this post because I frequently encountered R developers who are comfortable with shiny application development, but have never developed an R package. 
+The R package development workflow is well documented in [R Packages ](https://r-pkgs.org/whole-game.html). I've written this post because sometimes I encounter shiny developers who are comfortable with reactivity, modules, HTML/CSS, etc., but they haven't developed an R package. I'll walk through converting an existing shiny application into an app-package *in detail*, because R package development differs from creating a standalone shiny application. My hope is that this post will 'fill in the gaps' of package development (and keep you from rebuilding your application entirely from scratch).
 
-This post walks through converting an existing shiny application into an app-package *in detail* because R package development differs from creating a standalone shiny application. My hope is that by reading this will prevent you from having to rebuild your application entirely from scratch.
+## Outline
 
-I've organized the app-package development process into three areas: **Start**, **Build**, and **Use**. 
+I’ll be using the application from RStudio’s [Building Web Applications with Shiny](https://rstudio-education.github.io/shiny-course/) tutorial. This is a great resource that can be run locally or on [posit.cloud](https://posit.cloud/). I've organized the app-package development process into three areas: **Start**, **Build**, and **Use**. 
 
   -   **Start** covers the steps required to begin building a shiny app withing a package framework (from the console and IDE).
 
@@ -99,21 +99,40 @@ I've organized the app-package development process into three areas: **Start**, 
 
 The GitHub repo with the code for `duap` is located  [here](https://github.com/mjfrigaard/duap) if you'd like to follow along.
 
-# Why an app-package?
+## Start
 
-Building a shiny app as a package is [highly recommended](https://mastering-shiny.org/scaling-packaging.html?q=highly%20recommend#scaling-packaging). Both the [`golem`](https://thinkr-open.github.io/golem/) and  [`leprechaun`](https://leprechaun.opifex.org/#/) frameworks convert your shiny application into an R package, and while a package might seem like overkill, when you consider the additional development tools accessible with R packages, I think you'll agree shiny applications are a great fit for R packages.
+It's [highly recommended](https://mastering-shiny.org/scaling-packaging.html?q=highly%20recommend#scaling-packaging) to build your [shiny app as an R package](https://engineering-shiny.org/structuring-project.html#shiny-app-as-a-package). R packages require more work upfront (and a bit of a learning if you're not familiar with the process), but the long-term benefits are usually well worth the initial investment of time.
 
-## What makes a package?
+### What makes an R package?
 
-You've probably seen one of the following quotes, 
+If you've been reading [R packages](https://r-pkgs.org/) or [Mastering Shiny](https://mastering-shiny.org/index.html), you may have seen one of the following quotes, 
 
 > "*‘RStudio and `devtools` consider any directory containing `DESCRIPTION` to be a package*’ - [R Packages](https://r-pkgs.org/description.html#the-description-file)
 
 > '*all a project needs to be a package is a directory of `R/` files and a `DESCRIPTION` file.*' - [Packages Chapter of Mastering Shiny](https://mastering-shiny.org/scaling-packaging.html#summary-18)
 
-So which is it--a `DESCRIPTION` file or a `DESCRIPTION` file *and* a directory of `R/` files?
+So which is it--a `DESCRIPTION` file or a `DESCRIPTION` file *and* a directory of `R/` files? Typically, R packages contain the following files: 
 
-We can use the app stored in [`bbsa`](https://github.com/mjfrigaard/bbsa) to conduct an experiment. Below are the initial files: 
+```{bash}
+#| eval: false
+#| code-fold: false
+rpkg/
+  ├── DESCRIPTION
+  ├── NAMESPACE
+  ├── rpkg.Rproj
+  ├── R/
+  ├── man/
+  ├── tests/
+  ├── data/ 
+  ├── vignettes/ 
+  └── inst/ 
+
+1 directory, 5 files
+```
+
+However, these files are not required to convert an existing shiny app project into an R package. I'll use the app stored in this [bare-bones shiny app (`bbsa`)](https://github.com/mjfrigaard/bbsa) to demonstrate. Feel free to download this app and follow along. 
+
+The initial files in this project are below: 
 
 ```{bash}
 #| eval: false
@@ -128,11 +147,11 @@ bbsa/
 1 directory, 5 files
 ```
 
-Note that there is no `DESCRIPTION` file in `bbsa`.  
+`bbsa` will run the application stored in `app.R`, load the data (`movies.RData`), and source the utility function stored in `utils.R`. This application has a `README.md`, but no `DESCRIPTION` file. 
 
-### Initial [`.Rproj`]{style="font-size: 1.10em"} file
+#### Project [`.Rproj`]{style="font-size: 1.10em"} files
 
-If we open the `bbsa.Rproj` file with a text-editor, we see the following:
+When a new shiny app project is created from the **New Project Wizard**, the `.Rproj` file contains the following (if you open it with a text-editor) 
 
 ```{bash}
 #| eval: false
@@ -152,9 +171,11 @@ RnwWeave: Sweave
 LaTeX: XeLaTeX
 ```
 
-These are settings for our shiny app project. Lets see what happens if we create an `R/` folder (with a `utils.R` file) and a `DESCRIPTION` file.
+These fields are settings for a shiny app project, and none of them are specific to R packages. 
 
-### [`R/`]{style="font-size: 1.10em"} & [`DESCRIPTION`]{style="font-size: 1.10em"}
+Lets see what happens if I create an `R/` folder (with the `utils.R` file) and a `DESCRIPTION` file.
+
+#### [`R/`]{style="font-size: 1.10em"} & [`DESCRIPTION`]{style="font-size: 1.10em"}
 
 The `R/utils.R` file will hold the contents of `utils.R` in the root folder:
 
@@ -171,7 +192,7 @@ point_plot <- function(df, x_var, y_var, col_var, alpha_var, size_var) {
 }
 ```
 
-The contents of the `DESCRIPTION` file are below (adapted from [R Packages](https://r-pkgs.org/description.html#the-description-file)): 
+And the contents of the `DESCRIPTION` file are below (adapted from [R Packages](https://r-pkgs.org/description.html#the-description-file)): 
 
 ```{verbatim}
 #| eval: false
@@ -190,7 +211,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 ```
 
-`bbsa` now has the following files and folders: 
+The `bbsa` shiny app project now has the following files and folders: 
 
 ```{bash}
 #| eval: false
@@ -208,23 +229,35 @@ bbsa/
 2 directories, 7 files
 ```
 
-Let's take a quick look at the IDE to confirm none of the **Build** tools are available: 
+If I take a quick look at the available panes in the IDE, I can confirm none of the **Build** tools are available: 
 
 :::: {.column-page-inset-right}
 
 ::: {#fig-shiny_app_ide}
 ![shiny app IDE](shiny_app_ide.png){#fig-shiny_app_ide height="100%" width="100%" fig-align="center"}
 
-Default IDE project panes
+Project IDE panes
 :::
 
 ::::
 
-Click on **Session** > **Terminate R...** > **Yes** and open the `bbsa.Rproj` file with a text-editor again: 
+#### Terminate R session
 
-### Package [`.Rproj`]{style="font-size: 1.10em"} file
+I'll terminate my R session by clicking on **Session** > **Terminate R...** > **Yes**
 
-Expand the code below to view the new `bbsa.Rproj`:
+::: {#fig-terminate layout-ncol=2}
+
+![Session > Terminate](terminate_session.png){#fig-terminate_session}
+
+![Click Yes](terminate_yes.png){#fig-terminate_yes}
+
+Terminate your R session
+:::
+
+
+#### Package [`.Rproj`]{style="font-size: 1.10em"} file
+
+Now I'll open the `bbsa.Rproj` file with a text-editor again (or expand the code below to view the new `bbsa.Rproj`):
 
 ```{bash}
 #| eval: false
@@ -249,15 +282,15 @@ PackageUseDevtools: Yes
 PackageInstallArgs: --no-multiarch --with-keep.source
 ```
 
-We can see three new lines have been added to `bbsa.Rproj`: 
+I can see three new lines have been added to `bbsa.Rproj`: 
 
 1. `BuildType: Package`  
 2. `PackageUseDevtools: Yes`   
 3. `PackageInstallArgs: --no-multiarch --with-keep.source` 
 
-It's not important that you know what each of these mean in detail (but you'll see the third one again during package development)
+It's not important that you know the meaning for each of these fields, but you can probably tell they're for converting our previous project into a package (and you'll see the third one again during package development!)
 
-Let's take another look at RStudio to review the available panes: 
+I'll take another look at the RStudio IDE to review the available panes: 
 
 :::: {.column-page-inset-right}
 
@@ -269,11 +302,11 @@ App-package IDE panes
 
 ::::
 
-We can see the **Build** pane has been added to the IDE! 
+I can see the **Build** pane has been added--now I can **Install**, **Test**, and **Check** my package with a single click!
 
-### What happened to `R/utils.R`?
+#### What happened to [`R/utils.R`]{style="font-size: 1.10em"}?
 
-But wait--if you open `R/utils.R`, you'll notice the file is now empty: 
+But wait--if I open `R/utils.R`, I notice that file is now empty: 
 
 :::: {.column-page-inset-right}
 
@@ -285,15 +318,34 @@ But wait--if you open `R/utils.R`, you'll notice the file is now empty:
 
 ::::
 
-## Recap
 
-Adding a `DESCRIPTION` file to your project will convert it to an R package, but don't store any `.R` files in the `R/` directory until it's been converted to a package (i.e., until the **Build** pane is available). 
+```{r}
+#| label: co_box_description_pkgs
+#| eval: true 
+#| results: asis
+#| echo: false
+co_box(
+  color = "r", 
+  header = "Converting projects to packages with `DESCRIPTION` files", 
+  contents = "
+Adding a `DESCRIPTION` file to your RStudio project *will* convert it to an R package, but any files stored in the standard packages folders (i.e., `R/`, `man`, `inst/`, etc.) will be removed (i.e., wait until the **Build** pane is available, then create these folders). 
+  ")
+```
 
-# Start
 
-Below I'll cover creating an R package from the **Console** and using the **New Project Wizard**
 
-## From the Console
+Now I'll cover creating an R package from the **Console** and using the **New Project Wizard**
+
+### From the Console
+
+To create a shiny app package, I'll install [`devtools`](https://devtools.r-lib.org/) (which also installs [`usethis`](https://usethis.r-lib.org/)).
+
+```{r}
+#| label: install-devtools-duap
+#| code-fold: false
+install.packages("devtools")
+library(devtools)
+```
 
 If I am creating a package from the console, the function for building a new package is `usethis::create_package()`:
 
@@ -305,21 +357,7 @@ usethis::create_package(path = "path/to/app-package/folder")
 
 A new RStudio session will open (and the name of the project--i.e., the name of the `.Rproj` file--will be identical to the package name).
 
-To create a shiny app package, I'll install [`devtools`](https://devtools.r-lib.org/) (which also installs [`usethis`](https://usethis.r-lib.org/)).
-
-```{r}
-#| label: install-devtools-duap
-#| code-fold: false
-install.packages("devtools")
-library(devtools)
-```
-
-## From a Shiny app 
-
-Converting an existing shiny app into an R package is covered in [Mastering Shiny](https://mastering-shiny.org/scaling-packaging.html#converting-an-existing-app), but it doesn't cover *how* this conversion happens. This section will assume your app is a bare-bones shiny app (like this bare-bones shiny app [`bbsa`](https://github.com/mjfrigaard/bbsa)).
-
-
-## From the Project Wizard
+### From the Project Wizard
 
 If I am using RStudio's **New Project Wizard** to create a new shiny app package, I'd see the following defaults:
 
@@ -377,7 +415,7 @@ These additional files are:
 
 # Build
 
-I'll work through a 'minimum viable product (MVP) using the app code in the [`vanilla-shiny`](https://github.com/mjfrigaard/shiny-app-setups/tree/main/vanilla-shiny) repo.
+The example app code comes from the [vanilla-shiny](https://github.com/mjfrigaard/vanilla-shiny) repo, which contains a modularized version of the app in [Building Web Applications with Shiny](https://rstudio-education.github.io/shiny-course/).
 
 ## Metadata files
 
@@ -385,7 +423,7 @@ R packages have two metadata files: `DESCRIPTION` and `NAMESPACE`. Neither of th
 
 We'll manually edit the `DESCRIPTION` file, but the `NAMESPACE` file is automatically generated during the development process.
 
-### DESCRIPTION
+### [`DESCRIPTION`]{style="font-size: 1.10em"}
 
 The `DESCRIPTION` file plays an important role in R packages (as we learned above)--that's why creating this file is the first step when [converting an existing app](https://mastering-shiny.org/scaling-packaging.html#converting-an-existing-app) (and when creating a [new `golem` apps](https://thinkr-open.github.io/golem/articles/a_start.html#fill-the-description)).
 
@@ -437,7 +475,7 @@ Package **Build** tools
 
 The contents of the `app.R` and `utils.R` need to be moved into the `R/` folder. When developing R packages, new `.R` files are created with `usethis::use_r()`. 
 
-### use_r()
+### [`use_r()`]{style="font-size: 1.10em"}
 
 I'm going to create `duap` using [modules](https://mastering-shiny.org/scaling-modules.html#module-motivation) to separate the app into the following digestible mental 'chunks':
 
@@ -506,11 +544,6 @@ Modules consist of two functions; one in the UI (with a `_ui` suffix), and anoth
 Below is the `mod_var_input` module: 
 
 -   The ui function is stored in `mod_var_input_ui`:
-
-    ::: {style="font-size: 0.80em; ; color: #696969;"}
-    *Click on Code to view the UI function in `R/mod_var_input/R`*
-    :::
-
     
     ```{r}
     #| label: mod_var_input_ui
@@ -577,11 +610,6 @@ Below is the `mod_var_input` module:
     ```
     
 -   The server function is stored in `mod_var_input_server`:
-
-    ::: {style="font-size: 0.80em; ; color: #696969;"}
-    *Click on Code to view the server function in `R/mod_var_input/R`*
-    :::
-    
     
     ```{r}
     #| label: mod_var_input_server
@@ -660,7 +688,7 @@ After I've written the modules and utility functions, I need to add these into a
     ```
 
 
-### roxygen2
+### [`roxygen2`]{style="font-size: 1.10em"}
 
 When I'm confident my code works (and the app renders), I want to make sure these functions are properly documented by describing each function with [`roxygen2`](https://roxygen2.r-lib.org/) tags. To quickly insert a `roxygen2` skeleton, use the RStudio IDE (or the keyboard shortcut: `Option` + `Shift` + `Command` + `R`)
 
@@ -770,9 +798,9 @@ I highly recommend using the keyboard shortcuts:
 
 ::::
 
-The full benefits of using `load_all()` are covered in [R packages.](https://r-pkgs.org/workflow101.html#benefits-of-load_all)
+Read more about the many benefits of using `load_all()` in [R packages.](https://r-pkgs.org/workflow101.html#benefits-of-load_all)
 
-### load_all()
+### [`load_all()`]{style="font-size: 1.10em"}
 
 After documenting everything with `roxygen2`, I want to make sure none of the functions are in my **Environment** (remove with `rm()` if necessary) and load the functions with [`devtools::load_all()`](https://r-pkgs.org/whole-game.html#sec-whole-game-load-all).
 
@@ -806,7 +834,7 @@ Managing your package [NAMESPACE file](https://r-pkgs.org/dependencies-in-practi
 
 ::::
 
-### document()
+### [`document()`]{style="font-size: 1.10em"}
 
 Run `devtools::document()` when you've written a new function with `roxygen2` tags or included a package in the `DESCRIPTION` file under `Imports:`
 
@@ -830,7 +858,7 @@ Writing mod_var_input_server.Rd
 Writing moviesApp.Rd
 ```
 
-#### ***NAMESPACE != DESCRIPTION***
+#### [`NAMESPACE` != `DESCRIPTION`]{style="font-size: 0.90em"}
 
 It's important to understand that `devtools::document()` will use the `roxygen2` tags to create the `man/*.Rd` files and update the `NAMESPACE`, but **`devtools::document()` does not update the `Imports:` section in the `DESCRIPTION`.** 
 
@@ -887,7 +915,7 @@ After loading and documenting the `duap` package, I want to make sure I can inst
 
 ::::
 
-### install()
+### [`install()`]{style="font-size: 1.10em"}
 
 ```{r}
 #| label: duap-install
@@ -952,7 +980,7 @@ You can also use **Install** icon in the **Build** pane, which installs the pack
 **Build** restart and load
 :::
 
-#### **Recap: the `R/` folder**
+#### Recap: the `R/` folder
 
 The sequence I've demonstrated above (create `.R` file, write function, document with `roxygen2`, load, document, install) is the 'minimal version' of the [full development workflow](https://r-pkgs.org/whole-game.html). 
 
@@ -980,7 +1008,7 @@ Now that I have the R version/package management being tracked and stored with `
 
 Most app-packages will require files beyond the `.R` files in the `R/` folder. Apps will often use data files when they're deployed, which we'll cover next. 
 
-### use_data_raw()
+### [`use_data_raw()`]{style="font-size: 1.10em"}
 
 [`usethis::use_data()` or `usethis::use_data_raw()`](https://usethis.r-lib.org/reference/use_data.html) make it simple to add data to the application package:
 
@@ -1027,11 +1055,11 @@ usethis::use_data(movies, overwrite = TRUE)
 • Document your data (see 'https://r-pkgs.org/data.html')
 ```
 
-## Installed package files
+## Installed files
 
 The `inst/` folder plays a special role when developing R packages: 
 
-::: {style='font-size: 1.10em; font-weight: bold;'}
+::: {style='font-size: 0.90em;'}
 
 > "*When a package is installed, everything in `inst/` is copied into the top-level directory of the installed package*" - [R Packages, 2ed](https://r-pkgs.org/misc.html#sec-misc-inst)
 
@@ -1068,7 +1096,7 @@ The neat thing about the `inst/` folder is that after we've loaded and installed
 
 If I want to test functions in `duap` using `movies.RData` (or another dataset), those should be placed in `inst/extdata/`
 
-### inst/
+### [`inst/`]{style="font-size: 1.10em"}
 
 A great way to understand what files are available in `inst/` when your package is to pass `system.file()` to `fs::dir_tree()`:
 
@@ -1135,7 +1163,7 @@ Take a look at the `inst/extdata/` folder  [`readr::readr_example()`](https://gi
 
 
 
-#### **Recap: data and installed files**
+#### Recap: data and installed files
 
 R Packages have a consistent and standardized way of storing data, and have designated locations for internal and external data.
 
@@ -1147,9 +1175,9 @@ Package data folders
 
 ## Documentation 
 
-Function documentation is handled with the `R/` folder and `roxygen2` comments/tags, but `duap` needs a `README` file, and a place for long-form documentation. Fortuntely, [RMarkdown](https://rmarkdown.rstudio.com/) handles each of these well:
+Function documentation is handled with the `R/` folder and `roxygen2` comments/tags, but `duap` needs a `README` file, and a place for long-form documentation. Fortunately, [RMarkdown](https://rmarkdown.rstudio.com/) handles each of these well:
 
-### use_readme_rmd()
+### [`use_readme_rmd()`]{style="font-size: 1.10em"}
 
 I can create a `README` file using [`usethis::use_readme_md()`](https://usethis.r-lib.org/reference/use_readme_rmd.html) or [`usethis::use_readme_rmd()`](https://usethis.r-lib.org/reference/use_readme_rmd.html)
 
@@ -1173,7 +1201,7 @@ I can create a `README` file using [`usethis::use_readme_md()`](https://usethis.
     -   When I knit `README.Rmd`, it automatically generates the `README.md` for the package.
 
 
-### use_vignette()
+### [`use_vignette()`]{style="font-size: 1.10em"}
 
 For long-form documentation I can use [vignettes.](https://r-pkgs.org/vignettes.html#introduction) 
 
@@ -1241,7 +1269,7 @@ duap/
 
 
 
-#### **Recap: documentation**
+#### Recap: documentation
 
 The vignettes folder will long-form documentation about how the application works, use cases, and features (and `roxygen2` will document each function).
 
@@ -1256,7 +1284,7 @@ Documentation in `README` and `vignettes/`
 
 Testing is an important part of any package, and apps tend to require additional tests (especially when they're moving from 'development' into 'production' environments).
 
-### use_testthat()
+### [`use_testthat()`]{style="font-size: 1.10em"}
 
 To apply the testing framework provided by the [`testthat` package.](https://testthat.r-lib.org/) package, I'll use `usethis::use_testthat()`:
 
@@ -1293,7 +1321,7 @@ duap/
 
 [`testthat`](https://testthat.r-lib.org/) is designed for unit tests (i.e., testing each functional 'unit' in the code), but for shiny apps, we need to think beyond standard unit testing. We need to confirm the functions work and return predictable results, but we also need to make sure they play well with each other (integration tests), and that the application can be deployed (system tests).
 
-#### **Recap: testing**
+#### Recap: testing
 
 Testing is well described in the [shiny documentation](https://shiny.rstudio.com/articles/testing-overview.html) and in [Mastering Shiny](https://mastering-shiny.org/scaling-testing.html). Generally speaking, unit tests are performed with [`testthat`](https://testthat.r-lib.org/), and module testing can be done with [`shiny::testServer()`](https://shiny.rstudio.com/reference/shiny/1.7.0/testserver). To test the full application (or a specific behavior) use the [`shinytest2`](https://rstudio.github.io/shinytest2/) package.
 
@@ -1316,7 +1344,7 @@ Using an app built as a package is similar to using any R function we've loaded 
 
 ## Recap
 
-I've skipped over some important development steps covered in [R packages](https://r-pkgs.org/) (license, using Git/GitHub, code coverage, NEWS, etc.), and you should bookmark this text as you start developing shiny app-packages. Hopefully this post has demonstrated that by building shiny apps as R packages, a suite of developer tools are available in the RStudio IDE (and the application files and folders have a uniform structure).
+I've skipped over some important development steps covered in [R packages](https://r-pkgs.org/) ([license](https://r-pkgs.org/whole-game.html#use_mit_license), using [Git/GitHub](https://r-pkgs.org/whole-game.html#use_git), [code coverage](https://r-pkgs.org/testing-design.html#sec-testing-design-coverage), [NEWS](https://r-pkgs.org/other-markdown.html#sec-news), etc.), and you should bookmark this text as you start developing shiny app-packages. Hopefully this post has demonstrated that by building shiny apps as R packages, a suite of developer tools are available in the RStudio IDE (and the application files and folders have a uniform structure).
 
-`duap` is a substantial improvement over a vanilla shiny application--the app-package holds the code, data, documentation, *and* includes explicit information on the dependencies and requirements (in the `DESCRIPTION` and `NAMESPACE`).
+`duap` is a substantial improvement over a bare-bones shiny application. An app-package holds the code, data, and documentation *and* allows us to write and execute unit tests, document help files for our functions with `roxygen2`, and check installation with `devtools::check()` and `devtools::install()`. App-packages can also be converted to [`pkgdown` sites](https://pkgdown.r-lib.org/articles/pkgdown.html) (which make them even easier to share).
 
