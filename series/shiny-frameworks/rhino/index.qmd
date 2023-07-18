@@ -74,6 +74,18 @@ co_box <- function(color, header, contents = "Your text") {
 }
 ```
 
+```{r}
+#| label: co_box_dev
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(
+  color = "r",
+  header = "ALERT!",
+  contents = "This post is currently under development. Thank you for your patience."
+)
+```
+
 This post is another walk-through of a shiny application using the  [`rhino` framework](https://appsilon.github.io/rhino/index.html). `rhino` is designed to, '*Build high quality, enterprise-grade Shiny apps at speed.'*--I'll go through developing a rhino shiny app (and how it's different from other app-packages).
 
 ```{r}
