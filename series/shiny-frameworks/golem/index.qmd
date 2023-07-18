@@ -144,7 +144,7 @@ I've organized the app-package development process into three areas: **Start**, 
 
   -   **Build** covers the app-package development process, which includes writing and storing code, data, external resources (like CSS or JavaScript), testing, etc. 
 
-  -   **Run** shows how to launch a `golem` application locally (i.e., within the RStudio IDE), common workflow tips, and anything I found confusing while building the application.
+  -   **Use** shows how to launch a `golem` application locally (i.e., within the RStudio IDE), common workflow tips, and anything I found confusing while building the application.
   
 ### [`dev/`]{style="font-size: 1.20em"} scripts
 
@@ -160,7 +160,7 @@ The `run_dev.R` is also in the `dev/` folder, but it's for running a development
 #| eval: true
 #| echo: false
 #| results: asis
-co_box(color = "g", "**Tip**: development scripts", contents = "
+co_box(color = "b", "Development scripts: **Note**", contents = "
 If you're familiar with R application development, you should recognize most of the items in the `dev/` scripts. I recommend going through these scripts even if you're an experienced R package developer--you can think of these as a 'shiny app-package development checklist.'
   ")
 ```
@@ -188,7 +188,17 @@ If you're creating a `golem` app using the **New Project Wizard**, the following
 Creating a new `golem` shiny app
 :::
 
-I recommend using `golem` comments (they're helpful and don't change how the application code runs). When the new project opens, the initial folder structure for your new `golem` application is below:
+```{r}
+#| label: goelm_comments
+#| eval: true
+#| echo: false
+#| results: asis
+co_box(color = "r", "`golem` comments: **Highly recommend**", contents = "
+I recommend using `golem` comments--they're helpful and don't change how the application code runs.
+  ")
+```
+
+When the new project opens, the initial folder structure for your new `golem` application is below:
 
 ```{bash}
 #| eval: false
@@ -901,9 +911,21 @@ This function is used to add external resources to your application (and will co
 
 #### [`Add` `helper` `functions`]{style="font-size: 1.10em"}
 
-Most applications will have two types of code--`shiny` functions for running your application (app functions), and functions that do everything else (or utility functions). The `golem` further distinguished utility functions into two types: *"small functions that are reused throughout the app"* (with a `utils_` prefix), and *"larger functions, which are more central to the application"* (with a `fct_` prefix). 
+Most applications will have two types of code--`shiny` functions for running your application (app functions), and functions that do everything else (or utility functions). The `golem` framework further distinguishes utility functions into two types: **1)** *"small functions that are reused throughout the app"* (with a `utils_` prefix), and **2)** *"larger functions, which are more central to the application"* (with a `fct_` prefix). 
 
-These descriptions [from the text](https://engineering-shiny.org/build-app-golem.html?functions#submodules-and-utility-functions) are helpful for distinguishing between the two:
+```{r}
+#| label: golem_roxygen2_tags
+#| eval: true
+#| echo: false
+#| results: asis
+co_box(color = "b",
+header = "Documenting & exporting functions: **NOTE**", 
+contents = "
+The functions in `golem_utils_ui.R` and `golem_utils_server.R` are created with the [`@noRd` tag](https://roxygen2.r-lib.org/articles/rd.html?q=@noRd#basics), which prevents the `.Rd` file generation. If you'd like the functions available outside of the package, you can use `@export`. If you'd like ['a manual page created but not present in the function index'](https://roxygen2.r-lib.org/articles/rd-other.html#packages), use `@keywords internal`. See the examples I've created [here](https://github.com/mjfrigaard/gap/blob/main/R/golem_utils_ui.R) and [here](https://github.com/mjfrigaard/gap/blob/main/R/golem_utils_server.R)
+")
+```
+
+The descriptions below are [from the text](https://engineering-shiny.org/build-app-golem.html?functions#submodules-and-utility-functions) and provide examples for the two types of utility functions:
 
 > **`utils_` functions:** "*...the `hexmake` app has two of these files, `R/utils_ui.R` and `R/utils_server.R`, in which you will find small functions that are reused throughout the app.*"
 
@@ -1308,6 +1330,12 @@ golem::add_fct("helpers", with_test = TRUE)
     
 `with_test = TRUE` ensures these functions will also create test files in `tests/`
 
+
+::: {.column-margin}
+![`golem::add_` functions](golem_add_functions.png){width="100%"}
+
+:::
+
 ```{r}
 #| label: golem_mods_utils
 #| eval: true
@@ -1329,11 +1357,18 @@ These functions are incredibly helpful for a variety of reasons: 1) they simplif
 
 You can add JavaScript to your application using the [`golem::add_js_file("script")`](https://thinkr-open.github.io/golem/reference/add_files.html) and [`golem::add_js_handler("handlers")`](https://thinkr-open.github.io/golem/reference/add_files.html) functions. 
 
-The golem text has an entire chapter dedicated to JavaScript which is worth reading (and I'll demonstrate an example with these functions below).
+The `golem` text has an entire chapter dedicated to JavaScript (which is worth reading).
 
 ##### App styling 
 
 You can add CSS or SASS styling to your application using the [`golem::add_css_file("custom")`](https://thinkr-open.github.io/golem/reference/add_files.html) and  [`golem::add_sass_file("custom")`](https://thinkr-open.github.io/golem/reference/add_files.html) functions, too.
+
+
+::: {.column-margin}
+![`golem` external resources](golem_ext_resources.png){width="100%"}
+
+:::
+
 
 ```{r}
 #| label: golem_external_resources
@@ -1350,6 +1385,13 @@ It's unlikely a production-grade shiny application only includes R code, and fig
 #### [`Add internal datasets`]{style="font-size: 1.10em"}
 
 If you application uses data, you can add it to your application with the `usethis` functions (`use_data_raw()` or `use_data()`). I recommend reading the [data section](https://r-pkgs.org/data.html) of R packages (and [this section](https://r-pkgs.org/misc.html#sec-misc-inst) on adding data to `inst/extdata`).
+
+::: {.column-margin}
+![`golem` app data](golem_data.png){width="100%"}
+
+
+Locations of data in `golem` app-packages
+:::
 
 ##### [`inst/extdata`]{style="font-size: 1.10em"}
 
@@ -1369,8 +1411,6 @@ inst/extdata/
 ```
 
 ##### [`use_data_raw()`]{style="font-size: 1.10em"}
-
-The `data-raw/` folder is for *'data-creating script'* that was used to create the version of the data in your app-package. Newly created `.R` scripts in `use_data_raw()` will have a call to `use_data()`.
 
 -   I'll create a raw data file for `movies`.
 
@@ -1407,6 +1447,60 @@ load("inst/extdata/movies.RData")
 usethis::use_data(movies, overwrite = TRUE)
 ```
 
+##### [`inst/extdata`]{style="font-size: 1.10em"}
+
+External data you'd like to make available in your package should be stored in `inst/extdata/`
+
+This is where I've placed the `movies` file:
+
+```{verbatim}
+#| eval: false 
+#| code-fold: false
+inst/extdata/
+└── movies.RData
+
+1 directory, 1 file
+```
+
+##### [`use_data_raw()`]{style="font-size: 1.10em"}
+
+The `data-raw/` folder is for the *'data-creating script'* that was used to create the version of the data in your app-package:
+
+-   I'll create a raw data file for `movies`.
+
+```{r}
+#| eval: false 
+#| code-fold: false
+usethis::use_data_raw("movies")
+```
+
+-   Newly created `.R` scripts in `use_data_raw()` will have a call to `use_data()`. See below:
+
+    ```{bash}
+    #| eval: false 
+    #| code-fold: false
+    ✔ Writing 'data-raw/movies.R'
+    • Modify 'data-raw/movies.R'
+    • Finish the data preparation script in 'data-raw/movies.R'
+    • Use `usethis::use_data()` to add prepared data to package
+    ```
+
+##### [`use_data()`]{style="font-size: 1.10em"}
+
+The objects created from the `.R` files in `data-raw/` are stored in the  `data/` folder (and any other data you need in your app-package). 
+
+> "*store R objects and make them available to the user...in `data/`*"
+
+For example, in `data-raw/movies.R`, I load the movies data from `inst/extdata/`, and save `movies` to the `data/` folder:
+
+```{r}
+#| eval: false 
+#| code-fold: false
+## code to prepare `movies` dataset goes here
+load("inst/extdata/movies.RData")
+usethis::use_data(movies, overwrite = TRUE)
+```
+
 -   The output is below:
 
     ```{bash}
@@ -1416,10 +1510,74 @@ usethis::use_data(movies, overwrite = TRUE)
     • Document your data (see 'https://r-pkgs.org/data.html')
     ```
 
+Follow [this guide](https://cran.r-project.org/web/packages/roxygen2/vignettes/rd-other.html) to document your datasets. 
 
-Follow [this guide](https://cran.r-project.org/web/packages/roxygen2/vignettes/rd-other.html) to document your datasets. The `ggplot2` package has [a great example.](https://github.com/tidyverse/ggplot2/blob/main/R/data.R)
+```{r}
+#| eval: false 
+#| code-fold: true 
+#| code-summary: 'show/hide movies data documentation'
+#' Movies dataset
+#'
+#' A dataset containing movie rankings from IMDB and Rotten Tomatoes. Original
+#' source found [here](https://rstudio-education.github.io/shiny-course/)
+#'
+#' @format A data frame with 651 rows and 34 variables:
+#'
+#' \describe{
+#'   \item{title}{movie title}
+#'   \item{title_type}{title type (Documentary, Feature Film, TV, Movie)}
+#'   \item{genre}{movie genre (Action & Adventure, Animation,
+#'                Art House & International, Comedy, Documentary, Drama, Horror,
+#'                Musical & Performing Arts, Mystery & Suspense, Other,
+#'                Science Fiction & Fantasy)}
+#'   \item{runtime}{length of film (in minutes)}
+#'   \item{mpaa_rating}{G, NC-17, PG, PG-13, R, Unrated}
+#'   \item{studio}{studio movie was filmed in}
+#'   \item{thtr_rel_date}{Theatre release date}
+#'   \item{thtr_rel_year}{Theatre release year}
+#'   \item{thtr_rel_day}{Theatre release day}
+#'   \item{dvd_rel_date}{DVD release date}
+#'   \item{dvd_rel_year}{DVD release year}
+#'   \item{dvd_rel_month}{DVD release month}
+#'   \item{dvd_rel_day}{DVD release day}
+#'   \item{imdb_rating}{IMDB rating}
+#'   \item{imdb_num_votes}{IMDB number of votes}
+#'   \item{critics_rating}{Critics rating}
+#'   \item{critics_score}{Critics score}
+#'   \item{audience_rating}{Audience rating}
+#'   \item{audience_score}{Audience score}
+#'   \item{best_pic_nom}{Best picture nomination?}
+#'   \item{best_pic_win}{Best picture win?}
+#'   \item{best_actor_win}{Best actor win?}
+#'   \item{best_actress_win}{Best actrss win?}
+#'   \item{best_dir_win}{Best director win?}
+#'   \item{top200_box}{Top 200 box-office?}
+#'   \item{director}{Film director name}
+#'   \item{actor1}{Actor 1 name}
+#'   \item{actor2}{Actor 2 name}
+#'   \item{actor3}{Actor 3 name}
+#'   \item{actor4}{Actor 4 name}
+#'   \item{actor5}{Actor 5 name}
+#'   \item{imdb_url}{IMDB website url}
+#'   \item{rt_url}{Rotten Tomatoes website url}
+#' }
+"movies"
+```
 
 
+The `fivethirtyeight` package also has [great examples of documented datasets.](https://github.com/rudeboybert/fivethirtyeight/blob/master/R/data.R)
+
+After loading and documenting your package, you can view structure and variable names of the `movies` data by entering `??movies` in the Console: 
+
+:::: {.column-page-inset-right}
+
+::: {#fig-data_documentation}
+![`movies` data documentation](data_documentation.png){#fig-data_documentation width="80%" fig-align="center"}
+
+Documentation for `gap::movies` stored in `R/data.R`
+:::
+
+::::
 
 
 #### [`Tests`]{style="font-size: 1.10em"}
@@ -1442,19 +1600,6 @@ tests/testthat
 ```
 
 These files test the functions in the files `golem_utils_ui.R` and `golem_utils_server.R`. 
-
-```{r}
-#| label: golem_roxygen2_tags
-#| eval: true
-#| echo: false
-#| results: asis
-co_box(color = "b",
-header = "`golem_utils` functions: **NOTE**", 
-contents = "
-The functions in `golem_utils_ui.R` and `golem_utils_server.R` are created with the [`@noRd` tag](https://roxygen2.r-lib.org/articles/rd.html?q=@noRd#basics), which prevents the `.Rd` file generation. If you'd like the functions available outside of the package, you can use `@export`. If you'd like ['a manual page created but not present in the function index'](https://roxygen2.r-lib.org/articles/rd-other.html#packages), use `@keywords internal`. See the examples I've created [here](https://github.com/mjfrigaard/gap/blob/main/R/golem_utils_ui.R) and [here](https://github.com/mjfrigaard/gap/blob/main/R/golem_utils_server.R)
-")
-```
-
 
 #### [`Documentation`]{style="font-size: 1.10em"}
 
@@ -1489,6 +1634,7 @@ For `shiny` app-packages, the following types of documentation might be included
 
 ### 
 
+:::{style="font-size: 0.85em"}
 
 7. Troubleshooting
 
@@ -1502,10 +1648,8 @@ For `shiny` app-packages, the following types of documentation might be included
 
 :::
 
-
-To create a new vignette in your package, run:
-
 ::::
+
 
 To create a new vignette, run `usethis::use_vignette("NAME OF VIGNETTE")`:
 
@@ -1539,10 +1683,6 @@ The vignette file opens with the title matching the argument passed to `use_vign
 devtools::build_vignettes()
 ```
 
-
-
-#### [`Code Coverage`]{style="font-size: 1.10em"}
-
 ```{r}
 #| label: golem_R_documentation
 #| eval: true
@@ -1557,6 +1697,7 @@ As described in ['Rmd, Vignettes, and documentation first'](https://engineering-
   ")
 ```
 
+#### [`Code Coverage`]{style="font-size: 1.10em"}
 
 Test code coverage measures the extent to which the test cases cover the possible execution paths in the package codebase--its a way to ensure that the tests are robust enough to verify that the code behaves as expected.
 
@@ -1726,17 +1867,31 @@ If you're using another CI management system, the following options are availabl
 
 ### End [`02_dev.R`]{style="font-size: 1.10em"}
 
-This concludes the `02_dev.R` file. You'll return to this file repeatedly during development for various functions (`add_module()`, `add_utils()`, and `add_fct()`), so it's a good idea to leave this .R file in the `dev/` folder. 
+This concludes the `02_dev.R` file. It's likely you'll return to this file repeatedly for various functions during development, so I'd leave it in the `dev/` folder for future reference.  
 
 ## Use 
 
-In this section, I'll go over the functions used during application development, and to launch the application (locally, in the IDE). The third script (`dev/03_deploy.R`), is used to deploy the application. 
+In this section, I'll go over the functions used during application development, how to launch the application (locally, in the IDE), and the third and final `dev/` script (`dev/03_deploy.R`), which is full of options for deploying your shiny app. 
 
 ### Writing code
 
-New modules and utility functions can be created with [`golem::add_module()`](https://thinkr-open.github.io/golem/reference/add_module.html):
+While developing, I find the `add_*` functions are incredibly helpful (`add_module()`, `add_utils()`, and `add_fct()`). New modules functions can be created with [`golem::add_module("name")`](https://thinkr-open.github.io/golem/reference/add_module.html) along with their tests and utility functions.
 
--   These functions are added to the `R/` folder and include [`@noRd`](https://style.tidyverse.org/documentation.html#internal-functions) by default (which must be removed create the `.Rd` files in the `man/` folder)
+```{r}
+#| eval: false
+#| code-fold: false
+add_module(name = "plot", utils = "server", with_test = TRUE)
+```
+
+```{bash}
+#| eval: false
+#| code-fold: false
+✔ File created at R/mod_plot.R
+✔ File created at R/mod_plot_utils_server.R
+✔ File created at /projects/apps/gap/tests/testthat/test-mod_plot.R
+```
+
+-   The functions added to the `R/` folder include [`@noRd`](https://style.tidyverse.org/documentation.html#internal-functions) by default (which must be removed create the `.Rd` files in the `man/` folder)
 
     ```{r}
     #| label: template-modules
@@ -1748,13 +1903,13 @@ New modules and utility functions can be created with [`golem::add_module()`](ht
     #'
     #' @param id,input,output,session Internal parameters for {shiny}.
     #'
-    #' @noRd
+    #' @noRd <- this one!
     #'
     #' @importFrom shiny NS tagList
     # server module template ---------------
     #' test Server Functions
     #'
-    #' @noRd
+    #' @noRd <- and this one!
     ```
 
 -   UI module functions end with a `_ui` suffix:
@@ -2068,7 +2223,7 @@ rhub::check_for_cran()
     • CXX17FLAGS: -Wall -pedantic -fdiagnostics-color=always
     • CXX20FLAGS: -Wall -pedantic -fdiagnostics-color=always
     ── R CMD build ──────────────────────────────────────────────────────────
-    ✔  checking for file ‘/Users/mjfrigaard/projects/pkgs/apps/gap/DESCRIPTION’ ...
+    ✔  checking for file '/projects/apps/gap/DESCRIPTION' ...
     ─  preparing ‘gap’: (561ms)
     ✔  checking DESCRIPTION meta-information ...
     ─  installing the package to build vignettes
@@ -2219,13 +2374,15 @@ rhub::check_for_cran()
        < testthat               tests_and_coverage.Rmd:49,115
        < tibble                 point_plot.Rd:10
        < ui                  
-       tests_and_coverage.Rmd:37,41,54,74,74,75,75,76,76,77,77,78,78,79,79,80,80,81,
+       tests_and_coverage.Rmd:37,41,54,74,74,75,75,76,76,77,77,78,78,79,
+       79,80,80,81,
                               81,82,82,83,83,84,84,85,85,86,92,93
        < undisplay              tests_and_coverage.Rmd:79
        < ️                    tests_and_coverage.Rmd:97   
     ```
     
     -   [`testthat.R`]{style="font-size: 0.90em"}
+<<<<<<< HEAD
 
     ```{bash}
     #| code-fold: true 
@@ -2310,7 +2467,7 @@ This will create a `gap_0.0.0.9000.tar.gz` file to share or submit to a package 
 #| code-fold: false
 #| eval: false
 ── R CMD build ───────────────────────────────────────────────────────────────
-✔  checking for file ‘/Users/mjfrigaard/projects/pkgs/apps/gap/DESCRIPTION’ ...
+✔  checking for file ‘/projects/apps/gap/DESCRIPTION’ ...
 ─  preparing ‘gap’: (613ms)
 ✔  checking DESCRIPTION meta-information ...
 ─  installing the package to build vignettes
@@ -2322,7 +2479,7 @@ This will create a `gap_0.0.0.9000.tar.gz` file to share or submit to a package 
 ─  checking for empty or unneeded directories
 ─  building ‘gap_0.0.0.9000.tar.gz’
    
-[1] "/Users/mjfrigaard/projects/pkgs/apps/gap_0.0.0.9000.tar.gz"
+[1] "/projects/apps/gap_0.0.0.9000.tar.gz"
 ```
 
 
@@ -2462,7 +2619,7 @@ Application successfully deployed to https://mjfrigaard.shinyapps.io/gap-movies/
 #| echo: false
 #| results: asis
 co_box(color = "o",
-header = "`rsconnect::deployApp(appName = 'gap-movies')`: **Recommend**", 
+header = "`rsconnect::deployApp()`: **Recommend**", 
 contents = "
 The `rsconnect::deployApp()` function is helpful for quickly deploying a shiny app-package. I provide the `appName` because `gap` is not long enough, but there are other useful arguments for deploying an app into production.
 ")
@@ -2472,7 +2629,19 @@ The `rsconnect::deployApp()` function is helpful for quickly deploying a shiny a
 
 View the deployed application [here.](https://mjfrigaard.shinyapps.io/gap-movies/)
 
+
 ## Recap
 
-Building an application with `golem` is very similar to developing an R package. New code files are placed in `R/`, external resources are placed in `inst/`, etc. 
+Building an application with `golem` is *very* similar to developing an R package. The overall process remains the same: New code is placed in `R/`, external resources are placed in `inst/`, tests are stored and run from `tests/testthat/`, etc. The figure below displays how the `golem` framework works within the R package structure to create 'production-grade shiny applications':
 
+:::: {.column-page-inset-right}
+
+::: {#fig-golem_framework_overview}
+![`golem` app-package](golem_framework_overview.png){#fig-golem_framework_overview width="100%" fig-align="center"}
+
+`golem` framework overview 
+:::
+
+::::
+
+I didn't cover using `renv` with this app-package, but you can read more about this in the [Using {`renv`}](https://engineering-shiny.org/build-yourself-safety-net.html#b.-using-renv) section. 
