@@ -9,7 +9,7 @@
 <link>https://mjfrigaard.github.io/posts.html</link>
 <atom:link href="https://mjfrigaard.github.io/posts.xml" rel="self" type="application/rss+xml"/>
 <description>Martin Frigaard&#39;s personal website</description>
-<generator>quarto-1.3.353</generator>
+<generator>quarto-1.3.450</generator>
 <lastBuildDate>Tue, 04 Jul 2023 07:00:00 GMT</lastBuildDate>
 <item>
   <title>Testing shiny apps with shinytest2</title>
@@ -164,7 +164,7 @@ font-style: inherit;">find_chrome</span>()</span></code></pre></div>
 <p>Then set the <code>CHROMOTE_CHROME</code> environment variable to the <code>Chromium</code> path (<strong>make sure it’s not the path to <code>Chrome.app</code></strong>:</p>
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">Sys.setenv</span>(<span class="at" style="color: #657422;
@@ -13360,7 +13360,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">install.packages</span>(<span class="st" style="color: #20794D;
@@ -13385,7 +13385,7 @@ font-style: italic;">##  /var/folders/0x/x5wkbhmx0k74tncn9swz7xpr0000gn/T//RtmpA
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1">name <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="st" style="color: #20794D;
@@ -13407,7 +13407,7 @@ font-style: italic;">## Error in glue("My name is {name}."): could not find func
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1">name <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="st" style="color: #20794D;
@@ -13430,7 +13430,7 @@ font-style: italic;">## My name is Fred.</span></span></code></pre></div>
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1">base<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -13452,7 +13452,7 @@ font-style: italic;">## [7] "package:methods"   "Autoloads"         "package:bas
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">library</span>(glue)</span>
@@ -13494,7 +13494,7 @@ font-style: italic;">## [10] "package:base"</span></span></code></pre></div>
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1">my_name <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
@@ -13526,7 +13526,7 @@ font-style: italic;">## My name is Fred.</span></span></code></pre></div>
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#' Introduce yourself </span></span>
@@ -13581,7 +13581,7 @@ font-style: inherit;">'My name is {name}.'</span>)</span>
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#' Introduce yourself </span></span>
@@ -13736,7 +13736,7 @@ Nothing to list
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">pkg/</span></span>
@@ -13825,7 +13825,7 @@ font-style: inherit;">14</span> directories, 3 files</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">mkdir</span> box </span>
@@ -13839,7 +13839,7 @@ font-style: inherit;">touch</span> box/fun.R</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">pkg/</span></span>
@@ -13871,7 +13871,7 @@ font-style: inherit;">2</span> directories, 3 files</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># box/fun.R</span></span>
@@ -13893,7 +13893,7 @@ font-style: inherit;">use</span>(</span>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1">box<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -13908,7 +13908,7 @@ font-style: inherit;">/</span>fun)</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># print</span></span>
@@ -13917,7 +13917,7 @@ font-style: inherit;"># print</span></span>
 </div>
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">&lt;</span>module: <span class="ex" style="color: null;
@@ -13936,7 +13936,7 @@ font-style: inherit;">&gt;</span></span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># use </span></span>
@@ -13956,7 +13956,7 @@ font-style: inherit;">'This is a box {x}.'</span>)</span></code></pre></div>
 </div>
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">This</span> is a box module.</span></code></pre></div>
@@ -14045,7 +14045,7 @@ font-style: inherit;">read_csv</span>(raw_csv_url)</span>
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># import</span></span>
@@ -14073,7 +14073,7 @@ font-style: inherit;">FALSE</span>)</span></code></pre></div>
 <div style="font-size: 0.75em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">spc_tbl_</span> [344 × 17] <span class="er" style="color: #AD0000;
@@ -14400,7 +14400,7 @@ font-style: inherit;">cols</span>())</span>
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb26" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># import</span></span>
@@ -14428,7 +14428,7 @@ font-style: inherit;">FALSE</span>)</span></code></pre></div>
 <div style="font-size: 0.75em;">
 <div class="cell">
 <details>
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb27" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb27-1"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">spc_tbl_</span> [344 × 17] <span class="er" style="color: #AD0000;
@@ -15116,7 +15116,7 @@ font-style: inherit;">theme_minimal</span>()</span>
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># plot</span></span>
@@ -15144,7 +15144,7 @@ font-style: inherit;">scatter</span>()</span></code></pre></div>
 <div style="font-size: 1.10em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb33-1"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">pengbox/</span></span>
@@ -15249,7 +15249,7 @@ imports ‘pkg’ with alias for ‘foo’ (‘my_foo’) and attaches all expor
 <div style="font-size: 1.10em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb34" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb34-1"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">pengbox/</span></span>
@@ -15299,7 +15299,7 @@ font-style: inherit;">6</span> directories, 6 files</span></code></pre></div>
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb35" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb35-1"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">pengbox/box/graph/wrangle/clean/import</span></span>
@@ -15372,7 +15372,7 @@ font-style: inherit;">cols</span>())</span>
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># in use.R</span></span>
@@ -15695,7 +15695,7 @@ font-style: inherit;">"Not enough blood for isotopes."</span> NA NA ...</span></
 <div style="font-size: 1.10em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb39-1"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">box/graph/wrangle/</span></span>
@@ -15895,7 +15895,7 @@ font-style: inherit;">"sex"</span> </span></code></pre></div>
 <div style="font-size: 1.10em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb43" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb43-1"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">box/graph/wrangle/</span></span>
@@ -16053,7 +16053,7 @@ font-style: inherit;">return</span>(plot_vars)</span>
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb45" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># in run.R</span></span>
@@ -16452,7 +16452,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># remotes::install_github("tidyverse/purrr", </span></span>
@@ -16494,7 +16494,7 @@ font-style: inherit;">library</span>(waldo)</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1">sloop<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -16518,7 +16518,7 @@ font-style: italic;">## [1] "S3"      "generic"</span></span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1">sloop<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -16559,7 +16559,7 @@ font-style: italic;">## [1] "data.frame"</span></span></code></pre></div>
 </div>
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">summary</span>(datasets<span class="sc" style="color: #5E5E5E;
@@ -16601,7 +16601,7 @@ font-style: italic;">##  Max.   :423.0   sunflower:12</span></span></code></pre>
 </div>
 <div>
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">plot</span>(datasets<span class="sc" style="color: #5E5E5E;
@@ -16642,7 +16642,7 @@ font-style: inherit;">::</span>chickwts)</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details>
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># get summary of columns ----------------------------------------------------</span></span>
@@ -16820,7 +16820,7 @@ font-style: italic;">## hp          -0.06822828  0.0101193 -6.742389 1.787835e-0
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1">my_list</span>
 <span id="cb7-2"><span class="do" style="color: #5E5E5E;
 background-color: null;
@@ -16859,7 +16859,7 @@ font-style: italic;">##  [1] "B" "t" "N" "o" "w" "h" "Z" "u" "E" "m"</span></spa
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">tolower</span>(my_list) <span class="sc" style="color: #5E5E5E;
@@ -16882,7 +16882,7 @@ font-style: italic;">##  chr [1:3] "c(\"space\", \"position\", \"society\", \"st
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">seq_along</span>(my_list)</span>
@@ -16921,7 +16921,7 @@ font-style: italic;">## [1] "SpaCE"    "pOsitiOn" "sOcIetY"  "sTufF"    "hAnd"</
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">tolower</span>(my_list[[<span class="dv" style="color: #AD0000;
@@ -16946,7 +16946,7 @@ font-style: italic;">## [3] "a whiff of it will cure the most stubborn cold."</s
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">vector</span>(<span class="at" style="color: #657422;
@@ -17023,7 +17023,7 @@ font-style: italic;">## NULL</span></span></code></pre></div>
 <div style="font-size: 1.0em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># define capture object</span></span>
@@ -17143,7 +17143,7 @@ font-style: italic;">##  [1] "b" "t" "n" "o" "w" "h" "z" "u" "e" "m"</span></spa
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">lapply</span>(<span class="at" style="color: #657422;
@@ -17191,7 +17191,7 @@ font-style: italic;">##  [1] "b" "t" "n" "o" "w" "h" "z" "u" "e" "m"</span></spa
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">str</span>(my_list[<span class="dv" style="color: #AD0000;
@@ -17237,7 +17237,7 @@ font-style: italic;">## [5,] "hand"</span></span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">str</span>(my_list[[<span class="dv" style="color: #AD0000;
@@ -17268,7 +17268,7 @@ font-style: italic;">##    "space" "position"  "society"    "stuff"     "hand"</
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1">waldo<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -17303,7 +17303,7 @@ font-style: italic;">## ✔ No differences</span></span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1">waldo<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -17360,7 +17360,7 @@ font-style: italic;">## `new` is a character vector ('space', 'position', 'socie
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">lapply</span>(<span class="at" style="color: #657422;
@@ -17406,7 +17406,7 @@ font-style: italic;">## [1] "t"</span></span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">vapply</span>(<span class="at" style="color: #657422;
@@ -17452,7 +17452,7 @@ font-style: italic;">##                                         "t"</span></span
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details>
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1">tibble<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -17592,7 +17592,7 @@ font-style: inherit;">tolower</span>(?)</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1">my_words <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> my_list[[<span class="st" style="color: #20794D;
@@ -17631,7 +17631,7 @@ font-style: inherit;">=</span> tolower</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1">purrr<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -17683,7 +17683,7 @@ font-style: italic;">##  [1] "b" "t" "n" "o" "w" "h" "z" "u" "e" "m"</span></spa
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1">mixed_list</span>
 <span id="cb25-2"><span class="do" style="color: #5E5E5E;
 background-color: null;
@@ -17741,7 +17741,7 @@ font-style: italic;">## [1] "2023-06-28" "2023-05-19" "2023-03-30"</span></span>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb26" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1">mixed_list <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span> purrr<span class="sc" style="color: #5E5E5E;
@@ -17764,7 +17764,7 @@ font-style: inherit;">is.logical</span>(x))</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1">mixed_list <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span> purrr<span class="sc" style="color: #5E5E5E;
@@ -17787,7 +17787,7 @@ font-style: inherit;">is.integer</span>(x))</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb30" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1">mixed_list <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span> purrr<span class="sc" style="color: #5E5E5E;
@@ -17810,7 +17810,7 @@ font-style: inherit;">is.double</span>(x))</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1">mixed_list <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span> purrr<span class="sc" style="color: #5E5E5E;
@@ -17846,7 +17846,7 @@ font-style: inherit;">is.character</span>(x))</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb35" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1">mixed_list <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span> purrr<span class="sc" style="color: #5E5E5E;
@@ -17869,7 +17869,7 @@ font-style: italic;">##    FALSE    FALSE    FALSE     TRUE    FALSE</span></spa
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb36" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1">mixed_list <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span> purrr<span class="sc" style="color: #5E5E5E;
@@ -17904,7 +17904,7 @@ font-style: italic;">##    FALSE    FALSE    FALSE    FALSE     TRUE</span></spa
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1">(<span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">function</span>(x) <span class="fu" style="color: #4758AB;
@@ -17922,7 +17922,7 @@ font-style: italic;">## [1] "pirates ship"</span></span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb38" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1">(\(x) <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">tolower</span>(x))(<span class="st" style="color: #20794D;
@@ -17939,7 +17939,7 @@ font-style: italic;">## [1] "pirates ship"</span></span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1">my_list <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span> purrr<span class="sc" style="color: #5E5E5E;
@@ -17987,7 +17987,7 @@ font-style: italic;">##  [1] "b" "t" "n" "o" "w" "h" "z" "u" "e" "m"</span></spa
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb40" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1">waldo<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -18092,7 +18092,7 @@ font-style: inherit;">tolower</span>(.x))</span></code></pre></div>
 <div style="font-size: 1.00em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb43" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1">waldo<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -18175,7 +18175,7 @@ purrr::map_df(.x = swdata, .f = tolower)
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb44" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1">nyt_url <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="st" style="color: #20794D;
@@ -18191,7 +18191,7 @@ font-style: inherit;">"https://raw.githubusercontent.com/mjfrigaard/dds-data/mai
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb45" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># create file urls </span></span>
@@ -18215,7 +18215,7 @@ font-style: inherit;">path_dir</span>(nyt_url)</span>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb47" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># create file names for 7th through 13th</span></span>
@@ -18248,7 +18248,7 @@ font-style: inherit;">".csv"</span>)</span>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb49" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># combine</span></span>
@@ -18278,7 +18278,7 @@ font-style: inherit;">"/"</span>)</span>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb51" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1">nyt_local_pths <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
@@ -18302,7 +18302,7 @@ font-style: inherit;">"/"</span>)</span>
 <p>After creating the destination folder, I’ll use the <code>download.file()</code> function to test downloading a single <code>.csv</code> files into my local folder (<code>dds-nyt/</code>). <code>download.file()</code> has a progress bar which tells me if the file downloaded successfully.</p>
 <div style="font-size: 0.90em;">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb53" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># do it for one</span></span>
@@ -18375,7 +18375,7 @@ font-style: inherit;">downloaded</span> 4.7 MB</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb55" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">walk2</span>(<span class="at" style="color: #657422;
@@ -18412,7 +18412,7 @@ font-style: inherit;">TRUE</span>)</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb56" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1">fs<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -18459,7 +18459,7 @@ font-style: italic;">## └── nyt9.csv</span></span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb57" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1">file_pths <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
@@ -18492,7 +18492,7 @@ font-style: italic;">## [7] "dds-nyt/nyt9.csv"</span></span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb58" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># do it for one</span></span>
@@ -18582,7 +18582,7 @@ font-style: inherit;">"dds-nyt/raw"</span>))</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb59" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1">fs<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -18637,7 +18637,7 @@ font-style: italic;">## └── nyt10.csv</span></span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb60" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1">purrr<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -18703,7 +18703,7 @@ font-style: italic;">## └── nyt9.csv</span></span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb61" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1">fs<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -18719,7 +18719,7 @@ font-style: inherit;">1</span>])</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb62" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb62-1"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">Error</span> in <span class="kw" style="color: #003B4F;
@@ -18749,7 +18749,7 @@ font-style: inherit;">'dds-nyt/nyt10.csv'</span>: no such file or directory</spa
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb63" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1">purrr<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">:::</span><span class="fu" style="color: #4758AB;
@@ -18793,7 +18793,7 @@ font-style: inherit;">::</span>file_delete)</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb64" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1">fs<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -18849,7 +18849,7 @@ font-style: italic;">##     └── nyt9.csv</span></span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb65" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1">nyt1 <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> vroom<span class="sc" style="color: #5E5E5E;
@@ -18937,7 +18937,7 @@ font-style: italic;">##  - attr(*, "problems")=&lt;externalptr&gt;</span></span>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details>
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb66" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1">nyt_data_processing <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
@@ -19268,7 +19268,7 @@ font-style: inherit;">return</span>(nyt_proc)</span>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb67" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1">nyt1_proc <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
@@ -19341,7 +19341,7 @@ font-style: italic;">##  - attr(*, "problems")=&lt;externalptr&gt;</span></span>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb68" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">nyt_data_processing</span>(nyt1_proc)</span>
@@ -19358,7 +19358,7 @@ font-style: italic;">## ! these data don't have the correct columns!</span></spa
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb69" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1">raw_data_pths <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
@@ -19383,7 +19383,7 @@ font-style: inherit;">TRUE</span>)</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb70" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1">raw_data_pths <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span> </span>
@@ -19530,7 +19530,7 @@ font-style: italic;">##   ..- attr(*, "problems")=&lt;externalptr&gt;</span></sp
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb71" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1">raw_data_pths <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span> purrr<span class="sc" style="color: #5E5E5E;
@@ -19563,7 +19563,7 @@ font-style: italic;">##  "dds-nyt/raw/nyt9.csv"</span></span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb72" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1">raw_data_pths <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span> </span>
@@ -19719,7 +19719,7 @@ font-style: italic;">##   ..- attr(*, "problems")=&lt;externalptr&gt;</span></sp
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb73" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1">raw_data_pths <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span> </span>
@@ -19907,7 +19907,7 @@ font-style: italic;">##   ..- attr(*, "problems")=&lt;externalptr&gt;</span></sp
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb74" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1">raw_data_pths <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span> </span>
@@ -20014,7 +20014,7 @@ font-style: italic;">## $ female      &lt;fct&gt; no, yes, yes, no, no, no, yes,
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb75" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1">nyt_data_proc <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> raw_data_pths <span class="sc" style="color: #5E5E5E;
@@ -20080,7 +20080,7 @@ font-style: inherit;">"id"</span>) </span></code></pre></div>
 </div>
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb76" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1">nyt_data_proc <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span> dplyr<span class="sc" style="color: #5E5E5E;
@@ -20134,7 +20134,7 @@ font-style: italic;">## 7 dds-nyt/raw/nyt9.csv  459472</span></span></code></pre
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb77" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># create file names </span></span>
@@ -20219,7 +20219,7 @@ font-style: italic;">## 7 dds-nyt/processed/2023-07-08-nyt9  459472</span></span
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb78" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">split</span>(<span class="at" style="color: #657422;
@@ -20374,7 +20374,7 @@ font-style: italic;">## $ proc_file_pth &lt;chr&gt; "dds-nyt/processed/2023-07-0
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb79" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1">fs<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -20391,7 +20391,7 @@ font-style: inherit;">"dds-nyt/processed/"</span>)</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb80" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># split nyt_data_proc (.x)</span></span>
@@ -20414,7 +20414,7 @@ font-style: inherit;">$</span>proc_file_pth)</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb81" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># get unique processed paths in nyt_data_proc (.y) with .csv extension</span></span>
@@ -20458,7 +20458,7 @@ font-style: italic;">## [7] "dds-nyt/processed/2023-07-08-nyt9.csv"</span></span
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb82" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># iterate with .f</span></span>
@@ -20488,7 +20488,7 @@ font-style: inherit;"># or as an anonymous function </span></span></code></pre><
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb83" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1">nyt_data_proc <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span> </span>
@@ -20526,7 +20526,7 @@ font-style: inherit;">","</span>))</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb84" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1">nyt1_proc_check_01 <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> vroom<span class="sc" style="color: #5E5E5E;
@@ -20556,7 +20556,7 @@ font-style: inherit;">FALSE</span>)</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details>
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb85" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1">waldo<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -20623,7 +20623,7 @@ font-style: italic;">##                   - "proc_file_pth" [11]</span></span></
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb86" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">walk</span>(<span class="at" style="color: #657422;
@@ -20698,7 +20698,7 @@ font-style: italic;">##     └── nyt9.csv</span></span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb87" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1">nyt_data_proc <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">|&gt;</span> </span>
@@ -20743,7 +20743,7 @@ font-style: inherit;">","</span>))</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb88" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># now re-create</span></span>
@@ -20837,7 +20837,7 @@ font-style: italic;">## └── 2023-07-08-nyt9.csv</span></span></code></pre>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb89" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># now re-check</span></span>
@@ -20869,7 +20869,7 @@ font-style: inherit;">FALSE</span>)</span></code></pre></div>
 <div style="font-size: 0.90em;">
 <div class="cell">
 <details open="">
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb90" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1">waldo<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -21242,7 +21242,7 @@ font-style: inherit;">"moviesApp"</span>)</span></code></pre></div>
 </div>
 <div class="cell">
 <details>
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1">mod_var_input_ui <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
@@ -21553,7 +21553,7 @@ font-style: inherit;">"Enter plot title"</span></span>
 </div>
 <div class="cell">
 <details>
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1">mod_var_input_server <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
@@ -21788,7 +21788,7 @@ font-style: inherit;">var_inputs =</span> selected_vars)</span>
 </div>
 <div class="cell">
 <details>
-<summary>show/hide</summary>
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#' Plot points (shiny)</span></span>
@@ -22619,7 +22619,7 @@ font-style: inherit;">use_testthat</span>()</span></code></pre></div>
   <category>devtools</category>
   <category>packages</category>
   <guid>https://mjfrigaard.github.io/posts/duap/index.html</guid>
-  <pubDate>Fri, 10 Mar 2023 08:00:00 GMT</pubDate>
+  <pubDate>Fri, 10 Mar 2023 07:00:00 GMT</pubDate>
   <media:content url="https://mjfrigaard.github.io/posts/duap/image.png" medium="image" type="image/png" height="81" width="144"/>
 </item>
 </channel>

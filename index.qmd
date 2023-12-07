@@ -1,16 +1,35 @@
 ---
-#title: "@mjfrigaard"
-title: ""
-listing:
-  contents: posts
-  sort: "date desc"
-  type: default
-  categories: true
-  sort-ui: false
-  filter-ui: false
-  
-page-layout: full
-title-block-banner: true
+format:
+  html: 
+    toc: false
+    grid:
+      sidebar-width: 0px
+      body-width: 800px
+      margin-width: 0px
+      gutter-width: 1.5rem
+sidebar: false
+page-navigation: false
+image: profile.png
+about:
+  template: jolla
+  links:
+    - icon: twitter
+      text: Twitter
+      href: https://twitter.com/mjfrigaard
+    - icon: linkedin
+      text: LinkedIn
+      href: https://www.linkedin.com/in/mjfrigaard/
+    - icon: github
+      text: Github
+      href: https://github.com/mjfrigaard
+    - icon: envelope
+      text: Email
+      href: mailto:mjfrigaard@pm.me
+
 ---
 
+Hi! I am Martin Frigaard. This is my personal blog where I write about projects I'm currently working on (or topics I'm thinking about). 
 
+I build Shiny applications and write R packages. I also create training materials and workshops on data management, visualizations, and reproducible research. I have 15 years of experience with data analysis, statistics, and research. I'm also a fully certified [`tidyverse` trainer](https://education.rstudio.com/trainers/).
+
+Check out my other website [here.](https://www.martinfrigaard.io/)

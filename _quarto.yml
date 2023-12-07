@@ -8,9 +8,11 @@ website:
   repo-url: https://github.com/mjfrigaard/mjfrigaard.github.io
   description: "Martin Frigaard's personal website"
   twitter-card: true
+  search:
+    location: navbar
+    type: textbox
   navbar:
     right:
-      - about.qmd
       - icon: github
         href: https://github.com/mjfrigaard
       - icon: twitter
