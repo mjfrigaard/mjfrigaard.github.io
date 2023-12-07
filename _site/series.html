@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="description" content="Martin Frigaard’s personal website.">
 
 <title>@mjfrigaard - Series</title>
 <style>
@@ -188,8 +189,6 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#testing-shiny-apps" id="toc-testing-shiny-apps" class="nav-link active" data-scroll-target="#testing-shiny-apps">Testing shiny apps</a></li>
-  <li><a href="#shiny-frameworks" id="toc-shiny-frameworks" class="nav-link" data-scroll-target="#shiny-frameworks">Shiny frameworks</a></li>
-  <li><a href="#other-projects" id="toc-other-projects" class="nav-link" data-scroll-target="#other-projects">Other projects</a></li>
   </ul>
 </nav>
 </nav>
@@ -307,11 +306,43 @@ Testing details
 </div>
 </div>
 </div>
+<!--
+## Shiny frameworks
+
+This series covers building shiny app-packages with [`devtools`](https://mastering-shiny.org/scaling-packaging.html) and other popular shiny frameworks ([`golem`](https://thinkr-open.github.io/golem/), [`rhino`](https://appsilon.github.io/rhino/), and [`leprechaun`](https://leprechaun.opifex.org/#/)).
+
+::: {#shiny-frameworks}
+:::
+
+
+::: {.callout-note collapse="true" title="shiny frameworks"}
+
+::: {style="font-size: 1.02em"}
+
+:::
+
+:::
+
+## Other projects
+
+| Project   | Description                                | Purpose                                                                     |
+|-----------|--------------------------------------------|-----------------------------------------------------------------------------|
+| `duap`    | `devtools`/`usethis` app-package           | Demonstrates building an app-package with standard R package tools          |
+| `gap`     | `golem` app-package                        | Demonstrates `golem` framework                                              |
+| `rnap`    | `rhino` app-non-package                    | Demonstrates `rhino` framework (and `box`)                                  |
+| `utap`    | Unit testing app-package                   | Demonstrates testing utility functions in shiny app-package.                |
+| `mstsap`  | Mastering Shiny `testServer()` app-package | Demonstrates using shiny's `testServer()` function for integration testing. |
+| `msst2ap` | Mastering Shiny `shinytest2` app-package   | Demonstrates using `shinytest2` for end-to-end testing                      |
+| `lap`     | `leprechaun` app-package                   | Demonstrates `leprechaun` framework in an app-package                       |
+| `dbsap`   | Debugging shiny app-package                |                                                                             |
+|           |                                            |                                                                             |
+-->
+
+
+
 </section>
-<section id="shiny-frameworks" class="level2">
-<h2 class="anchored" data-anchor-id="shiny-frameworks">Shiny frameworks</h2>
-<p>This series covers building shiny app-packages with <a href="https://mastering-shiny.org/scaling-packaging.html"><code>devtools</code></a> and other popular shiny frameworks (<a href="https://thinkr-open.github.io/golem/"><code>golem</code></a>, <a href="https://appsilon.github.io/rhino/"><code>rhino</code></a>, and <a href="https://leprechaun.opifex.org/#/"><code>leprechaun</code></a>).</p>
-<div id="listing-shiny-frameworks" class="quarto-listing quarto-listing-container-table">
+
+<div class="quarto-listing quarto-listing-container-table" id="listing-shiny-frameworks">
 
 <table class="quarto-listing-table table table-striped">
 <thead>
@@ -363,95 +394,7 @@ Date
 <div class="listing-no-matching d-none">
 No matching items
 </div>
-</div>
-<div class="callout callout-style-default callout-note no-icon callout-titled" title="shiny frameworks">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-shiny frameworks
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<div style="font-size: 1.02em">
-
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="other-projects" class="level2">
-<h2 class="anchored" data-anchor-id="other-projects">Other projects</h2>
-<table class="table">
-<colgroup>
-<col style="width: 8%">
-<col style="width: 33%">
-<col style="width: 58%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Project</th>
-<th>Description</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>duap</code></td>
-<td><code>devtools</code>/<code>usethis</code> app-package</td>
-<td>Demonstrates building an app-package with standard R package tools</td>
-</tr>
-<tr class="even">
-<td><code>gap</code></td>
-<td><code>golem</code> app-package</td>
-<td>Demonstrates <code>golem</code> framework</td>
-</tr>
-<tr class="odd">
-<td><code>rnap</code></td>
-<td><code>rhino</code> app-non-package</td>
-<td>Demonstrates <code>rhino</code> framework (and <code>box</code>)</td>
-</tr>
-<tr class="even">
-<td><code>utap</code></td>
-<td>Unit testing app-package</td>
-<td>Demonstrates testing utility functions in shiny app-package.</td>
-</tr>
-<tr class="odd">
-<td><code>mstsap</code></td>
-<td>Mastering Shiny <code>testServer()</code> app-package</td>
-<td>Demonstrates using shiny’s <code>testServer()</code> function for integration testing.</td>
-</tr>
-<tr class="even">
-<td><code>msst2ap</code></td>
-<td>Mastering Shiny <code>shinytest2</code> app-package</td>
-<td>Demonstrates using <code>shinytest2</code> for end-to-end testing</td>
-</tr>
-<tr class="odd">
-<td><code>lap</code></td>
-<td><code>leprechaun</code> app-package</td>
-<td>Demonstrates <code>leprechaun</code> framework in an app-package</td>
-</tr>
-<tr class="even">
-<td><code>dbsap</code></td>
-<td>Debugging shiny app-package</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-
-
-
-</section>
-
-</main> <!-- /main -->
+</div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

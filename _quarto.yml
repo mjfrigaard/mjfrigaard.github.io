@@ -1,6 +1,8 @@
 project:
   type: website
 
+description-meta: "Martin Frigaard's personal website."
+
 website:
   title: "@mjfrigaard"
   favicon: profile.png
@@ -42,10 +44,12 @@ format:
     # code-block-border-left: true
     code-block-bg: "#f8f8f8"
     code-block-border-left: "#e8e8e8"
-    fig-align: center
     code-fold: show
     code-summary: 'show/hide'
 
 knitr:
   opts_chunk: 
     collapse: true
+    
+editor:
+  mode: source
