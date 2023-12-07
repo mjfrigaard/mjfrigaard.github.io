@@ -96,7 +96,7 @@ This is the fourth post in a [series on testing](https://mjfrigaard.github.io/#c
 #| eval: true 
 #| message: false 
 #| warning: false
-library(tsap) # app package 
+library(mstsap) # app package 
 library(palmerpenguins) # data
 library(NHANES) # data
 library(dplyr) # function
@@ -125,12 +125,12 @@ The warning resolves itself without causing the application to crash, but it's d
 
 ## `testServer()` app-package
 
-If you'd like to follow along, you can download `tsap` [here](https://github.com/mjfrigaard/tsap/archive/refs/heads/main.zip) or install it using the following: 
+If you'd like to follow along, you can download `mstsap` [here](https://github.com/mjfrigaard/mstsap/archive/refs/heads/main.zip) or install it using the following: 
 
 ```{r}
 #| code-fold: false
 #| eval: false
-remotes::install_github("mjfrigaard/tsap",
+remotes::install_github("mjfrigaard/mstsap",
   force = TRUE, quiet = TRUE)
 library(tsap)
 ```

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.353">
+<meta name="generator" content="quarto-1.3.450">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -47,7 +47,7 @@ ul.task-list li input[type="checkbox"] {
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "end",
-  "type": "overlay",
+  "type": "textbox",
   "limit": 20,
   "language": {
     "search-no-results-text": "No results",
@@ -58,7 +58,8 @@ ul.task-list li input[type="checkbox"] {
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 <script>
@@ -161,10 +162,6 @@ ul.task-list li input[type="checkbox"] {
   </li>
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
-  <li class="nav-item">
-    <a class="nav-link" href="./about.html" rel="" target="">
- <span class="menu-text">About</span></a>
-  </li>  
   <li class="nav-item compact">
     <a class="nav-link" href="https://github.com/mjfrigaard" rel="" target=""><i class="bi bi-github" role="img">
 </i> 
@@ -192,6 +189,7 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#testing-shiny-apps" id="toc-testing-shiny-apps" class="nav-link active" data-scroll-target="#testing-shiny-apps">Testing shiny apps</a></li>
   <li><a href="#shiny-frameworks" id="toc-shiny-frameworks" class="nav-link" data-scroll-target="#shiny-frameworks">Shiny frameworks</a></li>
+  <li><a href="#other-projects" id="toc-other-projects" class="nav-link" data-scroll-target="#other-projects">Other projects</a></li>
   </ul>
 </nav>
 </nav>
@@ -222,29 +220,6 @@ ul.task-list li input[type="checkbox"] {
 <section id="testing-shiny-apps" class="level2">
 <h2 class="anchored" data-anchor-id="testing-shiny-apps">Testing shiny apps</h2>
 <p>These posts focus on testing shiny applications with <code>testthat</code>, <code>shiny::testServer()</code>, and <code>shinytest2</code>.</p>
-<div class="callout callout-style-default callout-note no-icon callout-titled" title="Types of tests">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Types of tests
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<div style="font-size: 1.10em">
-<ul>
-<li><p><span style="font-size: 1.20em"><strong><code>testthat</code></strong></span>: <code>testthat</code> is a popular unit testing framework that allows R package developers to create tests scripts for functions and logic systematically. In a shiny app-package, it’s used for testing the non-reactive components (i.e., utility functions). This includes functions for data processing, plots, modeling, and other code that’s part of the package. However, it is not designed to work with shiny’s reactive model.</p></li>
-<li><p><span style="font-size: 1.20em"><strong><code>testServer()</code></strong></span>: <code>testServer()</code> comes from the shiny package and is designed to test the <code>server</code>-side logic of your app. These tests can be used to simulate user inputs and verify the corresponding outputs. <code>testServer()</code> can also test the functionality of module <code>server</code> functions (reactivity, outputs, and any returned values) in isolation from their UI function counterparts. However, <code>testServer()</code> doesn’t capture how UI elements are rendered or simulate key user interactions (i.e., execution paths) through the application.</p></li>
-<li><p><span style="font-size: 1.20em"><strong><code>shinytest2()</code></strong></span>: <code>shinytest2</code> is designed to perform end-to-end testing of shiny apps. These tests can capture a shiny app’s current state (i.e., a snapshot) and compare it with a previously saved (or expected) states. Snapshots are useful for end-to-end testing because they can simulate key user interaction in a way that unit tests and <code>testServer()</code> can’t (i.e., the delay between input changes and rendering updated outputs, specific sequences of selections on action buttons, radio buttons, etc.). <code>shinytest2</code> tests are resource-intensive, so it’s recommended to write these tests after writing <code>testthat</code> unit tests and <code>testServer()</code> tests.</p></li>
-</ul>
-<p>In summary, use <code>testthat</code> for unit testing utility/helper functions, then <code>testServer()</code> for the server-side logic, and finish off with <code>shinytest2</code> tests for end-to-end functionality of your shiny app. These tools complement each other to provide a comprehensive testing framework.</p>
-</div>
-</div>
-</div>
-</div>
 <div id="listing-testing" class="quarto-listing quarto-listing-container-table">
 
 <table class="quarto-listing-table table table-striped">
@@ -298,34 +273,36 @@ Date
 No matching items
 </div>
 </div>
-<div class="callout callout-style-default callout-tip no-icon callout-titled" title="Post details">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Testing details">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Post details
+Testing details
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div style="font-size: 1.10em">
+<div style="font-size: 1.02em">
 <ul>
-<li><p><strong>Unit testing shiny utility functions</strong>: This post covers unit testing a set of utility functions with testthat. You can also read the documentation from the <a href="https://testthat.r-lib.org/">package website</a>, in <a href="https://r-pkgs.org/testing-basics.html">R packages</a>, and in <a href="https://mastering-shiny.org/scaling-testing.html">Mastering Shiny</a>. The app-package for this post is stored in <a href="https://github.com/mjfrigaard/utap">this Github Repo</a>.</p>
+<li><span style="font-size: 1.20em"><strong><code>testthat</code></strong></span>: <code>testthat</code> is a popular unit testing framework that allows R package developers to create tests scripts for functions and logic systematically. In a shiny app-package, it’s used for testing the non-reactive components (i.e., utility functions). This includes functions for data processing, plots, modeling, and other code that’s part of the package. However, it is not designed to work with shiny’s reactive model.
 <ul>
-<li><a href="https://mjfrigaard.github.io/utap/">Package website</a></li>
+<li><strong>Post: Unit testing shiny utility functions</strong>: This post covers unit testing a set of utility functions with testthat. You can also read the documentation from the <a href="https://testthat.r-lib.org/">package website</a>, in <a href="https://r-pkgs.org/testing-basics.html">R packages</a>, and in <a href="https://mastering-shiny.org/scaling-testing.html">Mastering Shiny</a>. The app-package for this post is stored in <a href="https://github.com/mjfrigaard/utap">this Github Repo</a>.<br>
+</li>
+<li><strong>Post: Unit tests for (non-package) shiny apps</strong>: Your shiny app <em>should</em> be developed as a package, but this isn’t always the case. If you’d like to test your application’s code <em>without</em> converting it to a package, check out the second post (<a href="https://github.com/mjfrigaard/noap">GitHub repo</a> with the code).</li>
 </ul></li>
-<li><p><strong>Unit tests for (non-package) shiny apps</strong>: Your shiny app <em>should</em> be developed as a package, but this isn’t always the case. If you’d like to test your application’s code <em>without</em> converting it to a package, check out the second post (<a href="https://github.com/mjfrigaard/noap">GitHub repo</a> with the code).</p></li>
-<li><p><strong>Testing shiny module server functions</strong>: If you’ve built your shiny application as a package and it contains modules, this post covers <strong>testing module server functions</strong> using the examples from the <a href="https://mastering-shiny.org/scaling-modules.html">‘Modules’ chapter of Mastering Shiny</a>. The code and examples are in <a href="https://github.com/mjfrigaard/mstsap">this GitHub repo</a></p>
+<li><span style="font-size: 1.20em"><strong><code>testServer()</code></strong></span>: <code>testServer()</code> comes from the shiny package and is designed to test the <code>server</code>-side logic of your app. These tests can be used to simulate user inputs and verify the corresponding outputs. <code>testServer()</code> can also test the functionality of module <code>server</code> functions (reactivity, outputs, and any returned values) in isolation from their UI function counterparts. However, <code>testServer()</code> doesn’t capture how UI elements are rendered or simulate key user interactions (i.e., execution paths) through the application.
 <ul>
-<li><a href="https://mjfrigaard.github.io/mstsap/">Package website</a></li>
+<li><strong>Post: Testing shiny module server functions</strong>: If you’ve built your shiny application as a package and it contains modules, this post covers testing module server functions using the examples from the <a href="https://mastering-shiny.org/scaling-modules.html">‘Modules’ chapter of Mastering Shiny</a>. The code and examples are in <a href="https://github.com/mjfrigaard/mstsap">this GitHub repo</a></li>
 </ul></li>
-<li><p><strong>Testing shiny apps with <code>shinytest2</code></strong>: This post picks up where the previous post left off with the <a href="https://rstudio.github.io/shinytest2/index.html"><code>shinytest2</code> package</a>. The app-package used in the examples is stored in <a href="https://github.com/mjfrigaard/msst2ap">this GitHub repo</a>.</p>
+<li><span style="font-size: 1.20em"><strong><code>shinytest2()</code></strong></span>: <code>shinytest2</code> is designed to perform end-to-end testing of shiny apps. These tests can capture a shiny app’s current state (i.e., a snapshot) and compare it with a previously saved (or expected) states. Snapshots are useful for end-to-end testing because they can simulate key user interaction in a way that unit tests and <code>testServer()</code> can’t (i.e., the delay between input changes and rendering updated outputs, specific sequences of selections on action buttons, radio buttons, etc.). <code>shinytest2</code> tests are resource-intensive, so it’s recommended to write these tests after writing <code>testthat</code> unit tests and <code>testServer()</code> tests.
 <ul>
-<li><a href="https://mjfrigaard.github.io/msst2ap/">Package website</a></li>
+<li><strong>Post: Testing shiny apps with <code>shinytest2</code></strong>: This post picks up where the previous post left off with the <a href="https://rstudio.github.io/shinytest2/index.html"><code>shinytest2</code> package</a>. The app-package used in the examples is stored in <a href="https://github.com/mjfrigaard/msst2ap">this GitHub repo</a>.</li>
 </ul></li>
 </ul>
+<p>In summary, use <code>testthat</code> for unit testing utility/helper functions, then <code>testServer()</code> for the server-side logic, and finish off with <code>shinytest2</code> tests for end-to-end functionality of your shiny app. These tools complement each other to provide a comprehensive testing framework.</p>
 </div>
 </div>
 </div>
@@ -364,7 +341,7 @@ Date
 <span class="listing-date">Jun 1, 2023</span>
 </td>
 </tr>
-<tr data-index="2" data-categories="shiny,rhino" data-listing-date-sort="1688194800000" data-listing-file-modified-sort="1689696336664" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-title-sort="rhino shiny apps" data-listing-filename-sort="index.qmd">
+<tr data-index="2" data-categories="shiny,rhino" data-listing-date-sort="1688194800000" data-listing-file-modified-sort="1701924614689" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-title-sort="rhino shiny apps" data-listing-filename-sort="index.qmd">
 <td>
 <a href="./series/shiny-frameworks/rhino/index.html" class="title listing-title">rhino shiny apps</a>
 </td>
@@ -372,7 +349,7 @@ Date
 <span class="listing-date">Jul 1, 2023</span>
 </td>
 </tr>
-<tr data-index="3" data-categories="shiny,leprechaun" data-listing-date-sort="1689836400000" data-listing-file-modified-sort="1689696327453" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-title-sort="leprechaun shiny app-packages" data-listing-filename-sort="index.qmd">
+<tr data-index="3" data-categories="shiny,leprechaun" data-listing-date-sort="1689836400000" data-listing-file-modified-sort="1689809819588" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="61" data-listing-title-sort="leprechaun shiny app-packages" data-listing-filename-sort="index.qmd">
 <td>
 <a href="./series/shiny-frameworks/leprechaun/index.html" class="title listing-title">leprechaun shiny app-packages</a>
 </td>
@@ -387,6 +364,88 @@ Date
 No matching items
 </div>
 </div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="shiny frameworks">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+shiny frameworks
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.02em">
+
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="other-projects" class="level2">
+<h2 class="anchored" data-anchor-id="other-projects">Other projects</h2>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 33%">
+<col style="width: 58%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Project</th>
+<th>Description</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>duap</code></td>
+<td><code>devtools</code>/<code>usethis</code> app-package</td>
+<td>Demonstrates building an app-package with standard R package tools</td>
+</tr>
+<tr class="even">
+<td><code>gap</code></td>
+<td><code>golem</code> app-package</td>
+<td>Demonstrates <code>golem</code> framework</td>
+</tr>
+<tr class="odd">
+<td><code>rnap</code></td>
+<td><code>rhino</code> app-non-package</td>
+<td>Demonstrates <code>rhino</code> framework (and <code>box</code>)</td>
+</tr>
+<tr class="even">
+<td><code>utap</code></td>
+<td>Unit testing app-package</td>
+<td>Demonstrates testing utility functions in shiny app-package.</td>
+</tr>
+<tr class="odd">
+<td><code>mstsap</code></td>
+<td>Mastering Shiny <code>testServer()</code> app-package</td>
+<td>Demonstrates using shiny’s <code>testServer()</code> function for integration testing.</td>
+</tr>
+<tr class="even">
+<td><code>msst2ap</code></td>
+<td>Mastering Shiny <code>shinytest2</code> app-package</td>
+<td>Demonstrates using <code>shinytest2</code> for end-to-end testing</td>
+</tr>
+<tr class="odd">
+<td><code>lap</code></td>
+<td><code>leprechaun</code> app-package</td>
+<td>Demonstrates <code>leprechaun</code> framework in an app-package</td>
+</tr>
+<tr class="even">
+<td><code>dbsap</code></td>
+<td>Debugging shiny app-package</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 
 
 
