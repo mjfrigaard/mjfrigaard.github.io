@@ -10,7 +10,7 @@
 <meta name="dcterms.date" content="2023-06-23">
 <meta name="description" content="Martin Frigaard’s personal website.">
 
-<title>@mjfrigaard - Debugging shiny apps</title>
+<title>@mjfrigaard - Debugging Shiny apps</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -99,7 +99,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
 
-<meta name="twitter:title" content="@mjfrigaard - Debugging shiny apps">
+<meta name="twitter:title" content="@mjfrigaard - Debugging Shiny apps">
 <meta name="twitter:description" content="Investigating shiny bugs using call stacks, browser(), and tests">
 <meta name="twitter:image" content="https://mjfrigaard.github.io/posts/debugging-shiny/image.png">
 <meta name="twitter:image-height" content="1604">
@@ -139,6 +139,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
     </ul>
   </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../code.html" rel="" target="">
+ <span class="menu-text">Code</span></a>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
@@ -162,7 +166,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Debugging shiny apps</h1>
+      <h1 class="title">Debugging Shiny apps</h1>
             <p class="subtitle lead">Investigating shiny bugs using call stacks, browser(), and tests</p>
                                 <div class="quarto-categories">
                 <div class="quarto-category">code</div>
@@ -296,11 +300,10 @@ ALERT!
 <h2 class="anchored" data-anchor-id="testserver-app-package"><code>testServer()</code> app-package</h2>
 <p>If you’d like to follow along, you can download <code>mstsap</code> <a href="https://github.com/mjfrigaard/mstsap/archive/refs/heads/main.zip">here</a> or install it using the following:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"mjfrigaard/mstsap"</span>,</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">force =</span> <span class="cn">TRUE</span>, <span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tsap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">"mjfrigaard/mstsap"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mstsap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>I’ll quickly review the contents of <code>tsap</code>. The <a href="https://github.com/mjfrigaard/tsap/tree/main/R"><code>R/</code> folder</a> contains files for the modules:</p>
+<p>I’ll quickly review the contents of <code>mstsap</code>. The <a href="https://github.com/mjfrigaard/tsap/tree/main/R"><code>R/</code> folder</a> contains files for the modules:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>R/</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>├── mod_cols.R</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>├── mod_ds.R</span>
@@ -651,7 +654,7 @@ Stack traces in shiny
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">facet_var =</span> <span class="st">"race1"</span>,</span>
 <span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="dv">1</span> <span class="sc">/</span> <span class="dv">3</span>,</span>
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">size =</span> <span class="dv">2</span>)</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="do">## Error in loadNamespace(i, c(lib.loc, .libPaths()), versionCheck = vI[[i]]): there is no package called 'zeallot'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="do">## Error in loadNamespace(x): there is no package called 'tsap'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>After the error, I call <code>traceback()</code>:</p>

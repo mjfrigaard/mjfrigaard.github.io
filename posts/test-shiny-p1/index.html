@@ -10,7 +10,7 @@
 <meta name="dcterms.date" content="2023-05-01">
 <meta name="description" content="Martin Frigaard’s personal website.">
 
-<title>@mjfrigaard - Unit testing shiny utility functions</title>
+<title>@mjfrigaard - Unit testing Shiny utility functions</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -97,13 +97,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<link href="../../site_libs/selectize-0.12.4/css/selectize.bootstrap3.css" rel="stylesheet">
-<script src="../../site_libs/selectize-0.12.4/js/selectize.min.js"></script>
-<script src="../../site_libs/selectize-0.12.4/accessibility/js/selectize-plugin-a11y.min.js"></script>
+<link href="../../site_libs/selectize-0.15.2/css/selectize.bootstrap3.css" rel="stylesheet">
+<script src="../../site_libs/selectize-0.15.2/js/selectize.min.js"></script>
+<script src="../../site_libs/selectize-0.15.2/accessibility/js/selectize-plugin-a11y.min.js"></script>
 
 
-<meta name="twitter:title" content="@mjfrigaard - Unit testing shiny utility functions">
-<meta name="twitter:description" content="Part 1: Unit tests in shiny app-packages">
+<meta name="twitter:title" content="@mjfrigaard - Unit testing Shiny utility functions">
+<meta name="twitter:description" content="Part 1: Unit tests in Shiny app-packages">
 <meta name="twitter:image" content="https://mjfrigaard.github.io/posts/test-shiny-p1/image.png">
 <meta name="twitter:image-height" content="749">
 <meta name="twitter:image-width" content="561">
@@ -142,6 +142,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
     </ul>
   </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../code.html" rel="" target="">
+ <span class="menu-text">Code</span></a>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
@@ -165,8 +169,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Unit testing shiny utility functions</h1>
-            <p class="subtitle lead">Part 1: Unit tests in shiny app-packages</p>
+      <h1 class="title">Unit testing Shiny utility functions</h1>
+            <p class="subtitle lead">Part 1: Unit tests in Shiny app-packages</p>
                                 <div class="quarto-categories">
                 <div class="quarto-category">shiny</div>
                 <div class="quarto-category">testing</div>
@@ -474,7 +478,7 @@ TIPS: Unit tests
 <div class="form-group shiny-input-container">
 <label class="control-label" id="num_cols-label" for="num_cols">X variable:</label>
 <div>
-<select id="num_cols"><option value="bill_length_mm" selected="">bill_length_mm</option>
+<select id="num_cols" class="shiny-input-select"><option value="bill_length_mm" selected="">bill_length_mm</option>
 <option value="bill_depth_mm">bill_depth_mm</option>
 <option value="flipper_length_mm">flipper_length_mm</option>
 <option value="body_mass_g">body_mass_g</option>

@@ -8,7 +8,7 @@
 
 <meta name="description" content="Martin Frigaard’s personal website.">
 
-<title>&lt;span class="citation" data-cites="mjfrigaard"&gt;@mjfrigaard&lt;/span&gt;</title>
+<title>@mjfrigaard – code</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -35,6 +35,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
@@ -62,9 +63,6 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
-<meta name="twitter:title" content="">
-<meta name="twitter:description" content="">
-<meta name="twitter:card" content="summary">
 </head>
 
 <body class="nav-fixed fullcontent">
@@ -100,7 +98,7 @@ ul.task-list li input[type="checkbox"] {
     </ul>
   </li>
   <li class="nav-item">
-    <a class="nav-link" href="./code.html" rel="" target="">
+    <a class="nav-link active" href="./code.html" rel="" target="" aria-current="page">
  <span class="menu-text">Code</span></a>
   </li>  
 </ul>
@@ -128,29 +126,40 @@ ul.task-list li input[type="checkbox"] {
 <!-- margin-sidebar -->
     
 <!-- main -->
-<div class="quarto-about-jolla">
-  <img src="profile.png" class="about-image
-  round " style="height: 15em; width: 15em;">
- <main class="content" id="quarto-document-content">
-<p>Hi! I am Martin Frigaard. This is my personal blog where I write about projects I’m currently working on (or topics I’m thinking about).</p>
-<p>I build Shiny applications and write R packages. I also create training materials and workshops on data management, visualizations, and reproducible research. I have 15 years of experience with data analysis, statistics, and research. I’m also a fully certified <a href="https://education.rstudio.com/trainers/"><code>tidyverse</code> trainer</a>.</p>
-<p>Check out my other website <a href="https://www.martinfrigaard.io/">here.</a></p>
+<main class="content" id="quarto-document-content">
 
 
-</main> 
-  <hr class="about-sep">
-   <div class="about-links">
-  <a href="https://github.com/mjfrigaard" class="about-link" rel="" target="">
-    <i class="bi bi-github"></i>
-     <span class="about-link-text">Github</span>
-  </a>
-  <a href="mailto:mjfrigaard@pm.me" class="about-link" rel="" target="">
-    <i class="bi bi-envelope"></i>
-     <span class="about-link-text">Email</span>
-  </a>
-</div>
-</div>
- <!-- /main -->
+
+<center>
+These are some of the projects I’m currently working on.
+</center>
+<section id="books" class="level2">
+<h2 class="anchored" data-anchor-id="books">Books</h2>
+<ul>
+<li><strong><a href="https://github.com/mjfrigaard/shiny-app-pkgs">Shiny App-Packages</a></strong> creating a Shiny application in an R package [<a href="https://github.com/mjfrigaard/shiny-app-pkgs"><strong>Repo</strong></a> | <a href="https://github.com/mjfrigaard/shinyap"><strong>R package</strong></a>]</li>
+<li><strong><a href="https://mjfrigaard.github.io/fm-ggp2/">fm-ggp2</a></strong> a <code>ggplot2</code> field manual [<a href="https://github.com/mjfrigaard/fm-ggp2"><strong>Repo</strong></a>]</li>
+</ul>
+</section>
+<section id="r-packages" class="level2">
+<h2 class="anchored" data-anchor-id="r-packages">R Packages</h2>
+<ul>
+<li><strong><a href="https://mjfrigaard.github.io/gerp/">gerp</a></strong> Good enough R practices [<a href="https://github.com/mjfrigaard/gerp"><strong>Repo</strong></a>]</li>
+<li><strong><a href="https://mjfrigaard.github.io/pickler/">pickler</a></strong> Gherkin style tests in R [<a href="https://github.com/mjfrigaard/pickler"><strong>Repo</strong></a>]</li>
+</ul>
+</section>
+<section id="miscellaneous-side-projects" class="level2">
+<h2 class="anchored" data-anchor-id="miscellaneous-side-projects">Miscellaneous Side Projects</h2>
+<ul>
+<li><p><a href="mjfrigaard.github.io/sfw/"><strong>Shiny Frameworks (website)</strong></a> a demo Shiny app using three popular Shiny frameworks (<code>golem</code>, <code>leprechaun</code>, and <code>rhino</code>) [<a href="https://github.com/mjfrigaard/sfw"><strong>Repo</strong></a>]</p></li>
+<li><p><a href="https://mjfrigaard.github.io/msst2ap/"><strong>msst2ap</strong></a> <em><strong>M</strong>astering <strong>S</strong>hiny <strong>s</strong>hiny<strong>t</strong>est<strong>2</strong> <strong>a</strong>pp-<strong>p</strong>ackage</em> demonstrates how to test a Shiny app-package using <a href="https://testthat.r-lib.org/"><code>testthat</code></a> and <a href="https://rstudio.github.io/shinytest2/"><code>shinytest2</code></a>. All examples come from the <a href="https://mastering-shiny.org/scaling-modules.html">Modules chapter of Mastering Shiny.</a> [<a href="https://github.com/mjfrigaard/msst2ap"><strong>Repo</strong></a>]</p></li>
+<li><p><a href="https://mjfrigaard.github.io/mstsap/"><strong>mstsap</strong></a> <em><strong>M</strong>astering <strong>S</strong>hiny <strong>t</strong><code>est</code><strong>S</strong><code>erver()</code> <strong>a</strong>pp-<strong>p</strong>ackage</em> is a collection of tests using <a href="https://testthat.r-lib.org/"><code>testthat</code></a> and <a href="https://search.r-project.org/CRAN/refmans/shiny/html/testServer.html"><code>shiny::testServer()</code></a> The modules and application in <code>mstsap</code> come from the <a href="https://mastering-shiny.org/scaling-modules.html">Shiny modules chapter</a> of <a href="https://mastering-shiny.org/index.html">Mastering Shiny</a> [<a href="https://github.com/mjfrigaard/mstsap"><strong>Repo</strong></a>]</p></li>
+<li><p><a href="https://mjfrigaard.github.io/dopingdata/"><strong>dopingdata</strong></a> <code>dopingdata</code> contains data from the <a href="https://en.wikipedia.org/wiki/United_States_Anti-Doping_Agency">United States Anti-Doping Agency</a> for exploration, modeling, and visualizations. The datasets in this package are derived from from the <a href="https://www.usada.org/">USADA website</a> and the <a href="https://www.wada-ama.org/en/prohibited-list?q=">World Anti-Doping Agency (WADA) banned substances list</a> [<a href="https://github.com/mjfrigaard/dopingdata"><strong>Repo</strong></a>]</p></li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -171,6 +180,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
   const isCodeAnnotation = (el) => {
     for (const clz of el.classList) {
       if (clz.startsWith('code-annotation-')) {                     
