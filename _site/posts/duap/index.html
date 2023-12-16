@@ -10,7 +10,7 @@
 <meta name="dcterms.date" content="2023-03-10">
 <meta name="description" content="Martin Frigaard’s personal website.">
 
-<title>@mjfrigaard - Creating shiny app-packages</title>
+<title>@mjfrigaard - Creating Shiny app-packages</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -99,8 +99,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
 
-<meta name="twitter:title" content="@mjfrigaard - Creating shiny app-packages">
-<meta name="twitter:description" content="Building a shiny app within an R package: whole-game">
+<meta name="twitter:title" content="@mjfrigaard - Creating Shiny app-packages">
+<meta name="twitter:description" content="Building a Shiny app within an R package: whole-game">
 <meta name="twitter:image" content="https://mjfrigaard.github.io/posts/duap/image.png">
 <meta name="twitter:image-height" content="1142">
 <meta name="twitter:image-width" content="2040">
@@ -139,6 +139,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
     </ul>
   </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../code.html" rel="" target="">
+ <span class="menu-text">Code</span></a>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
@@ -162,8 +166,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Creating shiny app-packages</h1>
-            <p class="subtitle lead">Building a shiny app within an R package: whole-game</p>
+      <h1 class="title">Creating Shiny app-packages</h1>
+            <p class="subtitle lead">Building a Shiny app within an R package: whole-game</p>
                                 <div class="quarto-categories">
                 <div class="quarto-category">shiny</div>
                 <div class="quarto-category">usethis</div>
@@ -223,7 +227,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#load_all" id="toc-load_all" class="nav-link" data-scroll-target="#load_all">load_all()</a></li>
   </ul></li>
-  <li><a href="#namespace-help-pages" id="toc-namespace-help-pages" class="nav-link" data-scroll-target="#namespace-help-pages">NAMESPACE &amp; Help pages</a>
+  <li><a href="#namespace-help-files" id="toc-namespace-help-files" class="nav-link" data-scroll-target="#namespace-help-files">NAMESPACE &amp; Help files</a>
   <ul>
   <li><a href="#document" id="toc-document" class="nav-link" data-scroll-target="#document">document()</a>
   <ul class="collapse">
@@ -301,18 +305,18 @@ Warning
 </div>
 </div>
 </div>
-<p>The R package development workflow is well documented in <a href="https://r-pkgs.org/whole-game.html">R Packages</a> and <a href="https://mastering-shiny.org/scaling-packaging.html#converting-an-existing-app">Mastering Shiny</a>. I’ve written this post because I frequently encountered R developers who were comfortable with shiny application development, but had never developed an R package.</p>
-<p>This post walks through converting an existing shiny application into an app-package <em>in detail</em> because R package development differs from creating a standalone shiny application. My hope is that by reading this will prevent you from having to rebuild your application entirely from scratch.</p>
+<p>The R package development workflow is well documented in <a href="https://r-pkgs.org/whole-game.html">R Packages</a> and <a href="https://mastering-shiny.org/scaling-packaging.html#converting-an-existing-app">Mastering Shiny</a>. I’ve written this post because I frequently encountered R developers who were comfortable with Shiny application development, but had never developed an R package.</p>
+<p>This post walks through converting an existing Shiny application into an app-package <em>in detail</em> because R package development differs from creating a standalone Shiny application. My hope is that by reading this will prevent you from having to rebuild your application entirely from scratch.</p>
 <p>I’ve organized the app-package development process into three areas: <strong>Start</strong>, <strong>Build</strong>, and <strong>Use</strong>.</p>
 <ul>
-<li><p><strong>Start</strong> covers the steps required to begin building a shiny app withing a package framework (from the console and IDE).</p></li>
+<li><p><strong>Start</strong> covers the steps required to begin building a Shiny app withing a package framework (from the console and IDE).</p></li>
 <li><p><strong>Build</strong> covers the development process, which includes writing and storing code, data, external resources (i.e., data), documentation, and testing.</p></li>
 <li><p><strong>Use</strong> shows how developers can launch their application using the given framework/package locally (i.e., within the RStudio (Posit) IDE).</p></li>
 </ul>
 <p>The GitHub repo with the code for <code>duap</code> is located <a href="https://github.com/mjfrigaard/duap">here</a> if you’d like to follow along.</p>
 <section id="duap" class="level1">
 <h1><code>duap</code></h1>
-<p>Building a shiny app as a package is <a href="https://mastering-shiny.org/scaling-packaging.html?q=highly%20recommend#scaling-packaging">highly recommended</a>. Both the <a href="https://thinkr-open.github.io/golem/"><code>golem</code></a> and <a href="https://leprechaun.opifex.org/#/"><code>leprechaun</code></a> frameworks convert your shiny application into an R package, and while this might seem like overkill, when you consider the additional development tools accessible to R packages, I think you’ll see why the advice makes sense.</p>
+<p>Building a Shiny app as a package is <a href="https://mastering-shiny.org/scaling-packaging.html?q=highly%20recommend#scaling-packaging">highly recommended</a>. Both the <a href="https://thinkr-open.github.io/golem/"><code>golem</code></a> and <a href="https://leprechaun.opifex.org/#/"><code>leprechaun</code></a> frameworks convert your Shiny application into an R package, and while this might seem like overkill, when you consider the additional development tools accessible to R packages, I think you’ll see why the advice makes sense.</p>
 </section>
 <section id="start" class="level1">
 <h1>Start</h1>
@@ -331,7 +335,7 @@ Warning
 </section>
 <section id="from-project-wizard" class="level2">
 <h2 class="anchored" data-anchor-id="from-project-wizard">From Project Wizard</h2>
-<p>If I am using RStudio’s <strong>New Project Wizard</strong> to create a new shiny app package, I’d see the following defaults:</p>
+<p>If I am using RStudio’s <strong>New Project Wizard</strong> to create a new Shiny app package, I’d see the following defaults:</p>
 <div id="fig-rpkg-setup" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <div class="quarto-figure quarto-figure-center">
@@ -750,8 +754,8 @@ Tip: <code>roxygen2</code> skeleton
 <div class="sourceCode" id="cb19"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>ℹ Loading duap</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
-<section id="namespace-help-pages" class="level2">
-<h2 class="anchored" data-anchor-id="namespace-help-pages">NAMESPACE &amp; Help pages</h2>
+<section id="namespace-help-files" class="level2">
+<h2 class="anchored" data-anchor-id="namespace-help-files">NAMESPACE &amp; Help files</h2>
 <p><code>devtools::document()</code> processes the <code>roxygen2</code> tags to generate the <code>NAMESPACE</code> and the <code>.Rd</code> files in the <code>man/</code> folder. The <code>.Rd</code> files are used to access the help files (i.e., <code>package::function()</code> can be accessed with <code>??function</code>).</p>
 <p>Managing your package <a href="https://r-pkgs.org/dependencies-in-practice.html#sec-dependencies-NAMESPACE-workflow">NAMESPACE file</a> is not something you do directly: it’s handled with the <code>roxygen2</code> tags we covered above. The keyboard shortcuts for <code>devtools::document()</code> are below:</p>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="`devtools::document()` keyboard shortcuts">
@@ -813,26 +817,37 @@ Tip: <code>roxygen2</code> skeleton
 <thead>
 <tr>
 <th style="text-align:left;">
-roxygen2 tag
+R/ code files
 </th>
 <th style="text-align:left;">
-NAMESPACE directive
+NAMESPACE
 </th>
 <th style="text-align:right;">
-Added in DESCRIPTION
+DESCRIPTION
 </th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
+pkg::fun()
+</td>
+<td style="text-align:left;">
+Nothing
+</td>
+<td style="text-align:right;">
+Imports
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 <span class="citation" data-cites="importFrom">@importFrom</span>
 </td>
 <td style="text-align:left;">
-importFrom() : import selected object from another NAMESPACE
+importFrom() : import selected object from another NAMESPACE.
 </td>
 <td style="text-align:right;">
-Nothing
+Imports
 </td>
 </tr>
 <tr>
@@ -843,7 +858,7 @@ Nothing
 import(): import all objects from another package’s NAMESPACE.
 </td>
 <td style="text-align:right;">
-Imports:
+Imports
 </td>
 </tr>
 <tr>
@@ -851,7 +866,7 @@ Imports:
 <span class="citation" data-cites="export">@export</span>
 </td>
 <td style="text-align:left;">
-export() : export the function, method, generic, or class so it’s available outside of the package (in the NAMESPACE)
+export() : export the function, method, generic, or class so it’s available to users.
 </td>
 <td style="text-align:right;">
 Nothing

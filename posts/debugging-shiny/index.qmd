@@ -1,14 +1,22 @@
 ---
-title: "Debugging shiny apps"
+title: "Debugging Shiny apps"
 subtitle: "Investigating shiny bugs using call stacks, browser(), and tests"
 author: "Martin Frigaard"
 date: "2023-06-23"
 categories: [code, debugging, shiny, testing]
 image: "image.png"
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+# code-block-border-left: true
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+code-fold: show
+code-summary: 'show/hide'
+callout-icon: false
 
 draft: true
-
-callout-icon: false
 
 freeze: true
 
@@ -96,6 +104,7 @@ This is the fourth post in a [series on testing](https://mjfrigaard.github.io/#c
 #| eval: true 
 #| message: false 
 #| warning: false
+
 library(mstsap) # app package 
 library(palmerpenguins) # data
 library(NHANES) # data
@@ -129,13 +138,12 @@ If you'd like to follow along, you can download `mstsap` [here](https://github.c
 
 ```{r}
 #| code-fold: false
-#| eval: false
-remotes::install_github("mjfrigaard/mstsap",
-  force = TRUE, quiet = TRUE)
-library(tsap)
+#| eval: true
+pak::pak("mjfrigaard/mstsap")
+library(mstsap)
 ```
 
-I'll quickly review the contents of `tsap`. The [`R/` folder](https://github.com/mjfrigaard/tsap/tree/main/R) contains files for the modules: 
+I'll quickly review the contents of `mstsap`. The [`R/` folder](https://github.com/mjfrigaard/tsap/tree/main/R) contains files for the modules: 
 
 ```{verbatim}
 #| code-fold: false

@@ -1,11 +1,19 @@
 ---
-title: "Unit testing shiny utility functions" 
-subtitle: "Part 1: Unit tests in shiny app-packages"
+title: "Unit testing Shiny utility functions" 
+subtitle: "Part 1: Unit tests in Shiny app-packages"
 author: "Martin Frigaard"
 date: "2023-05-01"
 categories: [shiny, testing]
 image: "image.png"
-
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+# code-block-border-left: true
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+code-fold: show
+code-summary: 'show/hide'
 callout-icon: false
 
 freeze: true
@@ -99,7 +107,7 @@ library(covr)
 co_box(color = "r", header = "ALERT!", "This post is currently under development. Thank you for your patience.")
 ```
 
-This post is the first in a series on testing shiny applications. I'll cover developing and testing a set of utility functions for a shiny app-package using [`testhat`](https://testthat.r-lib.org/). If you'd like to follow along, all the code I'll be using is contained in the [`utap` R package on GitHub](https://github.com/mjfrigaard/utap).
+This post is the first in a series on testing Shiny applications. I'll cover developing and testing a set of utility functions for a shiny app-package using [`testhat`](https://testthat.r-lib.org/). If you'd like to follow along, all the code I'll be using is contained in the [`utap` R package on GitHub](https://github.com/mjfrigaard/utap).
 
 ```{r}
 #| label: install_utap
@@ -113,7 +121,7 @@ library(utap)
 
 ## Shiny app-packages
 
-Testing the code in shiny app-packages can be more complicated than testing the code in a typical R package, because app-packages contain two types of code: 
+Testing the code in Shiny app-packages can be more complicated than testing the code in a typical R package, because app-packages contain two types of code: 
 
 1) **Application code**: functions designed to run the application  (i.e., the `ui` and `server` functions, modules, standalone app functions will a call to `shinyApp()`, etc.)
 

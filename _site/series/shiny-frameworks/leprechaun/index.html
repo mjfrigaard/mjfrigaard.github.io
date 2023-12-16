@@ -107,7 +107,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
-<body class="floating nav-fixed slimcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -139,6 +139,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
     </ul>
   </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../code.html" rel="" target="">
+ <span class="menu-text">Code</span></a>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
@@ -161,47 +165,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
-    <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Contents</h2>
-   
-  <ul>
-  <li><a href="#outline" id="toc-outline" class="nav-link active" data-scroll-target="#outline">Outline</a></li>
-  <li><a href="#lap" id="toc-lap" class="nav-link" data-scroll-target="#lap"><code>lap</code></a></li>
-  <li><a href="#start" id="toc-start" class="nav-link" data-scroll-target="#start">Start</a>
-  <ul>
-  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">Setup</a>
-  <ul>
-  <li><a href="#r" id="toc-r" class="nav-link" data-scroll-target="#r"><code>R/</code></a></li>
-  <li><a href="#instrunapp.r" id="toc-instrunapp.r" class="nav-link" data-scroll-target="#instrunapp.r"><code>inst/run/app.R</code></a></li>
-  </ul></li>
-  </ul></li>
-  <li><a href="#build" id="toc-build" class="nav-link" data-scroll-target="#build">Build</a>
-  <ul>
-  <li><a href="#develop" id="toc-develop" class="nav-link" data-scroll-target="#develop">Develop</a>
-  <ul>
-  <li><a href="#add_module" id="toc-add_module" class="nav-link" data-scroll-target="#add_module"><code>add_module()</code></a></li>
-  <li><a href="#use_data_raw" id="toc-use_data_raw" class="nav-link" data-scroll-target="#use_data_raw"><code>use_data_raw()</code></a></li>
-  <li><a href="#use_r" id="toc-use_r" class="nav-link" data-scroll-target="#use_r"><code>use_r()</code></a></li>
-  <li><a href="#inst" id="toc-inst" class="nav-link" data-scroll-target="#inst"><code>inst/</code></a>
-  <ul class="collapse">
-  <li><a href="#packer" id="toc-packer" class="nav-link" data-scroll-target="#packer"><code>packer</code></a></li>
-  <li><a href="#img" id="toc-img" class="nav-link" data-scroll-target="#img"><code>img/</code></a></li>
-  <li><a href="#sass" id="toc-sass" class="nav-link" data-scroll-target="#sass"><code>Sass</code></a></li>
-  <li><a href="#dev" id="toc-dev" class="nav-link" data-scroll-target="#dev"><code>dev/</code></a></li>
-  <li><a href="#assets" id="toc-assets" class="nav-link" data-scroll-target="#assets"><code>assets/</code></a></li>
-  <li><a href="#check-serveassets" id="toc-check-serveassets" class="nav-link" data-scroll-target="#check-serveassets">check <code>serveAssets()</code></a></li>
-  </ul></li>
-  </ul></li>
-  </ul></li>
-  <li><a href="#use" id="toc-use" class="nav-link" data-scroll-target="#use">Use</a></li>
-  <li><a href="#recap" id="toc-recap" class="nav-link" data-scroll-target="#recap">Recap</a></li>
-  </ul>
-</nav>
-</nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        
     </div>
 <!-- main -->
 <main class="content page-columns page-full" id="quarto-document-content">
@@ -915,10 +881,7 @@ ALERT!
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>leprechaun<span class="sc">::</span><span class="fu">add_module</span>(<span class="st">"var_input"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<details open="">
-<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">✔</span> Creating R/module_var_input.R</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 </div>
 </div>
 <ul>
@@ -1707,21 +1670,16 @@ Adding data to a package
 <li><p><code>_core.scss</code>: the original file is below</p>
 <div style="font-size: 0.80em;">
 <div class="cell">
-<details open="">
-<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode scss code-with-copy"><code class="sourceCode scss"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>html{</span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">.error</span> {</span>
 <span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">color</span>: <span class="cn">red</span></span>
 <span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>    }</span>
 <span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 </div>
 </div></li>
 <li><p>I will change the <code>color:</code> from <code>red</code> to green (<code>#38B44A</code>) using <code>$accent: #38B44A;</code></p>
 <div style="font-size: 0.80em;">
 <div class="cell">
-<details open="">
-<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb47"><pre class="sourceCode scss code-with-copy"><code class="sourceCode scss"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="va">$accent</span>: <span class="cn">#38B44A</span><span class="op">;</span></span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>html{</span>
@@ -1729,7 +1687,6 @@ Adding data to a package
 <span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>        <span class="kw">color</span>: <span class="va">$accent</span><span class="op">;</span></span>
 <span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>    }</span>
 <span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 </div>
 </div></li>
 <li><p>Then save this file and run <a href="https://leprechaun.opifex.org/#/reference/build"><code>leprechaun::build()</code></a></p>
@@ -1815,27 +1772,21 @@ Adding data to a package
 <li><p>The contents of the <code>inst/dev/</code> folder:</p>
 <div style="font-size: 0.80em;">
 <div class="cell">
-<details open="">
-<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="ex">inst/dev/</span></span>
 <span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>      <span class="ex">├──</span> packer.R</span>
 <span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>      <span class="ex">└──</span> sass.R</span>
 <span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span> directory, 2 files</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 </div>
 </div></li>
 <li><p>The contents of the <code>inst/assets/</code> folder:</p>
 <div style="font-size: 0.80em;">
 <div class="cell">
-<details open="">
-<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="ex">inst/assets/</span></span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>        <span class="ex">├──</span> index.js</span>
 <span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>        <span class="ex">└──</span> style.min.css</span>
 <span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span> directory, 2 files</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 </div>
 </div></li>
 <li><p><code>inst/dev/sass.R</code> creates <code>inst/assets/style.min.css</code> and <code>inst/dev/packer.R</code> creates <code>inst/assets/index.js</code></p></li>
@@ -1852,8 +1803,6 @@ Adding data to a package
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">serveAssets</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<details open="">
-<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="ex">[[1]]</span></span>
 <span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="ex">List</span> of 10</span>
 <span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> name      : chr <span class="st">"myLeprechaunApp"</span></span>
@@ -1870,7 +1819,6 @@ Adding data to a package
 <span id="cb54-14"><a href="#cb54-14" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> package   : chr <span class="st">"myLeprechaunApp"</span></span>
 <span id="cb54-15"><a href="#cb54-15" aria-hidden="true" tabindex="-1"></a> <span class="ex">$</span> all_files : logi TRUE</span>
 <span id="cb54-16"><a href="#cb54-16" aria-hidden="true" tabindex="-1"></a> <span class="ex">-</span> attr<span class="er">(</span><span class="ex">*,</span> <span class="st">"class"</span><span class="kw">)</span><span class="ex">=</span> chr <span class="st">"html_dependency"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 </div>
 </div>
 <p>This shows me <code>stylesheet</code> has been updated with <code>"assets/style.min.css"</code> and <code>script</code> has been updated with <code>"assets/index.js"</code> (these files are loaded into the application when it runs).</p>
@@ -1958,11 +1906,8 @@ App package scripts
 <div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">config_read</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<details open="">
-<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="va">$production</span></span>
 <span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="ex">[1]</span> TRUE</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 </div>
 </div>
 <ul>

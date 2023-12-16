@@ -1,11 +1,19 @@
 ---
-title: "Unit testing shiny utility functions" 
-subtitle: "Part 1: Unit tests in shiny app-packages"
+title: "Unit testing Shiny utility functions" 
+subtitle: "Part 1: Unit tests in Shiny app-packages"
 author: "Martin Frigaard"
 date: "2023-05-01"
 categories: [shiny, testing]
 image: "image.png"
-
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+# code-block-border-left: true
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+code-fold: show
+code-summary: 'show/hide'
 callout-icon: false
 
 freeze: true
@@ -31,7 +39,7 @@ library(shinytest2)
 options(width = 60)
 source("https://raw.githubusercontent.com/mjfrigaard/utap/main/tests/testthat/helper.R")
 # remotes::install_github("mjfrigaard/utap", force = TRUE, quiet = TRUE)
-library(utap)
+# library(utap)
 co_box <- function(color, header, contents = "Your text") {
   class <- switch(color,
     b = "note",
@@ -103,7 +111,7 @@ This post is the first in a series on testing shiny applications. I'll cover dev
 
 ```{r}
 #| label: install_utap
-#| eval: true 
+#| eval: false 
 #| results: hide
 #| code-fold: false
 #| include: true
