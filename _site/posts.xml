@@ -10,7 +10,45 @@
 <atom:link href="https://mjfrigaard.github.io/posts.xml" rel="self" type="application/rss+xml"/>
 <description>Martin Frigaard&#39;s personal website</description>
 <generator>quarto-1.3.450</generator>
-<lastBuildDate>Tue, 04 Jul 2023 07:00:00 GMT</lastBuildDate>
+<lastBuildDate>Fri, 08 Dec 2023 07:00:00 GMT</lastBuildDate>
+<item>
+  <title>Testing rhino apps</title>
+  <dc:creator>Martin Frigaard</dc:creator>
+  <link>https://mjfrigaard.github.io/posts/test-shiny-rhino/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="cell">
+<details open="">
+<summary>packages</summary>
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(shiny)</span>
+<span id="cb1-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(shinytest2)</span>
+<span id="cb1-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(testthat)</span>
+<span id="cb1-4"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(rhino)</span></code></pre></div>
+</details>
+</div>
+<p>The <a href="https://appsilon.github.io/rhino/index.html"><code>rhino</code> framework</a> from <a href="https://appsilon.com/">Appsilon</a> introduces a novel method for developing your Shiny application. Unlike the <code>golem</code> and <code>leprechaun</code> frameworks, <code>rhino</code> applications are not built inside R packages.</p>
+
+
+
+ ]]></description>
+  <category>shiny</category>
+  <category>box</category>
+  <category>testing</category>
+  <guid>https://mjfrigaard.github.io/posts/test-shiny-rhino/index.html</guid>
+  <pubDate>Fri, 08 Dec 2023 07:00:00 GMT</pubDate>
+  <media:content url="https://mjfrigaard.github.io/posts/test-shiny-rhino/image.svg" medium="image" type="image/svg+xml"/>
+</item>
 <item>
   <title>Testing shiny apps with shinytest2</title>
   <dc:creator>Martin Frigaard</dc:creator>
@@ -5448,7 +5486,7 @@ font-style: inherit;">test</span>()</span></code></pre></div>
   <media:content url="https://mjfrigaard.github.io/posts/test-shiny-p4/image.svg" medium="image" type="image/svg+xml"/>
 </item>
 <item>
-  <title>Testing shiny module server functions</title>
+  <title>Testing Shiny module server functions</title>
   <dc:creator>Martin Frigaard</dc:creator>
   <link>https://mjfrigaard.github.io/posts/test-shiny-p3/index.html</link>
   <description><![CDATA[ 
@@ -10285,7 +10323,7 @@ font-style: inherit;">"dplyr"</span>))</span></code></pre></div>
 <td style="text-align: left;">Storm tracks data</td>
 <td style="text-align: left;">tbl_df, tbl, data.frame</td>
 <td style="text-align: left;">13 columns</td>
-<td style="text-align: left;">19066 rows</td>
+<td style="text-align: left;">19537 rows</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">11</td>
 <td style="text-align: right;">1</td>
@@ -10429,7 +10467,7 @@ font-style: inherit;">"lubridate"</span>)))</span></code></pre></div>
 <td style="text-align: left;">Storm tracks data</td>
 <td style="text-align: left;">tbl_df, tbl, data.frame</td>
 <td style="text-align: left;">13 columns</td>
-<td style="text-align: left;">19066 rows</td>
+<td style="text-align: left;">19537 rows</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">11</td>
 <td style="text-align: right;">1</td>
@@ -11318,7 +11356,7 @@ font-style: inherit;">"/path/to/app/tests/testthat/"</span>)</span></code></pre>
   <media:content url="https://mjfrigaard.github.io/posts/test-shiny-p2/image.png" medium="image" type="image/png" height="78" width="144"/>
 </item>
 <item>
-  <title>Unit testing shiny utility functions</title>
+  <title>Unit testing Shiny utility functions</title>
   <dc:creator>Martin Frigaard</dc:creator>
   <link>https://mjfrigaard.github.io/posts/test-shiny-p1/index.html</link>
   <description><![CDATA[ 
@@ -11665,7 +11703,7 @@ font-style: inherit;">TRUE</span>)</span></code></pre></div>
 <div class="form-group shiny-input-container">
 <label class="control-label" id="num_cols-label" for="num_cols">X variable:</label>
 <div>
-<select id="num_cols"><option value="bill_length_mm" selected="">bill_length_mm</option>
+<select id="num_cols" class="shiny-input-select"><option value="bill_length_mm" selected="">bill_length_mm</option>
 <option value="bill_depth_mm">bill_depth_mm</option>
 <option value="flipper_length_mm">flipper_length_mm</option>
 <option value="body_mass_g">body_mass_g</option>
@@ -13374,7 +13412,7 @@ background-color: null;
 font-style: italic;">## The downloaded binary packages are in</span></span>
 <span id="cb1-4"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##  /var/folders/0x/x5wkbhmx0k74tncn9swz7xpr0000gn/T//RtmpAXeFDN/downloaded_packages</span></span></code></pre></div>
+font-style: italic;">##  /var/folders/0x/x5wkbhmx0k74tncn9swz7xpr0000gn/T//RtmpFOcxyI/downloaded_packages</span></span></code></pre></div>
 </details>
 </div>
 </div></li>
@@ -16827,7 +16865,7 @@ background-color: null;
 font-style: italic;">## $words</span></span>
 <span id="cb7-3"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "SpaCE"    "pOsitiOn" "sOcIetY"  "sTufF"    "hAnd"    </span></span>
+font-style: italic;">## [1] "MOvE"     "tHURsDAy" "SISter"   "jOiN"     "lASt"    </span></span>
 <span id="cb7-4"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## </span></span>
@@ -16836,13 +16874,13 @@ background-color: null;
 font-style: italic;">## $sentences</span></span>
 <span id="cb7-6"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "we tRIEd To RePLaCe THe cOiN BUT faILED."       </span></span>
+font-style: italic;">## [1] "THe tHefT oF the Pearl PIN WaS kePT SEcrEt."    </span></span>
 <span id="cb7-7"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [2] "He WrOTE HIS LaSt noVel ThErE aT ThE inn."      </span></span>
+font-style: italic;">## [2] "iT snOWed, RAINEd, AND HaIled ThE samE MOrNiNG."</span></span>
 <span id="cb7-8"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [3] "a whIfF oF It WIlL cURe ThE mOst sTubbOrn cold."</span></span>
+font-style: italic;">## [3] "IT caUght iTs HINd pAw in a ruSTY tRaP."        </span></span>
 <span id="cb7-9"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## </span></span>
@@ -16851,7 +16889,7 @@ background-color: null;
 font-style: italic;">## $letters</span></span>
 <span id="cb7-11"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##  [1] "B" "t" "N" "o" "w" "h" "Z" "u" "E" "m"</span></span></code></pre></div>
+font-style: italic;">##  [1] "W" "G" "T" "q" "X" "S" "O" "P" "u" "L"</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -16869,7 +16907,7 @@ background-color: null;
 font-style: inherit;">str</span>()</span>
 <span id="cb8-2"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##  chr [1:3] "c(\"space\", \"position\", \"society\", \"stuff\", \"hand\")" ...</span></span></code></pre></div>
+font-style: italic;">##  chr [1:3] "c(\"move\", \"thursday\", \"sister\", \"join\", \"last\")" ...</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -16910,7 +16948,7 @@ background-color: null;
 font-style: inherit;">1</span>]]]</span>
 <span id="cb9-8"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "SpaCE"    "pOsitiOn" "sOcIetY"  "sTufF"    "hAnd"</span></span></code></pre></div>
+font-style: italic;">## [1] "MOvE"     "tHURsDAy" "SISter"   "jOiN"     "lASt"</span></span></code></pre></div>
 </details>
 </div>
 </div></li>
@@ -16929,13 +16967,13 @@ background-color: null;
 font-style: inherit;">2</span>]])</span>
 <span id="cb10-2"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "we tried to replace the coin but failed."       </span></span>
+font-style: italic;">## [1] "the theft of the pearl pin was kept secret."    </span></span>
 <span id="cb10-3"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [2] "he wrote his last novel there at the inn."      </span></span>
+font-style: italic;">## [2] "it snowed, rained, and hailed the same morning."</span></span>
 <span id="cb10-4"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [3] "a whiff of it will cure the most stubborn cold."</span></span></code></pre></div>
+font-style: italic;">## [3] "it caught its hind paw in a rusty trap."</span></span></code></pre></div>
 </details>
 </div>
 </div></li>
@@ -17081,7 +17119,7 @@ background-color: null;
 font-style: italic;">## $words</span></span>
 <span id="cb12-12"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "space"    "position" "society"  "stuff"    "hand"    </span></span>
+font-style: italic;">## [1] "move"     "thursday" "sister"   "join"     "last"    </span></span>
 <span id="cb12-13"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## </span></span>
@@ -17090,13 +17128,13 @@ background-color: null;
 font-style: italic;">## $sentences</span></span>
 <span id="cb12-15"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "we tried to replace the coin but failed."       </span></span>
+font-style: italic;">## [1] "the theft of the pearl pin was kept secret."    </span></span>
 <span id="cb12-16"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [2] "he wrote his last novel there at the inn."      </span></span>
+font-style: italic;">## [2] "it snowed, rained, and hailed the same morning."</span></span>
 <span id="cb12-17"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [3] "a whiff of it will cure the most stubborn cold."</span></span>
+font-style: italic;">## [3] "it caught its hind paw in a rusty trap."        </span></span>
 <span id="cb12-18"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## </span></span>
@@ -17105,7 +17143,7 @@ background-color: null;
 font-style: italic;">## $letters</span></span>
 <span id="cb12-20"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##  [1] "b" "t" "n" "o" "w" "h" "z" "u" "e" "m"</span></span></code></pre></div>
+font-style: italic;">##  [1] "w" "g" "t" "q" "x" "s" "o" "p" "u" "l"</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -17156,7 +17194,7 @@ background-color: null;
 font-style: italic;">## $words</span></span>
 <span id="cb13-3"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "space"    "position" "society"  "stuff"    "hand"    </span></span>
+font-style: italic;">## [1] "move"     "thursday" "sister"   "join"     "last"    </span></span>
 <span id="cb13-4"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## </span></span>
@@ -17165,13 +17203,13 @@ background-color: null;
 font-style: italic;">## $sentences</span></span>
 <span id="cb13-6"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "we tried to replace the coin but failed."       </span></span>
+font-style: italic;">## [1] "the theft of the pearl pin was kept secret."    </span></span>
 <span id="cb13-7"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [2] "he wrote his last novel there at the inn."      </span></span>
+font-style: italic;">## [2] "it snowed, rained, and hailed the same morning."</span></span>
 <span id="cb13-8"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [3] "a whiff of it will cure the most stubborn cold."</span></span>
+font-style: italic;">## [3] "it caught its hind paw in a rusty trap."        </span></span>
 <span id="cb13-9"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## </span></span>
@@ -17180,7 +17218,7 @@ background-color: null;
 font-style: italic;">## $letters</span></span>
 <span id="cb13-11"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##  [1] "b" "t" "n" "o" "w" "h" "z" "u" "e" "m"</span></span></code></pre></div>
+font-style: italic;">##  [1] "w" "g" "t" "q" "x" "s" "o" "p" "u" "l"</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -17202,7 +17240,7 @@ background-color: null;
 font-style: italic;">## List of 1</span></span>
 <span id="cb14-3"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##  $ words: chr [1:5] "SpaCE" "pOsitiOn" "sOcIetY" "sTufF" ...</span></span>
+font-style: italic;">##  $ words: chr [1:5] "MOvE" "tHURsDAy" "SISter" "jOiN" ...</span></span>
 <span id="cb14-4"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">sapply</span>(<span class="at" style="color: #657422;
@@ -17217,19 +17255,19 @@ background-color: null;
 font-style: italic;">##      words     </span></span>
 <span id="cb14-6"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1,] "space"   </span></span>
+font-style: italic;">## [1,] "move"    </span></span>
 <span id="cb14-7"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [2,] "position"</span></span>
+font-style: italic;">## [2,] "thursday"</span></span>
 <span id="cb14-8"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [3,] "society" </span></span>
+font-style: italic;">## [3,] "sister"  </span></span>
 <span id="cb14-9"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [4,] "stuff"   </span></span>
+font-style: italic;">## [4,] "join"    </span></span>
 <span id="cb14-10"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [5,] "hand"</span></span></code></pre></div>
+font-style: italic;">## [5,] "last"</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -17245,7 +17283,7 @@ background-color: null;
 font-style: inherit;">1</span>]])</span>
 <span id="cb15-2"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##  chr [1:5] "SpaCE" "pOsitiOn" "sOcIetY" "sTufF" "hAnd"</span></span>
+font-style: italic;">##  chr [1:5] "MOvE" "tHURsDAy" "SISter" "jOiN" "lASt"</span></span>
 <span id="cb15-3"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">sapply</span>(<span class="at" style="color: #657422;
@@ -17257,10 +17295,10 @@ background-color: null;
 font-style: inherit;">FUN =</span> tolower) </span>
 <span id="cb15-4"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##      SpaCE   pOsitiOn    sOcIetY      sTufF       hAnd </span></span>
+font-style: italic;">##       MOvE   tHURsDAy     SISter       jOiN       lASt </span></span>
 <span id="cb15-5"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##    "space" "position"  "society"    "stuff"     "hand"</span></span></code></pre></div>
+font-style: italic;">##     "move" "thursday"   "sister"     "join"     "last"</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -17349,7 +17387,7 @@ background-color: null;
 font-style: italic;">## `old` is a list</span></span>
 <span id="cb17-10"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## `new` is a character vector ('space', 'position', 'society', 'stuff', 'hand')</span></span></code></pre></div>
+font-style: italic;">## `new` is a character vector ('move', 'thursday', 'sister', 'join', 'last')</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -17377,7 +17415,7 @@ background-color: null;
 font-style: italic;">## $words</span></span>
 <span id="cb18-3"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "pOsitiOn"</span></span>
+font-style: italic;">## [1] "tHURsDAy"</span></span>
 <span id="cb18-4"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## </span></span>
@@ -17386,7 +17424,7 @@ background-color: null;
 font-style: italic;">## $sentences</span></span>
 <span id="cb18-6"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "He WrOTE HIS LaSt noVel ThErE aT ThE inn."</span></span>
+font-style: italic;">## [1] "iT snOWed, RAINEd, AND HaIled ThE samE MOrNiNG."</span></span>
 <span id="cb18-7"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## </span></span>
@@ -17395,7 +17433,7 @@ background-color: null;
 font-style: italic;">## $letters</span></span>
 <span id="cb18-9"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "t"</span></span></code></pre></div>
+font-style: italic;">## [1] "G"</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -17428,22 +17466,22 @@ background-color: null;
 font-style: inherit;">1</span>))</span>
 <span id="cb19-4"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##                                       words </span></span>
+font-style: italic;">##                                             words </span></span>
 <span id="cb19-5"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##                                  "pOsitiOn" </span></span>
+font-style: italic;">##                                        "tHURsDAy" </span></span>
 <span id="cb19-6"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##                                   sentences </span></span>
+font-style: italic;">##                                         sentences </span></span>
 <span id="cb19-7"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## "He WrOTE HIS LaSt noVel ThErE aT ThE inn." </span></span>
+font-style: italic;">## "iT snOWed, RAINEd, AND HaIled ThE samE MOrNiNG." </span></span>
 <span id="cb19-8"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##                                     letters </span></span>
+font-style: italic;">##                                           letters </span></span>
 <span id="cb19-9"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##                                         "t"</span></span></code></pre></div>
+font-style: italic;">##                                               "G"</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -17603,7 +17641,7 @@ background-color: null;
 font-style: inherit;">tolower</span>(my_words)</span>
 <span id="cb22-3"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "space"    "position" "society"  "stuff"    "hand"</span></span></code></pre></div>
+font-style: italic;">## [1] "move"     "thursday" "sister"   "join"     "last"</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -17646,7 +17684,7 @@ background-color: null;
 font-style: italic;">## $words</span></span>
 <span id="cb24-3"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "space"    "position" "society"  "stuff"    "hand"    </span></span>
+font-style: italic;">## [1] "move"     "thursday" "sister"   "join"     "last"    </span></span>
 <span id="cb24-4"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## </span></span>
@@ -17655,13 +17693,13 @@ background-color: null;
 font-style: italic;">## $sentences</span></span>
 <span id="cb24-6"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "we tried to replace the coin but failed."       </span></span>
+font-style: italic;">## [1] "the theft of the pearl pin was kept secret."    </span></span>
 <span id="cb24-7"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [2] "he wrote his last novel there at the inn."      </span></span>
+font-style: italic;">## [2] "it snowed, rained, and hailed the same morning."</span></span>
 <span id="cb24-8"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [3] "a whiff of it will cure the most stubborn cold."</span></span>
+font-style: italic;">## [3] "it caught its hind paw in a rusty trap."        </span></span>
 <span id="cb24-9"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## </span></span>
@@ -17670,7 +17708,7 @@ background-color: null;
 font-style: italic;">## $letters</span></span>
 <span id="cb24-11"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##  [1] "b" "t" "n" "o" "w" "h" "z" "u" "e" "m"</span></span></code></pre></div>
+font-style: italic;">##  [1] "w" "g" "t" "q" "x" "s" "o" "p" "u" "l"</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -17699,7 +17737,7 @@ background-color: null;
 font-style: italic;">## $integers</span></span>
 <span id="cb25-6"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] 5 7 8 6 3</span></span>
+font-style: italic;">## [1]  4  7  8  1 10</span></span>
 <span id="cb25-7"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## </span></span>
@@ -17708,7 +17746,7 @@ background-color: null;
 font-style: italic;">## $doubles</span></span>
 <span id="cb25-9"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] 2.912 3.179 2.825 2.941 3.228</span></span>
+font-style: italic;">## [1] 2.909 2.938 2.853 2.755 2.990</span></span>
 <span id="cb25-10"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## </span></span>
@@ -17717,7 +17755,7 @@ background-color: null;
 font-style: italic;">## $strings</span></span>
 <span id="cb25-12"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "supply" "after"  "round"  "stand"  "manage"</span></span>
+font-style: italic;">## [1] "second" "commit" "red"    "except" "fire"  </span></span>
 <span id="cb25-13"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## </span></span>
@@ -17726,7 +17764,7 @@ background-color: null;
 font-style: italic;">## $dates</span></span>
 <span id="cb25-15"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "2023-06-28" "2023-05-19" "2023-03-30"</span></span></code></pre></div>
+font-style: italic;">## [1] "2023-12-06" "2023-10-27" "2023-09-07"</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -17954,7 +17992,7 @@ background-color: null;
 font-style: italic;">## $words</span></span>
 <span id="cb39-3"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "space"    "position" "society"  "stuff"    "hand"    </span></span>
+font-style: italic;">## [1] "move"     "thursday" "sister"   "join"     "last"    </span></span>
 <span id="cb39-4"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## </span></span>
@@ -17963,13 +18001,13 @@ background-color: null;
 font-style: italic;">## $sentences</span></span>
 <span id="cb39-6"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "we tried to replace the coin but failed."       </span></span>
+font-style: italic;">## [1] "the theft of the pearl pin was kept secret."    </span></span>
 <span id="cb39-7"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [2] "he wrote his last novel there at the inn."      </span></span>
+font-style: italic;">## [2] "it snowed, rained, and hailed the same morning."</span></span>
 <span id="cb39-8"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [3] "a whiff of it will cure the most stubborn cold."</span></span>
+font-style: italic;">## [3] "it caught its hind paw in a rusty trap."        </span></span>
 <span id="cb39-9"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## </span></span>
@@ -17978,7 +18016,7 @@ background-color: null;
 font-style: italic;">## $letters</span></span>
 <span id="cb39-11"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">##  [1] "b" "t" "n" "o" "w" "h" "z" "u" "e" "m"</span></span></code></pre></div>
+font-style: italic;">##  [1] "w" "g" "t" "q" "x" "s" "o" "p" "u" "l"</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -18398,7 +18436,7 @@ font-style: inherit;">TRUE</span>)</span></code></pre></div>
 </div>
 </div>
 <p><br></p>
-<div class="cell" data-layout-align="center" data-fig.dpi="320" data-fig.asp="0.618">
+<div class="cell" data-layout-align="center" data-fig.asp="0.618">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -20191,25 +20229,25 @@ background-color: null;
 font-style: italic;">##   &lt;chr&gt;                               &lt;int&gt;</span></span>
 <span id="cb77-11"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## 1 dds-nyt/processed/2023-07-08-nyt10 452766</span></span>
+font-style: italic;">## 1 dds-nyt/processed/2023-12-16-nyt10 452766</span></span>
 <span id="cb77-12"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## 2 dds-nyt/processed/2023-07-08-nyt11 478066</span></span>
+font-style: italic;">## 2 dds-nyt/processed/2023-12-16-nyt11 478066</span></span>
 <span id="cb77-13"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## 3 dds-nyt/processed/2023-07-08-nyt12 396308</span></span>
+font-style: italic;">## 3 dds-nyt/processed/2023-12-16-nyt12 396308</span></span>
 <span id="cb77-14"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## 4 dds-nyt/processed/2023-07-08-nyt13 786044</span></span>
+font-style: italic;">## 4 dds-nyt/processed/2023-12-16-nyt13 786044</span></span>
 <span id="cb77-15"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## 5 dds-nyt/processed/2023-07-08-nyt7  452493</span></span>
+font-style: italic;">## 5 dds-nyt/processed/2023-12-16-nyt7  452493</span></span>
 <span id="cb77-16"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## 6 dds-nyt/processed/2023-07-08-nyt8  463196</span></span>
+font-style: italic;">## 6 dds-nyt/processed/2023-12-16-nyt8  463196</span></span>
 <span id="cb77-17"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## 7 dds-nyt/processed/2023-07-08-nyt9  459472</span></span></code></pre></div>
+font-style: italic;">## 7 dds-nyt/processed/2023-12-16-nyt9  459472</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -20285,7 +20323,7 @@ background-color: null;
 font-style: italic;">## $ file_nm       &lt;chr&gt; "nyt10", "nyt10", "nyt10", "nyt10", "nyt10", "nyt10", "n…</span></span>
 <span id="cb78-16"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## $ proc_file_pth &lt;chr&gt; "dds-nyt/processed/2023-07-08-nyt10", "dds-nyt/processed…</span></span>
+font-style: italic;">## $ proc_file_pth &lt;chr&gt; "dds-nyt/processed/2023-12-16-nyt10", "dds-nyt/processed…</span></span>
 <span id="cb78-17"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Rows: 478,066</span></span>
@@ -20324,7 +20362,7 @@ background-color: null;
 font-style: italic;">## $ file_nm       &lt;chr&gt; "nyt11", "nyt11", "nyt11", "nyt11", "nyt11", "nyt11", "n…</span></span>
 <span id="cb78-29"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## $ proc_file_pth &lt;chr&gt; "dds-nyt/processed/2023-07-08-nyt11", "dds-nyt/processed…</span></span>
+font-style: italic;">## $ proc_file_pth &lt;chr&gt; "dds-nyt/processed/2023-12-16-nyt11", "dds-nyt/processed…</span></span>
 <span id="cb78-30"><span class="do" style="color: #5E5E5E;
 background-color: null;
 font-style: italic;">## Rows: 396,308</span></span>
@@ -20363,7 +20401,7 @@ background-color: null;
 font-style: italic;">## $ file_nm       &lt;chr&gt; "nyt12", "nyt12", "nyt12", "nyt12", "nyt12", "nyt12", "n…</span></span>
 <span id="cb78-42"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## $ proc_file_pth &lt;chr&gt; "dds-nyt/processed/2023-07-08-nyt12", "dds-nyt/processed…</span></span></code></pre></div>
+font-style: italic;">## $ proc_file_pth &lt;chr&gt; "dds-nyt/processed/2023-12-16-nyt12", "dds-nyt/processed…</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -20432,25 +20470,25 @@ font-style: inherit;">".csv"</span>)</span>
 <span id="cb81-3">proc_pths</span>
 <span id="cb81-4"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [1] "dds-nyt/processed/2023-07-08-nyt10.csv"</span></span>
+font-style: italic;">## [1] "dds-nyt/processed/2023-12-16-nyt10.csv"</span></span>
 <span id="cb81-5"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [2] "dds-nyt/processed/2023-07-08-nyt11.csv"</span></span>
+font-style: italic;">## [2] "dds-nyt/processed/2023-12-16-nyt11.csv"</span></span>
 <span id="cb81-6"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [3] "dds-nyt/processed/2023-07-08-nyt12.csv"</span></span>
+font-style: italic;">## [3] "dds-nyt/processed/2023-12-16-nyt12.csv"</span></span>
 <span id="cb81-7"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [4] "dds-nyt/processed/2023-07-08-nyt13.csv"</span></span>
+font-style: italic;">## [4] "dds-nyt/processed/2023-12-16-nyt13.csv"</span></span>
 <span id="cb81-8"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [5] "dds-nyt/processed/2023-07-08-nyt7.csv" </span></span>
+font-style: italic;">## [5] "dds-nyt/processed/2023-12-16-nyt7.csv" </span></span>
 <span id="cb81-9"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [6] "dds-nyt/processed/2023-07-08-nyt8.csv" </span></span>
+font-style: italic;">## [6] "dds-nyt/processed/2023-12-16-nyt8.csv" </span></span>
 <span id="cb81-10"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## [7] "dds-nyt/processed/2023-07-08-nyt9.csv"</span></span></code></pre></div>
+font-style: italic;">## [7] "dds-nyt/processed/2023-12-16-nyt9.csv"</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -20811,25 +20849,25 @@ background-color: null;
 font-style: italic;">## dds-nyt/processed/</span></span>
 <span id="cb88-14"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## ├── 2023-07-08-nyt10.csv</span></span>
+font-style: italic;">## ├── 2023-12-16-nyt10.csv</span></span>
 <span id="cb88-15"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## ├── 2023-07-08-nyt11.csv</span></span>
+font-style: italic;">## ├── 2023-12-16-nyt11.csv</span></span>
 <span id="cb88-16"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## ├── 2023-07-08-nyt12.csv</span></span>
+font-style: italic;">## ├── 2023-12-16-nyt12.csv</span></span>
 <span id="cb88-17"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## ├── 2023-07-08-nyt13.csv</span></span>
+font-style: italic;">## ├── 2023-12-16-nyt13.csv</span></span>
 <span id="cb88-18"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## ├── 2023-07-08-nyt7.csv</span></span>
+font-style: italic;">## ├── 2023-12-16-nyt7.csv</span></span>
 <span id="cb88-19"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## ├── 2023-07-08-nyt8.csv</span></span>
+font-style: italic;">## ├── 2023-12-16-nyt8.csv</span></span>
 <span id="cb88-20"><span class="do" style="color: #5E5E5E;
 background-color: null;
-font-style: italic;">## └── 2023-07-08-nyt9.csv</span></span></code></pre></div>
+font-style: italic;">## └── 2023-12-16-nyt9.csv</span></span></code></pre></div>
 </details>
 </div>
 </div>
@@ -20996,7 +21034,7 @@ font-style: inherit;">tolower</span>(.x))</span></code></pre></div>
   <media:content url="https://mjfrigaard.github.io/posts/purrr1.0/image.png" medium="image" type="image/png" height="139" width="120"/>
 </item>
 <item>
-  <title>Creating shiny app-packages</title>
+  <title>Creating Shiny app-packages</title>
   <dc:creator>Martin Frigaard</dc:creator>
   <link>https://mjfrigaard.github.io/posts/duap/index.html</link>
   <description><![CDATA[ 
@@ -21023,18 +21061,18 @@ Warning
 </div>
 </div>
 </div>
-<p>The R package development workflow is well documented in <a href="https://r-pkgs.org/whole-game.html">R Packages</a> and <a href="https://mastering-shiny.org/scaling-packaging.html#converting-an-existing-app">Mastering Shiny</a>. I’ve written this post because I frequently encountered R developers who were comfortable with shiny application development, but had never developed an R package.</p>
-<p>This post walks through converting an existing shiny application into an app-package <em>in detail</em> because R package development differs from creating a standalone shiny application. My hope is that by reading this will prevent you from having to rebuild your application entirely from scratch.</p>
+<p>The R package development workflow is well documented in <a href="https://r-pkgs.org/whole-game.html">R Packages</a> and <a href="https://mastering-shiny.org/scaling-packaging.html#converting-an-existing-app">Mastering Shiny</a>. I’ve written this post because I frequently encountered R developers who were comfortable with Shiny application development, but had never developed an R package.</p>
+<p>This post walks through converting an existing Shiny application into an app-package <em>in detail</em> because R package development differs from creating a standalone Shiny application. My hope is that by reading this will prevent you from having to rebuild your application entirely from scratch.</p>
 <p>I’ve organized the app-package development process into three areas: <strong>Start</strong>, <strong>Build</strong>, and <strong>Use</strong>.</p>
 <ul>
-<li><p><strong>Start</strong> covers the steps required to begin building a shiny app withing a package framework (from the console and IDE).</p></li>
+<li><p><strong>Start</strong> covers the steps required to begin building a Shiny app withing a package framework (from the console and IDE).</p></li>
 <li><p><strong>Build</strong> covers the development process, which includes writing and storing code, data, external resources (i.e., data), documentation, and testing.</p></li>
 <li><p><strong>Use</strong> shows how developers can launch their application using the given framework/package locally (i.e., within the RStudio (Posit) IDE).</p></li>
 </ul>
 <p>The GitHub repo with the code for <code>duap</code> is located <a href="https://github.com/mjfrigaard/duap">here</a> if you’d like to follow along.</p>
 <section id="duap" class="level1">
 <h1><code>duap</code></h1>
-<p>Building a shiny app as a package is <a href="https://mastering-shiny.org/scaling-packaging.html?q=highly%20recommend#scaling-packaging">highly recommended</a>. Both the <a href="https://thinkr-open.github.io/golem/"><code>golem</code></a> and <a href="https://leprechaun.opifex.org/#/"><code>leprechaun</code></a> frameworks convert your shiny application into an R package, and while this might seem like overkill, when you consider the additional development tools accessible to R packages, I think you’ll see why the advice makes sense.</p>
+<p>Building a Shiny app as a package is <a href="https://mastering-shiny.org/scaling-packaging.html?q=highly%20recommend#scaling-packaging">highly recommended</a>. Both the <a href="https://thinkr-open.github.io/golem/"><code>golem</code></a> and <a href="https://leprechaun.opifex.org/#/"><code>leprechaun</code></a> frameworks convert your Shiny application into an R package, and while this might seem like overkill, when you consider the additional development tools accessible to R packages, I think you’ll see why the advice makes sense.</p>
 </section>
 <section id="start" class="level1">
 <h1>Start</h1>
@@ -21067,7 +21105,7 @@ font-style: inherit;">"duap"</span>)</span></code></pre></div>
 </section>
 <section id="from-project-wizard" class="level2">
 <h2 class="anchored" data-anchor-id="from-project-wizard">From Project Wizard</h2>
-<p>If I am using RStudio’s <strong>New Project Wizard</strong> to create a new shiny app package, I’d see the following defaults:</p>
+<p>If I am using RStudio’s <strong>New Project Wizard</strong> to create a new Shiny app package, I’d see the following defaults:</p>
 <div id="fig-rpkg-setup" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <div class="quarto-figure quarto-figure-center">
@@ -21972,8 +22010,8 @@ font-style: inherit;">load_all</span>()</span></code></pre></div>
 <div class="sourceCode" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb19-1">ℹ Loading duap</span></code></pre></div>
 </section>
 </section>
-<section id="namespace-help-pages" class="level2">
-<h2 class="anchored" data-anchor-id="namespace-help-pages">NAMESPACE &amp; Help pages</h2>
+<section id="namespace-help-files" class="level2">
+<h2 class="anchored" data-anchor-id="namespace-help-files">NAMESPACE &amp; Help files</h2>
 <p><code>devtools::document()</code> processes the <code>roxygen2</code> tags to generate the <code>NAMESPACE</code> and the <code>.Rd</code> files in the <code>man/</code> folder. The <code>.Rd</code> files are used to access the help files (i.e., <code>package::function()</code> can be accessed with <code>??function</code>).</p>
 <p>Managing your package <a href="https://r-pkgs.org/dependencies-in-practice.html#sec-dependencies-NAMESPACE-workflow">NAMESPACE file</a> is not something you do directly: it’s handled with the <code>roxygen2</code> tags we covered above. The keyboard shortcuts for <code>devtools::document()</code> are below:</p>
 <div class="callout callout-style-default callout-important no-icon callout-titled" title="`devtools::document()` keyboard shortcuts">
@@ -22039,26 +22077,37 @@ font-style: inherit;">document</span>()</span></code></pre></div>
 <thead>
 <tr>
 <th style="text-align:left;">
-roxygen2 tag
+R/ code files
 </th>
 <th style="text-align:left;">
-NAMESPACE directive
+NAMESPACE
 </th>
 <th style="text-align:right;">
-Added in DESCRIPTION
+DESCRIPTION
 </th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
+pkg::fun()
+</td>
+<td style="text-align:left;">
+Nothing
+</td>
+<td style="text-align:right;">
+Imports
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 <span class="citation" data-cites="importFrom">@importFrom</span>
 </td>
 <td style="text-align:left;">
-importFrom() : import selected object from another NAMESPACE
+importFrom() : import selected object from another NAMESPACE.
 </td>
 <td style="text-align:right;">
-Nothing
+Imports
 </td>
 </tr>
 <tr>
@@ -22069,7 +22118,7 @@ Nothing
 import(): import all objects from another package’s NAMESPACE.
 </td>
 <td style="text-align:right;">
-Imports:
+Imports
 </td>
 </tr>
 <tr>
@@ -22077,7 +22126,7 @@ Imports:
 <span class="citation" data-cites="export">@export</span>
 </td>
 <td style="text-align:left;">
-export() : export the function, method, generic, or class so it’s available outside of the package (in the NAMESPACE)
+export() : export the function, method, generic, or class so it’s available to users.
 </td>
 <td style="text-align:right;">
 Nothing

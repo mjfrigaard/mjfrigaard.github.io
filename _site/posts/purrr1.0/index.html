@@ -139,6 +139,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
     </ul>
   </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../code.html" rel="" target="">
+ <span class="menu-text">Code</span></a>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
@@ -455,15 +459,15 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>my_list</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="do">## $words</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "SpaCE"    "pOsitiOn" "sOcIetY"  "sTufF"    "hAnd"    </span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "MOvE"     "tHURsDAy" "SISter"   "jOiN"     "lASt"    </span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="do">## $sentences</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "we tRIEd To RePLaCe THe cOiN BUT faILED."       </span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [2] "He WrOTE HIS LaSt noVel ThErE aT ThE inn."      </span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [3] "a whIfF oF It WIlL cURe ThE mOst sTubbOrn cold."</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "THe tHefT oF the Pearl PIN WaS kePT SEcrEt."    </span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [2] "iT snOWed, RAINEd, AND HaIled ThE samE MOrNiNG."</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [3] "IT caUght iTs HINd pAw in a ruSTY tRaP."        </span></span>
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="do">## $letters</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] "B" "t" "N" "o" "w" "h" "Z" "u" "E" "m"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] "W" "G" "T" "q" "X" "S" "O" "P" "u" "L"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -473,7 +477,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tolower</span>(my_list) <span class="sc">|&gt;</span> <span class="fu">str</span>()</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="do">##  chr [1:3] "c(\"space\", \"position\", \"society\", \"stuff\", \"hand\")" ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="do">##  chr [1:3] "c(\"move\", \"thursday\", \"sister\", \"join\", \"last\")" ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -494,7 +498,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] 1</span></span>
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co"># use this to get 'items in object'</span></span>
 <span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>my_list[[<span class="fu">seq_along</span>(my_list)[<span class="dv">1</span>]]]</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "SpaCE"    "pOsitiOn" "sOcIetY"  "sTufF"    "hAnd"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "MOvE"     "tHURsDAy" "SISter"   "jOiN"     "lASt"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div></li>
@@ -507,9 +511,9 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tolower</span>(my_list[[<span class="dv">2</span>]])</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "we tried to replace the coin but failed."       </span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [2] "he wrote his last novel there at the inn."      </span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="do">## [3] "a whiff of it will cure the most stubborn cold."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "the theft of the pearl pin was kept secret."    </span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [2] "it snowed, rained, and hailed the same morning."</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="do">## [3] "it caught its hind paw in a rusty trap."</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div></li>
@@ -559,15 +563,15 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>lc_list</span>
 <span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="do">## $words</span></span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "space"    "position" "society"  "stuff"    "hand"    </span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "move"     "thursday" "sister"   "join"     "last"    </span></span>
 <span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="do">## $sentences</span></span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "we tried to replace the coin but failed."       </span></span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="do">## [2] "he wrote his last novel there at the inn."      </span></span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="do">## [3] "a whiff of it will cure the most stubborn cold."</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "the theft of the pearl pin was kept secret."    </span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="do">## [2] "it snowed, rained, and hailed the same morning."</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="do">## [3] "it caught its hind paw in a rusty trap."        </span></span>
 <span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="do">## $letters</span></span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] "b" "t" "n" "o" "w" "h" "z" "u" "e" "m"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] "w" "g" "t" "q" "x" "s" "o" "p" "u" "l"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -608,15 +612,15 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(<span class="at">X =</span> my_list, <span class="at">FUN =</span> tolower)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="do">## $words</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "space"    "position" "society"  "stuff"    "hand"    </span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "move"     "thursday" "sister"   "join"     "last"    </span></span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="do">## $sentences</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "we tried to replace the coin but failed."       </span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [2] "he wrote his last novel there at the inn."      </span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [3] "a whiff of it will cure the most stubborn cold."</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "the theft of the pearl pin was kept secret."    </span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [2] "it snowed, rained, and hailed the same morning."</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [3] "it caught its hind paw in a rusty trap."        </span></span>
 <span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="do">## $letters</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] "b" "t" "n" "o" "w" "h" "z" "u" "e" "m"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] "w" "g" "t" "q" "x" "s" "o" "p" "u" "l"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -630,14 +634,14 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(my_list[<span class="dv">1</span>])</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="do">## List of 1</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="do">##  $ words: chr [1:5] "SpaCE" "pOsitiOn" "sOcIetY" "sTufF" ...</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="do">##  $ words: chr [1:5] "MOvE" "tHURsDAy" "SISter" "jOiN" ...</span></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(<span class="at">X =</span> my_list[<span class="dv">1</span>], <span class="at">FUN =</span> tolower)</span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="do">##      words     </span></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [1,] "space"   </span></span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [2,] "position"</span></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [3,] "society" </span></span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="do">## [4,] "stuff"   </span></span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="do">## [5,] "hand"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [1,] "move"    </span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [2,] "thursday"</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [3,] "sister"  </span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="do">## [4,] "join"    </span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="do">## [5,] "last"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -647,10 +651,10 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(my_list[[<span class="dv">1</span>]])</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="do">##  chr [1:5] "SpaCE" "pOsitiOn" "sOcIetY" "sTufF" "hAnd"</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="do">##  chr [1:5] "MOvE" "tHURsDAy" "SISter" "jOiN" "lASt"</span></span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(<span class="at">X =</span> my_list[[<span class="dv">1</span>]], <span class="at">FUN =</span> tolower) </span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="do">##      SpaCE   pOsitiOn    sOcIetY      sTufF       hAnd </span></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="do">##    "space" "position"  "society"    "stuff"     "hand"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="do">##       MOvE   tHURsDAy     SISter       jOiN       lASt </span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="do">##     "move" "thursday"   "sister"     "join"     "last"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -681,7 +685,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="do">## `old` is a list</span></span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="do">## `new` is a character vector ('space', 'position', 'society', 'stuff', 'hand')</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="do">## `new` is a character vector ('move', 'thursday', 'sister', 'join', 'last')</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -695,13 +699,13 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(<span class="at">X =</span> my_list, <span class="at">FUN =</span> <span class="cf">function</span>(x) x[[<span class="dv">2</span>]])</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="do">## $words</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "pOsitiOn"</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "tHURsDAy"</span></span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="do">## $sentences</span></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "He WrOTE HIS LaSt noVel ThErE aT ThE inn."</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "iT snOWed, RAINEd, AND HaIled ThE samE MOrNiNG."</span></span>
 <span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="do">## $letters</span></span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "t"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "G"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -716,12 +720,12 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">vapply</span>(<span class="at">X =</span> my_list, </span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">FUN =</span> <span class="cf">function</span>(x) x[[<span class="dv">2</span>]], </span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">FUN.VALUE =</span> <span class="fu">character</span>(<span class="dv">1</span>))</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="do">##                                       words </span></span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="do">##                                  "pOsitiOn" </span></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="do">##                                   sentences </span></span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="do">## "He WrOTE HIS LaSt noVel ThErE aT ThE inn." </span></span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="do">##                                     letters </span></span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="do">##                                         "t"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="do">##                                             words </span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="do">##                                        "tHURsDAy" </span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="do">##                                         sentences </span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="do">## "iT snOWed, RAINEd, AND HaIled ThE samE MOrNiNG." </span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="do">##                                           letters </span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="do">##                                               "G"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -777,7 +781,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>my_words <span class="ot">&lt;-</span> my_list[[<span class="st">'words'</span>]]</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tolower</span>(my_words)</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "space"    "position" "society"  "stuff"    "hand"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "move"     "thursday" "sister"   "join"     "last"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -804,15 +808,15 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>purrr<span class="sc">::</span><span class="fu">map</span>(<span class="at">.x =</span> my_list, <span class="at">.f =</span> tolower)</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="do">## $words</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "space"    "position" "society"  "stuff"    "hand"    </span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "move"     "thursday" "sister"   "join"     "last"    </span></span>
 <span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="do">## $sentences</span></span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "we tried to replace the coin but failed."       </span></span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [2] "he wrote his last novel there at the inn."      </span></span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [3] "a whiff of it will cure the most stubborn cold."</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "the theft of the pearl pin was kept secret."    </span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [2] "it snowed, rained, and hailed the same morning."</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [3] "it caught its hind paw in a rusty trap."        </span></span>
 <span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="do">## $letters</span></span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] "b" "t" "n" "o" "w" "h" "z" "u" "e" "m"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] "w" "g" "t" "q" "x" "s" "o" "p" "u" "l"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -831,16 +835,16 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [1]  TRUE FALSE  TRUE FALSE</span></span>
 <span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="do">## $integers</span></span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] 5 7 8 6 3</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [1]  4  7  8  1 10</span></span>
 <span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="do">## $doubles</span></span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] 2.912 3.179 2.825 2.941 3.228</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] 2.909 2.938 2.853 2.755 2.990</span></span>
 <span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="do">## $strings</span></span>
-<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "supply" "after"  "round"  "stand"  "manage"</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "second" "commit" "red"    "except" "fire"  </span></span>
 <span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a><span class="do">## $dates</span></span>
-<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "2023-06-28" "2023-05-19" "2023-03-30"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "2023-12-06" "2023-10-27" "2023-09-07"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -984,15 +988,15 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>my_list <span class="sc">|&gt;</span> purrr<span class="sc">::</span><span class="fu">map</span>(\(x) <span class="fu">tolower</span>(x))</span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="do">## $words</span></span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "space"    "position" "society"  "stuff"    "hand"    </span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "move"     "thursday" "sister"   "join"     "last"    </span></span>
 <span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a><span class="do">## $sentences</span></span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "we tried to replace the coin but failed."       </span></span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [2] "he wrote his last novel there at the inn."      </span></span>
-<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [3] "a whiff of it will cure the most stubborn cold."</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "the theft of the pearl pin was kept secret."    </span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [2] "it snowed, rained, and hailed the same morning."</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [3] "it caught its hind paw in a rusty trap."        </span></span>
 <span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a><span class="do">## $letters</span></span>
-<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] "b" "t" "n" "o" "w" "h" "z" "u" "e" "m"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] "w" "g" "t" "q" "x" "s" "o" "p" "u" "l"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -1224,7 +1228,7 @@ purrr::map_df(.x = swdata, .f = tolower)
 </div>
 </div>
 <p><br></p>
-<div class="cell" data-layout-align="center" data-fig.dpi="320" data-fig.asp="0.618">
+<div class="cell" data-layout-align="center" data-fig.asp="0.618">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -1803,13 +1807,13 @@ purrr::map_df(.x = swdata, .f = tolower)
 <span id="cb77-8"><a href="#cb77-8" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 7 × 2</span></span>
 <span id="cb77-9"><a href="#cb77-9" aria-hidden="true" tabindex="-1"></a><span class="do">##   proc_file_pth                           n</span></span>
 <span id="cb77-10"><a href="#cb77-10" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;chr&gt;                               &lt;int&gt;</span></span>
-<span id="cb77-11"><a href="#cb77-11" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 dds-nyt/processed/2023-07-08-nyt10 452766</span></span>
-<span id="cb77-12"><a href="#cb77-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 dds-nyt/processed/2023-07-08-nyt11 478066</span></span>
-<span id="cb77-13"><a href="#cb77-13" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 dds-nyt/processed/2023-07-08-nyt12 396308</span></span>
-<span id="cb77-14"><a href="#cb77-14" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 dds-nyt/processed/2023-07-08-nyt13 786044</span></span>
-<span id="cb77-15"><a href="#cb77-15" aria-hidden="true" tabindex="-1"></a><span class="do">## 5 dds-nyt/processed/2023-07-08-nyt7  452493</span></span>
-<span id="cb77-16"><a href="#cb77-16" aria-hidden="true" tabindex="-1"></a><span class="do">## 6 dds-nyt/processed/2023-07-08-nyt8  463196</span></span>
-<span id="cb77-17"><a href="#cb77-17" aria-hidden="true" tabindex="-1"></a><span class="do">## 7 dds-nyt/processed/2023-07-08-nyt9  459472</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb77-11"><a href="#cb77-11" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 dds-nyt/processed/2023-12-16-nyt10 452766</span></span>
+<span id="cb77-12"><a href="#cb77-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 dds-nyt/processed/2023-12-16-nyt11 478066</span></span>
+<span id="cb77-13"><a href="#cb77-13" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 dds-nyt/processed/2023-12-16-nyt12 396308</span></span>
+<span id="cb77-14"><a href="#cb77-14" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 dds-nyt/processed/2023-12-16-nyt13 786044</span></span>
+<span id="cb77-15"><a href="#cb77-15" aria-hidden="true" tabindex="-1"></a><span class="do">## 5 dds-nyt/processed/2023-12-16-nyt7  452493</span></span>
+<span id="cb77-16"><a href="#cb77-16" aria-hidden="true" tabindex="-1"></a><span class="do">## 6 dds-nyt/processed/2023-12-16-nyt8  463196</span></span>
+<span id="cb77-17"><a href="#cb77-17" aria-hidden="true" tabindex="-1"></a><span class="do">## 7 dds-nyt/processed/2023-12-16-nyt9  459472</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -1835,7 +1839,7 @@ purrr::map_df(.x = swdata, .f = tolower)
 <span id="cb78-13"><a href="#cb78-13" aria-hidden="true" tabindex="-1"></a><span class="do">## $ ctr_rate      &lt;dbl&gt; 0.000, 0.143, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, …</span></span>
 <span id="cb78-14"><a href="#cb78-14" aria-hidden="true" tabindex="-1"></a><span class="do">## $ female        &lt;fct&gt; no, yes, yes, no, no, no, yes, yes, yes, no, no, no, yes…</span></span>
 <span id="cb78-15"><a href="#cb78-15" aria-hidden="true" tabindex="-1"></a><span class="do">## $ file_nm       &lt;chr&gt; "nyt10", "nyt10", "nyt10", "nyt10", "nyt10", "nyt10", "n…</span></span>
-<span id="cb78-16"><a href="#cb78-16" aria-hidden="true" tabindex="-1"></a><span class="do">## $ proc_file_pth &lt;chr&gt; "dds-nyt/processed/2023-07-08-nyt10", "dds-nyt/processed…</span></span>
+<span id="cb78-16"><a href="#cb78-16" aria-hidden="true" tabindex="-1"></a><span class="do">## $ proc_file_pth &lt;chr&gt; "dds-nyt/processed/2023-12-16-nyt10", "dds-nyt/processed…</span></span>
 <span id="cb78-17"><a href="#cb78-17" aria-hidden="true" tabindex="-1"></a><span class="do">## Rows: 478,066</span></span>
 <span id="cb78-18"><a href="#cb78-18" aria-hidden="true" tabindex="-1"></a><span class="do">## Columns: 11</span></span>
 <span id="cb78-19"><a href="#cb78-19" aria-hidden="true" tabindex="-1"></a><span class="do">## $ id            &lt;chr&gt; "dds-nyt/raw/nyt11.csv", "dds-nyt/raw/nyt11.csv", "dds-n…</span></span>
@@ -1848,7 +1852,7 @@ purrr::map_df(.x = swdata, .f = tolower)
 <span id="cb78-26"><a href="#cb78-26" aria-hidden="true" tabindex="-1"></a><span class="do">## $ ctr_rate      &lt;dbl&gt; 0.000, 0.000, 0.000, 0.000, 0.000, 0.333, 0.200, 0.000, …</span></span>
 <span id="cb78-27"><a href="#cb78-27" aria-hidden="true" tabindex="-1"></a><span class="do">## $ female        &lt;fct&gt; no, yes, no, no, yes, yes, yes, yes, no, yes, yes, yes, …</span></span>
 <span id="cb78-28"><a href="#cb78-28" aria-hidden="true" tabindex="-1"></a><span class="do">## $ file_nm       &lt;chr&gt; "nyt11", "nyt11", "nyt11", "nyt11", "nyt11", "nyt11", "n…</span></span>
-<span id="cb78-29"><a href="#cb78-29" aria-hidden="true" tabindex="-1"></a><span class="do">## $ proc_file_pth &lt;chr&gt; "dds-nyt/processed/2023-07-08-nyt11", "dds-nyt/processed…</span></span>
+<span id="cb78-29"><a href="#cb78-29" aria-hidden="true" tabindex="-1"></a><span class="do">## $ proc_file_pth &lt;chr&gt; "dds-nyt/processed/2023-12-16-nyt11", "dds-nyt/processed…</span></span>
 <span id="cb78-30"><a href="#cb78-30" aria-hidden="true" tabindex="-1"></a><span class="do">## Rows: 396,308</span></span>
 <span id="cb78-31"><a href="#cb78-31" aria-hidden="true" tabindex="-1"></a><span class="do">## Columns: 11</span></span>
 <span id="cb78-32"><a href="#cb78-32" aria-hidden="true" tabindex="-1"></a><span class="do">## $ id            &lt;chr&gt; "dds-nyt/raw/nyt12.csv", "dds-nyt/raw/nyt12.csv", "dds-n…</span></span>
@@ -1861,7 +1865,7 @@ purrr::map_df(.x = swdata, .f = tolower)
 <span id="cb78-39"><a href="#cb78-39" aria-hidden="true" tabindex="-1"></a><span class="do">## $ ctr_rate      &lt;dbl&gt; 0.250, 0.000, 0.000, 0.200, 0.111, 0.000, 0.000, 0.000, …</span></span>
 <span id="cb78-40"><a href="#cb78-40" aria-hidden="true" tabindex="-1"></a><span class="do">## $ female        &lt;fct&gt; yes, yes, yes, yes, no, yes, yes, no, yes, no, yes, no, …</span></span>
 <span id="cb78-41"><a href="#cb78-41" aria-hidden="true" tabindex="-1"></a><span class="do">## $ file_nm       &lt;chr&gt; "nyt12", "nyt12", "nyt12", "nyt12", "nyt12", "nyt12", "n…</span></span>
-<span id="cb78-42"><a href="#cb78-42" aria-hidden="true" tabindex="-1"></a><span class="do">## $ proc_file_pth &lt;chr&gt; "dds-nyt/processed/2023-07-08-nyt12", "dds-nyt/processed…</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb78-42"><a href="#cb78-42" aria-hidden="true" tabindex="-1"></a><span class="do">## $ proc_file_pth &lt;chr&gt; "dds-nyt/processed/2023-12-16-nyt12", "dds-nyt/processed…</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -1900,13 +1904,13 @@ purrr::map_df(.x = swdata, .f = tolower)
 <div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get unique processed paths in nyt_data_proc (.y) with .csv extension</span></span>
 <span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>proc_pths <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">unique</span>(nyt_data_proc<span class="sc">$</span>proc_file_pth), <span class="st">".csv"</span>)</span>
 <span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>proc_pths</span>
-<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "dds-nyt/processed/2023-07-08-nyt10.csv"</span></span>
-<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a><span class="do">## [2] "dds-nyt/processed/2023-07-08-nyt11.csv"</span></span>
-<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [3] "dds-nyt/processed/2023-07-08-nyt12.csv"</span></span>
-<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [4] "dds-nyt/processed/2023-07-08-nyt13.csv"</span></span>
-<span id="cb81-8"><a href="#cb81-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [5] "dds-nyt/processed/2023-07-08-nyt7.csv" </span></span>
-<span id="cb81-9"><a href="#cb81-9" aria-hidden="true" tabindex="-1"></a><span class="do">## [6] "dds-nyt/processed/2023-07-08-nyt8.csv" </span></span>
-<span id="cb81-10"><a href="#cb81-10" aria-hidden="true" tabindex="-1"></a><span class="do">## [7] "dds-nyt/processed/2023-07-08-nyt9.csv"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "dds-nyt/processed/2023-12-16-nyt10.csv"</span></span>
+<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a><span class="do">## [2] "dds-nyt/processed/2023-12-16-nyt11.csv"</span></span>
+<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [3] "dds-nyt/processed/2023-12-16-nyt12.csv"</span></span>
+<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [4] "dds-nyt/processed/2023-12-16-nyt13.csv"</span></span>
+<span id="cb81-8"><a href="#cb81-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [5] "dds-nyt/processed/2023-12-16-nyt7.csv" </span></span>
+<span id="cb81-9"><a href="#cb81-9" aria-hidden="true" tabindex="-1"></a><span class="do">## [6] "dds-nyt/processed/2023-12-16-nyt8.csv" </span></span>
+<span id="cb81-10"><a href="#cb81-10" aria-hidden="true" tabindex="-1"></a><span class="do">## [7] "dds-nyt/processed/2023-12-16-nyt9.csv"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>
@@ -2027,13 +2031,13 @@ purrr::map_df(.x = swdata, .f = tolower)
 <span id="cb88-11"><a href="#cb88-11" aria-hidden="true" tabindex="-1"></a><span class="co"># check</span></span>
 <span id="cb88-12"><a href="#cb88-12" aria-hidden="true" tabindex="-1"></a>fs<span class="sc">::</span><span class="fu">dir_tree</span>(<span class="st">"dds-nyt/processed/"</span>, <span class="at">pattern =</span> <span class="st">"csv$"</span>)</span>
 <span id="cb88-13"><a href="#cb88-13" aria-hidden="true" tabindex="-1"></a><span class="do">## dds-nyt/processed/</span></span>
-<span id="cb88-14"><a href="#cb88-14" aria-hidden="true" tabindex="-1"></a><span class="do">## ├── 2023-07-08-nyt10.csv</span></span>
-<span id="cb88-15"><a href="#cb88-15" aria-hidden="true" tabindex="-1"></a><span class="do">## ├── 2023-07-08-nyt11.csv</span></span>
-<span id="cb88-16"><a href="#cb88-16" aria-hidden="true" tabindex="-1"></a><span class="do">## ├── 2023-07-08-nyt12.csv</span></span>
-<span id="cb88-17"><a href="#cb88-17" aria-hidden="true" tabindex="-1"></a><span class="do">## ├── 2023-07-08-nyt13.csv</span></span>
-<span id="cb88-18"><a href="#cb88-18" aria-hidden="true" tabindex="-1"></a><span class="do">## ├── 2023-07-08-nyt7.csv</span></span>
-<span id="cb88-19"><a href="#cb88-19" aria-hidden="true" tabindex="-1"></a><span class="do">## ├── 2023-07-08-nyt8.csv</span></span>
-<span id="cb88-20"><a href="#cb88-20" aria-hidden="true" tabindex="-1"></a><span class="do">## └── 2023-07-08-nyt9.csv</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb88-14"><a href="#cb88-14" aria-hidden="true" tabindex="-1"></a><span class="do">## ├── 2023-12-16-nyt10.csv</span></span>
+<span id="cb88-15"><a href="#cb88-15" aria-hidden="true" tabindex="-1"></a><span class="do">## ├── 2023-12-16-nyt11.csv</span></span>
+<span id="cb88-16"><a href="#cb88-16" aria-hidden="true" tabindex="-1"></a><span class="do">## ├── 2023-12-16-nyt12.csv</span></span>
+<span id="cb88-17"><a href="#cb88-17" aria-hidden="true" tabindex="-1"></a><span class="do">## ├── 2023-12-16-nyt13.csv</span></span>
+<span id="cb88-18"><a href="#cb88-18" aria-hidden="true" tabindex="-1"></a><span class="do">## ├── 2023-12-16-nyt7.csv</span></span>
+<span id="cb88-19"><a href="#cb88-19" aria-hidden="true" tabindex="-1"></a><span class="do">## ├── 2023-12-16-nyt8.csv</span></span>
+<span id="cb88-20"><a href="#cb88-20" aria-hidden="true" tabindex="-1"></a><span class="do">## └── 2023-12-16-nyt9.csv</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div>

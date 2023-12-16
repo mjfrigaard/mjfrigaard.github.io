@@ -107,7 +107,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
-<body class="floating nav-fixed">
+<body class="nav-fixed fullcontent">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -139,6 +139,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
     </ul>
   </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../code.html" rel="" target="">
+ <span class="menu-text">Code</span></a>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
@@ -161,94 +165,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
-    <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Contents</h2>
-   
-  <ul>
-  <li><a href="#outline" id="toc-outline" class="nav-link active" data-scroll-target="#outline">Outline</a></li>
-  <li><a href="#start" id="toc-start" class="nav-link" data-scroll-target="#start">Start</a>
-  <ul>
-  <li><a href="#what-makes-an-r-package" id="toc-what-makes-an-r-package" class="nav-link" data-scroll-target="#what-makes-an-r-package">What makes an R package?</a>
-  <ul>
-  <li><a href="#project-.rproj-files" id="toc-project-.rproj-files" class="nav-link" data-scroll-target="#project-.rproj-files">Project <span style="font-size: 1.10em"><code>.Rproj</code></span> files</a></li>
-  <li><a href="#r-description" id="toc-r-description" class="nav-link" data-scroll-target="#r-description"><span style="font-size: 1.10em"><code>R/</code></span> &amp; <span style="font-size: 1.10em"><code>DESCRIPTION</code></span></a></li>
-  <li><a href="#terminate-r-session" id="toc-terminate-r-session" class="nav-link" data-scroll-target="#terminate-r-session">Terminate R session</a></li>
-  <li><a href="#package-.rproj-file" id="toc-package-.rproj-file" class="nav-link" data-scroll-target="#package-.rproj-file">Package <span style="font-size: 1.10em"><code>.Rproj</code></span> file</a></li>
-  <li><a href="#what-happened-to-rutils.r" id="toc-what-happened-to-rutils.r" class="nav-link" data-scroll-target="#what-happened-to-rutils.r">What happened to <span style="font-size: 1.10em"><code>R/utils.R</code></span>?</a></li>
-  </ul></li>
-  <li><a href="#from-the-console" id="toc-from-the-console" class="nav-link" data-scroll-target="#from-the-console">From the Console</a></li>
-  <li><a href="#from-the-project-wizard" id="toc-from-the-project-wizard" class="nav-link" data-scroll-target="#from-the-project-wizard">From the Project Wizard</a></li>
-  </ul></li>
-  <li><a href="#build" id="toc-build" class="nav-link" data-scroll-target="#build">Build</a>
-  <ul>
-  <li><a href="#metadata-files" id="toc-metadata-files" class="nav-link" data-scroll-target="#metadata-files">Metadata files</a>
-  <ul>
-  <li><a href="#description" id="toc-description" class="nav-link" data-scroll-target="#description"><span style="font-size: 1.10em"><code>DESCRIPTION</code></span></a></li>
-  </ul></li>
-  <li><a href="#application-code" id="toc-application-code" class="nav-link" data-scroll-target="#application-code">Application code</a>
-  <ul>
-  <li><a href="#use_r" id="toc-use_r" class="nav-link" data-scroll-target="#use_r"><span style="font-size: 1.10em"><code>use_r()</code></span></a></li>
-  <li><a href="#standalone-app-function" id="toc-standalone-app-function" class="nav-link" data-scroll-target="#standalone-app-function">Standalone app function</a></li>
-  <li><a href="#roxygen2" id="toc-roxygen2" class="nav-link" data-scroll-target="#roxygen2"><span style="font-size: 1.10em"><code>roxygen2</code></span></a></li>
-  </ul></li>
-  <li><a href="#test-drive" id="toc-test-drive" class="nav-link" data-scroll-target="#test-drive">Test drive</a>
-  <ul>
-  <li><a href="#load_all" id="toc-load_all" class="nav-link" data-scroll-target="#load_all"><span style="font-size: 1.10em"><code>load_all()</code></span></a></li>
-  </ul></li>
-  <li><a href="#namespace-help-pages" id="toc-namespace-help-pages" class="nav-link" data-scroll-target="#namespace-help-pages">NAMESPACE &amp; Help pages</a>
-  <ul>
-  <li><a href="#document" id="toc-document" class="nav-link" data-scroll-target="#document"><span style="font-size: 1.10em"><code>document()</code></span></a>
-  <ul class="collapse">
-  <li><a href="#namespace-description" id="toc-namespace-description" class="nav-link" data-scroll-target="#namespace-description"><span style="font-size: 0.90em"><code>NAMESPACE</code> != <code>DESCRIPTION</code></span></a></li>
-  </ul></li>
-  </ul></li>
-  <li><a href="#checking-installation" id="toc-checking-installation" class="nav-link" data-scroll-target="#checking-installation">Checking installation</a>
-  <ul>
-  <li><a href="#install" id="toc-install" class="nav-link" data-scroll-target="#install"><span style="font-size: 1.10em"><code>install()</code></span></a>
-  <ul class="collapse">
-  <li><a href="#recap-the-r-folder" id="toc-recap-the-r-folder" class="nav-link" data-scroll-target="#recap-the-r-folder">Recap: the <code>R/</code> folder</a></li>
-  </ul></li>
-  </ul></li>
-  <li><a href="#additional-package-files" id="toc-additional-package-files" class="nav-link" data-scroll-target="#additional-package-files">Additional package files</a>
-  <ul>
-  <li><a href="#use_data_raw" id="toc-use_data_raw" class="nav-link" data-scroll-target="#use_data_raw"><span style="font-size: 1.10em"><code>use_data_raw()</code></span></a></li>
-  </ul></li>
-  <li><a href="#installed-files" id="toc-installed-files" class="nav-link" data-scroll-target="#installed-files">Installed files</a>
-  <ul>
-  <li><a href="#inst" id="toc-inst" class="nav-link" data-scroll-target="#inst"><span style="font-size: 1.10em"><code>inst/</code></span></a>
-  <ul class="collapse">
-  <li><a href="#recap-data-and-installed-files" id="toc-recap-data-and-installed-files" class="nav-link" data-scroll-target="#recap-data-and-installed-files">Recap: data and installed files</a></li>
-  </ul></li>
-  </ul></li>
-  <li><a href="#documentation" id="toc-documentation" class="nav-link" data-scroll-target="#documentation">Documentation</a>
-  <ul>
-  <li><a href="#use_readme_rmd" id="toc-use_readme_rmd" class="nav-link" data-scroll-target="#use_readme_rmd"><span style="font-size: 1.10em"><code>use_readme_rmd()</code></span></a></li>
-  <li><a href="#use_vignette" id="toc-use_vignette" class="nav-link" data-scroll-target="#use_vignette"><span style="font-size: 1.10em"><code>use_vignette()</code></span></a>
-  <ul class="collapse">
-  <li><a href="#recap-documentation" id="toc-recap-documentation" class="nav-link" data-scroll-target="#recap-documentation">Recap: documentation</a></li>
-  </ul></li>
-  </ul></li>
-  <li><a href="#tests" id="toc-tests" class="nav-link" data-scroll-target="#tests">Tests</a>
-  <ul>
-  <li><a href="#use_testthat" id="toc-use_testthat" class="nav-link" data-scroll-target="#use_testthat"><span style="font-size: 1.10em"><code>use_testthat()</code></span></a>
-  <ul class="collapse">
-  <li><a href="#writing-tests" id="toc-writing-tests" class="nav-link" data-scroll-target="#writing-tests">Writing tests</a></li>
-  <li><a href="#recap-testing" id="toc-recap-testing" class="nav-link" data-scroll-target="#recap-testing">Recap: testing</a></li>
-  </ul></li>
-  </ul></li>
-  </ul></li>
-  <li><a href="#use" id="toc-use" class="nav-link" data-scroll-target="#use">Use</a>
-  <ul>
-  <li><a href="#recap" id="toc-recap" class="nav-link" data-scroll-target="#recap">Recap</a></li>
-  </ul></li>
-  </ul>
-</nav>
-</nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-    </div>
+    
 <!-- main -->
 <main class="content page-columns page-full" id="quarto-document-content">
 

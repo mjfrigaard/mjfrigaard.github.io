@@ -1,14 +1,19 @@
 ---
-title: "Creating shiny app-packages"
-subtitle: "Building a shiny app within an R package: whole-game"
+title: "Creating Shiny app-packages"
+subtitle: "Building a Shiny app within an R package: whole-game"
 author: "Martin Frigaard"
 date: "2023-03-10"
 categories: [shiny, usethis, devtools, packages]
 image: "image.png"
-
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+# code-block-border-left: true
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
 code-fold: show
 code-summary: 'show/hide'
-
 callout-icon: false
 
 freeze: true
@@ -95,13 +100,13 @@ In this post, I'll be using [`devtools`](https://devtools.r-lib.org/) and [`uset
 co_box(color = "r", "Warning", "_This is a long post because I cover many of the steps used to build R packages. If you'd prefer to more information on developing R packages, I suggest starting with [the whole game section](https://r-pkgs.org/whole-game.html)._")
 ```
 
-The R package development workflow is well documented in [R Packages ](https://r-pkgs.org/whole-game.html) and [Mastering Shiny](https://mastering-shiny.org/scaling-packaging.html#converting-an-existing-app). I've written this post because I frequently encountered R developers who were comfortable with shiny application development, but had never developed an R package. 
+The R package development workflow is well documented in [R Packages ](https://r-pkgs.org/whole-game.html) and [Mastering Shiny](https://mastering-shiny.org/scaling-packaging.html#converting-an-existing-app). I've written this post because I frequently encountered R developers who were comfortable with Shiny application development, but had never developed an R package. 
 
-This post walks through converting an existing shiny application into an app-package *in detail* because R package development differs from creating a standalone shiny application. My hope is that by reading this will prevent you from having to rebuild your application entirely from scratch.
+This post walks through converting an existing Shiny application into an app-package *in detail* because R package development differs from creating a standalone Shiny application. My hope is that by reading this will prevent you from having to rebuild your application entirely from scratch.
 
 I've organized the app-package development process into three areas: **Start**, **Build**, and **Use**. 
 
-  -   **Start** covers the steps required to begin building a shiny app withing a package framework (from the console and IDE).
+  -   **Start** covers the steps required to begin building a Shiny app withing a package framework (from the console and IDE).
 
   -   **Build** covers the development process, which includes writing and storing code, data, external resources (i.e., data), documentation, and testing. 
 
@@ -111,9 +116,7 @@ The GitHub repo with the code for `duap` is located  [here](https://github.com/m
 
 # `duap`
 
-Building a shiny app as a package is [highly recommended](https://mastering-shiny.org/scaling-packaging.html?q=highly%20recommend#scaling-packaging). Both the [`golem`](https://thinkr-open.github.io/golem/) and  [`leprechaun`](https://leprechaun.opifex.org/#/) frameworks convert your shiny application into an R package, and while this might seem like overkill, when you consider the additional development tools accessible to R packages, I think you'll see why the advice makes sense. 
-
-
+Building a Shiny app as a package is [highly recommended](https://mastering-shiny.org/scaling-packaging.html?q=highly%20recommend#scaling-packaging). Both the [`golem`](https://thinkr-open.github.io/golem/) and  [`leprechaun`](https://leprechaun.opifex.org/#/) frameworks convert your Shiny application into an R package, and while this might seem like overkill, when you consider the additional development tools accessible to R packages, I think you'll see why the advice makes sense. 
 
 
 # Start
@@ -143,7 +146,7 @@ A new RStudio session will open (and the name of the project--i.e., the name of 
 
 ## From Project Wizard
 
-If I am using RStudio's **New Project Wizard** to create a new shiny app package, I'd see the following defaults:
+If I am using RStudio's **New Project Wizard** to create a new Shiny app package, I'd see the following defaults:
 
 ::: {#fig-rpkg-setup .column}
 ![](rpkg-setup.png){height="100%" width="100%" fig-align="center"}
@@ -224,7 +227,6 @@ co_box(
 ```
 
 The initial `DESCRIPTION` file in `duap` is below:
-
 
 ```{verbatim}
 #| label: DESCRIPTION-duap
@@ -609,7 +611,7 @@ devtools::load_all()
 ℹ Loading duap
 ```
 
-## NAMESPACE & Help pages 
+## NAMESPACE & Help files 
 
 `devtools::document()` processes the `roxygen2` tags to generate the `NAMESPACE` and the `.Rd` files in the `man/` folder. The `.Rd` files are used to access the help files (i.e., `package::function()` can be accessed with `??function`).
 
@@ -670,13 +672,14 @@ The table below shows the connection between `roxygen2` tags, the resulting `NAM
 # roxy_ns_df -----
 roxy_ns_df <- data.frame(
   check.names = FALSE,
-  `roxygen2 tag` = c("@importFrom", "@import", "@export"),
-  `NAMESPACE directive` = c(
-    "importFrom() : import selected object from another NAMESPACE",
+  `R/ code files` = c("pkg::fun()", "@importFrom", "@import", "@export"),
+  NAMESPACE = c(
+    "Nothing",
+    "importFrom() : import selected object from another NAMESPACE.",
     "import(): import all objects from another package’s NAMESPACE.",
-    "export() : export the function, method, generic, or class so it’s available outside of the package (in the NAMESPACE)"
+    "export() : export the function, method, generic, or class so it’s available to users."
   ),
-  `Added in DESCRIPTION` = c("Nothing", "Imports:", "Nothing")
+  DESCRIPTION = c("Imports", "Imports", "Imports", "Nothing")
 )
 
 co_box(

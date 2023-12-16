@@ -26,26 +26,17 @@ website:
             file: posts.qmd
           - text: "Series"
             file: series.qmd
+      - text: "Code"
+        file: code.qmd
         
 format:
   html:
     theme:
-      # dark: [slate, custom.scss]
       light: [litera, custom.scss]
     dpi: 320
     fig-format: retina
     fig-asp: 0.618
     fontsize: '10.5'
-    toc: true
-    toc-depth: 5
-    toc-title: 'Contents'
-    toc-location: "left"
-    callout-icon: false
-    # code-block-border-left: true
-    code-block-bg: "#f8f8f8"
-    code-block-border-left: "#e8e8e8"
-    code-fold: show
-    code-summary: 'show/hide'
 
 knitr:
   opts_chunk: 

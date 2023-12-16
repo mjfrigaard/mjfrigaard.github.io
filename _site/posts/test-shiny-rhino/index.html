@@ -7,10 +7,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Martin Frigaard">
-<meta name="dcterms.date" content="2023-06-18">
+<meta name="dcterms.date" content="2023-12-08">
 <meta name="description" content="Martin Frigaard’s personal website.">
 
-<title>@mjfrigaard - Connecting reactivity between modules</title>
+<title>@mjfrigaard - Testing rhino apps</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,6 +22,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -65,9 +99,10 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
-<meta name="twitter:title" content="@mjfrigaard - Connecting reactivity between modules">
-<meta name="twitter:description" content="Using gargoyle to manage reactivity">
-<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="@mjfrigaard - Testing rhino apps">
+<meta name="twitter:description" content="Testing box modules">
+<meta name="twitter:image" content="https://mjfrigaard.github.io/posts/test-shiny-rhino/image.svg">
+<meta name="twitter:card" content="summary_large_image">
 </head>
 
 <body class="floating nav-fixed">
@@ -102,6 +137,10 @@ ul.task-list li input[type="checkbox"] {
   </li>  
     </ul>
   </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../code.html" rel="" target="">
+ <span class="menu-text">Code</span></a>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
@@ -125,10 +164,11 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Connecting reactivity between modules</h1>
-            <p class="subtitle lead">Using <code>gargoyle</code> to manage reactivity</p>
+      <h1 class="title">Testing <code>rhino</code> apps</h1>
+            <p class="subtitle lead">Testing <code>box</code> modules</p>
                                 <div class="quarto-categories">
                 <div class="quarto-category">shiny</div>
+                <div class="quarto-category">box</div>
                 <div class="quarto-category">testing</div>
               </div>
                   </div>
@@ -147,7 +187,7 @@ ul.task-list li input[type="checkbox"] {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">June 18, 2023</p>
+        <p class="date">December 8, 2023</p>
       </div>
     </div>
     
@@ -158,20 +198,7 @@ ul.task-list li input[type="checkbox"] {
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
-    <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Contents</h2>
-   
-  <ul>
-  <li><a href="#gargoyle" id="toc-gargoyle" class="nav-link active" data-scroll-target="#gargoyle"><code>gargoyle</code></a>
-  <ul>
-  <li><a href="#init" id="toc-init" class="nav-link" data-scroll-target="#init"><code>init()</code></a></li>
-  <li><a href="#on" id="toc-on" class="nav-link" data-scroll-target="#on"><code>on()</code></a></li>
-  <li><a href="#trigger" id="toc-trigger" class="nav-link" data-scroll-target="#trigger"><code>trigger()</code></a></li>
-  <li><a href="#watch" id="toc-watch" class="nav-link" data-scroll-target="#watch"><code>watch()</code></a></li>
-  <li><a href="#testserver-browser" id="toc-testserver-browser" class="nav-link" data-scroll-target="#testserver-browser">testServer() + browser()</a></li>
-  </ul></li>
-  </ul>
-</nav>
+    
 </nav>
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
@@ -183,61 +210,18 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<div class="callout callout-style-default callout-important no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
+<div class="cell">
+<details open="">
+<summary>packages</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shiny)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shinytest2)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(testthat)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rhino)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
-<div class="callout-title-container flex-fill">
-ALERT!
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
-<div class="callout-body-container callout-body">
-<div style="font-size: 1.10em; font-weight: bold; color: #696969;">
-<p>This post is currently under development. Thank you for your patience.</p>
-</div>
-</div>
-</div>
-</div>
-<section id="gargoyle" class="level1">
-<h1><code>gargoyle</code></h1>
-<p>I have a couple options here; I could rebuild/combine <code>mod_cols</code> and <code>mod_plot</code> and hope this resolves the error, or I could use the <a href="https://github.com/ColinFay/gargoyle"><code>gargoyle</code> package</a> by the geniuses over at <a href="https://rtask.thinkr.fr/shiny-applications-design-and-deployment/"><code>ThinkR</code></a>:</p>
-<blockquote class="blockquote">
-<p><em>{<code>shiny</code>}’s default reactive behavior is very helpful when it comes to building small applications. Because, you know, the good thing about reactivity is that when something moves somewhere, it’s updated everywhere. But the bad thing about reactivity is that when something moves somewhere, it’s updated everywhere.</em></p>
-</blockquote>
-<p><code>gargoyle</code> comes from the same authors of <a href="https://thinkr-open.github.io/golem/"><code>golem</code></a>, and it supports “<em>Event-Based Structures for ‘Shiny’</em>”. It’s elegant and simple (remember these three functions): <code>init()</code>, <code>trigger()</code>, and <code>watch()</code>.</p>
-<p>The <a href="https://github.com/ColinFay/gargoyle">example in the documentation</a> gives an overview of how <code>gargoyle</code> works, but it’s not in a package (and doesn’t use modules). You can see a deployed version of <code>gargoyle</code> built as a package using modules <a href="https://mjfrigaard.shinyapps.io/gargap-demo/">here.</a>.</p>
-<p>I’ll cover how <code>gargoyle</code> works using the demos in the <code>inst/dev</code> folder:</p>
-<section id="init" class="level2">
-<h2 class="anchored" data-anchor-id="init"><code>init()</code></h2>
-<p>This <a href="https://github.com/ColinFay/gargoyle/blob/83234de417b9b0b39be9b8f1556e5df1968624b2/R/funs.R#L66">function</a></p>
-</section>
-<section id="on" class="level2">
-<h2 class="anchored" data-anchor-id="on"><code>on()</code></h2>
-<p>This <a href="https://github.com/ColinFay/gargoyle/blob/83234de417b9b0b39be9b8f1556e5df1968624b2/R/funs.R#L124">function</a></p>
-</section>
-<section id="trigger" class="level2">
-<h2 class="anchored" data-anchor-id="trigger"><code>trigger()</code></h2>
-<p>This <a href="https://github.com/ColinFay/gargoyle/blob/83234de417b9b0b39be9b8f1556e5df1968624b2/R/funs.R#L78">function</a></p>
-</section>
-<section id="watch" class="level2">
-<h2 class="anchored" data-anchor-id="watch"><code>watch()</code></h2>
-<p>This <a href="https://github.com/ColinFay/gargoyle/blob/83234de417b9b0b39be9b8f1556e5df1968624b2/R/funs.R#L106">function</a></p>
-</section>
-<section id="testserver-browser" class="level2">
-<h2 class="anchored" data-anchor-id="testserver-browser">testServer() + browser()</h2>
-<div style="font-size: 1.10em; font-weight: bold;">
-<blockquote class="blockquote">
-<p><em>“You can abuse <code>testServer()</code> to get in an interactive environment that does support reactivity: <code>testServer(myApp(), browser())</code>”</em></p>
-</blockquote>
-</div>
-<p>The quote above comes from the <a href="https://mastering-shiny.org/scaling-testing.html">‘Testing’ chapter of Mastering Shiny</a>.</p>
+<p>The <a href="https://appsilon.github.io/rhino/index.html"><code>rhino</code> framework</a> from <a href="https://appsilon.com/">Appsilon</a> introduces a novel method for developing your Shiny application. Unlike the <code>golem</code> and <code>leprechaun</code> frameworks, <code>rhino</code> applications are not built inside R packages.</p>
 
 
-</section>
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

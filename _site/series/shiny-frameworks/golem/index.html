@@ -107,7 +107,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="twitter:card" content="summary_large_image">
 </head>
 
-<body class="floating nav-fixed slimcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -139,6 +139,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
     </ul>
   </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../code.html" rel="" target="">
+ <span class="menu-text">Code</span></a>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
@@ -161,102 +165,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
-    <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Contents</h2>
-   
-  <ul>
-  <li><a href="#outline" id="toc-outline" class="nav-link active" data-scroll-target="#outline">Outline</a>
-  <ul>
-  <li><a href="#dev-scripts" id="toc-dev-scripts" class="nav-link" data-scroll-target="#dev-scripts"><span style="font-size: 1.20em"><code>dev/</code></span> scripts</a></li>
-  </ul></li>
-  <li><a href="#start" id="toc-start" class="nav-link" data-scroll-target="#start">Start</a>
-  <ul>
-  <li><a href="#begin-01_start.r" id="toc-begin-01_start.r" class="nav-link" data-scroll-target="#begin-01_start.r">Begin <span style="font-size: 1.20em"><code>01_start.R</code></span></a>
-  <ul>
-  <li><a href="#fill-the-description" id="toc-fill-the-description" class="nav-link" data-scroll-target="#fill-the-description"><span style="font-size: 1.10em"><code>Fill</code> <code>the</code> <code>DESCRIPTION</code></span></a></li>
-  <li><a href="#set-golem-options" id="toc-set-golem-options" class="nav-link" data-scroll-target="#set-golem-options"><span style="font-size: 1.10rem"><code>Set</code> <code>{golem}</code> <code>options</code></span></a></li>
-  <li><a href="#install-required-dev-dependencies" id="toc-install-required-dev-dependencies" class="nav-link" data-scroll-target="#install-required-dev-dependencies"><span style="font-size: 1.10em"><code>Install</code> <code>required</code> <code>dev</code> <code>dependencies</code></span></a></li>
-  <li><a href="#create-common-files" id="toc-create-common-files" class="nav-link" data-scroll-target="#create-common-files"><span style="font-size: 1.10em"><code>Create</code> <code>Common</code> <code>Files</code></span></a></li>
-  <li><a href="#init-testing-infrastructure" id="toc-init-testing-infrastructure" class="nav-link" data-scroll-target="#init-testing-infrastructure"><span style="font-size: 1.10em"><code>Init</code> <code>Testing</code> <code>Infrastructure</code></span></a></li>
-  <li><a href="#favicon" id="toc-favicon" class="nav-link" data-scroll-target="#favicon"><span style="font-size: 1.10em"><code>Favicon</code></span></a></li>
-  <li><a href="#add-helper-functions" id="toc-add-helper-functions" class="nav-link" data-scroll-target="#add-helper-functions"><span style="font-size: 1.10em"><code>Add</code> <code>helper</code> <code>functions</code></span></a>
-  <ul class="collapse">
-  <li><a href="#use_utils_ui" id="toc-use_utils_ui" class="nav-link" data-scroll-target="#use_utils_ui"><span style="font-size: 1.10em"><code>use_utils_ui()</code></span></a></li>
-  <li><a href="#use_utils_server" id="toc-use_utils_server" class="nav-link" data-scroll-target="#use_utils_server"><span style="font-size: 1.10em"><code>use_utils_server()</code></span></a></li>
-  </ul></li>
-  </ul></li>
-  <li><a href="#end-01_start.r" id="toc-end-01_start.r" class="nav-link" data-scroll-target="#end-01_start.r">End <span style="font-size: 1.10em"><code>01_start.R</code></span></a></li>
-  </ul></li>
-  <li><a href="#build" id="toc-build" class="nav-link" data-scroll-target="#build">Build</a>
-  <ul>
-  <li><a href="#begin-02_dev.r" id="toc-begin-02_dev.r" class="nav-link" data-scroll-target="#begin-02_dev.r">Begin <span style="font-size: 1.10em"><code>02_dev.R</code></span></a>
-  <ul>
-  <li><a href="#app-files" id="toc-app-files" class="nav-link" data-scroll-target="#app-files">App files</a>
-  <ul class="collapse">
-  <li><a href="#app_ui.r" id="toc-app_ui.r" class="nav-link" data-scroll-target="#app_ui.r"><span style="font-size: 1.10em"><code>app_ui.R</code></span></a></li>
-  <li><a href="#app_server.r" id="toc-app_server.r" class="nav-link" data-scroll-target="#app_server.r"><span style="font-size: 1.10em"><code>app_server.R</code></span></a></li>
-  <li><a href="#app_config.r" id="toc-app_config.r" class="nav-link" data-scroll-target="#app_config.r"><span style="font-size: 1.10em"><code>app_config.R</code></span></a></li>
-  <li><a href="#run_app.r" id="toc-run_app.r" class="nav-link" data-scroll-target="#run_app.r"><span style="font-size: 1.10em"><code>run_app.R</code></span></a></li>
-  </ul></li>
-  <li><a href="#dependencies" id="toc-dependencies" class="nav-link" data-scroll-target="#dependencies"><span style="font-size: 1.10em"><code>Dependencies</code></span></a></li>
-  <li><a href="#add-modules" id="toc-add-modules" class="nav-link" data-scroll-target="#add-modules"><span style="font-size: 1.10em"><code>Add modules</code></span></a>
-  <ul class="collapse">
-  <li><a href="#add_module" id="toc-add_module" class="nav-link" data-scroll-target="#add_module"><span style="font-size: 1.10em"><code>add_module()</code></span></a></li>
-  </ul></li>
-  <li><a href="#add-helper-functions-1" id="toc-add-helper-functions-1" class="nav-link" data-scroll-target="#add-helper-functions-1"><span style="font-size: 1.10em"><code>Add helper functions</code></span></a>
-  <ul class="collapse">
-  <li><a href="#add_utils" id="toc-add_utils" class="nav-link" data-scroll-target="#add_utils"><span style="font-size: 1.10em"><code>add_utils()</code></span></a></li>
-  <li><a href="#add_fct" id="toc-add_fct" class="nav-link" data-scroll-target="#add_fct"><span style="font-size: 1.10em"><code>add_fct()</code></span></a></li>
-  </ul></li>
-  <li><a href="#external-resources" id="toc-external-resources" class="nav-link" data-scroll-target="#external-resources"><span style="font-size: 1.10em"><code>External resources</code></span></a>
-  <ul class="collapse">
-  <li><a href="#javascript-files" id="toc-javascript-files" class="nav-link" data-scroll-target="#javascript-files">JavaScript files</a></li>
-  <li><a href="#app-styling" id="toc-app-styling" class="nav-link" data-scroll-target="#app-styling">App styling</a></li>
-  </ul></li>
-  <li><a href="#add-internal-datasets" id="toc-add-internal-datasets" class="nav-link" data-scroll-target="#add-internal-datasets"><span style="font-size: 1.10em"><code>Add internal datasets</code></span></a>
-  <ul class="collapse">
-  <li><a href="#instextdata" id="toc-instextdata" class="nav-link" data-scroll-target="#instextdata"><span style="font-size: 1.10em"><code>inst/extdata</code></span></a></li>
-  <li><a href="#use_data_raw" id="toc-use_data_raw" class="nav-link" data-scroll-target="#use_data_raw"><span style="font-size: 1.10em"><code>use_data_raw()</code></span></a></li>
-  <li><a href="#use_data" id="toc-use_data" class="nav-link" data-scroll-target="#use_data"><span style="font-size: 1.10em"><code>use_data()</code></span></a></li>
-  </ul></li>
-  <li><a href="#tests" id="toc-tests" class="nav-link" data-scroll-target="#tests"><span style="font-size: 1.10em"><code>Tests</code></span></a></li>
-  <li><a href="#documentation" id="toc-documentation" class="nav-link" data-scroll-target="#documentation"><span style="font-size: 1.10em"><code>Documentation</code></span></a></li>
-  <li><a href="#code-coverage" id="toc-code-coverage" class="nav-link" data-scroll-target="#code-coverage"><span style="font-size: 1.10em"><code>Code Coverage</code></span></a>
-  <ul class="collapse">
-  <li><a href="#usethisuse_coverage" id="toc-usethisuse_coverage" class="nav-link" data-scroll-target="#usethisuse_coverage"><span style="font-size: 1.10em"><code>usethis::use_coverage()</code></span></a></li>
-  <li><a href="#covrpagecovrpage" id="toc-covrpagecovrpage" class="nav-link" data-scroll-target="#covrpagecovrpage"><span style="font-size: 1.10em"><code>covrpage::covrpage()</code></span></a></li>
-  </ul></li>
-  <li><a href="#ci" id="toc-ci" class="nav-link" data-scroll-target="#ci"><span style="font-size: 1.10em"><code>CI</code></span></a></li>
-  </ul></li>
-  <li><a href="#end-02_dev.r" id="toc-end-02_dev.r" class="nav-link" data-scroll-target="#end-02_dev.r">End <span style="font-size: 1.10em"><code>02_dev.R</code></span></a></li>
-  </ul></li>
-  <li><a href="#use" id="toc-use" class="nav-link" data-scroll-target="#use">Use</a>
-  <ul>
-  <li><a href="#writing-code" id="toc-writing-code" class="nav-link" data-scroll-target="#writing-code">Writing code</a></li>
-  <li><a href="#adding-resources" id="toc-adding-resources" class="nav-link" data-scroll-target="#adding-resources">Adding resources</a>
-  <ul>
-  <li><a href="#instappwww" id="toc-instappwww" class="nav-link" data-scroll-target="#instappwww"><span style="font-size: 1.10em"><code>inst/app/www</code></span></a></li>
-  <li><a href="#addresourcepath" id="toc-addresourcepath" class="nav-link" data-scroll-target="#addresourcepath"><span style="font-size: 1.10em"><code>addResourcePath()</code></span></a></li>
-  </ul></li>
-  <li><a href="#begin-03_deploy.r" id="toc-begin-03_deploy.r" class="nav-link" data-scroll-target="#begin-03_deploy.r">Begin <span style="font-size: 1.10em"><code>03_deploy.R</code></span></a>
-  <ul>
-  <li><a href="#run-checks" id="toc-run-checks" class="nav-link" data-scroll-target="#run-checks"><span style="font-size: 1.10em"><code>Run</code> <code>checks</code></span></a></li>
-  <li><a href="#local-cran-or-package-manager" id="toc-local-cran-or-package-manager" class="nav-link" data-scroll-target="#local-cran-or-package-manager"><span style="font-size: 1.10em"><code>Local</code>, <code>CRAN</code> <code>or</code> <code>Package</code> <code>Manager</code></span></a></li>
-  <li><a href="#rstudio" id="toc-rstudio" class="nav-link" data-scroll-target="#rstudio"><span style="font-size: 1.10em"><code>RStudio</code></span></a></li>
-  <li><a href="#docker" id="toc-docker" class="nav-link" data-scroll-target="#docker"><span style="font-size: 1.10em"><code>Docker</code></span></a></li>
-  <li><a href="#app.r" id="toc-app.r" class="nav-link" data-scroll-target="#app.r"><span style="font-size: 1.10em"><code>app.R</code></span></a></li>
-  <li><a href="#deployapp" id="toc-deployapp" class="nav-link" data-scroll-target="#deployapp"><span style="font-size: 1.10em"><code>deployApp()</code></span></a></li>
-  </ul></li>
-  <li><a href="#end-03_deploy.r" id="toc-end-03_deploy.r" class="nav-link" data-scroll-target="#end-03_deploy.r">End <span style="font-size: 1.10em"><code>03_deploy.R</code></span></a></li>
-  </ul></li>
-  <li><a href="#recap" id="toc-recap" class="nav-link" data-scroll-target="#recap">Recap</a></li>
-  </ul>
-</nav>
-</nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        
     </div>
 <!-- main -->
 <main class="content page-columns page-full" id="quarto-document-content">
