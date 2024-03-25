@@ -7,7 +7,7 @@ listing:
     sort: "date asc"
     sort-ui: false
     filter-ui: false
-    fields: [title, date]
+    fields: [title, subtitle]
     table-striped: true
   - id: shiny-frameworks
     contents: series/shiny-frameworks
@@ -15,7 +15,7 @@ listing:
     sort: "date asc"
     sort-ui: false
     filter-ui: false
-    fields: [title, date]
+    fields: [title, subtitle]
     table-striped: true
     
 page-layout: full
@@ -26,7 +26,7 @@ execute:
 
 ## Testing shiny apps
 
-These posts focus on testing shiny applications with `testthat`, `shiny::testServer()`, and `shinytest2`.
+These posts focus on testing Shiny applications with `testthat`, `shiny`'s `testServer()` function, and `shinytest2`.
 
 ::: {#testing}
 :::

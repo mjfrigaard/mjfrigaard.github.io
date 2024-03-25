@@ -2,13 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.4.549">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Martin Frigaard">
 <meta name="dcterms.date" content="2023-06-23">
-<meta name="description" content="Martin Frigaard’s personal website.">
 
 <title>@mjfrigaard - Debugging Shiny apps</title>
 <style>
@@ -25,7 +24,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -67,7 +66,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
-<link href="../../profile.png" rel="icon" type="image/png">
 <script src="../../site_libs/quarto-html/quarto.js"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -83,7 +81,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -92,6 +95,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -99,21 +103,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
 
-<meta name="twitter:title" content="@mjfrigaard - Debugging Shiny apps">
-<meta name="twitter:description" content="Investigating shiny bugs using call stacks, browser(), and tests">
-<meta name="twitter:image" content="https://mjfrigaard.github.io/posts/debugging-shiny/image.png">
-<meta name="twitter:image-height" content="1604">
-<meta name="twitter:image-width" content="1582">
-<meta name="twitter:card" content="summary_large_image">
 </head>
 
 <body class="floating nav-fixed slimcontent">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title"><span class="citation" data-cites="mjfrigaard">@mjfrigaard</span></span>
     </a>
@@ -124,41 +122,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-blog" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
- <span class="menu-text">Blog</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-blog">    
-        <li>
-    <a class="dropdown-item" href="../../posts.html" rel="" target="">
- <span class="dropdown-text">Posts</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../../series.html" rel="" target="">
- <span class="dropdown-text">Series</span></a>
-  </li>  
-    </ul>
-  </li>
   <li class="nav-item">
-    <a class="nav-link" href="../../code.html" rel="" target="">
- <span class="menu-text">Code</span></a>
+    <a class="nav-link" href="../../posts.html"> 
+<span class="menu-text">Posts</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../series.html"> 
+<span class="menu-text">Series</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../code.html"> 
+<span class="menu-text">Code</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/mjfrigaard" rel="" target=""><i class="bi bi-github" role="img">
-</i> 
- <span class="menu-text"></span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/mjfrigaard" rel="" target=""><i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://github.com/mjfrigaard"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/mjfrigaard"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-            <div class="quarto-navbar-tools">
-</div>
           </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -167,7 +162,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
       <h1 class="title">Debugging Shiny apps</h1>
-            <p class="subtitle lead">Investigating shiny bugs using call stacks, browser(), and tests</p>
+            <p class="subtitle lead">call stacks, browser(), and tests</p>
                                 <div class="quarto-categories">
                 <div class="quarto-category">code</div>
                 <div class="quarto-category">debugging</div>
@@ -200,13 +195,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Contents</h2>
    
   <ul>
   <li><a href="#bugs" id="toc-bugs" class="nav-link active" data-scroll-target="#bugs">Bugs!</a></li>
-  <li><a href="#testserver-app-package" id="toc-testserver-app-package" class="nav-link" data-scroll-target="#testserver-app-package"><code>testServer()</code> app-package</a></li>
+  <li><a href="#debugapp-app-package" id="toc-debugapp-app-package" class="nav-link" data-scroll-target="#debugapp-app-package"><code>debugApp</code> app-package</a></li>
   <li><a href="#modules" id="toc-modules" class="nav-link" data-scroll-target="#modules">Modules</a>
   <ul>
   <li><a href="#mod_pkg" id="toc-mod_pkg" class="nav-link" data-scroll-target="#mod_pkg"><code>mod_pkg</code></a></li>
@@ -237,12 +232,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul>
 </nav>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+
 
 
 
@@ -259,22 +255,20 @@ ALERT!
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<div style="font-size: 1.10em; font-weight: bold; color: #696969;">
+<div style="font-size: 0.90em; color: #696969;">
 <p>This post is currently under development–thank you for your patience.</p>
 </div>
 </div>
 </div>
 </div>
-<p>This is the fourth post in a <a href="https://mjfrigaard.github.io/#category=testing">series on testing</a> shiny applications. I’ll cover using <code>rlang::trace_back()</code>, <code>browser()</code>, and unit/<code>testServer()</code> tests to debug <code>shiny</code> apps.</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>show/hide packages</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mstsap) <span class="co"># app package </span></span>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(debugApp) <span class="co"># app package </span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(palmerpenguins) <span class="co"># data</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(NHANES) <span class="co"># data</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr) <span class="co"># function</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rlang) <span class="co"># traceback/stack trace</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt) <span class="co"># tables</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rlang) <span class="co"># traceback/stack trace</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt) <span class="co"># tables</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 
@@ -282,28 +276,37 @@ ALERT!
 <p><img src="shiny-test-bugs.png" class="img-fluid" style="width:70.0%"></p>
 </div></div><section id="bugs" class="level2">
 <h2 class="anchored" data-anchor-id="bugs">Bugs!</h2>
-<p>In <a href="https://mjfrigaard.github.io/posts/test-shiny-p3/">a previous post</a>, I covered writing tests for module server functions in <a href="https://github.com/mjfrigaard/tsap"><code>tsap</code></a> (<em><code>testServer()</code> app-package</em>). I ended that post noting the bug below when running <code>pkgDataApp()</code>:</p>
-<div id="fig-graph_error_gif_intro" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-graph_error_gif_intro" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="graph_error.gif" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-graph_error_gif_intro"></p>
-<figcaption class="figure-caption">(a) App <code>renderPlot()</code> error</figcaption>
+<p>In <a href="https://mjfrigaard.github.io/series.html">a previous post</a>, I covered writing tests for module server functions with Shiny’s <code>testServer()</code> function. The application in that post displays an error similar to the one below:</p>
+<div id="fig-graph_error_gif_intro" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-graph_error_gif_intro-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-graph_error_gif_intro" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-graph_error_gif_intro-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="01-debugApp-error.gif" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" data-ref-parent="fig-graph_error_gif_intro">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-graph_error_gif_intro-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) UI error
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;1: Shiny app displaying <code>Error in [[: Column 'race1' not found in '.data'</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-graph_error_gif_intro-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Shiny app displaying <code>Error: Column 'species' not found in '.data'</code>
+</figcaption>
 </figure>
 </div>
-<p>The warning resolves itself without causing the application to crash, but it’s displayed in the UI, so leaving it is not an option. In this post, I’m going to discuss using the stack trace and <code>browse()</code> to debug a shiny app-package.</p>
+<p>The warning resolves itself without causing the application to crash, but it’s displayed in the UI, so leaving it is not an option. In this post, I’ll cover reading the call stack (or stack trace) and using <code>browse()</code> to debug errors in a Shiny app-package.</p>
 </section>
-<section id="testserver-app-package" class="level2">
-<h2 class="anchored" data-anchor-id="testserver-app-package"><code>testServer()</code> app-package</h2>
-<p>If you’d like to follow along, you can download <code>mstsap</code> <a href="https://github.com/mjfrigaard/mstsap/archive/refs/heads/main.zip">here</a> or install it using the following:</p>
+<section id="debugapp-app-package" class="level2">
+<h2 class="anchored" data-anchor-id="debugapp-app-package"><code>debugApp</code> app-package</h2>
+<p>The <code>debugApp</code> app-package allows users to select a dataset from an R package and visualize a scatter-plot of</p>
+<p>If you’d like to follow along, you can download <code>debugApp</code> <a href="https://github.com/mjfrigaard/debugApp/archive/refs/heads/main.zip">here</a> or install it using the following:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">"mjfrigaard/mstsap"</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mstsap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"mjfrigaard/debugApp"</span>, <span class="at">force =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(debugApp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>I’ll quickly review the contents of <code>mstsap</code>. The <a href="https://github.com/mjfrigaard/tsap/tree/main/R"><code>R/</code> folder</a> contains files for the modules:</p>
+<p>I’ll quickly review the contents of <code>debugApp</code>. The <a href="https://github.com/mjfrigaard/debugApp/tree/main/R"><code>R/</code> folder</a> contains files for the modules:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>R/</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>├── mod_cols.R</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>├── mod_ds.R</span>
@@ -355,16 +358,24 @@ ALERT!
 <section id="modules" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="modules">Modules</h2>
 <p>I’ve created the figure below to illustrate how the modules in <code>pkgDataApp()</code> work together:</p>
-<div class="column-page-inset-right">
-<div id="fig-module_flow" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-module_flow" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="module_flow.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-module_flow"></p>
-<figcaption class="figure-caption">(a) <code>tsap</code> modules</figcaption>
+<div class="page-columns page-full">
+<div id="fig-module_flow" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-module_flow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-module_flow" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-module_flow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="module_flow.png" class="img-fluid figure-img column-page-inset-right" style="width:100.0%" data-ref-parent="fig-module_flow">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-module_flow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) <code>tsap</code> modules
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;2: Modules in <code>tsap::pkgDataApp()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-module_flow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Modules in <code>tsap::pkgDataApp()</code>
+</figcaption>
 </figure>
 </div>
 </div>
@@ -374,15 +385,23 @@ ALERT!
 <ol type="1">
 <li>The <code>mod_pkg</code> module displays the packages with <code>data.frame</code>s or <code>tibble</code>s (and returns the package as a reactive character string, <code>pkg()</code>)</li>
 </ol>
-<div id="fig-mod_pkg_schema" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-mod_pkg_schema" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="mod_pkg_schema.png" class="img-fluid figure-img" style="width:70.0%" data-ref-parent="fig-mod_pkg_schema"></p>
-<figcaption class="figure-caption">(a) <code>mod_pkg</code></figcaption>
+<div id="fig-mod_pkg_schema" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-mod_pkg_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-mod_pkg_schema" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-mod_pkg_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="mod_pkg_schema.png" class="img-fluid figure-img" style="width:70.0%" data-ref-parent="fig-mod_pkg_schema">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-mod_pkg_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) <code>mod_pkg</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;3: <code>mod_pkg</code> in <code>pkgDataApp()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mod_pkg_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: <code>mod_pkg</code> in <code>pkgDataApp()</code>
+</figcaption>
 </figure>
 </div>
 </section>
@@ -391,15 +410,23 @@ ALERT!
 <ol start="2" type="1">
 <li><code>mod_ds</code> renames <code>pkg()</code> as <code>pkg_input()</code> and uses it to update the <code>selectInput()</code> options for the selected package datasets (the selected dataset is returned as a reactive <code>dataset()</code>)</li>
 </ol>
-<div id="fig-mod_ds_schema" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-mod_ds_schema" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="mod_ds_schema.png" class="img-fluid figure-img" style="width:70.0%" data-ref-parent="fig-mod_ds_schema"></p>
-<figcaption class="figure-caption">(a) <code>mod_ds</code></figcaption>
+<div id="fig-mod_ds_schema" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-mod_ds_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-mod_ds_schema" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-mod_ds_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="mod_ds_schema.png" class="img-fluid figure-img" style="width:70.0%" data-ref-parent="fig-mod_ds_schema">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-mod_ds_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) <code>mod_ds</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;4: <code>mod_pkg</code> and <code>mod_ds</code> in <code>pkgDataApp()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mod_ds_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: <code>mod_pkg</code> and <code>mod_ds</code> in <code>pkgDataApp()</code>
+</figcaption>
 </figure>
 </div>
 </section>
@@ -408,15 +435,23 @@ ALERT!
 <ol start="3" type="1">
 <li><code>mod_cols</code> receives <code>dataset()</code> as <code>ds_input()</code> and updates the <code>selectInput()</code>s with the columns in the <code>ds_input()</code>. Columns are displayed by ‘type’ (i.e., two numeric columns (<code>x</code> and <code>y</code>), binary columns (<code>color</code>), and a <code>facet</code> column. Then <code>ds_input()</code>, the selected columns (<code>x</code>, <code>y</code>, <code>color</code> and <code>facet</code>) and graph aesthetics (<code>size</code> and <code>alpha</code>) are combined and returned as the reactive list <code>plot_values()</code></li>
 </ol>
-<div id="fig-mod_cols_schema" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-mod_cols_schema" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="mod_cols_schema.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-mod_cols_schema"></p>
-<figcaption class="figure-caption">(a) <code>mod_cols</code></figcaption>
+<div id="fig-mod_cols_schema" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-mod_cols_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-mod_cols_schema" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-mod_cols_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="mod_cols_schema.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-mod_cols_schema">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-mod_cols_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) <code>mod_cols</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;5: <code>mod_pkg</code>, <code>mod_ds</code>, and <code>mod_cols</code> in <code>pkgDataApp()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mod_cols_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: <code>mod_pkg</code>, <code>mod_ds</code>, and <code>mod_cols</code> in <code>pkgDataApp()</code>
+</figcaption>
 </figure>
 </div>
 </section>
@@ -425,22 +460,30 @@ ALERT!
 <ol start="4" type="1">
 <li><code>mod_plot</code> uses <code>plot_values()</code> as <code>plot_inputs()</code> and a custom <code>ggplot2</code> utility function (<code>gg_color_scatter_facet()</code>) to render the plot</li>
 </ol>
-<div class="column-body-outset-right">
-<div id="fig-mod_plot_schema" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-mod_plot_schema" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="mod_plot_schema.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-mod_plot_schema"></p>
-<figcaption class="figure-caption">(a) <code>mod_plot</code> in <code>tsap::pkgDataApp()</code></figcaption>
+<div class="page-columns page-full">
+<div id="fig-mod_plot_schema" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-mod_plot_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-mod_plot_schema" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-mod_plot_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="mod_plot_schema.png" class="img-fluid figure-img column-body-outset-right" style="width:100.0%" data-ref-parent="fig-mod_plot_schema">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-mod_plot_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) <code>mod_plot</code> in <code>tsap::pkgDataApp()</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;6: <code>mod_pkg</code>,<code>mod_ds</code>, <code>mod_cols</code>, and <code>mod_plot</code> modules in <code>pkgDataApp()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mod_plot_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: <code>mod_pkg</code>,<code>mod_ds</code>, <code>mod_cols</code>, and <code>mod_plot</code> modules in <code>pkgDataApp()</code>
+</figcaption>
 </figure>
 </div>
 </div>
 <p>The <code>ggplot2</code> function used to generate the plot (<code>gg_color_scatter_facet()</code>) is below:</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>gg_color_scatter_facet()</summary>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>gg_color_scatter_facet <span class="ot">&lt;-</span> <span class="cf">function</span>(df, x_var, y_var,</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>                                <span class="at">col_var =</span> <span class="cn">NULL</span>, <span class="at">facet_var =</span> <span class="cn">NULL</span>,</span>
@@ -644,7 +687,7 @@ Stack traces in shiny
 <p>I’ll use <code>gg_color_scatter_facet()</code> in the code chunk below, but I’ve written it to reproduce the error I’m seeing above (i.e., the variable arguments are from the <code>NHANES::NHANES</code> data, but the <code>df</code> argument has been changed to <code>palmerpenguins::penguins</code>).</p>
 <p>I’ll pass the <code>gg_color_scatter_facet()</code> call in to the <strong>Console:</strong></p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>ggplot2 error with traceback()</summary>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>tsap<span class="sc">::</span><span class="fu">gg_color_scatter_facet</span>(</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">df =</span> janitor<span class="sc">::</span><span class="fu">clean_names</span>(palmerpenguins<span class="sc">::</span>penguins),</span>
@@ -654,7 +697,8 @@ Stack traces in shiny
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">facet_var =</span> <span class="st">"race1"</span>,</span>
 <span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="dv">1</span> <span class="sc">/</span> <span class="dv">3</span>,</span>
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">size =</span> <span class="dv">2</span>)</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="do">## Error in loadNamespace(x): there is no package called 'tsap'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="do">## Error in `.data[["race1"]]`:</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="do">## ! Column `race1` not found in `.data`.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>After the error, I call <code>traceback()</code>:</p>
@@ -664,7 +708,7 @@ Stack traces in shiny
 <p>The output from <code>traceback()</code> is below:</p>
 <div style="font-size: 0.90em;">
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>show/hide traceback() output</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">29:</span> stop<span class="er">(</span><span class="ex">fallback</span><span class="kw">)</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">28:</span> signal_abort<span class="er">(</span><span class="ex">cnd,</span> .file<span class="kw">)</span></span>
@@ -746,7 +790,7 @@ Adding <code>traceback()</code> to <code>.Rprofile</code>
 </div>
 <div style="font-size: 0.90em;">
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>show/hide rlang::last_trace() output</summary>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>error/rlang_error_data_pronoun_not_found<span class="op">&gt;</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Error</span> in <span class="kw">`</span><span class="ex">.data[[</span><span class="st">"race1"</span><span class="ex">]]</span><span class="kw">`</span>:</span>
@@ -811,15 +855,23 @@ Adding <code>traceback()</code> to <code>.Rprofile</code>
 <h3 class="anchored" data-anchor-id="what-did-i-expect">What did I expect?</h3>
 <p>I generally try to write code that executes without errors, so the output from <code>traceback()</code> or <code>last_trace()</code> is always a little bewildering. I never know <em>exactly</em> what I’m looking for in the stack trace (if so, I would’ve written the code to avoid encountering it), but I like to start with a clear understanding of the behavior I’m expecting the function to perform.</p>
 <p>In this case, I’m expecting the data (in <code>mod_ds</code>) and columns (in <code>mod_cols</code>) to update in <code>plot_values()</code> when I change the package input to <code>palmerpenguins</code>:</p>
-<div id="fig-mods_pkg_ds_cols" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-mods_pkg_ds_cols" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="mods_pkg_ds_cols.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-mods_pkg_ds_cols"></p>
-<figcaption class="figure-caption">(a) Changes to package, data and columns</figcaption>
+<div id="fig-mods_pkg_ds_cols" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-mods_pkg_ds_cols-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-mods_pkg_ds_cols" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-mods_pkg_ds_cols-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="mods_pkg_ds_cols.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-mods_pkg_ds_cols">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-mods_pkg_ds_cols-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Changes to package, data and columns
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;7: Updating package input, data, and columns</figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mods_pkg_ds_cols-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: Updating package input, data, and columns
+</figcaption>
 </figure>
 </div>
 <p>The updated <code>plot_values()</code> reactive list is passed to the <code>plot_inputs</code> argument <code>mod_plot</code> (where the graph is rendered).</p>
@@ -843,28 +895,44 @@ Adding <code>traceback()</code> to <code>.Rprofile</code>
 <div class="sourceCode" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>Error <span class="cf">in</span> <span class="st">`</span><span class="at">.data[["race1"]]</span><span class="st">`</span><span class="sc">:</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="sc">!</span> Column <span class="st">`</span><span class="at">race1</span><span class="st">`</span> not found <span class="cf">in</span> <span class="st">`</span><span class="at">.data</span><span class="st">`</span>.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><code>race1</code> is the facet variable from the <code>NHANES</code> data, so I am assuming the <code>plot_inputs()</code> list isn’t updating when I change <code>input$pkg</code> in <code>mod_pkg</code> to <code>palmerpenguins</code>.</p>
-<div id="fig-default_nhanes_vars" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-default_nhanes_vars" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="default_nhanes_vars.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-default_nhanes_vars"></p>
-<figcaption class="figure-caption">(a) Default <code>NHANES::NHANES</code> data and columns</figcaption>
+<div id="fig-default_nhanes_vars" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-default_nhanes_vars-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-default_nhanes_vars" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-default_nhanes_vars-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="default_nhanes_vars.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-default_nhanes_vars">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-default_nhanes_vars-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Default <code>NHANES::NHANES</code> data and columns
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;8: <code>pkgDataApp()</code> automatically loads with <code>NHANES::NHANES</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-default_nhanes_vars-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8: <code>pkgDataApp()</code> automatically loads with <code>NHANES::NHANES</code>
+</figcaption>
 </figure>
 </div>
 <p>the <code>plot_values()</code> list would contain the updated <code>penguins</code> data (from <code>mod_ds</code>), and the <code>penguins</code> columns (from <code>mod_cols</code>).</p>
 <p>If the <code>penguins</code> data is updated in <code>plot_values()</code> <em>before</em> the columns and graph aesthetics, then why is the facet variable causing the error?</p>
-<div id="fig-mods_pkg_ds_cols_warn_plot" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-mods_pkg_ds_cols_warn_plot" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="mods_pkg_ds_cols_warn_plot.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-mods_pkg_ds_cols_warn_plot"></p>
-<figcaption class="figure-caption">(a) Possible location of bug in <code>pkgDataApp()</code></figcaption>
+<div id="fig-mods_pkg_ds_cols_warn_plot" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-mods_pkg_ds_cols_warn_plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-mods_pkg_ds_cols_warn_plot" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-mods_pkg_ds_cols_warn_plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="mods_pkg_ds_cols_warn_plot.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-mods_pkg_ds_cols_warn_plot">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-mods_pkg_ds_cols_warn_plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Possible location of bug in <code>pkgDataApp()</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;9: Location of bug in <code>pkgDataApp()</code>?</figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mods_pkg_ds_cols_warn_plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;9: Location of bug in <code>pkgDataApp()</code>?
+</figcaption>
 </figure>
 </div>
 <p>There are hints to what is causing the warning/error in the call stack. Frame <code>1.</code> through <code>.6</code> of show the initialization of the <code>ggplot2</code> graph, but frame <code>.7</code> references the facet layout:</p>
@@ -940,7 +1008,7 @@ Adding <code>traceback()</code> to <code>.Rprofile</code>
 <span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">y_var =</span> <span class="st">"weight"</span>,</span>
 <span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">col_var =</span> <span class="st">"survey_yr"</span>,</span>
 <span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">facet_var =</span> <span class="st">"race1"</span>,</span>
-<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">size =</span> 2L,</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">size =</span> <span class="dv">2</span>L,</span>
 <span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.75</span></span>
 <span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></li>
@@ -965,15 +1033,23 @@ Adding <code>traceback()</code> to <code>.Rprofile</code>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>Browse[<span class="dv">2</span>]<span class="sc">&gt;</span> n</span>
 <span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>debug at <span class="sc">~</span><span class="er">/</span>tsap<span class="sc">/</span>R<span class="sc">/</span>utils_scatter.R<span class="co">#452: if (!is.null(col_var) &amp; is.null(facet_var)) {</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>At this step, I can see the values for <code>col_var</code> and <code>facet_var</code> are present in the function <strong>Environment</strong>:</p>
-<div id="fig-env_vars_col_facet" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-env_vars_col_facet" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="env_vars_col_facet.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-env_vars_col_facet"></p>
-<figcaption class="figure-caption">(a) Function variables in <code>gg_color_scatter_facet()</code></figcaption>
+<div id="fig-env_vars_col_facet" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-env_vars_col_facet-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-env_vars_col_facet" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-env_vars_col_facet-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="env_vars_col_facet.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-env_vars_col_facet">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-env_vars_col_facet-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Function variables in <code>gg_color_scatter_facet()</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;10: Color and facet variables in <code>gg_color_scatter_facet()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-env_vars_col_facet-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10: Color and facet variables in <code>gg_color_scatter_facet()</code>
+</figcaption>
 </figure>
 </div>
 <p>I continue stepping through the control flow until I arrive at the <code>ggplot2</code> function:</p>
@@ -981,15 +1057,23 @@ Adding <code>traceback()</code> to <code>.Rprofile</code>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>Browse[<span class="dv">2</span>]<span class="sc">&gt;</span> n</span>
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>debug at <span class="sc">~</span><span class="er">/</span>tsap<span class="sc">/</span>R<span class="sc">/</span>utils_scatter.R<span class="co">#452: if (is.null(col_var) &amp; !is.null(facet_var)) {</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>When I arrive at the <code>ggplot2</code> functions, I’ll see this code highlighted in the <strong>Source</strong> pane,</p>
-<div id="fig-debugger_ggplot2" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-debugger_ggplot2" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="debugger_ggplot2.png" class="img-fluid figure-img" style="width:75.0%" data-ref-parent="fig-debugger_ggplot2"></p>
-<figcaption class="figure-caption">(a) Function variables in <code>gg_color_scatter_facet()</code></figcaption>
+<div id="fig-debugger_ggplot2" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-debugger_ggplot2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-debugger_ggplot2" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-debugger_ggplot2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="debugger_ggplot2.png" class="img-fluid figure-img" style="width:75.0%" data-ref-parent="fig-debugger_ggplot2">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-debugger_ggplot2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Function variables in <code>gg_color_scatter_facet()</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;11: <code>ggplot2</code> code in <code>gg_color_scatter_facet()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-debugger_ggplot2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11: <code>ggplot2</code> code in <code>gg_color_scatter_facet()</code>
+</figcaption>
 </figure>
 </div>
 <p>When I attempt to execute this step, I see the error:</p>
@@ -1041,7 +1125,7 @@ Adding <code>traceback()</code> to <code>.Rprofile</code>
 <span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">y_var =</span> <span class="st">"weight"</span>,</span>
 <span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">col_var =</span> <span class="st">"survey_yr"</span>,</span>
 <span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">facet_var =</span> <span class="st">"race1"</span>,</span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">size =</span> 2L,</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">size =</span> <span class="dv">2</span>L,</span>
 <span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.75</span></span>
 <span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -1063,7 +1147,7 @@ Adding <code>traceback()</code> to <code>.Rprofile</code>
 </ul>
 <p>I can also separate the graph aesthetic <em>variables</em> (<code>x_var</code>, <code>y_var</code>, <code>col_var</code>, and <code>facet_var</code>) from the two graph aesthetic <em>values</em> (<code>alpha</code> and <code>size</code>). I’ve implemented this solution in the <code>mod_vars</code> and <code>mod_graph</code> modules, which you can view below:</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>show/hide mod_vars</summary>
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>mod_vars_ui <span class="ot">&lt;-</span> <span class="cf">function</span>(id) {</span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  ns <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">NS</span>(id)</span>
@@ -1202,7 +1286,7 @@ Adding <code>traceback()</code> to <code>.Rprofile</code>
 </details>
 </div>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>show/hide mod_graph</summary>
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>mod_graph_ui <span class="ot">&lt;-</span> <span class="cf">function</span>(id) {</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  ns <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">NS</span>(id)</span>
@@ -1265,15 +1349,23 @@ Adding <code>traceback()</code> to <code>.Rprofile</code>
 </details>
 </div>
 <p>These are added to <code>appUI()</code> and <code>appServer()</code> the same way I used the <code>mod_cols</code> and <code>mod_plot</code> modules, and results in the following:</p>
-<div id="fig-mod_vars_graph" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-mod_vars_graph" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="mod_vars_graph.gif" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-mod_vars_graph"></p>
-<figcaption class="figure-caption">(a) <code>mod_vars</code> and <code>mod_graph</code> in <code>pkgDataApp()</code> error</figcaption>
+<div id="fig-mod_vars_graph" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-mod_vars_graph-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-mod_vars_graph" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-mod_vars_graph-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="mod_vars_graph.gif" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-mod_vars_graph">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-mod_vars_graph-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) <code>mod_vars</code> and <code>mod_graph</code> in <code>pkgDataApp()</code> error
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;12: Shiny app displaying <code>mod_vars</code> and <code>mod_graph</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mod_vars_graph-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;12: Shiny app displaying <code>mod_vars</code> and <code>mod_graph</code>
+</figcaption>
 </figure>
 </div>
 <p>I can see the warning/error is no longer displayed in UI or the <strong>Console.</strong></p>
@@ -1288,8 +1380,8 @@ Adding <code>traceback()</code> to <code>.Rprofile</code>
 </div>
 <p>Then I use <code>gargoyle::trigger()</code> and <code>gargoyle::watch()</code> to link the modules together in a ‘reactive daisy-chain’:</p>
 <div class="cell">
-<details open="">
-<summary>Code</summary>
+<details open="" class="code-fold">
+<summary>show/hide</summary>
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># pkg module ----</span></span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">observe</span>({</span>
 <span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  env_vars<span class="sc">$</span>pkg <span class="ot">&lt;-</span> <span class="fu">mod_pkg_server</span>(<span class="st">"pkg"</span>)</span>
@@ -1420,10 +1512,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -1433,8 +1524,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -1447,6 +1547,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -1490,6 +1709,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -1515,6 +1735,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -1575,6 +1821,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 
