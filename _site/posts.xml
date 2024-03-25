@@ -11149,7 +11149,7 @@ font-style: inherit;">"lubridate"</span>)))</span></code></pre></div>
   <media:content url="https://mjfrigaard.github.io/posts/debugging/image.png" medium="image" type="image/png" height="168" width="144"/>
 </item>
 <item>
-  <title>Using testthat with Shiny</title>
+  <title>Testing Non-Package Shiny Apps</title>
   <dc:creator>Martin Frigaard</dc:creator>
   <link>https://mjfrigaard.github.io/posts/p2-tests-nonpkg-unit-tests/</link>
   <description><![CDATA[ 
@@ -11181,37 +11181,34 @@ background-color: null;
 font-style: inherit;">library</span>(shinytest2)</span></code></pre></div>
 </details>
 </div>
-<p>This post is the second in a series on testing shiny applications. I’ll cover testing shiny module server functions using the <a href="https://testthat.r-lib.org/"><code>testhat</code> package</a> <em>outside</em> an R package. This application is stored in the <a href="https://github.com/mjfrigaard/noap"><code>noap</code></a> GitHub repo if you’d like to follow along.</p>
+<p>This is the second post in a series on testing Shiny applications. I’ll cover testing Shiny module server functions using the <a href="https://testthat.r-lib.org/"><code>testhat</code> package</a> <em>outside</em> of an R package structure. The <a href="https://github.com/mjfrigaard/sapkgs/tree/noap"><code>noap</code></a> branch of the <a href="https://github.com/mjfrigaard/sapkgs"><code>sapkgs</code></a>.</p>
 <section id="testing-module-server-functions" class="level2">
 <h2 class="anchored" data-anchor-id="testing-module-server-functions">Testing module server functions</h2>
-<div style="font-size: 1.10em;">
-<p><em>…the ABCs of testing shiny server modules…</em></p>
-</div>
-<p>This post covers how <code>shiny::testServer()</code> works using the <a href="https://github.com/mjfrigaard/noap/blob/main/app.R">abcApp() shiny app.</a>. The code for <code>abcApp()</code> is an RStudio project (i.e., there is a <code>noap.Rproj</code> file in the parent folder), but it’s not part of an R package. Developing shiny applications as R packages is <a href="https://mastering-shiny.org/scaling-packaging.html">highly</a> <a href="https://engineering-shiny.org/structuring-project.html#shiny-app-as-a-package">recommended</a>, but it’s <em>possible</em> to begin writing unit tests before your application is a fully developed shiny app-package.</p>
+<p>This post covers how <code>shiny::testServer()</code> works using a simple Shiny application. The code for <code>abcApp()</code> is an RStudio project (i.e., there is a <code>noap.Rproj</code> file in the parent folder), but it’s not part of an R package. Developing shiny applications as R packages is <a href="https://mastering-shiny.org/scaling-packaging.html">highly</a> <a href="https://engineering-shiny.org/structuring-project.html#shiny-app-as-a-package">recommended</a>, but it’s <em>possible</em> to begin writing unit tests before your application is a fully developed shiny app-package.</p>
 <p>For more information regarding performing tests outside of the package environment, see <a href="https://github.com/r-lib/testthat/issues/659">this issue on GitHub</a>.</p>
-<section id="abcapp" class="level3">
-<h3 class="anchored" data-anchor-id="abcapp">abcApp()</h3>
-<p>The <code>abcApp()</code> application has been written using <a href="https://shiny.posit.co/r/articles/improve/modules/">shiny modules</a> and a single <a href="https://github.com/mjfrigaard/noap/blob/main/utils.R">utility function</a>.</p>
-<p><code>testthat</code> is designed to perform unit tests for R packages, but for the sake of simplicity,<code>abcApp()</code> has not been developed as part of a package. This will allow us to focus on the files involved in testing (and not all the other files that accompany R packages).</p>
-<p>The standalone application function (<code>abcApp()</code>) is stored in <code>app.R</code>, the modules are contained in <code>modules.R</code>, and the single utility function is stored in <code>utils.R</code>:</p>
+<section id="abc-app" class="level3">
+<h3 class="anchored" data-anchor-id="abc-app">ABC App</h3>
+<p><code>testthat</code> is designed to perform unit tests in R packages, but not all Shiny apps begin as R packages. The Shiny application we’ll be using for this demonstration has been written using <a href="https://shiny.posit.co/r/articles/improve/modules/">Shiny modules</a> and a single <a href="https://github.com/mjfrigaard/sapkgs/blob/noap/utils.R">utility function</a>.</p>
+<p>The standalone application function (<code>launchApp()</code>) is stored in <code>app.R</code>, the modules are contained in <code>modules.R</code>, and the single utility function is stored in <code>utils.R</code>:</p>
 <div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb2-1">├── README.md</span>
 <span id="cb2-2">├── app.R</span>
-<span id="cb2-3">├── app.Rproj</span>
-<span id="cb2-4">├── modules.R</span>
-<span id="cb2-5">├── tests</span>
-<span id="cb2-6">└── utils.R</span>
-<span id="cb2-7"></span>
-<span id="cb2-8">2 directories, 5 files</span></code></pre></div>
+<span id="cb2-3">├── modules.R</span>
+<span id="cb2-4">├── sapkgs.Rproj</span>
+<span id="cb2-5">├── tests/</span>
+<span id="cb2-6">│   ├── testthat/</span>
+<span id="cb2-7">│   │   ├── test-mod_abc_server.R</span>
+<span id="cb2-8">│   │   └── test-num_super_script.R</span>
+<span id="cb2-9">│   └── testthat.R</span>
+<span id="cb2-10">└── utils.R</span></code></pre></div>
 <ul>
-<li><p>The <code>tests</code> folder contains the following:</p>
+<li><p>The <code>tests/</code> folder contains the following:</p>
 <div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb3-1">tests</span>
 <span id="cb3-2">├── testthat</span>
-<span id="cb3-3">│   └── test-mod_abc_server.R</span>
-<span id="cb3-4">└── testthat.R</span>
-<span id="cb3-5"></span>
-<span id="cb3-6">2 directories, 2 files</span></code></pre></div>
+<span id="cb3-3">│   ├── test-mod_abc_server.R</span>
+<span id="cb3-4">│   └── test-num_super_script.R</span>
+<span id="cb3-5">└── testthat.R</span></code></pre></div>
 <ul>
-<li><code>tests/</code> has a <code>testthat.R</code> file<br>
+<li><code>tests/</code> has a <code>testthat.R</code> ‘test runner’ file<br>
 </li>
 <li>New test files should be placed in <code>tests/testthat/</code> (see example <code>test-mod_abc_server.R</code> below):</li>
 </ul></li>
@@ -11232,74 +11229,91 @@ background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">function</span>(id) {</span>
-<span id="cb4-3"></span>
-<span id="cb4-4">  ns <span class="ot" style="color: #003B4F;
+<span id="cb4-3">  ns <span class="ot" style="color: #003B4F;
 background-color: null;
-font-style: inherit;">&lt;-</span> shiny<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">NS</span>(id)</span>
-<span id="cb4-5"></span>
-<span id="cb4-6">  shiny<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+<span id="cb4-4">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">tagList</span>(</span>
-<span id="cb4-7">    shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb4-5">    <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+font-style: inherit;">column</span>(</span>
+<span id="cb4-6">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>,</span>
+<span id="cb4-7">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">offset =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>,</span>
+<span id="cb4-8">      <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">numericInput</span>(</span>
-<span id="cb4-8">      <span class="at" style="color: #657422;
+<span id="cb4-9">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">inputId =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">ns</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"num"</span>),</span>
-<span id="cb4-9">      <span class="at" style="color: #657422;
+<span id="cb4-10">        <span class="at" style="color: #657422;
 background-color: null;
-font-style: inherit;">label =</span> shiny<span class="sc" style="color: #5E5E5E;
+font-style: inherit;">label =</span> <span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">h4</span>(</span>
-<span id="cb4-10">        shiny<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">code</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"alphabet number"</span>)),</span>
+font-style: inherit;">"Alphabet Number"</span>,</span>
 <span id="cb4-11">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">value =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
-font-style: inherit;">5</span>, <span class="at" style="color: #657422;
+font-style: inherit;">5</span>,</span>
+<span id="cb4-12">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">min =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
-font-style: inherit;">1</span>, <span class="at" style="color: #657422;
+font-style: inherit;">1</span>,</span>
+<span id="cb4-13">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">max =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">26</span></span>
-<span id="cb4-12">    ),</span>
-<span id="cb4-13">    shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb4-14">      )</span>
+<span id="cb4-15">    ),</span>
+<span id="cb4-16">    <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+font-style: inherit;">column</span>(</span>
+<span id="cb4-17">      <span class="at" style="color: #657422;
 background-color: null;
-font-style: inherit;">verbatimTextOutput</span>(</span>
-<span id="cb4-14">      <span class="at" style="color: #657422;
+font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>,</span>
+<span id="cb4-18">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">br</span>(),</span>
+<span id="cb4-19">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">uiOutput</span>(</span>
+<span id="cb4-20">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">outputId =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">ns</span>(<span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"txt"</span>))</span>
-<span id="cb4-15">  )</span>
-<span id="cb4-16">}</span></code></pre></div>
+font-style: inherit;">"txt"</span>)</span>
+<span id="cb4-21">      ),</span>
+<span id="cb4-22">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">verbatimTextOutput</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ns</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"out"</span>))</span>
+<span id="cb4-23">    )</span>
+<span id="cb4-24">  )</span>
+<span id="cb4-25">}</span></code></pre></div>
 </details>
 </div></li>
 </ul>
@@ -11320,74 +11334,120 @@ background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">function</span>(id) {</span>
-<span id="cb5-3"></span>
-<span id="cb5-4">  shiny<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+<span id="cb5-3">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">moduleServer</span>(id, <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">function</span>(input, output, session) {</span>
-<span id="cb5-5">    <span class="co" style="color: #5E5E5E;
+<span id="cb5-4">    <span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;"># reactive </span></span>
-<span id="cb5-6">    letter <span class="ot" style="color: #003B4F;
+font-style: inherit;"># reactive</span></span>
+<span id="cb5-5">    letter <span class="ot" style="color: #003B4F;
 background-color: null;
-font-style: inherit;">&lt;-</span> shiny<span class="sc" style="color: #5E5E5E;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+font-style: inherit;">reactive</span>({</span>
+<span id="cb5-6">      LETTERS[input<span class="sc" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">reactive</span>({ LETTERS[input<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>num] })</span>
-<span id="cb5-7">    <span class="co" style="color: #5E5E5E;
+font-style: inherit;">$</span>num]</span>
+<span id="cb5-7">    })</span>
+<span id="cb5-8">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># super script</span></span>
-<span id="cb5-8">    sup_scrpt <span class="ot" style="color: #003B4F;
+<span id="cb5-9">    sup_scrpt <span class="ot" style="color: #003B4F;
 background-color: null;
-font-style: inherit;">&lt;-</span> shiny<span class="sc" style="color: #5E5E5E;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">reactive</span>({ </span>
-<span id="cb5-9">      <span class="fu" style="color: #4758AB;
+font-style: inherit;">reactive</span>({</span>
+<span id="cb5-10">      <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">num_super_script</span>(<span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">x =</span> input<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>num)</span>
-<span id="cb5-10">    })</span>
-<span id="cb5-11">    <span class="co" style="color: #5E5E5E;
+<span id="cb5-11">    })</span>
+<span id="cb5-12">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># output</span></span>
-<span id="cb5-12">    output<span class="sc" style="color: #5E5E5E;
+<span id="cb5-13">    output<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>txt <span class="ot" style="color: #003B4F;
 background-color: null;
-font-style: inherit;">&lt;-</span> shiny<span class="sc" style="color: #5E5E5E;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+font-style: inherit;">renderUI</span>({</span>
+<span id="cb5-14">      <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">renderPrint</span>({</span>
-<span id="cb5-13">      <span class="fu" style="color: #4758AB;
+font-style: inherit;">HTML</span>(</span>
+<span id="cb5-15">        <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">paste0</span>(<span class="st" style="color: #20794D;
+font-style: inherit;">paste0</span>(</span>
+<span id="cb5-16">          <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">"The "</span>, input<span class="sc" style="color: #5E5E5E;
+font-style: inherit;">em</span>(</span>
+<span id="cb5-17">            <span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">$</span>num, <span class="fu" style="color: #4758AB;
+font-style: inherit;">"The "</span>, <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">sup_scrpt</span>(), </span>
-<span id="cb5-14">             <span class="st" style="color: #20794D;
+font-style: inherit;">code</span>(input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>num), <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">code</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sup_scrpt</span>()),</span>
+<span id="cb5-18">            <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">" letter in the alphabet is: "</span>, <span class="fu" style="color: #4758AB;
 background-color: null;
+font-style: inherit;">code</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
 font-style: inherit;">letter</span>())</span>
-<span id="cb5-15">    })</span>
-<span id="cb5-16"></span>
-<span id="cb5-17">  })</span>
-<span id="cb5-18">}</span></code></pre></div>
+<span id="cb5-19">          )</span>
+<span id="cb5-20">        )</span>
+<span id="cb5-21">      )</span>
+<span id="cb5-22">    })</span>
+<span id="cb5-23">    output<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>out <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">renderPrint</span>({</span>
+<span id="cb5-24">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">HTML</span>(</span>
+<span id="cb5-25">        <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">paste0</span>(</span>
+<span id="cb5-26">          <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">em</span>(</span>
+<span id="cb5-27">            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"The "</span>, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">code</span>(input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>num), <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">code</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sup_scrpt</span>()),</span>
+<span id="cb5-28">            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">" letter in the alphabet is: "</span>, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">code</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">letter</span>())</span>
+<span id="cb5-29">          )</span>
+<span id="cb5-30">        )</span>
+<span id="cb5-31">      )</span>
+<span id="cb5-32">    })</span>
+<span id="cb5-33">  })</span>
+<span id="cb5-34">}</span></code></pre></div>
 </details>
 </div></li>
 </ul>
@@ -11417,28 +11477,28 @@ font-style: inherit;">as.numeric</span>(x)</span>
 background-color: null;
 font-style: inherit;">if</span> (num <span class="sc" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+font-style: inherit;">&lt;</span> <span class="dv" style="color: #AD0000;
 background-color: null;
-font-style: inherit;">1</span>) {</span>
-<span id="cb6-5">        super_script <span class="ot" style="color: #003B4F;
+font-style: inherit;">0</span>) {</span>
+<span id="cb6-5">        <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">&lt;-</span> <span class="st" style="color: #20794D;
+font-style: inherit;">stop</span>(<span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"st"</span></span>
+font-style: inherit;">"not a valid number"</span>)</span>
 <span id="cb6-6">      } <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">else</span> <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">if</span> (num <span class="sc" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+font-style: inherit;">&gt;</span> <span class="dv" style="color: #AD0000;
 background-color: null;
-font-style: inherit;">2</span>) {</span>
-<span id="cb6-7">        super_script <span class="ot" style="color: #003B4F;
+font-style: inherit;">26</span>) {</span>
+<span id="cb6-7">        <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">&lt;-</span> <span class="st" style="color: #20794D;
+font-style: inherit;">stop</span>(<span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"nd"</span></span>
+font-style: inherit;">"not a valid number"</span>)</span>
 <span id="cb6-8">      } <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">else</span> <span class="cf" style="color: #003B4F;
@@ -11447,25 +11507,85 @@ font-style: inherit;">if</span> (num <span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
 background-color: null;
-font-style: inherit;">3</span>) {</span>
+font-style: inherit;">0</span>) {</span>
 <span id="cb6-9">        super_script <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"rd"</span></span>
+font-style: inherit;">""</span></span>
 <span id="cb6-10">      } <span class="cf" style="color: #003B4F;
 background-color: null;
-font-style: inherit;">else</span> {</span>
+font-style: inherit;">else</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> (num <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span> <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|</span> num <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">21</span>) {</span>
 <span id="cb6-11">        super_script <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="st" style="color: #20794D;
 background-color: null;
+font-style: inherit;">"st"</span></span>
+<span id="cb6-12">      } <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">else</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> (num <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span> <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|</span> num <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">22</span>) {</span>
+<span id="cb6-13">        super_script <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"nd"</span></span>
+<span id="cb6-14">      } <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">else</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> (num <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span> <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|</span> num <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">23</span>) {</span>
+<span id="cb6-15">        super_script <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"rd"</span></span>
+<span id="cb6-16">      } <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">else</span> {</span>
+<span id="cb6-17">        super_script <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="st" style="color: #20794D;
+background-color: null;
 font-style: inherit;">"th"</span></span>
-<span id="cb6-12">      }</span>
-<span id="cb6-13">    <span class="fu" style="color: #4758AB;
+<span id="cb6-18">      }</span>
+<span id="cb6-19">    <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">return</span>(super_script)</span>
-<span id="cb6-14">}</span></code></pre></div>
+<span id="cb6-20">}</span></code></pre></div>
 </details>
 </div></li>
 </ul>
@@ -11476,59 +11596,60 @@ font-style: inherit;">return</span>(super_script)</span>
 <li><p>Standalone app functions include a call to <code>shiny::shinyApp()</code>:</p>
 <div class="cell">
 <details open="" class="code-fold">
-<summary>abcApp() (example app with modules)</summary>
-<div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># standalone shiny app function</span></span>
-<span id="cb7-2">abcApp <span class="ot" style="color: #003B4F;
+<summary>launch() (example app with modules)</summary>
+<div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1">launchApp <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">function</span>() {</span>
-<span id="cb7-3">  shiny<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+<span id="cb7-2">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">shinyApp</span>(</span>
-<span id="cb7-4">    <span class="at" style="color: #657422;
+<span id="cb7-3">    <span class="at" style="color: #657422;
 background-color: null;
-font-style: inherit;">ui =</span> shiny<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+font-style: inherit;">ui =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">fluidPage</span>(</span>
+<span id="cb7-4">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">h2</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ABC App"</span>),</span>
 <span id="cb7-5">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">fluidRow</span>(</span>
+<span id="cb7-6">        <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">mod_abc_ui</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"x"</span>)</span>
-<span id="cb7-6">    ), </span>
-<span id="cb7-7">    <span class="at" style="color: #657422;
+<span id="cb7-7">      )</span>
+<span id="cb7-8">    ),</span>
+<span id="cb7-9">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">server =</span> <span class="cf" style="color: #003B4F;
 background-color: null;
-font-style: inherit;">function</span>(input, output, session) { </span>
-<span id="cb7-8">      <span class="fu" style="color: #4758AB;
+font-style: inherit;">function</span>(input, output, session) {</span>
+<span id="cb7-10">      <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">mod_abc_server</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"x"</span>)</span>
-<span id="cb7-9">    }</span>
-<span id="cb7-10">  )</span>
-<span id="cb7-11">}</span>
-<span id="cb7-12"><span class="fu" style="color: #4758AB;
+<span id="cb7-11">    }</span>
+<span id="cb7-12">  )</span>
+<span id="cb7-13">}</span>
+<span id="cb7-14"><span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">abcApp</span>()</span></code></pre></div>
+font-style: inherit;">launchApp</span>()</span></code></pre></div>
 </details>
 </div>
 <ul>
-<li><p>The call to <code>shiny::shinyApp()</code> is placed inside the <code>abcApp()</code> function</p></li>
-<li><p>The <code>ui</code> argument is wrapped in <code>shiny::fluidPage()</code> and the ui module function (<code>mod_abc_ui()</code>) is placed inside</p></li>
+<li><p>The call to <code>shiny::shinyApp()</code> is placed inside the <code>launchApp()</code> function</p></li>
+<li><p>The <code>ui</code> argument is wrapped in <code>shiny::fluidPage()</code> with the ui module function (<code>mod_abc_ui()</code>) placed inside <code>fluidRow()</code></p></li>
 <li><p>The <code>server</code> argument includes the standard <code>function(input, output, session)</code> and the module server companion function–<code>mod_abc_server()</code>–with a matching <code>id</code> arguments</p></li>
-<li><p>The <code>abcApp()</code> function is stored in the <code>app.R</code> file</p></li>
 </ul></li>
 </ul>
-<p>Because <code>abcApp()</code> is not part of a package, <code>shiny</code> and <code>testthat</code> are loaded and the modules and utility function are sourced in the top of the <code>app.R</code> file.</p>
+<p>Because <code>launchApp()</code> is not part of a package, <code>shiny</code> and <code>testthat</code> are loaded and the modules and utility function are sourced in the top of the <code>app.R</code> file.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>source utils.R and modules.R in app.R</summary>
@@ -11570,10 +11691,8 @@ font-style: inherit;">"modules.R"</span>)</span></code></pre></div>
 <li><p><code>app</code> is the module server function (<code>mod_abc_server</code>) or any <a href="https://shiny.posit.co/r/reference/shiny/1.7.0/shiny.appobj.html"><code>shiny.appobj</code></a></p>
 <div class="cell">
 <details open="" class="code-fold">
-<summary>app = shiny.appobj</summary>
-<div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1">shiny<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+<summary>app = mod_abc_server</summary>
+<div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">testServer</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -11593,14 +11712,12 @@ font-style: inherit;">app =</span> mod_abc_server, {</span>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>test initial value with custom message</summary>
-<div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1">shiny<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+<div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">testServer</span>(mod_abc_server, {</span>
 <span id="cb10-2">  <span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;"># Test 1: check initial value</span></span>
+font-style: inherit;"># Test initial value</span></span>
 <span id="cb10-3">  testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
@@ -11631,29 +11748,24 @@ background-color: null;
 font-style: inherit;">"</span>)</span>
 <span id="cb10-5">})</span></code></pre></div>
 </details>
-</div>
-<div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb11-1">[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]</span>
-<span id="cb11-2">Test 1 initial input$num = NULL:  TRUE </span></code></pre></div>
+</div></li>
+</ul>
+<p><code>testServer()</code> allows me to set new <code>input</code> values with <code>session$setInputs()</code></p>
 <ul>
-<li><p><code>testServer()</code> allows me to set new <code>input</code> values with <code>session$setInputs()</code></p>
+<li><p>Use <code>session$setInputs()</code> to set <code>input$num</code> to <code>3</code></p>
 <ul>
-<li><p>Use <code>session$setInputs()</code> to set <code>input$num</code> to <code>3</code></p></li>
-<li><p>Test 2 confirms <code>input$num</code> has changed</p></li>
-<li><p>Add another custom message with <code>cat()</code></p></li>
-</ul></li>
+<li>Test 2 confirms <code>input$num</code> has changed (we’ll also add another custom message with <code>cat()</code>)</li>
 </ul>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>setInputs() and test inputs</summary>
-<div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1">shiny<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+<div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">testServer</span>(mod_abc_server, {</span>
-<span id="cb12-2">  <span class="co" style="color: #5E5E5E;
+<span id="cb11-2">  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># set inputs</span></span>
-<span id="cb12-3">  session<span class="sc" style="color: #5E5E5E;
+<span id="cb11-3">  session<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -11662,10 +11774,10 @@ background-color: null;
 font-style: inherit;">num =</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">3</span>)</span>
-<span id="cb12-4">  <span class="co" style="color: #5E5E5E;
+<span id="cb11-4">  <span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;"># Test 2: check set inputs</span></span>
-<span id="cb12-5">  testthat<span class="sc" style="color: #5E5E5E;
+font-style: inherit;"># Test set inputs</span></span>
+<span id="cb11-5">  testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -11674,7 +11786,7 @@ background-color: null;
 font-style: inherit;">$</span>num, <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">3</span>)</span>
-<span id="cb12-6">  <span class="fu" style="color: #4758AB;
+<span id="cb11-6">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">cat</span>(<span class="st" style="color: #20794D;
 background-color: null;
@@ -11691,35 +11803,29 @@ background-color: null;
 font-style: inherit;">\n</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"</span>)</span>
-<span id="cb12-7">})</span></code></pre></div>
+<span id="cb11-7">})</span></code></pre></div>
 </details>
-</div>
-<div class="sourceCode" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb13-1">[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]</span>
-<span id="cb13-2"> Test 2 setInputs(num = 3): 3 </span></code></pre></div></li>
+</div></li>
 </ul>
 </section>
 <section id="testing-reactive-values" class="level4">
 <h4 class="anchored" data-anchor-id="testing-reactive-values">Testing reactive values</h4>
-<ul>
-<li><p>The module’s reactive values are also available to in <code>testServer()</code></p>
+<p>The module’s reactive values are also available to in <code>testServer()</code>.</p>
 <ul>
 <li><p>Test 3 adds a test for <code>sup_scrpt()</code> (given the changed value of <code>input$num</code>)</p>
 <ul>
-<li>The <code>expected</code> value is what I’m expecting <code>num_super_script()</code> to return.</li>
-</ul></li>
+<li>The <code>expected</code> value is what I’m expecting <code>num_super_script()</code> to return:</li>
 </ul>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Check sup_scrpt() reactive value with expect_equal()</summary>
-<div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1">shiny<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+<div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">testServer</span>(mod_abc_server, {</span>
-<span id="cb14-2">  <span class="co" style="color: #5E5E5E;
+<span id="cb12-2">  <span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;"># Test 3: check super script</span></span>
-<span id="cb14-3">  testthat<span class="sc" style="color: #5E5E5E;
+font-style: inherit;"># Test super script</span></span>
+<span id="cb12-3">  testthat<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -11732,7 +11838,7 @@ background-color: null;
 font-style: inherit;">expected =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"rd"</span>)</span>
-<span id="cb14-4">  <span class="fu" style="color: #4758AB;
+<span id="cb12-4">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">cat</span>(<span class="st" style="color: #20794D;
 background-color: null;
@@ -11749,28 +11855,22 @@ background-color: null;
 font-style: inherit;">\n</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"</span>)</span>
-<span id="cb14-5">})</span></code></pre></div>
+<span id="cb12-5">})</span></code></pre></div>
 </details>
 </div>
-<div class="sourceCode" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb15-1">[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]</span>
-<span id="cb15-2"> Test 3 sup_scrpt(): = 'rd': rd  </span></code></pre></div>
 <ul>
-<li>For completeness I’ll add a test for <code>letter()</code></li>
+<li>For completeness we’ll add a test for <code>letter()</code></li>
 </ul>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Check letter() reactive value with expect_equal()</summary>
-<div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1">shiny<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+<div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">testServer</span>(mod_abc_server, {</span>
-<span id="cb16-2">  <span class="co" style="color: #5E5E5E;
+<span id="cb13-2">  <span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;"># Test 4: check letter</span></span>
-<span id="cb16-3">  testthat<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+font-style: inherit;"># Test letter</span></span>
+<span id="cb13-3">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">expect_equal</span>(<span class="at" style="color: #657422;
 background-color: null;
@@ -11781,7 +11881,7 @@ background-color: null;
 font-style: inherit;">expected =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"C"</span>)</span>
-<span id="cb16-4">  <span class="fu" style="color: #4758AB;
+<span id="cb13-4">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">cat</span>(<span class="st" style="color: #20794D;
 background-color: null;
@@ -11798,176 +11898,71 @@ background-color: null;
 font-style: inherit;">\n</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"</span>)</span>
-<span id="cb16-5">})</span></code></pre></div>
+<span id="cb13-5">})</span></code></pre></div>
 </details>
-</div>
-<div class="sourceCode" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb17-1">[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]</span>
-<span id="cb17-2"> Test 4 letter() = C: C </span></code></pre></div></li>
+</div></li>
 </ul>
 </section>
 <section id="testing-outputs" class="level4">
 <h4 class="anchored" data-anchor-id="testing-outputs">Testing <code>output$</code>s</h4>
+<p>The module output values are also available as <code>output$&lt;value&gt;</code>.</p>
 <ul>
-<li><p>The module output values are also available as <code>output$&lt;value&gt;</code></p>
+<li><p>The final test will verify this object is a list and print the results to the Console</p>
 <ul>
-<li>Test 5 will verify the <code>output$txt</code> (given the updated <code>input$num</code>)</li>
+<li>Output tests can verify that <code>output$txt</code> has been updated with <code>input$num</code>:</li>
 </ul>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Check module output values</summary>
-<div class="sourceCode cell-code" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1">shiny<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+<div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">testServer</span>(mod_abc_server, {</span>
-<span id="cb18-2">  <span class="co" style="color: #5E5E5E;
+<span id="cb14-2">  <span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;"># Test 5: check output</span></span>
-<span id="cb18-3">testthat<span class="sc" style="color: #5E5E5E;
+font-style: inherit;"># Test output</span></span>
+<span id="cb14-3">  <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+font-style: inherit;">expect_true</span>(<span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">expect_equal</span>(<span class="at" style="color: #657422;
+font-style: inherit;">is.list</span>(output<span class="sc" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">object =</span> output<span class="sc" style="color: #5E5E5E;
+font-style: inherit;">$</span>txt))</span>
+<span id="cb14-4">  <span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">$</span>txt,</span>
-<span id="cb18-4">  <span class="at" style="color: #657422;
+font-style: inherit;">print</span>(output<span class="sc" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">expected =</span>  <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"The 3rd letter in the alphabet is: C"</span>)</span>
-<span id="cb18-5"><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">cat</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">\n</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;"> Test 5 output$ = 'The 3rd letter in the alphabet is: C': </span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">\n</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span>,</span>
-<span id="cb18-6">  output<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>txt, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">\n</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span>)</span>
-<span id="cb18-7">})</span></code></pre></div>
+font-style: inherit;">$</span>txt)</span>
+<span id="cb14-5">})</span></code></pre></div>
 </details>
 </div>
-<div class="sourceCode" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb19-1"> FAIL 1 | WARN 0 | SKIP 0 | PASS 0 ]</span>
-<span id="cb19-2"> Test 5 output$ = 'The 3rd letter in the alphabet is: C': </span>
-<span id="cb19-3"> [1] "The 3rd letter in the alphabet is: C" </span>
-<span id="cb19-4"></span>
-<span id="cb19-5">─- Failure (test-mod_abc_server.R:1:1): (code run outside of `test_that()`) ──</span>
-<span id="cb19-6">output$txt (`actual`) not equal to "The 3rd letter in the alphabet is: C" (`expected`).</span>
-<span id="cb19-7"></span>
-<span id="cb19-8">`actual`:   "[1] \"The 3rd letter in the alphabet is: C\""</span>
-<span id="cb19-9">`expected`: "The 3rd letter in the alphabet is: C"        </span>
-<span id="cb19-10">Backtrace:</span>
-<span id="cb19-11">  1. shiny::testServer(...)</span>
-<span id="cb19-12">       at test-mod_abc_server.R:1:0</span>
-<span id="cb19-13"> 22. testthat::expect_equal(object = output$txt, </span>
-<span id="cb19-14">   expected = "The 3rd letter in the alphabet is: C")</span>
-<span id="cb19-15">       at test-mod_abc_server.R:17:4</span>
-<span id="cb19-16"></span>
-<span id="cb19-17">[ FAIL 1 | WARN 0 | SKIP 0 | PASS 0 ]</span></code></pre></div>
 <ul>
-<li><strong>What happened?</strong> I forgot to add the escape characters (<code>\"</code>) and line number (<code>[1]</code>) for the output
-<ul>
-<li>I’ll change the <code>expected</code> value and re-run the test:</li>
-</ul></li>
+<li>Finally, I’ll run the tests with <code>test_file()</code>:</li>
 </ul>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Check module output values (again)</summary>
-<div class="sourceCode cell-code" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1">shiny<span class="sc" style="color: #5E5E5E;
+<div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">testServer</span>(mod_abc_server, {</span>
-<span id="cb20-2">  <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Test 5: check output</span></span>
-<span id="cb20-3">testthat<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">expect_equal</span>(<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">object =</span> output<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>txt,</span>
-<span id="cb20-4">  <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">expected =</span>  <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"The 3rd letter in the alphabet is: C"</span>)</span>
-<span id="cb20-5"><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">cat</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">\n</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;"> Test 5 output$ = 'The 3rd letter in the alphabet is: C': </span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">\n</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span>,</span>
-<span id="cb20-6">  output<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>txt, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span><span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">\n</span><span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"</span>)</span>
-<span id="cb20-7">})</span></code></pre></div>
-</details>
-</div>
-<div class="sourceCode" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb21-1">[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]</span>
-<span id="cb21-2"> Test 5 output$ = 'The 3rd letter in the alphabet is: C': </span>
-<span id="cb21-3"> [1] "The 3rd letter in the alphabet is: C" </span></code></pre></div>
-<ul>
-<li>Finally, I’ll run the tests with <code>test_dir()</code></li>
-</ul>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">test_dir</span>(<span class="at" style="color: #657422;
+font-style: inherit;">test_file</span>(<span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">path =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"/path/to/app/tests/testthat/"</span>)</span></code></pre></div>
 </div>
-<div class="sourceCode" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb23-1">✔ | F W S  OK | Context</span>
-<span id="cb23-2">⠏ |         0 | mod_abc_server         </span>
-<span id="cb23-3"></span>
-<span id="cb23-4"> Test 1 initial input$num = NULL:  TRUE </span>
-<span id="cb23-5"></span>
-<span id="cb23-6"> Test 2 setInputs(num = 3): 3 </span>
-<span id="cb23-7"></span>
-<span id="cb23-8"> Test 3 sup_scrpt(): = 'rd': rd </span>
-<span id="cb23-9"></span>
-<span id="cb23-10"> Test 4 letter() = C: C </span>
-<span id="cb23-11"></span>
-<span id="cb23-12"> Test 5 output$ = 'The 3rd letter in the alphabet is: C': </span>
-<span id="cb23-13"> [1] "The 3rd letter in the alphabet is: C" </span>
-<span id="cb23-14">✔ |         5 | mod_abc_server</span>
-<span id="cb23-15">══ Results ════════════════════════════════════════════════════</span>
-<span id="cb23-16">Duration: 0.2 s</span>
-<span id="cb23-17"> [ FAIL 0 | WARN 0 | SKIP 0 | PASS 5 ]</span>
-<span id="cb23-18">🌈 Your tests are over the rainbow 🌈</span></code></pre></div></li>
+<div class="sourceCode" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb16-1">[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]</span>
+<span id="cb16-2"> Test 1 initial input$num = NULL:  TRUE </span>
+<span id="cb16-3">[ FAIL 0 | WARN 0 | SKIP 0 | PASS 2 ]</span>
+<span id="cb16-4"> Test 2 setInputs(num = 3): 3 </span>
+<span id="cb16-5">[ FAIL 0 | WARN 0 | SKIP 0 | PASS 3 ]</span>
+<span id="cb16-6"> Test 3 sup_scrpt(): = 'rd': rd </span>
+<span id="cb16-7">[ FAIL 0 | WARN 0 | SKIP 0 | PASS 4 ]</span>
+<span id="cb16-8"> Test 4 letter() = C: C </span>
+<span id="cb16-9">[ FAIL 0 | WARN 0 | SKIP 0 | PASS 5 ]$html</span>
+<span id="cb16-10">&lt;em&gt;</span>
+<span id="cb16-11">  The </span>
+<span id="cb16-12">  &lt;code&gt;3&lt;/code&gt;</span>
+<span id="cb16-13">  &lt;code&gt;rd&lt;/code&gt;</span>
+<span id="cb16-14">   letter in the alphabet is: </span>
+<span id="cb16-15">  &lt;code&gt;C&lt;/code&gt;</span>
+<span id="cb16-16">&lt;/em&gt;</span></code></pre></div></li>
 </ul>
 <p>The results show the tests passed! Now I am confident inputs, reactive values (<code>sup_scrpt()</code> &amp; <code>letter()</code>), outputs behave as expected.</p>
 </section>
@@ -11993,7 +11988,7 @@ font-style: inherit;">"/path/to/app/tests/testthat/"</span>)</span></code></pre>
 <li><label><input type="checkbox" checked="">Check output values with <code>output$txt</code></label></li>
 </ul></li>
 </ol>
-<p>This concludes running tests on <code>abcApp()</code>. Ideally, shiny applications are developed as an R package (which I’ll cover in a future post), but now you know how to perform tests if this isn’t the case. The files for this demonstration are located <a href="https://github.com/mjfrigaard/noap">here.</a></p>
+<p>This concludes running tests on <code>noap</code>. Ideally, Shiny applications are developed as an R package (which I’ll cover in future posts), but now you know how to perform tests if this isn’t the case. The files for this demonstration are located <a href="https://github.com/mjfrigaard/sapkgs/tree/noap">here.</a>.</p>
 <p>For a more comprehensive review of testing, check out the chapters on testing in <a href="https://r-pkgs.org/testing-basics.html">R packages</a> and <a href="https://mastering-shiny.org/scaling-testing.html">Mastering Shiny</a>.</p>
 
 

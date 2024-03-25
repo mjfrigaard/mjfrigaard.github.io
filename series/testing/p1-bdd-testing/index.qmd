@@ -55,15 +55,19 @@ library(shiny)
 library(covr)
 ```
 
-
 ```{r}
-#| label: co_box_dev
-#| echo: false
+#| label: co_box_test
+#| eval: true 
 #| results: asis
-#| eval: false
-co_box(color = "r", 
-  header = "ALERT!", 
-  contents = "This post is currently under development. Thank you for your patience.")
+#| echo: false
+co_box(
+  color = "r", 
+  size = "1.10", 
+  hsize = "1.20", 
+  header = "Updates to series", 
+  contents = "
+This series on testing has been updated with recent changes in `testthat`, `shinytest2`, and other packages to improve testing. 
+  ")
 ```
 
 This post is the first in a series on testing Shiny applications. We'll cover developing and testing a set of utility functions for a Shiny app-package using [`testhat`](https://testthat.r-lib.org/). If you'd like to follow along, all the code we'll be using is contained in the [`utap` branch](https://github.com/mjfrigaard/sapkgs) of the `sapkgs` repo on GitHub.
