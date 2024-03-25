@@ -250,6 +250,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(covr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.20em;">Updates to series</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>This series on testing has been updated with recent changes in <code>testthat</code>, <code>shinytest2</code>, and other packages to improve testing.</p>
+</div>
+</div>
+</div>
+</div>
 <p>This post is the first in a series on testing Shiny applications. We’ll cover developing and testing a set of utility functions for a Shiny app-package using <a href="https://testthat.r-lib.org/"><code>testhat</code></a>. If you’d like to follow along, all the code we’ll be using is contained in the <a href="https://github.com/mjfrigaard/sapkgs"><code>utap</code> branch</a> of the <code>sapkgs</code> repo on GitHub.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># renv::install("mjfrigaard/utap")</span></span>
@@ -263,7 +281,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>These two types of code require different types of tests. Utility functions are usually accompanied by unit tests similar to the tests you’d find in a standard R package<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>, while the application’s reactive code can be tested using Shiny’s <a href="https://shiny.posit.co/r/reference/shiny/1.7.0/testserver"><code>testServer()</code></a> function, and the system tests can be built using the <a href="https://rstudio.github.io/shinytest2/"><code>shinytest2</code> package</a>.</p>
 <p>This post will cover writing unit tests for a set of utility functions using <a href="https://testthat.r-lib.org/"><code>testthat</code></a> and <a href="https://covr.r-lib.org/"><code>covr</code></a>. Any tips or time-savers I’ve found will be in green callout boxes:</p>
 <div class="callout callout-style-default callout-tip no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -272,7 +290,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div id="callout-2" class="callout-2-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em; color: #282b2d;">
 <p>This is a tip!</p>
@@ -431,7 +449,7 @@ Figure&nbsp;1: <code>testthat</code> test
 <h2 class="anchored" data-anchor-id="behavior-driven-development">Behavior-Driven Development</h2>
 <p>Behavior-driven development (or behavior-driven testing) is helpful if you find yourself communicating with users and/or stakeholders while developing Shiny apps. BDD centers around “<em>conversation and examples to specify how you expect a system to behave</em>”<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> and it’s supported with <code>testthat</code>s <code>describe()</code> and <code>it()</code> functions.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -440,7 +458,7 @@ Figure&nbsp;1: <code>testthat</code> test
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse show">
+<div id="callout-3" class="callout-3-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em; color: #282b2d;">
 <p>In BDD, requirements are written plain language ‘feature files’ using a series of keywords:</p>
@@ -633,7 +651,7 @@ Figure&nbsp;1: <code>testthat</code> test
 </div>
 <p>The tree above is simple–it only has two functions so far–but as packages grow these abstract displays become more important for tracking function calls (and tests!).</p>
 <div class="callout callout-style-default callout-tip no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -642,7 +660,7 @@ Figure&nbsp;1: <code>testthat</code> test
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-3" class="callout-3-contents callout-collapse collapse show">
+<div id="callout-4" class="callout-4-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em; color: #282b2d;">
 <p>Coming up with names for functions can be challenging. I like to follow the <a href="https://style.tidyverse.org/syntax.html#object-names"><code>tidyverse</code> style guide</a> and use short verbs as a prefix (<code>make_</code>, <code>get_</code>, <code>check_</code> etc.) that will give ‘future’ me hints as to their behavior.</p>
@@ -1113,7 +1131,7 @@ Figure&nbsp;6: <code>covr::package_coverage()</code>
 </figure>
 </div>
 <div class="callout callout-style-default callout-tip no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1122,7 +1140,7 @@ Figure&nbsp;6: <code>covr::package_coverage()</code>
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse show">
+<div id="callout-5" class="callout-5-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em; color: #282b2d;">
 <p>The advice on unit tests below (in <strong>bold</strong>) comes from <a href="https://www.manning.com/books/effective-software-testing">Effective Software Testing, 2022</a>. I’ve included descriptions of how <code>testthat</code> satisfies each recommendation:</p>

@@ -1,6 +1,6 @@
 ---
-title: "Using `testthat` with Shiny"
-subtitle: "Part 2 (series): Unit tests for non-package Shiny apps"
+title: "Testing Non-Package Shiny Apps"
+subtitle: "Part 2 (series): Using `testthat` with Shiny outside of a package"
 author: "Martin Frigaard"
 date: "2023-05-07"
 categories: [shiny, testing]
@@ -27,7 +27,6 @@ execute:
   collapse: true
 ---
 
-
 ```{r}
 #| label: setup
 #| eval: true 
@@ -40,53 +39,12 @@ library(vdiffr)
 library(testthat)
 library(shinytest2)
 options(width = 60)
-co_box <- function(color, header, contents = "Your text") {
-  class <- switch(color,
-    b = "note",
-    g = "tip",
-    r = "important",
-    o = "caution",
-    stop("Invalid `type`", call. = FALSE)
-  )
-  switch(color,
-  b = cat(paste0(
-    "\n",
-    ":::: {.callout-", class, " collapse='false'}", "\n\n",
-    "## ", header, "\n\n", 
-    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
-    glue::glue_collapse(contents), "\n\n",
-    "::: \n\n",
-    "::::", "\n")),
-  g = cat(paste0(
-    "\n",
-    ":::: {.callout-", class, " collapse='false'}", "\n\n",
-    "## ", header, "\n\n", 
-    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
-    glue::glue_collapse(contents), "\n\n",
-    "::: \n\n",
-    "::::", "\n")),
-  o = cat(paste0(
-    "\n",
-    ":::: {.callout-", class, " collapse='false'}", "\n\n",
-    "## ", header, "\n\n", 
-    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
-    glue::glue_collapse(contents), "\n\n",
-    "::: \n\n",
-    "::::", "\n")),
-  r = cat(paste0(
-    "\n",
-    ":::: {.callout-", class, " collapse='false'}", "\n\n",
-    "## ", header, "\n\n", 
-    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
-    glue::glue_collapse(contents), "\n\n",
-    "::: \n\n",
-    "::::", "\n")),
-  stop("Invalid `type`", call. = FALSE)
-  )
-}
-options(scipen = 999)
+source("https://raw.githubusercontent.com/mjfrigaard/utap/main/tests/testthat/helper.R")
+remotes::install_github("mjfrigaard/utap", 
+  force = TRUE, quiet = TRUE)
+# library(utap)
+source("../../_common.R")
 ```
-
 
 ```{r}
 #| label: pkgs
@@ -103,64 +61,64 @@ library(shinytest2)
 
 ```{r}
 #| label: co_box_test
-#| eval: false 
+#| eval: true 
 #| results: asis
-#| include: false
-co_box(color = "r", "RED", "**This is red**
-  
-  **This is a new line**
-  
-  **this a another line**")
+#| echo: false
+co_box(
+  color = "r", 
+  size = "1.10", 
+  hsize = "1.20", 
+  header = "Updates to series", 
+  contents = "
+This series on testing has been updated with recent changes in `testthat`, `shinytest2`, and other packages to improve testing. 
+  ")
 ```
 
-This post is the second in a series on testing shiny applications. I'll cover testing shiny module server functions using the [`testhat` package](https://testthat.r-lib.org/) *outside* an R package. This application is stored in the [`noap`](https://github.com/mjfrigaard/noap) GitHub repo if you'd like to follow along. 
+This is the second post in a series on testing Shiny applications. I'll cover testing Shiny module server functions using the [`testhat` package](https://testthat.r-lib.org/) *outside* of an R package structure. The [`noap`](https://github.com/mjfrigaard/sapkgs/tree/noap) branch of the [`sapkgs`](https://github.com/mjfrigaard/sapkgs). 
 
 
 ## Testing module server functions
 
-::: {style="font-size: 1.10em;"}
-*...the ABCs of testing shiny server modules...*
-:::
-
-This post covers how `shiny::testServer()` works using the  [abcApp() shiny app.](https://github.com/mjfrigaard/noap/blob/main/app.R). The code for `abcApp()` is an RStudio project (i.e., there is a `noap.Rproj` file in the parent folder), but it's not part of an R package. Developing shiny applications as R packages is [highly](https://mastering-shiny.org/scaling-packaging.html) [recommended](https://engineering-shiny.org/structuring-project.html#shiny-app-as-a-package), but it's *possible* to begin writing unit tests before your application is a fully developed shiny app-package. 
+This post covers how `shiny::testServer()` works using a simple Shiny application. The code for `abcApp()` is an RStudio project (i.e., there is a `noap.Rproj` file in the parent folder), but it's not part of an R package. Developing shiny applications as R packages is [highly](https://mastering-shiny.org/scaling-packaging.html) [recommended](https://engineering-shiny.org/structuring-project.html#shiny-app-as-a-package), but it's *possible* to begin writing unit tests before your application is a fully developed shiny app-package. 
 
 For more information regarding performing tests outside of the package environment, see [this issue on GitHub](https://github.com/r-lib/testthat/issues/659). 
 
-### abcApp()
+### ABC App
 
-The `abcApp()` application has been written using [shiny modules](https://shiny.posit.co/r/articles/improve/modules/) and a single [utility function](https://github.com/mjfrigaard/noap/blob/main/utils.R). 
+`testthat` is designed to perform unit tests in R packages, but not all Shiny apps begin as R packages. The Shiny application we'll be using for this demonstration has been written using [Shiny modules](https://shiny.posit.co/r/articles/improve/modules/) and a single [utility function](https://github.com/mjfrigaard/sapkgs/blob/noap/utils.R). 
 
-`testthat` is designed to perform unit tests for R packages, but for the sake of simplicity,`abcApp()` has not been developed as part of a package. This will allow us to focus on the files involved in testing (and not all the other files that accompany R packages).
-
-The standalone application function (`abcApp()`) is stored in `app.R`, the modules are contained in `modules.R`, and the single utility function is stored in `utils.R`: 
+The standalone application function (`launchApp()`) is stored in `app.R`, the modules are contained in `modules.R`, and the single utility function is stored in `utils.R`: 
 
 ```{verbatim}
 #| code-fold: show
 #| code-summary: "abcApp() files and folder structure"
 ├── README.md
 ├── app.R
-├── app.Rproj
 ├── modules.R
-├── tests
+├── sapkgs.Rproj
+├── tests/
+│   ├── testthat/
+│   │   ├── test-mod_abc_server.R
+│   │   └── test-num_super_script.R
+│   └── testthat.R
 └── utils.R
 
-2 directories, 5 files
 ```
 
--   The `tests` folder contains the following:
+-   The `tests/` folder contains the following:
 
     ```{verbatim}
     #| code-fold: show
     #| code-summary: "abcApp() test files"
     tests
     ├── testthat
-    │   └── test-mod_abc_server.R
+    │   ├── test-mod_abc_server.R
+    │   └── test-num_super_script.R
     └── testthat.R
     
-    2 directories, 2 files
     ```
 
-    -   `tests/` has a `testthat.R` file   
+    -   `tests/` has a `testthat.R` 'test runner' file   
     -   New test files should be placed in `tests/testthat/` (see example `test-mod_abc_server.R` below):
 
 #### UI module function
@@ -173,21 +131,30 @@ In this small example app, both ui and server modules are stored in the `modules
     #| label: mod_abc_ui
     #| code-fold: show 
     #| eval: false
-    #| code-summary: mod_abc_ui() (example ui module function)
+    #| code-summary: 'mod_abc_ui() (example ui module function)'
     # ui module
     mod_abc_ui <- function(id) {
-      
-      ns <- shiny::NS(id)
-      
-      shiny::tagList(
-        shiny::numericInput(
-          inputId = ns("num"),
-          label = shiny::h4(
-            shiny::code("alphabet number")),
-            value = 5, min = 1, max = 26
+      ns <- NS(id)
+      tagList(
+        column(
+          width = 3,
+          offset = 2,
+          numericInput(
+            inputId = ns("num"),
+            label = "Alphabet Number",
+            value = 5,
+            min = 1,
+            max = 26
+          )
         ),
-        shiny::verbatimTextOutput(
-          outputId = ns("txt"))
+        column(
+          width = 6,
+          br(),
+          uiOutput(
+            outputId = ns("txt")
+          ),
+          verbatimTextOutput(ns("out"))
+        )
       )
     }
     ```
@@ -203,23 +170,39 @@ The counterpart to `mod_abc_ui()` is `mod_abc_server()`:
     #| label: mod_abc_server
     #| code-fold: show 
     #| eval: false
-    #| code-summary: mod_abc_server() (example server module function)
+    #| code-summary: 'mod_abc_server() (example server module function)'
     # server module
     mod_abc_server <- function(id) {
-      
-      shiny::moduleServer(id, function(input, output, session) {
-        # reactive 
-        letter <- shiny::reactive({ LETTERS[input$num] })
+      moduleServer(id, function(input, output, session) {
+        # reactive
+        letter <- reactive({
+          LETTERS[input$num]
+        })
         # super script
-        sup_scrpt <- shiny::reactive({ 
+        sup_scrpt <- reactive({
           num_super_script(x = input$num)
         })
         # output
-        output$txt <- shiny::renderPrint({
-          paste0("The ", input$num, sup_scrpt(), 
-                 " letter in the alphabet is: ", letter())
+        output$txt <- renderUI({
+          HTML(
+            paste0(
+              em(
+                "The ", code(input$num), code(sup_scrpt()),
+                " letter in the alphabet is: ", code(letter())
+              )
+            )
+          )
         })
-        
+        output$out <- renderPrint({
+          HTML(
+            paste0(
+              em(
+                "The ", code(input$num), code(sup_scrpt()),
+                " letter in the alphabet is: ", code(letter())
+              )
+            )
+          )
+        })
       })
     }
     ```
@@ -234,15 +217,21 @@ The `mod_abc_server()` function uses the `num_super_script()` function stored in
     #| label: num_super_script
     #| code-fold: show 
     #| eval: false
-    #| code-summary: num_super_script() (example utility function)
+    #| code-summary: 'num_super_script() (example utility function)'
     # utility function
     num_super_script <- function(x) {
           num <- as.numeric(x)
-          if (num == 1) {
+          if (num < 0) {
+            stop("not a valid number")
+          } else if (num > 26) {
+            stop("not a valid number")
+          } else if (num == 0) {
+            super_script <- ""
+          } else if (num == 1 | num == 21) {
             super_script <- "st"
-          } else if (num == 2) {
+          } else if (num == 2 | num == 22) {
             super_script <- "nd"
-          } else if (num == 3) {
+          } else if (num == 3 | num == 23) {
             super_script <- "rd"
           } else {
             super_script <- "th"
@@ -258,30 +247,30 @@ The `mod_abc_server()` function uses the `num_super_script()` function stored in
     ```{r}
     #| code-fold: show 
     #| eval: false
-    #| code-summary: abcApp() (example app with modules)
-    # standalone shiny app function
-    abcApp <- function() {
-      shiny::shinyApp(
-        ui = shiny::fluidPage(
-          mod_abc_ui("x")
-        ), 
-        server = function(input, output, session) { 
+    #| code-summary: 'launch() (example app with modules)'
+    launchApp <- function() {
+      shinyApp(
+        ui = fluidPage(
+          h2("ABC App"),
+          fluidRow(
+            mod_abc_ui("x")
+          )
+        ),
+        server = function(input, output, session) {
           mod_abc_server("x")
         }
       )
     }
-    abcApp()
+    launchApp()
     ```
     
-    -   The call to `shiny::shinyApp()` is placed inside the `abcApp()` function 
+    -   The call to `shiny::shinyApp()` is placed inside the `launchApp()` function 
     
-    - The `ui` argument is wrapped in `shiny::fluidPage()` and the ui module function (`mod_abc_ui()`) is placed inside
+    - The `ui` argument is wrapped in `shiny::fluidPage()` with the ui module function (`mod_abc_ui()`) placed inside `fluidRow()`
     
     -   The `server` argument includes the standard `function(input, output, session)` and the module server companion function--`mod_abc_server()`--with a matching `id` arguments
     
-    -   The `abcApp()` function is stored in the `app.R` file
-    
-Because `abcApp()` is not part of a package, `shiny` and `testthat` are loaded and the modules and utility function are sourced in the top of the `app.R` file.
+Because `launchApp()` is not part of a package, `shiny` and `testthat` are loaded and the modules and utility function are sourced in the top of the `app.R` file.
 
 ```{r}
 #| code-fold: show 
@@ -308,8 +297,8 @@ In the `test-mod_abc_server.R` file, I'll add `testServer()` and include the mod
     ```{r}
     #| eval: false
     #| echo: true
-    #| code-summary: 'app = shiny.appobj'
-    shiny::testServer(app = mod_abc_server, {
+    #| code-summary: 'app = mod_abc_server'
+    testServer(app = mod_abc_server, {
 
     })
     ```
@@ -323,189 +312,111 @@ In the `test-mod_abc_server.R` file, I'll add `testServer()` and include the mod
     ```{r}
     #| eval: false
     #| echo: true
-    #| code-summary: test initial value with custom message
-    shiny::testServer(mod_abc_server, {
-      # Test 1: check initial value
+    #| code-summary: 'test initial value with custom message'
+    testServer(mod_abc_server, {
+      # Test initial value
       testthat::expect_equal(input$num, NULL)
       cat("\n Test 1 initial input$num = NULL: ", is.null(input$num), "\n")
     })
     ```
     
-    ```{verbatim}
-    #| eval: false
-    #| echo: true
-    #| code-fold: false
-    [ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
-    Test 1 initial input$num = NULL:  TRUE 
-    ```
+`testServer()` allows me to set new `input` values with `session$setInputs()`
     
-    -   `testServer()` allows me to set new `input` values with `session$setInputs()`
+-   Use `session$setInputs()` to set `input$num` to `3`
     
-        -   Use `session$setInputs()` to set `input$num` to `3`
-        
-        -   Test 2 confirms `input$num` has changed  
-        
-        -   Add another custom message with `cat()`
+    -   Test 2 confirms `input$num` has changed (we'll also add another custom message with `cat()`)
     
     ```{r}
     #| eval: false
     #| echo: true
-    #| code-summary: setInputs() and test inputs
-    shiny::testServer(mod_abc_server, {
+    #| code-summary: 'setInputs() and test inputs'
+    testServer(mod_abc_server, {
       # set inputs
       session$setInputs(num = 3)
-      # Test 2: check set inputs
+      # Test set inputs
       testthat::expect_equal(input$num, 3)
       cat("\n Test 2 setInputs(num = 3):", input$num, "\n")
     })
     ```
     
-    ```{verbatim}
-    #| eval: false
-    #| echo: true
-    #| code-fold: false
-    [ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
-     Test 2 setInputs(num = 3): 3 
-    ```
-    
 #### Testing reactive values
 
--   The module's reactive values are also available to in `testServer()`
+The module's reactive values are also available to in `testServer()`.
 
-    -   Test 3 adds a test for `sup_scrpt()` (given the changed value of `input$num`)   
+-   Test 3 adds a test for `sup_scrpt()` (given the changed value of `input$num`)
     
-        -   The `expected` value is what I'm expecting `num_super_script()` to return.
+    -   The `expected` value is what I'm expecting `num_super_script()` to return:
     
     ```{r}
     #| eval: false
     #| echo: true
-    #| code-summary: Check sup_scrpt() reactive value with expect_equal()
-    shiny::testServer(mod_abc_server, {
-      # Test 3: check super script
+    #| code-summary: 'Check sup_scrpt() reactive value with expect_equal()'
+    testServer(mod_abc_server, {
+      # Test super script
       testthat::expect_equal(object = sup_scrpt(), expected = "rd")
       cat("\n Test 3 sup_scrpt(): = 'rd':", sup_scrpt(), "\n")
     })
     ```
     
-    ```{verbatim}
-    #| eval: false
-    #| echo: true
-    #| code-fold: false
-    [ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
-     Test 3 sup_scrpt(): = 'rd': rd  
-    ```
-    
-    -   For completeness I'll add a test for `letter()`
+    -   For completeness we'll add a test for `letter()`
     
     ```{r}
     #| eval: false
     #| echo: true
-    #| code-summary: Check letter() reactive value with expect_equal()
-    shiny::testServer(mod_abc_server, {
-      # Test 4: check letter
-      testthat::expect_equal(object = letter(), expected = "C")
+    #| code-summary: 'Check letter() reactive value with expect_equal()'
+    testServer(mod_abc_server, {
+      # Test letter
+      expect_equal(object = letter(), expected = "C")
       cat("\n Test 4 letter() = C:", letter(), "\n")
     })
     ```
     
-    ```{verbatim}
-    #| eval: false
-    #| echo: true
-    #| code-fold: false
-    [ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
-     Test 4 letter() = C: C 
-    ```
-    
 #### Testing `output$`s
 
--   The module output values are also available as `output$<value>`
+The module output values are also available as `output$<value>`. 
 
-    -   Test 5 will verify the `output$txt` (given the updated `input$num`)
+-   The final test will verify this object is a list and print the results to the Console
+
+    -   Output tests can verify that `output$txt` has been updated with `input$num`:
     
     ```{r}
     #| eval: false
     #| echo: true
-    #| code-summary: Check module output values
-    shiny::testServer(mod_abc_server, {
-      # Test 5: check output
-    testthat::expect_equal(object = output$txt,
-      expected =  "The 3rd letter in the alphabet is: C")
-    cat("\n Test 5 output$ = 'The 3rd letter in the alphabet is: C': \n",
-      output$txt, "\n")
+    #| code-summary: 'Check module output values'
+    testServer(mod_abc_server, {
+      # Test output
+      expect_true(is.list(output$txt))
+      print(output$txt)
     })
     ```
     
-    ```{verbatim}
-     FAIL 1 | WARN 0 | SKIP 0 | PASS 0 ]
-     Test 5 output$ = 'The 3rd letter in the alphabet is: C': 
-     [1] "The 3rd letter in the alphabet is: C" 
-    
-    ─- Failure (test-mod_abc_server.R:1:1): (code run outside of `test_that()`) ──
-    output$txt (`actual`) not equal to "The 3rd letter in the alphabet is: C" (`expected`).
-    
-    `actual`:   "[1] \"The 3rd letter in the alphabet is: C\""
-    `expected`: "The 3rd letter in the alphabet is: C"        
-    Backtrace:
-      1. shiny::testServer(...)
-           at test-mod_abc_server.R:1:0
-     22. testthat::expect_equal(object = output$txt, 
-       expected = "The 3rd letter in the alphabet is: C")
-           at test-mod_abc_server.R:17:4
-    
-    [ FAIL 1 | WARN 0 | SKIP 0 | PASS 0 ]
-    ```
-    
-    -   **What happened?** I forgot to add the escape characters (`\"`) and line number (`[1]`) for the output
-        -   I'll change the `expected` value and re-run the test: 
-        
-    ```{r}
-    #| eval: false
-    #| echo: true
-    #| code-summary: 'Check module output values (again)'
-    shiny::testServer(mod_abc_server, {
-      # Test 5: check output
-    testthat::expect_equal(object = output$txt,
-      expected =  "The 3rd letter in the alphabet is: C")
-    cat("\n Test 5 output$ = 'The 3rd letter in the alphabet is: C': \n",
-      output$txt, "\n")
-    })
-    ```
-    
-    ```{verbatim}
-    [ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
-     Test 5 output$ = 'The 3rd letter in the alphabet is: C': 
-     [1] "The 3rd letter in the alphabet is: C" 
-    ```
-    
-    -   Finally, I'll run the tests with `test_dir()`      
+    -   Finally, I'll run the tests with `test_file()`:    
     
     ```{r}
     #| eval: false
     #| code-fold: false
     #| echo: true
-    #| code-summary: test_dir()
-    test_dir(path = "/path/to/app/tests/testthat/")
+    #| code-summary: 'test_file()'
+    test_file(path = "/path/to/app/tests/testthat/")
     ```
 
     ```{verbatim}
-    ✔ | F W S  OK | Context
-    ⠏ |         0 | mod_abc_server         
-    
+    [ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
      Test 1 initial input$num = NULL:  TRUE 
-    
+    [ FAIL 0 | WARN 0 | SKIP 0 | PASS 2 ]
      Test 2 setInputs(num = 3): 3 
-    
+    [ FAIL 0 | WARN 0 | SKIP 0 | PASS 3 ]
      Test 3 sup_scrpt(): = 'rd': rd 
-    
+    [ FAIL 0 | WARN 0 | SKIP 0 | PASS 4 ]
      Test 4 letter() = C: C 
-    
-     Test 5 output$ = 'The 3rd letter in the alphabet is: C': 
-     [1] "The 3rd letter in the alphabet is: C" 
-    ✔ |         5 | mod_abc_server
-    ══ Results ════════════════════════════════════════════════════
-    Duration: 0.2 s
-     [ FAIL 0 | WARN 0 | SKIP 0 | PASS 5 ]
-    🌈 Your tests are over the rainbow 🌈
+    [ FAIL 0 | WARN 0 | SKIP 0 | PASS 5 ]$html
+    <em>
+      The 
+      <code>3</code>
+      <code>rd</code>
+       letter in the alphabet is: 
+      <code>C</code>
+    </em>
     ```
     
 The results show the tests passed! Now I am confident inputs, reactive values (`sup_scrpt()` & `letter()`), outputs behave as expected.
@@ -530,6 +441,6 @@ The example above provides a workflow for using `testServer()` with `testthat` *
 
     - [x]   Check output values with `output$txt`
 
-This concludes running tests on `abcApp()`. Ideally, shiny applications are developed as an R package (which I'll cover in a future post), but now you know how to perform tests if this isn't the case. The files for this demonstration are located [here.](https://github.com/mjfrigaard/noap) 
+This concludes running tests on `noap`. Ideally, Shiny applications are developed as an R package (which I'll cover in future posts), but now you know how to perform tests if this isn't the case. The files for this demonstration are located [here.](https://github.com/mjfrigaard/sapkgs/tree/noap).
 
 For a more comprehensive review of testing, check out the chapters on testing in [R packages](https://r-pkgs.org/testing-basics.html) and [Mastering Shiny](https://mastering-shiny.org/scaling-testing.html).
