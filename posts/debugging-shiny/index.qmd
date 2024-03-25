@@ -1,6 +1,6 @@
 ---
 title: "Debugging Shiny apps"
-subtitle: "Investigating shiny bugs using call stacks, browser(), and tests"
+subtitle: "call stacks, browser(), and tests"
 author: "Martin Frigaard"
 date: "2023-06-23"
 categories: [code, debugging, shiny, testing]
@@ -32,57 +32,11 @@ execute:
 #| eval: true 
 #| echo: false 
 #| include: false
-co_box <- function(color, header, contents = "Your text") {
-  class <- switch(color,
-    b = "note",
-    g = "tip",
-    r = "important",
-    o = "caution",
-    stop("Invalid `type`", call. = FALSE)
-  )
-  switch(color,
-    b = cat(paste0(
-      "\n",
-      ":::: {.callout-", class, " collapse='false'}", "\n\n",
-      "## ", header, "\n\n",
-      "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
-      glue::glue_collapse(contents), "\n\n",
-      "::: \n\n",
-      "::::", "\n"
-    )),
-    g = cat(paste0(
-      "\n",
-      ":::: {.callout-", class, " collapse='false'}", "\n\n",
-      "## ", header, "\n\n",
-      "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
-      glue::glue_collapse(contents), "\n\n",
-      "::: \n\n",
-      "::::", "\n"
-    )),
-    o = cat(paste0(
-      "\n",
-      ":::: {.callout-", class, " collapse='false'}", "\n\n",
-      "## ", header, "\n\n",
-      "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
-      glue::glue_collapse(contents), "\n\n",
-      "::: \n\n",
-      "::::", "\n"
-    )),
-    r = cat(paste0(
-      "\n",
-      ":::: {.callout-", class, " collapse='false'}", "\n\n",
-      "## ", header, "\n\n",
-      "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
-      glue::glue_collapse(contents), "\n\n",
-      "::: \n\n",
-      "::::", "\n"
-    )),
-    stop("Invalid `type`", call. = FALSE)
-  )
-}
+source("../_common.R")
 options(scipen = 999)
 # remotes::install_github("mjfrigaard/tsap",
 #   force = TRUE, quiet = TRUE)
+library(mstsap)
 ```
 
 
@@ -96,19 +50,15 @@ co_box(color = "r",
   contents = "This post is currently under development--thank you for your patience.")
 ```
 
-This is the fourth post in a [series on testing](https://mjfrigaard.github.io/#category=testing) shiny applications. I'll cover using `rlang::trace_back()`, `browser()`, and unit/`testServer()` tests to debug `shiny` apps.
-
 ```{r}
 #| label: pkgs
 #| code-summary: 'show/hide packages'
-#| eval: true 
+#| eval: false 
 #| message: false 
 #| warning: false
-
-library(mstsap) # app package 
+library(debugApp) # app package 
 library(palmerpenguins) # data
 library(NHANES) # data
-library(dplyr) # function
 library(rlang) # traceback/stack trace
 library(gt) # tables
 ```
@@ -120,30 +70,33 @@ library(gt) # tables
 
 ## Bugs!
 
-In [a previous post](https://mjfrigaard.github.io/posts/test-shiny-p3/), I covered writing tests for module server functions in [`tsap`](https://github.com/mjfrigaard/tsap) (*`testServer()` app-package*). I ended that post noting the bug below when running `pkgDataApp()`:
+In [a previous post](https://mjfrigaard.github.io/series.html), I covered writing tests for module server functions with Shiny's `testServer()` function. The application in that post displays an error similar to the one below:
 
 ::: {#fig-graph_error_gif_intro}
 
-![App `renderPlot()` error](graph_error.gif){#fig-graph_error_gif_intro width=100%}
+![UI error](01-debugApp-error.gif){#fig-graph_error_gif_intro width=100% fig-align="center"}
 
-Shiny app displaying `Error in [[: Column 'race1' not found in '.data'`
+Shiny app displaying `Error: Column 'species' not found in '.data'`
 :::
 
 
-The warning resolves itself without causing the application to crash, but it's displayed in the UI, so leaving it is not an option. In this post, I'm going to discuss using the stack trace and `browse()` to debug a shiny app-package.
+The warning resolves itself without causing the application to crash, but it's displayed in the UI, so leaving it is not an option. In this post, I'll cover reading the call stack (or stack trace) and using `browse()` to debug errors in a Shiny app-package.
 
-## `testServer()` app-package
+## `debugApp` app-package
 
-If you'd like to follow along, you can download `mstsap` [here](https://github.com/mjfrigaard/mstsap/archive/refs/heads/main.zip) or install it using the following: 
+The `debugApp` app-package allows users to select a dataset from an R package and visualize a scatter-plot of
+
+If you'd like to follow along, you can download `debugApp` [here](https://github.com/mjfrigaard/debugApp/archive/refs/heads/main.zip) or install it using the following: 
 
 ```{r}
 #| code-fold: false
-#| eval: true
-pak::pak("mjfrigaard/mstsap")
-library(mstsap)
+#| eval: false
+#| results: hide
+remotes::install_github("mjfrigaard/debugApp", force = TRUE)
+library(debugApp)
 ```
 
-I'll quickly review the contents of `mstsap`. The [`R/` folder](https://github.com/mjfrigaard/tsap/tree/main/R) contains files for the modules: 
+I'll quickly review the contents of `debugApp`. The [`R/` folder](https://github.com/mjfrigaard/debugApp/tree/main/R) contains files for the modules: 
 
 ```{verbatim}
 #| code-fold: false

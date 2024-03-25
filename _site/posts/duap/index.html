@@ -2,13 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.4.549">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Martin Frigaard">
 <meta name="dcterms.date" content="2023-03-10">
-<meta name="description" content="Martin Frigaard’s personal website.">
 
 <title>@mjfrigaard - Creating Shiny app-packages</title>
 <style>
@@ -25,7 +24,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -67,7 +66,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
-<link href="../../profile.png" rel="icon" type="image/png">
 <script src="../../site_libs/quarto-html/quarto.js"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -83,7 +81,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -92,6 +95,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -99,21 +103,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
 
-<meta name="twitter:title" content="@mjfrigaard - Creating Shiny app-packages">
-<meta name="twitter:description" content="Building a Shiny app within an R package: whole-game">
-<meta name="twitter:image" content="https://mjfrigaard.github.io/posts/duap/image.png">
-<meta name="twitter:image-height" content="1142">
-<meta name="twitter:image-width" content="2040">
-<meta name="twitter:card" content="summary_large_image">
 </head>
 
 <body class="floating nav-fixed">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title"><span class="citation" data-cites="mjfrigaard">@mjfrigaard</span></span>
     </a>
@@ -124,41 +122,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-blog" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
- <span class="menu-text">Blog</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-blog">    
-        <li>
-    <a class="dropdown-item" href="../../posts.html" rel="" target="">
- <span class="dropdown-text">Posts</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../../series.html" rel="" target="">
- <span class="dropdown-text">Series</span></a>
-  </li>  
-    </ul>
-  </li>
   <li class="nav-item">
-    <a class="nav-link" href="../../code.html" rel="" target="">
- <span class="menu-text">Code</span></a>
+    <a class="nav-link" href="../../posts.html"> 
+<span class="menu-text">Posts</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../series.html"> 
+<span class="menu-text">Series</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../code.html"> 
+<span class="menu-text">Code</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/mjfrigaard" rel="" target=""><i class="bi bi-github" role="img">
-</i> 
- <span class="menu-text"></span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/mjfrigaard" rel="" target=""><i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://github.com/mjfrigaard"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/mjfrigaard"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-            <div class="quarto-navbar-tools">
-</div>
           </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -200,7 +195,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Contents</h2>
    
@@ -276,12 +271,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul>
 </nav>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content">
+
 
 
 
@@ -336,14 +332,14 @@ Warning
 <section id="from-project-wizard" class="level2">
 <h2 class="anchored" data-anchor-id="from-project-wizard">From Project Wizard</h2>
 <p>If I am using RStudio’s <strong>New Project Wizard</strong> to create a new Shiny app package, I’d see the following defaults:</p>
-<div id="fig-rpkg-setup" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="rpkg-setup.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
-</figure>
+<div id="fig-rpkg-setup" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-rpkg-setup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="rpkg-setup.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
 </div>
-<figcaption class="figure-caption">Figure&nbsp;1: Default <code>usethis::create_package</code> project setup</figcaption>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-rpkg-setup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Default <code>usethis::create_package</code> project setup
+</figcaption>
 </figure>
 </div>
 <p>The new package built from the console will have the following folder and files:</p>
@@ -406,7 +402,7 @@ Warning
 <div style="font-size: 1.10em; color: #696969;">
 <div class="quarto-figure quarto-figure-left">
 <figure class="figure">
-<p><img src="desc.png" style="width:15.0%;height:15.0%" class="figure-img"></p>
+<p><img src="desc.png" class="quarto-figure quarto-figure-left figure-img" style="width:15.0%;height:15.0%"></p>
 </figure>
 </div>
 <p><em>‘RStudio and <code>devtools</code> consider any directory containing <code>DESCRIPTION</code> to be a package’</em> - <a href="https://r-pkgs.org/description.html#the-description-file">R Packages</a></p>
@@ -430,14 +426,14 @@ Warning
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>RoxygenNote: 7.2.3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The package name is automatically added, but the remaining fields need to be completed (consult <a href="https://r-pkgs.org/description.html#the-description-file">R packages</a> for more information on filling out the <code>DESCRIPTION</code> file).</p>
 <p>The <code>DESCRIPTION</code> file in the <code>duap</code> prompts the RStudio IDE to activate the <strong>Build</strong> tools pane (see below):</p>
-<div id="fig-rpkg-ide" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="rpkg-ide.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
-</figure>
+<div id="fig-rpkg-ide" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-rpkg-ide-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="rpkg-ide.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
 </div>
-<figcaption class="figure-caption">Figure&nbsp;2: Package <strong>Build</strong> tools</figcaption>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-rpkg-ide-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Package <strong>Build</strong> tools
+</figcaption>
 </figure>
 </div>
 </section>
@@ -485,8 +481,8 @@ Warning
 <p><em>Click on Code to view the UI function in <code>R/mod_var_input/R</code></em></p>
 </div>
 <div class="cell">
-<details>
-<summary>Code</summary>
+<details class="code-fold">
+<summary>show/hide</summary>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>mod_var_input_ui <span class="ot">&lt;-</span> <span class="cf">function</span>(id) {</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  ns <span class="ot">&lt;-</span> shiny<span class="sc">::</span><span class="fu">NS</span>(id)</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">tagList</span>(</span>
@@ -552,8 +548,8 @@ Warning
 <p><em>Click on Code to view the server function in <code>R/mod_var_input/R</code></em></p>
 </div>
 <div class="cell">
-<details>
-<summary>Code</summary>
+<details class="code-fold">
+<summary>show/hide</summary>
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>mod_var_input_server <span class="ot">&lt;-</span> <span class="cf">function</span>(id) {</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  shiny<span class="sc">::</span><span class="fu">moduleServer</span>(id, <span class="cf">function</span>(input, output, session) {</span>
@@ -651,8 +647,8 @@ Warning
 <p><em>Click on Code to view</em></p>
 </div>
 <div class="cell">
-<details>
-<summary>Code</summary>
+<details class="code-fold">
+<summary>show/hide</summary>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#' Plot points (shiny)</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param df input dataset (tibble or data.frame)</span></span>
@@ -701,14 +697,14 @@ Tip: <code>roxygen2</code> skeleton
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em; font-weight: bold; color: #696969;">
 <p><em>As well as generating <code>.Rd</code> files, <code>roxygen</code> will also create a <code>NAMESPACE</code> for you, and will manage the <code>Collate</code> field in <code>DESCRIPTION</code></em></p>
-<div id="fig-roxygen2-tags" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="ide-roxygen-skeleton.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
-</figure>
+<div id="fig-roxygen2-tags" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-roxygen2-tags-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="ide-roxygen-skeleton.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
 </div>
-<figcaption class="figure-caption">Figure&nbsp;3: Standard <code>roxygen2</code> skeleton</figcaption>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-roxygen2-tags-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Standard <code>roxygen2</code> skeleton
+</figcaption>
 </figure>
 </div>
 </div>
@@ -812,7 +808,6 @@ Tip: <code>roxygen2</code> skeleton
 <div id="callout-6" class="callout-6-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em; color: #696969;">
-
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -873,7 +868,6 @@ Nothing
 </td>
 </tr>
 </tbody>
-
 </table>
 </div>
 </div>
@@ -941,24 +935,24 @@ Nothing
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(duap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>You can also use <strong>Install</strong> icon in the <strong>Build</strong> pane, which installs the package, restarts the R session, and loads the package all with one click!</p>
-<div id="fig-build-install" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="build-install.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
+<div id="fig-build-install" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-build-install-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="build-install.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-build-install-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: <strong>Build</strong> install package
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;4: <strong>Build</strong> install package</figcaption>
-</figure>
+<div id="fig-build-restart" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-build-restart-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="build-restart.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
 </div>
-<div id="fig-build-restart" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="build-restart.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
-</figure>
-</div>
-<figcaption class="figure-caption">Figure&nbsp;5: <strong>Build</strong> restart and load</figcaption>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-build-restart-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: <strong>Build</strong> restart and load
+</figcaption>
 </figure>
 </div>
 <section id="recap-the-r-folder" class="level4">
@@ -974,14 +968,14 @@ Nothing
 <li>I can also access functions I’ve written <em>outside</em> by adding <code>@export</code></li>
 </ul></li>
 </ul>
-<div id="fig-pkg-man" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="pkg-man.png" class="img-fluid figure-img" style="width:70.0%"></p>
-</figure>
+<div id="fig-pkg-man" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pkg-man-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="pkg-man.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
 </div>
-<figcaption class="figure-caption">Figure&nbsp;6: Function documentation in <code>man/</code> folder</figcaption>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pkg-man-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: Function documentation in <code>man/</code> folder
+</figcaption>
 </figure>
 </div>
 <p>Now that I have the R version/package management being tracked and stored with <code>renv/</code> &amp; <code>renv.lock</code>, function documentation in the <code>.Rd</code> files, the <code>DESCRIPTION</code> and <code>NAMESPACE</code>, I can move onto adding and using <strong>data</strong> in a shiny app package.</p>
@@ -1026,9 +1020,12 @@ Nothing
 </blockquote>
 </div>
 <p>Consider the example folder and files below: <code>file.txt</code>, <code>CITATION</code>, and <code>extdata/my_data.csv</code>:</p>
-<div class="quarto-layout-panel">
-<div class="quarto-layout-row quarto-layout-valign-top">
-<section id="source-development-form" class="level5 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<section id="source-development-form" class="level5 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
 <h5 class="anchored" data-anchor-id="source-development-form">Source (development) form</h5>
 <div class="sourceCode" id="cb31"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>inst/</span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  ├── file.txt</span>
@@ -1036,7 +1033,7 @@ Nothing
 <span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  └── extdata/</span>
 <span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>        └── my_data.csv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section id="binary-installed-form" class="level5 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<section id="binary-installed-form" class="level5 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
 <h5 class="anchored" data-anchor-id="binary-installed-form">Binary (installed) form</h5>
 <div class="sourceCode" id="cb32"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>file.txt</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>CITATION</span>
@@ -1055,7 +1052,7 @@ Nothing
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">system.file</span>(<span class="at">package =</span> <span class="st">"duap"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>expand to see inst/ folder contents</summary>
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/path/to/installed/package/duap</span></span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> DESCRIPTION</span>
@@ -1112,14 +1109,14 @@ The <code>inst/</code> folder
 <section id="recap-data-and-installed-files" class="level4">
 <h4 class="anchored" data-anchor-id="recap-data-and-installed-files"><strong>Recap: data and installed files</strong></h4>
 <p>R Packages have a consistent and standardized way of storing data, and have designated locations for internal and external data.</p>
-<div id="fig-pkg-data" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="pkg-data.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
-</figure>
+<div id="fig-pkg-data" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pkg-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="pkg-data.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
 </div>
-<figcaption class="figure-caption">Figure&nbsp;7: Package data folders</figcaption>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pkg-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: Package data folders
+</figcaption>
 </figure>
 </div>
 </section>
@@ -1171,14 +1168,14 @@ The <code>inst/</code> folder
 <span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>1 directory, 1 file</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>By combining <code>rmarkdown</code> and <code>knitr</code>, R packages have a documentation framework that has the added benefit of being somewhat fool-proof: vignettes have to successfully render for the package to be installed.</p>
-<div id="fig-build-vignettes" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="install-vignettes.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
-</figure>
+<div id="fig-build-vignettes" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-build-vignettes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="install-vignettes.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
 </div>
-<figcaption class="figure-caption">Figure&nbsp;8: Package vignettes</figcaption>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-build-vignettes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8: Package vignettes
+</figcaption>
 </figure>
 </div>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
@@ -1209,14 +1206,14 @@ Vignette figures
 <section id="recap-documentation" class="level4">
 <h4 class="anchored" data-anchor-id="recap-documentation"><strong>Recap: documentation</strong></h4>
 <p>The vignettes folder will long-form documentation about how the application works, use cases, and features (and <code>roxygen2</code> will document each function).</p>
-<div id="fig-pkg-docs" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="pkg-docs.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
-</figure>
+<div id="fig-pkg-docs" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pkg-docs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="pkg-docs.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
 </div>
-<figcaption class="figure-caption">Figure&nbsp;9: Documentation in <code>README</code> and <code>vignettes/</code></figcaption>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pkg-docs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;9: Documentation in <code>README</code> and <code>vignettes/</code>
+</figcaption>
 </figure>
 </div>
 </section>
@@ -1250,14 +1247,14 @@ Vignette figures
 <section id="recap-testing" class="level4">
 <h4 class="anchored" data-anchor-id="recap-testing"><strong>Recap: testing</strong></h4>
 <p>Testing is well described in the <a href="https://shiny.rstudio.com/articles/testing-overview.html">shiny documentation</a> and in <a href="https://mastering-shiny.org/scaling-testing.html">Mastering Shiny</a>. Generally speaking, unit tests are performed with <a href="https://testthat.r-lib.org/"><code>testthat</code></a>, and module testing can be done with <a href="https://shiny.rstudio.com/reference/shiny/1.7.0/testserver"><code>shiny::testServer()</code></a>. To test the full application (or a specific behavior) use the <a href="https://rstudio.github.io/shinytest2/"><code>shinytest2</code></a> package.</p>
-<div id="fig-pkg-tests" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="pkg-tests.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
-</figure>
+<div id="fig-pkg-tests" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pkg-tests-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="pkg-tests.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
 </div>
-<figcaption class="figure-caption">Figure&nbsp;10: Testing framework from <code>testthat</code></figcaption>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pkg-tests-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10: Testing framework from <code>testthat</code>
+</figcaption>
 </figure>
 </div>
 </section>
@@ -1267,14 +1264,14 @@ Vignette figures
 <section id="use" class="level1">
 <h1>Use</h1>
 <p>Using an app built as a package is similar to using any R function we’ve loaded from a package. After successfully loading, documenting, and installing the package, I can run the app by loading the <code>duap</code> (with <code>library(duap)</code>) and <code>moviesApp()</code>:</p>
-<div id="fig-duap-inst-app" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="duap-app.png" style="width:100.0%;height:100.0%" class="figure-img"></p>
-</figure>
+<div id="fig-duap-inst-app" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-duap-inst-app-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="duap-app.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
 </div>
-<figcaption class="figure-caption">Figure&nbsp;11: <code>duap::moviesApp()</code></figcaption>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-duap-inst-app-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11: <code>duap::moviesApp()</code>
+</figcaption>
 </figure>
 </div>
 <section id="recap" class="level2">
@@ -1366,10 +1363,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -1379,8 +1375,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -1393,6 +1398,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -1436,6 +1560,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -1461,6 +1586,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -1521,6 +1672,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 

@@ -1,0 +1,1191 @@
+---
+title: "Behavior Driven Unit Tests" 
+subtitle: "Part 1: testthat's BDD testing functions"
+author: "Martin Frigaard"
+date: "2023-05-01"
+categories: [shiny, testing]
+image: "image.png"
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+# code-block-border-left: true
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+code-fold: show
+code-summary: 'show/hide'
+callout-icon: false
+
+freeze: true
+
+knitr:
+  opts_chunk: 
+    collapse: true
+
+execute:
+  echo: true
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: setup
+#| eval: true 
+#| echo: false 
+#| include: false
+library(ggplot2)
+library(dplyr)
+library(shiny)
+library(vdiffr)
+library(testthat)
+library(shinytest2)
+options(width = 60)
+source("https://raw.githubusercontent.com/mjfrigaard/utap/main/tests/testthat/helper.R")
+remotes::install_github("mjfrigaard/utap", 
+  force = TRUE, quiet = TRUE)
+# library(utap)
+source("../_common.R")
+```
+
+```{r}
+#| label: pkgs
+#| code-summary: packages
+#| eval: true
+library(testthat)
+library(lobstr)
+library(dplyr)
+library(shiny)
+library(covr)
+```
+
+
+```{r}
+#| label: co_box_dev
+#| echo: false
+#| results: asis
+#| eval: false
+co_box(color = "r", 
+  header = "ALERT!", 
+  contents = "This post is currently under development. Thank you for your patience.")
+```
+
+This post is the first in a series on testing Shiny applications. We'll cover developing and testing a set of utility functions for a Shiny app-package using [`testhat`](https://testthat.r-lib.org/). If you'd like to follow along, all the code we'll be using is contained in the [`utap` branch](https://github.com/mjfrigaard/sapkgs) of the `sapkgs` repo on GitHub.
+
+```{r}
+#| label: install_utap
+#| eval: false 
+#| results: hide
+#| code-fold: false
+#| include: true
+# renv::install("mjfrigaard/utap")
+library(utap)
+```
+
+Testing the code in Shiny app-packages can be more complicated than testing the code in a typical R package, because app-packages contain two types of code: 
+
+1) **Application code**: functions designed to run the application  (i.e., the `ui` and `server` functions, modules, standalone app functions will a call to `shinyApp()`, etc.)
+
+2) **Everything else**: functions or code used for connecting to databases, uploading, importing, or manipulating data, building visualizations and/or tables, generating custom HTML layouts, etc. The non-application code and functions in app-packages are typically referred to as '[utility](https://engineering-shiny.org/build-app-golem.html?#submodules-and-utility-functions)' or '[helper](https://mastering-shiny.org/scaling-functions.html#file-organisation)' functions
+
+These two types of code require different types of tests. Utility functions are usually accompanied by unit tests similar to the tests you'd find in a standard R package[^standard-r-pkg], while the application's reactive code can be tested using Shiny's [`testServer()`](https://shiny.posit.co/r/reference/shiny/1.7.0/testserver) function, and the system tests can be built using the [`shinytest2` package](https://rstudio.github.io/shinytest2/). 
+
+[^standard-r-pkg]: Learn more about R packages in [R Packages, 2ed](https://r-pkgs.org/testing-basics.html)
+
+This post will cover writing unit tests for a set of utility functions using [`testthat`](https://testthat.r-lib.org/) and [`covr`](https://covr.r-lib.org/). Any tips or time-savers I've found will be in green callout boxes:
+
+```{r}
+#| label: co_box_tip
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "g", header = "TIP!", "This is a tip!")
+```
+
+## What are unit tests?
+
+::: {.column-margin}
+![](testthat.png){width=40%}
+:::
+
+
+> "*A unit test is a piece of code that invokes a unit of work and checks one specific end result of that unit of work. If the assumptions on the end result turn out to be wrong, the unit test has failed. A unit test’s scope can span as little as a method or as much as multiple classes.*" - [The Art of Unit Testing, 2nd edition](https://www.manning.com/books/the-art-of-unit-testing-second-edition)
+
+Thinking of functions as 'units of work' and their desired behavior as an 'end results' provides a useful mental model (especially during [behavior-driven development](https://en.wikipedia.org/wiki/Behavior-driven_development). These terms also align nicely with the testing advice offered by  [`testthat`](https://r-pkgs.org/testing-design.html#sec-testing-design-principles): 
+
+> *Strive to test each behaviour in one and only one test. Then if that behaviour later changes you only need to update a single test.*
+
+In app-packages, the `testthat` package provides a comprehensive and flexible framework for performing unit tests. 
+
+
+### testthat
+
+Get started with `testthat` by running [`usethis::use_testthat()`](https://usethis.r-lib.org/reference/use_testthat.html). This function will create following files and folders: 
+
+```{verbatim}
+#| code-summary: testthat folder
+#| eval: false
+#| code-fold: show
+#| echo: true
+tests/
+  ├── testthat/
+  └── testthat.R
+```
+
+To create new tests, we'll run `usethis::use_test("<name>")` (with `"select_class"` being the name of the function we'd like to test).
+
+```{r}
+#| code-fold: false
+#| eval: false
+usethis::use_test("select_class")
+```
+
+```{verbatim}
+#| code-fold: false
+#| eval: false
+✔ Setting active project to '/projects/apps/utap'
+✔ Writing 'tests/testthat/test-select_class.R'
+• Modify 'tests/testthat/test-select_class.R'
+```
+
+
+#### Test files
+
+New test files are be created and opened from the `tests/testthat/` folder (with a `test-` prefix). Each function we're testing should have it's own `.R` file the `R/` folder and a corresponding `test-` file in the `tests/testthat/` folder (we'll see how this helps with interactive testing in the IDE below). The initial contents of a new test file contains the boilerplate code below:
+
+:::: {layout="[50, 50]"  layout-valign="top"}
+
+``` r
+test_that("multiplication works", {
+  expect_equal(2 * 2, 4)
+})
+```
+
+![testthat test file](testthat-test-file.png){width=50%}
+
+::::
+
+
+#### Test structure 
+
+`test_that()` sets the test "scope" or "execution environment", and encapsulates the test code and expectations. Note the use of curly brackets after the `code` argument:
+
+![`testthat` test](testthat-tests.png){#fig-tests width=90%}
+
+#### Expectations
+
+Test expectations are the code that comes into direct contact with the *unit of work* and *end result* for each function. It's likely we'll have multiple expectations for any given function, so we store these in **tests** and use the `desc`  to describe the test context (all `testthat` expectations have an `expect_*` prefix):
+
+:::: {layout="[50, 50]"  layout-valign="center"}
+
+![`expect_*` functions](testthat-test-expectations.png){width=90%}
+
+![expectations](testthat-expectation.png){width=50% height='50%'}
+    
+::::
+
+### Keyboard shortcuts 
+
+I **highly** recommend using a shortcut while developing tests because it will improve your ability to iterate quickly.[^rpkgs-keyboard-shortcuts] 
+
+[^rpkgs-keyboard-shortcuts]: R Packages, 2ed also [suggests](https://r-pkgs.org/testing-basics.html#run-tests) binding `test_active_file()` and `test_coverage_active_file()` to keyboard shortcuts. 
+
+::: {layout="[54, -1, 45]" layout-valign="bottom"}
+
+#### **`devtools` function**
+
+[`test()`]{style="font-weight: bold; font-size: 0.95em"}
+
+#### **Keyboard shortcut**
+
+[<kbd>Ctrl/Cmd</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd>]{style="font-weight: bold; font-size: 0.80em"}
+
+:::
+
+::: {layout="[54, -1, 45]" layout-valign="bottom"}
+
+[`test_active_file()`]{style="font-weight: bold; font-size: 0.95em"}
+
+[<kbd>Ctrl/Cmd</kbd> + <kbd>T</kbd>]{style="font-weight: bold; font-size: 0.80em"} 
+
+:::
+
+::: {layout="[54, -1, 45]" layout-valign="bottom"}
+
+[`test_coverage_active_file()`]{style="font-weight: bold; font-size: 0.95em"}
+
+[<kbd>Ctrl/Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>]{style="font-weight: bold; font-size: 0.80em"} 
+
+:::
+
+## Behavior-Driven Development
+
+Behavior-driven development (or behavior-driven testing) is helpful if you find yourself communicating with users and/or stakeholders while developing Shiny apps. BDD centers around  "*conversation and examples to specify how you expect a system to behave*"[^bdd-reference] and it's supported with `testthat`s `describe()` and `it()` functions.[^bdd-testthat]  
+
+[^bdd-reference]: Read more about behavior-driven development in [BDD in Action, 2ed](https://www.manning.com/books/bdd-in-action-second-edition)
+
+[^bdd-testthat]: `describe()` and `it()` are discussed in the [`testthat` documentation.](https://testthat.r-lib.org/reference/describe.html)
+
+```{r}
+#| label: co_box_bdd
+#| echo: false
+#| results: asis
+#| eval: true
+#| collapse: true
+co_box(color = "b", 
+  header = "BDD features & scenarios", 
+  fold = FALSE,
+  contents = "
+
+In BDD, requirements are written plain language 'feature files' using a series of keywords:   
+
+\`\`\`bash
+Feature:  
+  As a 
+  I want 
+  So that
+  
+  Background:
+    Given 
+    And  
+    
+  Scenario:  
+    When 
+    And  
+    Then 
+    
+\`\`\`
+
+The `Feature` is a high-level description (usually with a title *and* description). `As a` describes the end user the feature is intended for, their needs (`I want`), and the desired result (`So that`). 
+
+The `Background` can include any steps or conditions that exist *before* each scenario. 
+
+A `Scenario` is a series of steps outlining a concrete examples that illustrates a feature. `When` is used to describe an event, or an action. `Then` describes what will verify the expected outcome is observable by the user. `And` combines `Given` with `When` or `Then`.
+
+Read more about Gherkin on the [Cucumber website.](https://cucumber.io/docs/gherkin/reference/).")
+```
+
+### Specifications
+
+In [R packages](https://r-pkgs.org/testing-basics.html#run-tests), micro-iteration is defined as, "*the interactive phase where you initiate and refine a function and its tests in tandem.*" In app development, this stage might after you've received needs or specifications by an end-user or stakeholder. 
+
+If we're using [BDD](https://en.wikipedia.org/wiki/Behavior-driven_development), we'll translate these specifications into functional requirements, then start writing test(s). After outlining the tests, we'll write the function(s) to pass the test.
+
+`testthat`'s `describe()` and `it()` functions and Gherkin syntax can clarify this process because we can *describe* what *it* is we want to test before getting stuck writing any test code.
+
+Let's assume we've been asked to design an application that automatically to populates the user drop-downs with variables based on their format: binary, numeric, categorical, and--a subset of categorical--facet.[^hypothetical-args]
+
+[^hypothetical-args]: The variable names would automatically populate the `choices` argument for  a `selectInput()`
+
+1. **Features & Background**: use the `description` (entered as a character string in the first argument of `describe()`) to capture the "unit of work" for each function. `Feature` and `Background` information can be included in nested `describe()` blocks. 
+
+```{r}
+#| eval: false 
+#| code-fold: false
+describe("
+  Feature: Pull column names by type from a data frame or tibble
+  Background: Given a data frame or tibble 
+    And it has binary, character, and numeric columns", code = {
+  
+})
+```
+
+2. **Scenario**: Every new `Scenario` keyword should have a corresponding `it()` or `test_that()` call.[^it-test_that] Try to be as specific as possible (while staying short and sweet) when describing the scenarios. 
+
+```{r}
+#| eval: false 
+#| code-fold: false
+describe("
+  Feature: Pull column names by type from a data frame or tibble
+  Background: Given a data frame or tibble 
+    And it has binary, character, and numeric columns", code = {
+  
+    it("Scenario: Given a data frame with a mix of columns
+      When I call pull_cols() with type 'binary'
+      Then I should receive a list of 'binary' column names", code = {
+      
+    })
+  
+})
+```
+
+3. **Expectations**: The `Then` keywords capture our expectations (and `expect_*()` function). In this case, it's the '*list of column names that match the `"<type>"` criteria*'
+
+```{r}
+#| eval: false 
+#| code-fold: false
+describe("
+  Feature: Pull column names by type from a data frame or tibble
+  Background: Given a data frame or tibble 
+    And it has binary, character, and numeric columns", code = {
+  
+    it("Scenario: Given a data frame with a mix of columns
+      When I call pull_cols() with type 'binary'
+      Then I should receive a list of 'binary' column names", code = {
+      
+      expect_equal(is.logical(object))
+      
+    })
+  
+})
+```
+
+[^it-test_that]: `testthat`'s `it()` function is essentially identical to [`test_that()`](https://testthat.r-lib.org/reference/describe.html#details).
+
+It's worth noting that, at least conceptually, scenarios and expectations arise first. We're usually working backwards from a desired "end result" a function is supposed to produce (i.e., compute a value, download a file, create a column, etc.).
+
+#### Requirements 
+
+For example, calling `pull_cols(df, "bin")` would 'pull' all the binary columns from an input `data.frame` or `tibble` (the example below uses `palmerpenguins::penguins`):
+
+```{r}
+#| eval: false 
+#| echo: true
+#| code-fold: false 
+pull_cols(palmerpenguins::penguins, type = "bin")
+```
+
+```{r}
+#| code-fold: false 
+#| eval: false
+#| echo: true
+##  sex 
+## "sex" 
+```
+
+The return values can be passed to `updateSelectInput()` in the `server` to provide column names by `type` (i.e., numeric, binary, etc). `pull_colls()` can be used to quickly group variables into groups for data visualizations or table displays. 
+
+For example, categorical variables with 3-5 levels can be mapped to a facet layer (if using `ggplot2`). See the hypothetical UI output example below:
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false 
+# UI code
+selectInput(
+  inputId = ns("facet"),
+  label = "Select Facet Column",
+  choices = c("", NULL)
+)
+```
+
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false 
+# pull facet columns from data
+facet_cols <- reactive({
+  pull_cols(df = ds(), type = "facet")
+})
+# update facet inputs
+observe({
+  updateSelectInput(
+    session = session,
+    inputId = "facet",
+    choices = facet_cols()
+  )
+}) |>
+  bindEvent(facet_cols())
+```
+
+In the example above, `pull_cols()` is passed a reactive dataset (`data()`), and the output is used to update the `selectInput()`:
+
+```{r}
+#| eval: true
+#| echo: false 
+library(palmerpenguins)
+shiny::selectInput(
+  inputId = "num_cols", 
+  label = "Select Facet Column",
+  choices = 
+    c(species = "species", 
+      island = "island")
+  )
+```
+
+<br>
+
+The first step of `pull_cols()` will be to identify and extract columns based on their class, so we'll create a test for `select_class()`, a function with a `class` parameter that supports multiple column types. The `roxygen2` documentation for `select_class()` is below:
+
+```{r}
+#| eval: false 
+#| code-fold: show 
+#| code-summary: 'show/hide roxygen2 documentation'
+#' Select Column Class
+#'
+#' `select_class()` selects columns from a data.frame based on the specified
+#' `class`. Options include logical, integer, double, character, factor, ordered,
+#' and list column types.
+#'
+#' @param df A `data.frame` from which columns will be selected.
+#' @param class Character vector specifying the class(es) of columns to select.
+#'   Supported values are:
+#'   * "logical" ("lo")  
+#'   * "integer" ("in")  
+#'   * "double" ("do")  
+#'   * "character" ("ch")  
+#'   * "factor" ("fa")   
+#'   * "ordered" ("or")   
+#'   * "list" ("li")
+#'   
+#' @param return_tbl Logical indicating whether to return the result as a
+#'   `data.frame`. If `FALSE`, a vector of selected column names is returned.
+#'
+#' @return A `data.frame` or vector of column names, depending on `return_tbl`.
+```
+
+We've also included a `return_tbl` argument that allows `select_class()` to return the column names.
+
+#### Abstract folder trees
+
+While developing R functions, I've found the `ast()` function from the [`lobstr` package](https://lobstr.r-lib.org/reference/ast.html) can be great for keeping track of nested function calls.
+
+`select_class()` will have a nested `is_class()` function, which contains a series of test for objects (i.e., `is.logical()`, `is.integer()`, etc.). To keep track of nested functions in `R/` files, sometimes I'll outline the function in an abstract function tree and store this in a [vignette](https://github.com/mjfrigaard/sapkgs/blob/utap/vignettes/utap.Rmd).[^nested-test-location]
+
+[^nested-test-location]: Both functions are placed in `R/select_class.R`, and both unit tests are also in the `tests/testthat/test-select_class.R` file. 
+
+Below is an example tree for `select_class()`:
+
+::: {layout="[25,75]" layout-valign="top"}
+
+**Syntax**: 
+
+``` r
+lobstr::ast(
+    select_class(
+      is_class()
+      )
+)
+```
+
+**Output**: 
+
+```{r}
+#| eval: true
+#| echo: false
+#| code-fold: false
+#| collapse: false
+lobstr::ast(
+    select_class(
+      is_class()
+      )
+)
+```
+
+:::
+
+The tree above is simple--it only has two functions so far--but as packages grow these abstract displays become more important for tracking function calls (and tests!).
+
+```{r}
+#| label: co_box_tip_fun_names
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "g", 
+  header = "TIP! Function Names",
+  contents = "Coming up with names for functions can be challenging. I like to follow the [`tidyverse` style guide](https://style.tidyverse.org/syntax.html#object-names) and use short verbs as a prefix (`make_`, `get_`, `check_` etc.) that will give 'future' me hints as to their behavior.
+  
+I like to stick to naming conventions I'm familiar with. For example, `select_class()` has similar behavior to `dplyr::select()`, and `pull_cols()` is more like `dplyr::pull()`.
+  ")
+```
+
+Outlining functions with `lobstr::ast()` can helpful if we plan on iterating multiple, smaller functions. For example, before making a binary vector of column names, we need to verify the column has only two values. Binary variables can come in multiple flavors (logical, integer, character, factor, ordered, etc.), so `check_binary_vec()` will have a series of 'checks' for each column type. 
+
+Below is an abstract folder tree outlining `pull_binary_cols()`, the function called to extract a named character vector of binary column names:
+
+```{r}
+#| eval: true
+#| echo: false
+#| code-fold: false
+#| collapse: false
+lobstr::ast(
+  pull_binary_cols(
+    select_class(
+      is_class()
+      ),
+  make_binary_vec(
+    check_binary_vec(
+      check_log_binary(),
+      check_int_binary(),
+      check_chr_binary(),
+      check_fct_binary(),
+      check_ord_binary()
+        )
+      )
+    )
+  )
+```
+
+`pull_binary_cols()` calls `select_class()` then passes the selected columns to `make_binary_vec()`, where `check_binary_vec()` determines if it's one of the five types of possible binary variables.
+
+```{r}
+#| eval: false
+#| code-fold: false
+pull_binary_cols(palmerpenguins::penguins)
+##   sex 
+## "sex"
+```
+
+```{r}
+#| echo: false
+#| eval: false
+c(sex = "sex")
+```
+
+
+```{r}
+#| eval: false
+#| code-fold: false
+pull_binary_cols(dplyr::starwars)
+##   gender 
+## "gender"
+```
+
+```{r}
+#| echo: false
+#| eval: false
+c(gender = "gender")
+```
+
+
+The `pull_facet_cols()` outline is similar, except that it calls the `pull_binary_cols()` first, then selects the columns and determines if any remaining have 3-5 categorical levels:
+
+```{r}
+#| eval: true
+#| echo: false
+#| code-fold: false
+#| collapse: false
+lobstr::ast(
+    pull_facet_cols(
+      pull_binary_cols(),
+      select_class(is_class()),
+      make_facet_vec(
+        check_facet_vec(
+          check_chr_facet(),
+          check_fct_facet()
+        )
+      )
+    )
+)
+```
+
+## Test tools
+
+Before we can start developing the tests for `pull_cols()`, we'll need data. We can define test data inside the `it()` call for `select_class()`:
+
+```{r}
+#| eval: false
+#| code-fold: false
+describe("select_class() returned objects", code = {
+  it("df returned", {
+    # define test data
+    test_data <- data.frame(
+      log_var = c(TRUE, FALSE, TRUE),
+      int_var = c(1L, 2L, 3L),
+      dbl_var = c(1.1, 2.2, 3.3),
+      chr_var = paste0(rep("item:", times = 3), 1:3))
+  })
+})
+```
+
+This is helpful because it's clear what `test_data` contains, and many times a small dataset will suffice. However, larger, more complex test data should be stored as a test fixture. 
+
+### Test fixtures 
+
+Creating test fixtures is covered in [R packages](https://r-pkgs.org/testing-design.html#storing-test-data), but I'll summarize the key points: 
+
+1. Test data (and other objects) can either be created within a test, or as a persistent [test fixture](https://r-pkgs.org/testing-advanced.html#sec-testing-advanced-concrete-fixture)  
+
+2. Test data fixtures should be stored in `tests/testthat/fixtures/<test_data.rds>`
+
+3. The code used to create any test data fixtures should be stored in the same folder with a `make_` prefix (i.e., `tests/testthat/fixtures/<make_test_data.R>`)
+
+This is easier to picture with a demonstration: In the `tests/testthat/` folder, I'll create a new `fixtures` folder, and add a `make_test_data.R` file.[^fixture-folder-name] 
+
+```{verbatim}
+#| eval: false
+#| echo: true
+#| code-fold: false
+tests/testthat/
+        └── fixtures/
+                └── make_test_data.R
+```
+
+[^fixture-folder-name]: The `fixtures` name is not required, but it always make sense to keep folder names explicit. 
+
+In `make_test_data.R`, I'll create `test_data` using the code above and save `test_data` in `tests/testthat/fixtures/` as `test_data.rds`: 
+
+```{verbatim}
+#| eval: false
+#| echo: true
+#| code-fold: false
+tests/testthat/
+        └── fixtures/
+                ├── make_test_data.R
+                └── test_data.rds
+```
+
+To load the data into my test, I'll add the following to the top of the test context: 
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: false
+describe("select_class() returned objects", code = {
+  
+  test_data <- readRDS(test_path("fixtures", "test_data.rds"))
+  
+})
+```
+
+`testthat::test_path()` will load the data from the testing directory when I'm ready to run my test.
+
+The `select_class()` function should also be able to return a data.frame/tibble of the specified class, or a named vector of the column names. `testthat`'s `expect_`* functions have a lot of options for writing very specific tests.
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: false
+describe("select_class() returned objects", code = {
+  
+  it("df returned", {
+    # define/load test data
+    expect_s3_class(object, "data.frame")
+  })
+  
+  it("tibble returned", {
+    # define/load test data
+    expect_s3_class(object,
+      class = c("tbl_df", "tbl", "data.frame")
+    )
+  })
+  
+  it("string returned", {
+    # define/load test data
+    expect_type(object = object, type = "character")
+  })
+  
+  it("named vector returned", {
+    # define/load test data
+    expect_named(object = object, expected = "log_var")
+  })
+})
+```
+
+
+`select_class()` should also return the columns according to the `class` argument. For the logical, integer, double, character, and list columns, we can assess each returned object with `expect_type()`. However, with the factor and ordered columns, we'll use the `expect_s3_class()`.
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: true 
+#| code-summary: 'show/hide select_class() tests'
+# check classes ----
+describe("select_class() return classes", code = {
+  ## check logical ----
+    it("logical works", {
+      test_data <- readRDS(test_path("fixtures", "test_data.rds"))
+      # define obj
+      obj <- select_class(df = test_data, class = "logical")
+      # test type
+      expect_type(obj[[1]], type = "logical")
+    })
+    ## check integer ----
+    it("integer works", {
+      # integer test code
+      })
+  ## check double ----
+    it("double works", {
+      # double test code
+    })
+  ## check character ----
+    it("character works", {
+      # character test code
+    })
+    ## check list ----
+    it("list works", {
+      # list test code
+    })
+  ## check factor ----
+    it("factor works", {
+      test_data <- readRDS(test_path("fixtures", "test_data.rds"))
+      obj <- select_class(df = test_data, class = "factor")
+      expect_s3_class(obj[[1]], class = "factor")
+    })
+  ## check factor (ordered) ----
+    it("ordered works", {
+      # ordered factor test code
+    })
+
+})
+```
+
+Using `describe()` and `it()` allows us to outline tests for `select_class()`, and including test fixtures makes it easier to test all possible classes returned.
+
+When we've covered my intended 'end results' for `select_class()` (i.e., what we expect to happen when it works and we expect to happen when it doesn't), we cam write the function: 
+
+```{r}
+#| eval: true
+#| echo: true
+#| code-fold: true 
+#| code-summary: 'select_column_class()'
+select_class <- function(df, class, return_tbl = TRUE) {
+  if (!is.data.frame(df)) stop("df must be a dataframe")
+
+  # define classes
+  valid_classes <- c("logical", "integer", "double", "numeric", "character",
+                     "factor", "ordered", "list")
+  class <- match.arg(class, choices = valid_classes, several.ok = TRUE)
+
+  # helper function to check classes
+  is_class <- function(x, cls) {
+    cls <- match(cls, valid_classes)
+    cls_name <- valid_classes[cls]
+    switch(cls_name,
+           logical = is.logical(x),
+           integer = is.integer(x),
+           double = is.double(x),
+           numeric = is.numeric(x),
+           character = is.character(x),
+           factor = is.factor(x),
+           ordered = is.ordered(x),
+           list = is.list(x),
+           FALSE)
+  }
+
+  selected_cols <- sapply(df, function(x) any(sapply(class, is_class, x = x)))
+
+  col_names <- names(df)[selected_cols]
+
+  if (return_tbl) {
+    return(df[, col_names, drop = FALSE])
+  } else {
+    return(setNames(object = col_names, nm = col_names))
+  }
+}
+```
+
+Below is a summary of tips for adding data your tests. 
+
+::: {#fig-unit_test_dep_data}
+
+![Unit test fixtures](unit_test_dep_data.png){#fig-unit_test_dep_data width=90%}
+
+Unit test fixtures 
+:::
+
+### Test helpers
+
+Test helpers can be stored in `tests/testthat/helper.R`. Test helpers are functions or code that 1) is too long to repeat with each test, and 2) doesn't take too much time or memory to run. Read more about test helpers [here.](https://r-pkgs.org/testing-advanced.html#sec-testing-advanced-fixture-helper).
+
+For this application, I've created a [set of test helpers](https://github.com/mjfrigaard/utap/blob/main/tests/testthat/helper.R) to make different forms of test data (because we'll be repeatedly defining columns with *slightly* different attributes). 
+
+For example, `col_maker()` can be used to create a `tibble` with columns based on the `col_type`, `size`, and `missing`:
+
+```{r}
+#| eval: true
+#| echo: true
+#| collapse: true
+#| code-fold: false 
+col_maker(col_type = c("log", "int", "dbl", 
+                       "chr", "fct", "ord"),
+          size = 3,
+          missing = TRUE)
+```
+
+I can also create tibbles with custom columns using individual helper `_maker()` functions: 
+
+```{r}
+#| eval: true
+#| echo: true
+#| collapse: true
+#| code-fold: false 
+tibble::tibble(
+    log_var = log_maker(size = 3),
+    chr_var = chr_maker(size = 3, lvls = 3),
+    ord_var = ord_maker(size = 3, lvls = 2)
+)
+```
+
+These helpers make it easier to iterate through the test expectations *and* function development, because `tibble`s like the one above can be developed *inside* each test. 
+
+Below is an example for testing if `pull_binary_cols()` will correctly identify the `logical` columns (for both return objects):
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: show
+#| code-summary: 'using test helpers' 
+describe("pull_binary_cols() works", {
+    it("logical tibble (with missing)", code = {
+      test_data <- tibble::tibble(log = log_maker(size = 2, missing = TRUE))
+      expect_equal(pull_binary_cols(test_data),
+      expected = c(log = "log"))
+    })
+    it("logical tibble", code = {
+      test_data <- tibble::tibble(log = log_maker(size = 2, missing = FALSE))
+      expect_equal(pull_binary_cols(test_data),
+      expected = c(log = "log"))
+    })
+})
+```
+
+Sometimes it will still make sense to create the test data inside the test scope (i.e. inside the `it()` or `test_that()` call). For example, I was `pull_binary_cols()` to identify integer columns with binary values (`0`, `1`). I should make these test data explicit: 
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: show
+#| code-summary: 'using test helpers' 
+it("test integer with binary values (0, 1, NA)", code = {
+  test_data <- data.frame(int = c(0L, 1L))
+  expect_equal(pull_binary_cols(test_data),
+  expected = c(int = "int"))
+})
+it("test integer with binary values and missing (0, 1, NA)", code = {
+  test_data <- data.frame(int = c(0L, 1L, NA_integer_))
+  expect_equal(pull_binary_cols(test_data),
+  expected = c(int = "int"))
+})
+```
+
+
+When I'm confident with the `pull_binary_cols()` function and it's tests, I'll run `devtools:::test_active_file()`.
+
+```{verbatim}
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 9 ]
+```
+
+
+### Test coverage 
+
+*How many tests should I write?* 
+
+In `testthat` code coverage measures the extent to which the tests in the `tests/testthat/` folder cover the possible execution paths of the functions in the `R/` folder. 
+
+Code test coverage is a way to confirm that the unit tests are robust enough to verify that your code behaves as expected. In R packages, code coverage is discussed in the [testing chapter](https://r-pkgs.org/testing-design.html#sec-testing-design-coverage) using the [`covr` package](https://covr.r-lib.org/).
+
+During development, check the code coverage of a test file with `devtools::test_coverage_active_file()`. Sometimes this function can be temperamental, so I use the combination of `covr` functions below: 
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: false
+covr::file_coverage(
+  source_files = "R/<function_file.R>", 
+  test_files = "tests/testthat/test-<function_file.R>") |>
+  covr::report()
+```
+
+
+Below is the test coverage for `make_binary_vec()`--a smaller helper function for `pull_binary_cols()`--in the **Viewer** when `devtools::test_coverage_active_file()` is entered in the **Console**:
+
+::: {#fig-make_binary_vec_coverage}
+
+![Test coverage](make_binary_vec_coverage.png){#fig-make_binary_vec_coverage width=90% fig-align="center"}
+
+Unit test coverage interactively
+:::
+
+
+We can see from the output we don't have 100% test coverage for `make_binary_vec()`. When we click on the file path in the table we can se what execution paths aren't being tested: 
+
+::: {#fig-make_binary_vec_coverage_source}
+
+![Behavior not tested in `make_binary_vec()`](make_binary_vec_coverage_source.png){#fig-make_binary_vec_coverage_source width=90% fig-align="center"}
+
+
+The area in red is the untested portion of `make_binary_vec()`
+:::
+
+It's probably not worth chasing down the remaining 17% on this function because I've outlined it's primary requirements in the BDD functions:
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: false
+describe("make_binary_vec() works", {
+    it("logical", {
+      # test code
+    })
+  it("integer", {
+      # test code
+    })
+  it("character", {
+      # test code
+    })
+  it("factor", {
+      # test code
+    })
+})
+```
+
+
+Striving for a high percentage of coverage is a good practice, it doesn't guarantee that the function always behaves as expected. Unit tests might execute a line of code, but still not catch a bug due to the design of the test (it's easy to have high coverage if the unit tests are shallow and don't check for any potential [edge cases](https://en.wikipedia.org/wiki/Edge_case)).
+
+After developing the functions in `utap`, the files in the `R/` folder are organized into names [based on the](https://r-pkgs.org/code.html#sec-code-organising) '*main function and its supporting helpers*': 
+
+```{verbatim}
+#| eval: false
+#| echo: true
+#| code-fold: false
+R/
+├── check_binary_vec.R
+├── check_facet_vec.R
+├── make_binary_vec.R
+├── make_facet_vec.R
+├── nin.R
+├── pull_binary_cols.R
+├── pull_cat_cols.R
+├── pull_cols.R
+├── pull_facet_cols.R
+├── pull_numeric_cols.R
+├── select_class.R
+└── utap-package.R
+
+```
+
+The `tests/testthat/` folder file names have identical names as the files in the `R/` folder.
+
+```{verbatim}
+#| eval: false
+#| echo: false
+#| code-fold: false
+tests
+├── testthat
+│   ├── _snaps
+│   ├── fixtures
+│   │   ├── make_test_data.R
+│   │   └── test_data.rds
+│   ├── helper.R
+│   ├── test-check_binary_vec.R
+│   ├── test-check_facet_vec.R
+│   ├── test-make_binary_vec.R
+│   ├── test-nin.R
+│   ├── test-pull_binary_cols.R
+│   ├── test-pull_cat_cols.R
+│   ├── test-pull_cols.R
+│   ├── test-pull_facet_cols.R
+│   ├── test-pull_numeric_cols.R
+│   └── test-select_class.R
+└── testthat.R
+
+4 directories, 14 files
+```
+
+It's common for R packages to have a general `R/utils.R` file that defines the 'utility' functions, but these files *can* become a catch-all for any functions that don't have a clear home (read more [here](https://rud.is/b/2018/04/08/dissecting-r-package-utility-belts/)).
+
+For example, I could stored the `%nin%` operator in `R/utils.R` (but it removes the ability to run `test_coverage_active_file()`:
+
+When I've completed a set of test files, I can use `devtools::test()` to check if they're passing.
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: false 
+devtools::test()
+```
+
+```{verbatim}
+#| eval: false
+#| echo: true
+#| code-fold: false 
+==> devtools::test()
+
+ℹ Testing utap
+✔ | F W  S  OK | Context
+✔ |         23 | check_binary_vec
+✔ |          3 | check_facet_vec
+✔ |          4 | make_binary_vec
+✔ |          3 | nin          
+✔ |          9 | pull_binary_cols
+✔ |          4 | pull_cat_cols
+✔ |          4 | pull_cols    
+✔ |         15 | pull_facet_cols
+✔ |          2 | pull_numeric_cols
+✔ |         14 | select_class 
+
+══ Results ═══════════════════
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 81 ]
+
+🎯 Your tests hit the mark 🎯
+```
+
+The output above shows all tests are passing (and some helpful words of encouragement!). To check the code coverage for the utap package, I can run `devtools::test_coverage()` to view the output in the **Viewer**. 
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: false 
+devtools::test_coverage()
+```
+
+```{verbatim}
+#| eval: false
+#| echo: true
+#| code-fold: false 
+ℹ Computing test coverage for utap
+```
+
+
+::: {#fig-utap_coverage}
+
+![`test_coverage()` for entire package](utap_coverage.png){#fig-utap_coverage width=90% fig-align="center"}
+
+`devtools::test_coverage()`
+:::
+
+Clicking on any of the **Files** will open the **Source** tab and give a summary like the one above from `test_coverage_active_file()`. I can also use `covr::package_coverage()` in the **Console** for simpler output:
+
+::: {#fig-covr_package_coverage}
+
+![`package_coverage()` for entire package](covr_package_coverage.png){#fig-covr_package_coverage width=75% fig-align="center"}
+
+`covr::package_coverage()`
+:::
+
+
+
+```{r}
+#| label: co_box_unit_test_tips
+#| echo: false
+#| results: asis
+#| eval: true
+#| collapse: true
+co_box(color = "g", 
+  header = "TIPS: Unit tests", 
+  fold = FALSE,
+  contents = "
+
+The advice on unit tests below (in **bold**) comes from [Effective Software Testing, 2022](https://www.manning.com/books/effective-software-testing). I've included descriptions of how `testthat` satisfies each recommendation:
+
+1) **Unit tests should be fast**: the text recommends unit tests take a '*couple of milliseconds*' to execute. `testthat` tests typically fall within this threshold (and provide time measurements to identify bottlenecks).
+
+2) **Unit tests are easy to control**: i.e., '*input values and the expected result value are easy to adapt or modify in the test*.' `testthat` expectations give us ample access to 1) the `expected` result and 2) the `observed` result. 
+
+3) **Unit tests are easy to write**: i.e., '*do not require a complicated setup or additional work*'. When used combination with `usethis`, `testthat` unit tests can be set up, created, written, and run with a few lines of code.
+  
+")
+```
+
+## Other code metrics 
+
+Sometimes it's interesting to view the relationship between function size and number of tests using the [`cloc` package.](https://github.com/hrbrmstr/cloc).
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: false 
+library(cloc)
+```
+
+`cloc` stands for *Count Lines of Code*, and it's a rough metric used to gauge code complexity. It's simple, but apparently provides "*just as much predictive power as more elaborate constructs like cyclomatic complexity.*"[source](https://www.oreilly.com/library/view/software-design-x-rays/9781680505795/)
+
+Below is a count of the lines of code in each file in the `R` folder: 
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: false
+cloc::cloc_by_file("R")
+```
+
+```{verbatim}
+#| eval: false
+#| echo: true
+#| code-fold: false
+# A tibble: 13 × 6
+   source filename                language   loc blank_lines comment_lines
+   <chr>  <chr>                   <chr>    <int>       <int>         <int>
+ 1 R      "R/select_class.R"      R           27           5            31
+ 2 R      "R/check_binary_vec.R"  R           24           0            14
+ 3 R      "R/make_facet_vec.R"    R           19           0            19
+ 4 R      "R/pull_numeric_cols.R" R           19           1            23
+ 5 R      "R/pull_binary_cols.R"  R           14           0            19
+ 6 R      "R/pull_facet_cols.R"   R           14           0            37
+ 7 R      "R/check_facet_vec.R"   R           13           0            14
+ 8 R      "R/pull_cat_cols.R"     R           13           0            18
+ 9 R      "R/make_binary_vec.R"   R           10           0            19
+10 R      "R/pull_cols.R"         R            8           0            15
+11 R      "R/nin.R"               R            3           0             9
+12 R      "R/utap-package.R"      R            2           0             6
+13 R      ""                      SUM        166           6           224
+```
+
+This output also confirms the relationship between lines of code and tests.
+
+## Recap
+
+This post has been an introduction to unit testing utility functions in a Shiny app-package. When I'm confident the utility functions are working, I'll start adding them into modules (and testing with `testServer()` or `shinytest2`). Files names can change a lot throughout the course of developing a Shiny app-package, so it's helpful to adopt (or create) a naming convention.[^golem-conventions]
+
+[^golem-conventions]: If you're using the `golem` framework to develop your shiny app-package, the `utils_` and `fct_` prefixes are used to define two different types of [utility/helper functions](https://engineering-shiny.org/structuring-project.html#conventions-matter). `utils_` files contain '*small helper functions* and '*top-level functions defining your user interface and your server function*'. `fct_` files contain '*the business logic, which are potentially large functions*...*the backbone of the application and may not be specific to a given module*'.
+
+Which particular file naming convention you choose isn't as important as adopting a convention and implementing it.
+
+<!--
+
+```{verbatim}
+#| eval: false
+#| echo: false
+#| code-fold: false
+test-column_classes.R:
+            │
+            └── select_column_class()
+                  │
+                  └── get_column_class() 
+```
+
+```{verbatim}
+#| eval: false
+#| echo: false
+#| code-fold: false
+tree/
+  │
+  └── get_column_class()
+        │     │
+        │     └── select_column_class()
+        │
+        ├── pull_binary_cols()
+        │
+        ├── pull_facet_cols()
+        │
+        ├── pull_cat_cols()
+        │
+        └── pull_numeric_cols()
+```
+
+```{verbatim}
+#| eval: false
+#| echo: true
+#| code-fold: false
+tree/
+  │
+  └── get_column_class() # used in all pull_[type]_cols()
+        │     │
+        │     └── select_column_class()
+        │
+        ├── pull_binary_cols()
+        │        │
+        │        ├── check_binary_vec()
+        │        │      │
+        │        │      ├── check_log_binary()
+        │        │      ├── check_int_binary()
+        │        │      └── check_fct_binary()
+        │        │
+        │        └── make_binary_vec()
+        │
+        ├── pull_facet_cols() # custom definition
+        │        │
+        │        ├── check_facet_vec()
+        │        │      │
+        │        │      ├── check_chr_facet()
+        │        │      └── check_fct_facet()
+        │        │
+        │        └── make_facet_vec()
+        │
+        ├── pull_cat_cols() # is.character & is.factor
+        │
+        └── pull_numeric_cols() # is.integer & is.double
+```
+
+-->

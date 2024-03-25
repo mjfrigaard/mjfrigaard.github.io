@@ -2,13 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.4.549">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Martin Frigaard’s personal website.">
 
-<title>&lt;span class="citation" data-cites="mjfrigaard"&gt;@mjfrigaard&lt;/span&gt;</title>
+<title>@mjfrigaard</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -31,10 +30,12 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./profile.png" rel="icon" type="image/png">
+<script src="site_libs/quarto-listing/list.min.js"></script>
+<script src="site_libs/quarto-listing/quarto-listing.js"></script>
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
@@ -46,7 +47,12 @@ ul.task-list li input[type="checkbox"] {
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -55,25 +61,81 @@ ul.task-list li input[type="checkbox"] {
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
 }</script>
+<script>
 
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    const listingTargetEl = window.document.querySelector('#listing-listing .list');
+    if (!listingTargetEl) {
+      // No listing discovered, do not attach.
+      return; 
+    }
 
-<meta name="twitter:title" content="">
-<meta name="twitter:description" content="">
-<meta name="twitter:card" content="summary">
-</head>
+    const options = {
+      valueNames: ['listing-date','listing-image','listing-title','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      
+      searchColumns: ["listing-date","listing-title","listing-author","listing-subtitle","listing-image","listing-description"],
+    };
 
-<body class="nav-fixed fullcontent">
+    window['quarto-listings'] = window['quarto-listings'] || {};
+    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
+
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  });
+
+  window.addEventListener('hashchange',() => {
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  })
+  </script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="alternate" type="application/rss+xml" title="@mjfrigaard" href="index.xml" data-external="1"></head>
+
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
     <span class="navbar-title"><span class="citation" data-cites="mjfrigaard">@mjfrigaard</span></span>
     </a>
@@ -84,73 +146,310 @@ ul.task-list li input[type="checkbox"] {
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-blog" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
- <span class="menu-text">Blog</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-blog">    
-        <li>
-    <a class="dropdown-item" href="./posts.html" rel="" target="">
- <span class="dropdown-text">Posts</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./series.html" rel="" target="">
- <span class="dropdown-text">Series</span></a>
-  </li>  
-    </ul>
-  </li>
   <li class="nav-item">
-    <a class="nav-link" href="./code.html" rel="" target="">
- <span class="menu-text">Code</span></a>
+    <a class="nav-link" href="./posts.html"> 
+<span class="menu-text">Posts</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./series.html"> 
+<span class="menu-text">Series</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./code.html"> 
+<span class="menu-text">Code</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/mjfrigaard" rel="" target=""><i class="bi bi-github" role="img">
-</i> 
- <span class="menu-text"></span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="./about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/mjfrigaard" rel="" target=""><i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://github.com/mjfrigaard"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/mjfrigaard"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-            <div class="quarto-navbar-tools">
-</div>
           </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
     
 <!-- main -->
-<div class="quarto-about-jolla">
-  <img src="profile.png" class="about-image
-  round " style="height: 15em; width: 15em;">
- <main class="content" id="quarto-document-content">
-<p>Hi! I am Martin Frigaard. This is my personal blog where I write about projects I’m currently working on (or topics I’m thinking about).</p>
-<p>I build Shiny applications and write R packages. I also create training materials and workshops on data management, visualizations, and reproducible research. I have 15 years of experience with data analysis, statistics, and research. I’m also a fully certified <a href="https://education.rstudio.com/trainers/"><code>tidyverse</code> trainer</a>.</p>
-<p>Check out my other website <a href="https://www.martinfrigaard.io/">here.</a></p>
+<main class="content column-page" id="quarto-document-content">
 
 
-</main> 
-  <hr class="about-sep">
-   <div class="about-links">
-  <a href="https://github.com/mjfrigaard" class="about-link" rel="" target="">
-    <i class="bi bi-github"></i>
-     <span class="about-link-text">Github</span>
-  </a>
-  <a href="mailto:mjfrigaard@pm.me" class="about-link" rel="" target="">
-    <i class="bi bi-envelope"></i>
-     <span class="about-link-text">Email</span>
-  </a>
+
+
+
+
+
+
+<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
+<div class="listing-actions-group">
+   <div class="input-group input-group-sm quarto-listing-sort">
+     <span class="input-group-text"><i class="bi bi-sort-down"></i></span>
+     <select id="listing-listing-sort" class="form-select" aria-label="Order By" onchange="window['quarto-listings']['listing-listing'].sort(this.options[this.selectedIndex].value, { order: this.options[this.selectedIndex].getAttribute('data-direction')})">
+       <option value="" disabled="" selected="" hidden="">Order By</option>
+       <option value="index" data-direction="asc">Default</option>
+         <option value="listing-title" data-direction="asc">
+          Title
+        </option>
+         <option value="listing-date-sort" data-direction="asc">
+          Date - Oldest
+        </option>
+         <option value="listing-date-sort" data-direction="desc">
+          Date - Newest
+        </option>
+     </select>
+  </div>
+    <div class="input-group input-group-sm quarto-listing-filter">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input type="text" class="search form-control" placeholder="Filter">
+    </div>
+</div>
+<div class="list quarto-listing-default">
+<div class="quarto-post image-right" data-index="0" data-categories="shiny,box,testing" data-listing-date-sort="1706079600000" data-listing-file-modified-sort="1710877840692" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-word-count-sort="431">
+<div class="thumbnail">
+<p><a href="./posts/p5-test-rhino-tests/index.html" class="no-external"></a></p><a href="./posts/p5-test-rhino-tests/index.html" class="no-external">
+<p><img src="./posts/p5-test-rhino-tests/rhino.png" class="thumbnail-image"></p>
+</a><p><a href="./posts/p5-test-rhino-tests/index.html" class="no-external"></a></p>
+</div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/p5-test-rhino-tests/index.html" class="no-external">Testing <code>rhino</code> apps</a>
+</h3>
+<div class="listing-subtitle">
+<a href="./posts/p5-test-rhino-tests/index.html" class="no-external">Part 4: Testing with <code>box</code> modules</a>
+</div>
+<div class="listing-description">
+<a href="./posts/p5-test-rhino-tests/index.html" class="no-external">The <code>rhino</code> framework from Appsilon introduces a novel method for developing your Shiny application. Unlike the <code>golem</code> and <code>leprechaun</code> frameworks, <code>rhino</code> applications are not…</a>
 </div>
 </div>
- <!-- /main -->
+<div class="metadata">
+<a href="./posts/p5-test-rhino-tests/index.html" class="no-external">
+<div class="listing-date">
+Jan 24, 2024
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="1" data-categories="shiny,testing" data-listing-date-sort="1688454000000" data-listing-file-modified-sort="1705778653674" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="45" data-listing-word-count-sort="8943">
+<div class="thumbnail">
+<p><a href="./posts/p4-test-system-shiny/index.html" class="no-external"></a></p><a href="./posts/p4-test-system-shiny/index.html" class="no-external">
+<p><img src="./posts/p4-test-system-shiny/image.svg" class="thumbnail-image"></p>
+</a><p><a href="./posts/p4-test-system-shiny/index.html" class="no-external"></a></p>
+</div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/p4-test-system-shiny/index.html" class="no-external">Shiny system tests with <code>shinytest2</code></a>
+</h3>
+<div class="listing-subtitle">
+<a href="./posts/p4-test-system-shiny/index.html" class="no-external">Part 4: recording tests and snapshots</a>
+</div>
+<div class="listing-description">
+<a href="./posts/p4-test-system-shiny/index.html" class="no-external">This is the fourth post in a series on testing shiny applications. My previous posts have covered unit testing utility functions and testing module server functions with <code>test…</code><code></code><code></code></a>
+</div>
+</div>
+<div class="metadata">
+<a href="./posts/p4-test-system-shiny/index.html" class="no-external">
+<div class="listing-date">
+Jul 4, 2023
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="2" data-categories="shiny,testing" data-listing-date-sort="1687244400000" data-listing-file-modified-sort="1705778547507" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="28" data-listing-word-count-sort="5567">
+<div class="thumbnail">
+<p><a href="./posts/p3-test-shiny-module-tests/index.html" class="no-external"></a></p><a href="./posts/p3-test-shiny-module-tests/index.html" class="no-external">
+<p><img src="./posts/p3-test-shiny-module-tests/image.png" class="thumbnail-image"></p>
+</a><p><a href="./posts/p3-test-shiny-module-tests/index.html" class="no-external"></a></p>
+</div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/p3-test-shiny-module-tests/index.html" class="no-external">Testing Shiny modules</a>
+</h3>
+<div class="listing-subtitle">
+<a href="./posts/p3-test-shiny-module-tests/index.html" class="no-external">Part 3: module server functions and <code>testServer()</code></a>
+</div>
+<div class="listing-description">
+<a href="./posts/p3-test-shiny-module-tests/index.html" class="no-external">This is the third post in a series on testing shiny applications. I’ll cover testing shiny module server functions using the <code>testhat</code> package and shiny’s <code>testServer()</code> function.</a>
+</div>
+</div>
+<div class="metadata">
+<a href="./posts/p3-test-shiny-module-tests/index.html" class="no-external">
+<div class="listing-date">
+Jun 20, 2023
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="3" data-categories="code,debugging" data-listing-date-sort="1685602800000" data-listing-file-modified-sort="1702756050018" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="34" data-listing-word-count-sort="6656">
+<div class="thumbnail">
+<p><a href="./posts/debugging/index.html" class="no-external"></a></p><a href="./posts/debugging/index.html" class="no-external">
+<p><img src="./posts/debugging/image.png" class="thumbnail-image"></p>
+</a><p><a href="./posts/debugging/index.html" class="no-external"></a></p>
+</div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/debugging/index.html" class="no-external">Debugging in RStudio</a>
+</h3>
+<div class="listing-subtitle">
+<a href="./posts/debugging/index.html" class="no-external">Developing code with <code>browser()</code></a>
+</div>
+<div class="listing-description">
+<a href="./posts/debugging/index.html" class="no-external">In this post I’ll cover using the <code>browser()</code> function with RStudio’s debugger. RStudio’s debugging tools are built into the IDE, which provides a seamless transition between…</a>
+</div>
+</div>
+<div class="metadata">
+<a href="./posts/debugging/index.html" class="no-external">
+<div class="listing-date">
+Jun 1, 2023
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="4" data-categories="shiny,testing" data-listing-date-sort="1683442800000" data-listing-file-modified-sort="1705778215172" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="18" data-listing-word-count-sort="3414">
+<div class="thumbnail">
+<p><a href="./posts/p2-tests-nonpkg-unit-tests/index.html" class="no-external"></a></p><a href="./posts/p2-tests-nonpkg-unit-tests/index.html" class="no-external">
+<p><img src="./posts/p2-tests-nonpkg-unit-tests/image.png" class="thumbnail-image"></p>
+</a><p><a href="./posts/p2-tests-nonpkg-unit-tests/index.html" class="no-external"></a></p>
+</div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/p2-tests-nonpkg-unit-tests/index.html" class="no-external">Using <code>testthat</code> with Shiny</a>
+</h3>
+<div class="listing-subtitle">
+<a href="./posts/p2-tests-nonpkg-unit-tests/index.html" class="no-external">Part 2: Unit tests for non-package Shiny apps</a>
+</div>
+<div class="listing-description">
+<a href="./posts/p2-tests-nonpkg-unit-tests/index.html" class="no-external">This post is the second in a series on testing shiny applications. I’ll cover testing shiny module server functions using the <code>testhat</code> package <em>outside</em> an R package. This…<code></code></a>
+</div>
+</div>
+<div class="metadata">
+<a href="./posts/p2-tests-nonpkg-unit-tests/index.html" class="no-external">
+<div class="listing-date">
+May 7, 2023
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="5" data-categories="shiny,testing" data-listing-date-sort="1682924400000" data-listing-file-modified-sort="1711381901972" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="34" data-listing-word-count-sort="6718">
+<div class="thumbnail">
+<p><a href="./posts/p1-tests-unit-tests/index.html" class="no-external"></a></p><a href="./posts/p1-tests-unit-tests/index.html" class="no-external">
+<p><img src="./posts/p1-tests-unit-tests/image.png" class="thumbnail-image"></p>
+</a><p><a href="./posts/p1-tests-unit-tests/index.html" class="no-external"></a></p>
+</div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/p1-tests-unit-tests/index.html" class="no-external">Behavior Driven Unit Tests</a>
+</h3>
+<div class="listing-subtitle">
+<a href="./posts/p1-tests-unit-tests/index.html" class="no-external">Part 1: testthat’s BDD testing functions</a>
+</div>
+<div class="listing-description">
+<a href="./posts/p1-tests-unit-tests/index.html" class="no-external">This post is the first in a series on testing Shiny applications. We’ll cover developing and testing a set of utility functions for a Shiny app-package using <code>testhat</code>. If…<code></code><code></code></a>
+</div>
+</div>
+<div class="metadata">
+<a href="./posts/p1-tests-unit-tests/index.html" class="no-external">
+<div class="listing-date">
+May 1, 2023
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="6" data-categories="packages,code" data-listing-date-sort="1682060400000" data-listing-file-modified-sort="1702756014459" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="38" data-listing-word-count-sort="7499">
+<div class="thumbnail">
+<p><a href="./posts/box/index.html" class="no-external"></a></p><a href="./posts/box/index.html" class="no-external">
+<p><img src="./posts/box/image.png" class="thumbnail-image"></p>
+</a><p><a href="./posts/box/index.html" class="no-external"></a></p>
+</div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/box/index.html" class="no-external">Writing modular code with <code>box</code></a>
+</h3>
+<div class="listing-subtitle">
+<a href="./posts/box/index.html" class="no-external"></a>
+</div>
+<div class="listing-description">
+<a href="./posts/box/index.html" class="no-external"><code>box</code> provides a precise and concise method for using add-on packages and functions. <code>box</code> also doesn’t require bundling your code into R packages to make it reusable. This post…<code></code></a>
+</div>
+</div>
+<div class="metadata">
+<a href="./posts/box/index.html" class="no-external">
+<div class="listing-date">
+Apr 21, 2023
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="7" data-categories="iteration,code" data-listing-date-sort="1680678000000" data-listing-file-modified-sort="1702756388846" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="34" data-listing-word-count-sort="6630">
+<div class="thumbnail">
+<p><a href="./posts/purrr1.0/index.html" class="no-external"></a></p><a href="./posts/purrr1.0/index.html" class="no-external">
+<p><img src="./posts/purrr1.0/image.png" class="thumbnail-image"></p>
+</a><p><a href="./posts/purrr1.0/index.html" class="no-external"></a></p>
+</div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/purrr1.0/index.html" class="no-external">purrr updates (v1.0.0)</a>
+</h3>
+<div class="listing-subtitle">
+<a href="./posts/purrr1.0/index.html" class="no-external"></a>
+</div>
+<div class="listing-description">
+<a href="./posts/purrr1.0/index.html" class="no-external">This post is going to cover the recent updates to the <code>purrr</code> package. The release of version 1.0.0 (and dev version v1.0.1) had some breaking changes, which I will cover…<code></code><code></code></a>
+</div>
+</div>
+<div class="metadata">
+<a href="./posts/purrr1.0/index.html" class="no-external">
+<div class="listing-date">
+Apr 5, 2023
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="8" data-categories="shiny,usethis,devtools,packages" data-listing-date-sort="1678431600000" data-listing-file-modified-sort="1702757442536" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="29" data-listing-word-count-sort="5735">
+<div class="thumbnail">
+<p><a href="./posts/duap/index.html" class="no-external"></a></p><a href="./posts/duap/index.html" class="no-external">
+<p><img src="./posts/duap/image.png" class="thumbnail-image"></p>
+</a><p><a href="./posts/duap/index.html" class="no-external"></a></p>
+</div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/duap/index.html" class="no-external">Creating Shiny app-packages</a>
+</h3>
+<div class="listing-subtitle">
+<a href="./posts/duap/index.html" class="no-external">Building a Shiny app within an R package: whole-game</a>
+</div>
+<div class="listing-description">
+<a href="./posts/duap/index.html" class="no-external">In this post, I’ll be using <code>devtools</code> and <code>usethis</code> to develop <code>duap</code>, an R package that <em>contains</em> a shiny application (i.e., <em><code>devtools</code>/<code>usethis</code> app-package</em>).</a>
+</div>
+</div>
+<div class="metadata">
+<a href="./posts/duap/index.html" class="no-external">
+<div class="listing-date">
+Mar 10, 2023
+</div>
+</a>
+</div>
+</div>
+</div>
+<div class="listing-no-matching d-none">
+No matching items
+</div>
+</div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -171,6 +470,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
   const isCodeAnnotation = (el) => {
     for (const clz of el.classList) {
       if (clz.startsWith('code-annotation-')) {                     
@@ -223,10 +529,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -236,8 +541,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -250,6 +564,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -293,6 +726,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -318,6 +752,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -378,6 +838,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 

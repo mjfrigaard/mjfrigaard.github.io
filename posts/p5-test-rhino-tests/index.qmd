@@ -1,0 +1,114 @@
+---
+title: "Testing `rhino` apps" 
+subtitle: "Part 4: Testing with `box` modules"
+author: "Martin Frigaard"
+date: "2024-01-24"
+categories: [shiny, box, testing]
+image: "rhino.png"
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+# code-block-border-left: true
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+code-fold: show
+code-summary: 'show/hide'
+callout-icon: false
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: setup
+#| eval: true
+#| echo: false
+#| include: false
+co_box <- function(color, header, contents = "Your text") {
+  class <- switch(color,
+    b = "note",
+    g = "tip",
+    r = "important",
+    o = "caution",
+    stop("Invalid `type`", call. = FALSE)
+  )
+  switch(color,
+    b = cat(paste0(
+      "\n",
+      ":::: {.callout-", class, " collapse='true'}", "\n\n",
+      "## ", header, "\n\n",
+      "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+      glue::glue_collapse(contents), "\n\n",
+      "::: \n\n",
+      "::::", "\n"
+    )),
+    g = cat(paste0(
+      "\n",
+      ":::: {.callout-", class, " collapse='true'}", "\n\n",
+      "## ", header, "\n\n",
+      "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+      glue::glue_collapse(contents), "\n\n",
+      "::: \n\n",
+      "::::", "\n"
+    )),
+    o = cat(paste0(
+      "\n",
+      ":::: {.callout-", class, " collapse='false'}", "\n\n",
+      "## ", header, "\n\n",
+      "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
+      glue::glue_collapse(contents), "\n\n",
+      "::: \n\n",
+      "::::", "\n"
+    )),
+    r = cat(paste0(
+      "\n",
+      ":::: {.callout-", class, " collapse='false'}", "\n\n",
+      "## ", header, "\n\n",
+      "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
+      glue::glue_collapse(contents), "\n\n",
+      "::: \n\n",
+      "::::", "\n"
+    )),
+    stop("Invalid `type`", call. = FALSE)
+  )
+}
+options(scipen = 999)
+# renv::install("mjfrigaard/msst2ap")
+# renv::install("lobstr")
+library(lobstr)
+library(dplyr)
+```
+
+```{r}
+#| label: pkgs
+#| eval: true
+#| code-summary: packages
+library(shiny)
+library(shinytest2)
+library(testthat)
+library(rhino)
+```
+
+
+```{r}
+#| label: co_box_test
+#| eval: false
+#| results: asis
+#| include: false
+co_box(color = "r", "RED", "**This is red**
+
+  **This is a new line**
+
+  **this a another line**")
+```
+
+The [`rhino` framework](https://appsilon.github.io/rhino/index.html) from [Appsilon](https://appsilon.com/) introduces a novel method for developing your Shiny application. Unlike the `golem` and `leprechaun` frameworks, `rhino` applications are not built inside R packages.
+
+The example `rhino` application we'll be using comes from my `moviesApp` repo covered in the [Shiny App-Packages](https://mjfrigaard.github.io/shiny-app-pkgs/) book (you can access this app using the [`shinyap` package](https://mjfrigaard.github.io/shinyap/) or directly from the [repo](https://github.com/mjfrigaard/moviesApp/branches/all)).
+

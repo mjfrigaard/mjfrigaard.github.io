@@ -2,13 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.4.549">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Martin Frigaard">
 <meta name="dcterms.date" content="2023-06-01">
-<meta name="description" content="Martin Frigaard’s personal website.">
 
 <title>@mjfrigaard - golem shiny app-packages</title>
 <style>
@@ -25,7 +24,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -67,7 +66,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../../">
-<link href="../../../profile.png" rel="icon" type="image/png">
 <script src="../../../site_libs/quarto-html/quarto.js"></script>
 <script src="../../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -83,7 +81,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -92,6 +95,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -99,21 +103,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
 
-<meta name="twitter:title" content="@mjfrigaard - golem shiny app-packages">
-<meta name="twitter:description" content="Building a production-grade shiny app: whole-game">
-<meta name="twitter:image" content="https://mjfrigaard.github.io/series/shiny-frameworks/golem/image.png">
-<meta name="twitter:image-height" content="1192">
-<meta name="twitter:image-width" content="1060">
-<meta name="twitter:card" content="summary_large_image">
 </head>
 
 <body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../../index.html">
     <span class="navbar-title"><span class="citation" data-cites="mjfrigaard">@mjfrigaard</span></span>
     </a>
@@ -124,41 +122,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-blog" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
- <span class="menu-text">Blog</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-blog">    
-        <li>
-    <a class="dropdown-item" href="../../../posts.html" rel="" target="">
- <span class="dropdown-text">Posts</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../../../series.html" rel="" target="">
- <span class="dropdown-text">Series</span></a>
-  </li>  
-    </ul>
-  </li>
   <li class="nav-item">
-    <a class="nav-link" href="../../../code.html" rel="" target="">
- <span class="menu-text">Code</span></a>
+    <a class="nav-link" href="../../../posts.html"> 
+<span class="menu-text">Posts</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series.html"> 
+<span class="menu-text">Series</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../code.html"> 
+<span class="menu-text">Code</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/mjfrigaard" rel="" target=""><i class="bi bi-github" role="img">
-</i> 
- <span class="menu-text"></span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/mjfrigaard" rel="" target=""><i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://github.com/mjfrigaard"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/mjfrigaard"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-            <div class="quarto-navbar-tools">
-</div>
           </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -205,7 +200,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </div>
   
 
+
 </header>
+
 
 <p>This post walks through building a shiny application using the <a href="https://thinkr-open.github.io/golem/"><code>golem</code> framework</a>. <code>golem</code> is a ’<em>an opinionated framework for building production-grade shiny applications’</em>–I’ll explore some of the opinions (and offer my opinion on adopting these opinions).</p>
 <div class="callout callout-style-default callout-important no-icon callout-titled">
@@ -302,8 +299,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>New <code>golem</code> apps automatically open the <code>01_start.R</code> script from the <code>dev/</code> folder. This is the first of three .R scripts that serve as a ‘guided tour’ of the <code>golem</code> framework (<code>01_start.R</code>, <code>02_dev.R</code>, and <code>03_deploy.R</code>):</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="gap_dev_scripts.png" class="img-fluid figure-img" style="width:55.0%"></p>
-<figcaption class="figure-caption">golem <code>dev/</code> scripts</figcaption>
+<p><img src="gap_dev_scripts.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:55.0%"></p>
+<figcaption>golem <code>dev/</code> scripts</figcaption>
 </figure>
 </div>
 <p>The <code>run_dev.R</code> is also in the <code>dev/</code> folder, but it’s for running a development version of your app (more on this later).</p>
@@ -337,15 +334,19 @@ Development scripts: <strong>Note</strong>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>golem<span class="sc">::</span><span class="fu">create_golem</span>(<span class="at">path =</span> <span class="st">"gap"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>If you’re creating a <code>golem</code> app using the <strong>New Project Wizard</strong>, the following defaults are available:</p>
-<div id="fig-golem-setup" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
+<div id="fig-golem-setup" class="column quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-golem-setup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="golem-setup.png" class="img-fluid figure-img" style="width:80.0%"></p>
-<figcaption class="figure-caption">IDE wizard <code>golem</code> setup</figcaption>
+<p><img src="golem-setup.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
+<figcaption>IDE wizard <code>golem</code> setup</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;1: Creating a new <code>golem</code> shiny app</figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-golem-setup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Creating a new <code>golem</code> shiny app
+</figcaption>
 </figure>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled">
@@ -368,7 +369,7 @@ Development scripts: <strong>Note</strong>
 </div>
 <p>When the new project opens, the initial folder structure for your new <code>golem</code> application is below:</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>show/hide golem folder structure</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">app-name/</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">├──</span> DESCRIPTION</span>
@@ -428,7 +429,7 @@ Development scripts: <strong>Note</strong>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="gap_desc.png" class="img-fluid figure-img" style="width:70.0%"></p>
-<figcaption class="figure-caption">golem <code>DESCRIPTION</code></figcaption>
+<figcaption>golem <code>DESCRIPTION</code></figcaption>
 </figure>
 </div>
 </div></div><p><code>fill_desc()</code> is from the <a href="https://r-lib.github.io/desc/"><code>desc</code> package</a>, and the sections are entered in a <code>key = "value"</code> format</p>
@@ -446,7 +447,7 @@ Development scripts: <strong>Note</strong>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>show/hide output from golem::fill_desc()</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">✔</span> Setting <span class="kw">`</span><span class="ex">golem_version</span><span class="kw">`</span> to 0.0.0.9000</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">✔</span> Setting <span class="kw">`</span><span class="ex">golem_name</span><span class="kw">`</span> to gap</span>
@@ -480,7 +481,7 @@ What if I need to edit the <code>DESCRIPTION</code>?
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>golem<span class="sc">::</span><span class="fu">set_golem_options</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>show/hide output from golem::set_golem_options()</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">──</span> Setting {golem} options in <span class="kw">`</span><span class="ex">golem-config.yml</span><span class="kw">`</span> ────────────────────────────────────────────────────────────────────</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">✔</span> Setting <span class="kw">`</span><span class="ex">golem_name</span><span class="kw">`</span> to gap</span>
@@ -494,7 +495,7 @@ What if I need to edit the <code>DESCRIPTION</code>?
 </div>
 <p><code>set_golem_options()</code> is a wrapper for a collection of <code>golem</code> option functions (I’ve included each function and a brief description of their behavior below):</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>show/hide golem options</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>golem<span class="sc">::</span><span class="fu">set_golem_options</span>(</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">golem_name =</span> golem<span class="sc">::</span><span class="fu">pkg_name</span>(), <span class="co"># name of the app-package in DESCRIPTION</span></span>
@@ -511,7 +512,7 @@ What if I need to edit the <code>DESCRIPTION</code>?
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="golem_config_yml.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">golem config file</figcaption>
+<figcaption>golem config file</figcaption>
 </figure>
 </div>
 </div></div><p>The new config file is located in the <code>inst/</code> folder.</p>
@@ -555,9 +556,12 @@ What if I need to edit the <code>DESCRIPTION</code>?
 <section id="install-required-dev-dependencies" class="level4">
 <h4 class="anchored" data-anchor-id="install-required-dev-dependencies"><span style="font-size: 1.10em"><code>Install</code> <code>required</code> <code>dev</code> <code>dependencies</code></span></h4>
 <p>The <code>golem::install_dev_deps()</code> function makes sure the following packages are installed (I’ve grouped them into categories):</p>
-<div class="quarto-layout-panel">
-<div class="quarto-layout-row quarto-layout-valign-top">
-<section id="development" class="level5 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<section id="development" class="level5 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
 <h5 class="anchored" data-anchor-id="development">Development</h5>
 <ul>
 <li><p><a href="https://devtools.r-lib.org/"><code>devtools</code></a> (loading, documenting, installing package)</p>
@@ -569,7 +573,7 @@ What if I need to edit the <code>DESCRIPTION</code>?
 <li><p><a href="https://pkgbuild.r-lib.org/"><code>pkgbuild</code></a> (create a <code>.tar.gz</code> file)</p></li>
 </ul>
 </section>
-<section id="documentation-testing" class="level5 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<section id="documentation-testing" class="level5 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
 <h5 class="anchored" data-anchor-id="documentation-testing">Documentation &amp; testing</h5>
 <ul>
 <li><p><a href="https://thinkr-open.github.io/attachment/"><code>attachment</code></a> (deal with package dependencies)</p></li>
@@ -579,23 +583,26 @@ What if I need to edit the <code>DESCRIPTION</code>?
 </section>
 </div>
 </div>
-<div class="quarto-layout-panel">
-<div class="quarto-layout-row quarto-layout-valign-top">
-<section id="internals" class="level5 quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<section id="internals" class="level5 quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
 <h5 class="anchored" data-anchor-id="internals">Internals</h5>
 <ul>
 <li><p><a href="https://rstudio.github.io/rstudioapi/"><code>rstudioapi</code></a> (interacting with RStudio IDE)</p></li>
 <li><p><a href="https://processx.r-lib.org/"><code>processx</code></a> (execute and control subprocesses from R)</p></li>
 </ul>
 </section>
-<section id="files-paths" class="level5 quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<section id="files-paths" class="level5 quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
 <h5 class="anchored" data-anchor-id="files-paths">Files &amp; paths</h5>
 <ul>
 <li><p><a href="https://here.r-lib.org/"><code>here</code></a> (file/folder path management)</p></li>
 <li><p><a href="https://fs.r-lib.org/"><code>fs</code></a> (file/folder path management)</p></li>
 </ul>
 </section>
-<section id="deploy" class="level5 quarto-layout-cell" style="flex-basis: 33.3%;justify-content: center;">
+<section id="deploy" class="level5 quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
 <h5 class="anchored" data-anchor-id="deploy">Deploy</h5>
 <ul>
 <li><p><a href="https://github.com/ThinkR-open/dockerfiler"><code>dockerfiler</code></a> (deploying apps with docker)</p></li>
@@ -609,7 +616,7 @@ What if I need to edit the <code>DESCRIPTION</code>?
 </div>
 <p>Below is an example with <code>dockerfiler</code>:</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>show/hide output from golem::install_dev_deps()</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ℹ</span> The package <span class="st">"dockerfiler"</span> is required.</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">✖</span> Would you like to install it<span class="pp">?</span></span>
@@ -670,8 +677,8 @@ What if I need to edit the <code>DESCRIPTION</code>?
 <div class="no-row-height column-margin column-container"><div class="">
 <div class="quarto-figure quarto-figure-left">
 <figure class="figure">
-<p><img src="gap_license.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">golem <code>LICENSE</code> file</figcaption>
+<p><img src="gap_license.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:100.0%"></p>
+<figcaption>golem <code>LICENSE</code> file</figcaption>
 </figure>
 </div>
 </div></div><ul>
@@ -695,8 +702,8 @@ What if I need to edit the <code>DESCRIPTION</code>?
 <div class="no-row-height column-margin column-container"><div class="">
 <div class="quarto-figure quarto-figure-left">
 <figure class="figure">
-<p><img src="gap_readme.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">golem README.Rmd file</figcaption>
+<p><img src="gap_readme.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:100.0%"></p>
+<figcaption>golem README.Rmd file</figcaption>
 </figure>
 </div>
 </div></div><ul>
@@ -726,8 +733,8 @@ What if I need to edit the <code>DESCRIPTION</code>?
 <div class="no-row-height column-margin column-container"><div class="">
 <div class="quarto-figure quarto-figure-left">
 <figure class="figure">
-<p><img src="gap_code_of_conduct.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">golem code of conduct file</figcaption>
+<p><img src="gap_code_of_conduct.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:100.0%"></p>
+<figcaption>golem code of conduct file</figcaption>
 </figure>
 </div>
 </div></div><ul>
@@ -750,8 +757,8 @@ What if I need to edit the <code>DESCRIPTION</code>?
 <div class="no-row-height column-margin column-container"><div class="">
 <div class="quarto-figure quarto-figure-left">
 <figure class="figure">
-<p><img src="lifecycle_exp.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption"><code>golem</code> lifecycle badge</figcaption>
+<p><img src="lifecycle_exp.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:100.0%"></p>
+<figcaption><code>golem</code> lifecycle badge</figcaption>
 </figure>
 </div>
 </div></div><ul>
@@ -767,8 +774,8 @@ What if I need to edit the <code>DESCRIPTION</code>?
 <div class="no-row-height column-margin column-container"><div class="">
 <div class="quarto-figure quarto-figure-left">
 <figure class="figure">
-<p><img src="gap_news.png" class="img-fluid figure-img" style="width:70.0%"></p>
-<figcaption class="figure-caption">golem <code>NEWS.md</code> file</figcaption>
+<p><img src="gap_news.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%"></p>
+<figcaption>golem <code>NEWS.md</code> file</figcaption>
 </figure>
 </div>
 </div></div><ul>
@@ -844,7 +851,7 @@ Common files: <strong>Recommend</strong>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="gap_tests.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">golem test files</figcaption>
+<figcaption>golem test files</figcaption>
 </figure>
 </div>
 </div></div><div class="cell">
@@ -875,7 +882,7 @@ Common files: <strong>Recommend</strong>
 </div>
 <p><code>golem::use_recommended_tests()</code> also provides some examples for testing the UI, server, and other <code>golem</code> functions:</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>show/hide unit tests in test-golem-recommended.R</summary>
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">"app ui"</span>, {</span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  ui <span class="ot">&lt;-</span> <span class="fu">app_ui</span>()</span>
@@ -955,7 +962,7 @@ Common files: <strong>Recommend</strong>
 </div>
 <p>These tests pass right out of the box, and they give a little ‘sneak preview’ of how the <code>golem</code> framework works.</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>show/hide results from unit tests in test-golem-recommended.R</summary>
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="ex">==</span><span class="op">&gt;</span> Testing R file using <span class="st">'testthat'</span></span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1000,7 +1007,7 @@ Common files: <strong>Recommend</strong>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="favicon.ico" class="img-fluid figure-img" style="width:10.0%"></p>
-<figcaption class="figure-caption">golem favicon file</figcaption>
+<figcaption>golem favicon file</figcaption>
 </figure>
 </div>
 </div></div><div class="cell">
@@ -1060,7 +1067,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="use_utils_ui.png" class="img-fluid figure-img" style="width:90.0%"></p>
-<figcaption class="figure-caption">golem UI utility functions &amp; tests</figcaption>
+<figcaption>golem UI utility functions &amp; tests</figcaption>
 </figure>
 </div>
 </div></div><div class="cell">
@@ -1090,7 +1097,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="use_utils_server.png" class="img-fluid figure-img" style="width:90.0%"></p>
-<figcaption class="figure-caption">golem server utility functions &amp; tests</figcaption>
+<figcaption>golem server utility functions &amp; tests</figcaption>
 </figure>
 </div>
 </div></div><div class="callout callout-style-default callout-caution no-icon callout-titled">
@@ -1132,7 +1139,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="app_files.png" class="img-fluid figure-img" style="width:90.0%"></p>
-<figcaption class="figure-caption">golem application files</figcaption>
+<figcaption>golem application files</figcaption>
 </figure>
 </div>
 </div></div><div class="cell">
@@ -1154,7 +1161,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 <h5 class="anchored" data-anchor-id="app_ui.r"><span style="font-size: 1.10em"><code>app_ui.R</code></span></h5>
 <p><code>app_ui.R</code> wraps the UI functions in <code>shiny::tagList()</code> (you’ll see this function in shiny UI module functions, too).</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>show/hide app_ui()</summary>
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>app_ui <span class="ot">&lt;-</span> <span class="cf">function</span>(request) {</span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tagList</span>(</span>
@@ -1170,7 +1177,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 </div>
 <p><code>app_ui()</code> also contains a call to <code>golem_add_external_resources()</code>, which we used above to add the favicon image.</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>show/hide golem_add_external_resources()</summary>
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>golem_add_external_resources <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
 <span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_resource_path</span>(</span>
@@ -1195,7 +1202,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 <h5 class="anchored" data-anchor-id="app_server.r"><span style="font-size: 1.10em"><code>app_server.R</code></span></h5>
 <p>The contents of <code>app_server.R</code> file looks similar to a standard shiny server function:</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>show/hide app_server()</summary>
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>app_server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output, session) {</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Your application server logic</span></span>
@@ -1210,7 +1217,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 <li><code>app_sys()</code> is a wrapper around the <code>system.file()</code> function, and it’s used to <em>“quickly refer to the files inside the <code>inst/</code> folder”</em></li>
 </ul>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>show/hide app_sys()</summary>
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>app_sys <span class="ot">&lt;-</span> <span class="cf">function</span>(...) {</span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">system.file</span>(..., <span class="at">package =</span> <span class="st">"gap"</span>)</span>
@@ -1221,7 +1228,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 <li><code>get_golem_config()</code> is where you’ll set <code>golem</code> configuration options (covered <a href="https://engineering-shiny.org/golem.html#manipulating-golem-config.yml">here in the text</a>).</li>
 </ul>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>show/hide get_golem_config()</summary>
 <div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>get_golem_config <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  value,</span>
@@ -1324,7 +1331,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="dependencies.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">golem app dependencies</figcaption>
+<figcaption>golem app dependencies</figcaption>
 </figure>
 </div>
 </div></div><p><strong>The <code>DESCRIPTION</code> file manages package-level dependencies.</strong> The <code>Imports</code> field in the <code>DESCRIPTION</code> file specifies packages that my package uses, so the functions from these packages will be available for my package, but not for users (unless they use the <code>::</code> operator or load the package themselves).</p>
@@ -1410,7 +1417,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="golem_add_functions.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption"><code>golem::add_</code> functions</figcaption>
+<figcaption><code>golem::add_</code> functions</figcaption>
 </figure>
 </div>
 </div></div><div class="callout callout-style-default callout-important no-icon callout-titled">
@@ -1449,7 +1456,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="golem_ext_resources.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption"><code>golem</code> external resources</figcaption>
+<figcaption><code>golem</code> external resources</figcaption>
 </figure>
 </div>
 </div></div><div class="callout callout-style-default callout-caution no-icon callout-titled">
@@ -1480,7 +1487,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="golem_data.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption"><code>golem</code> app data</figcaption>
+<figcaption><code>golem</code> app data</figcaption>
 </figure>
 </div>
 <p>Locations of data in <code>golem</code> app-packages</p>
@@ -1533,7 +1540,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 </ul>
 <p>Follow <a href="https://cran.r-project.org/web/packages/roxygen2/vignettes/rd-other.html">this guide</a> to document your datasets.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>show/hide movies data documentation</summary>
 <div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="co">#' Movies dataset</span></span>
 <span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
@@ -1585,16 +1592,24 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 </div>
 <p>The <code>fivethirtyeight</code> package also has <a href="https://github.com/rudeboybert/fivethirtyeight/blob/master/R/data.R">great examples of documented datasets.</a></p>
 <p>After loading and documenting your package, you can view structure and variable names of the <code>movies</code> data by entering <code>??movies</code> in the Console:</p>
-<div class="column-page-inset-right">
-<div id="fig-data_documentation" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-data_documentation" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="data_documentation.png" class="img-fluid figure-img" style="width:80.0%" data-ref-parent="fig-data_documentation"></p>
-<figcaption class="figure-caption">(a) <code>movies</code> data documentation</figcaption>
+<div class="page-columns page-full">
+<div id="fig-data_documentation" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-data_documentation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-data_documentation" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-data_documentation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="data_documentation.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:80.0%" data-ref-parent="fig-data_documentation">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-data_documentation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) <code>movies</code> data documentation
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;2: Documentation for <code>gap::movies</code> stored in <code>R/data.R</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-data_documentation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Documentation for <code>gap::movies</code> stored in <code>R/data.R</code>
+</figcaption>
 </figure>
 </div>
 </div>
@@ -1633,10 +1648,13 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 <h4 class="anchored" data-anchor-id="documentation"><span style="font-size: 1.10em"><code>Documentation</code></span></h4>
 <p>R package vignettes contain high-level, long-form documentation for your package. These R Markdown documents combine narrative text and code that describe how the ‘parts’ (functions, data, etc.) of the package behave. In app-packages, vignettes might included the following information:</p>
 <p>For <code>shiny</code> app-packages, the following types of documentation might be included in the vignettes:</p>
+<div>
+
+</div>
 </section>
-<div class="quarto-layout-panel">
-<div class="quarto-layout-row quarto-layout-valign-top">
-<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
 <section id="section" class="level4">
 <h4 class="anchored" data-anchor-id="section"></h4>
 <ol type="1">
@@ -1652,7 +1670,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 <h4 class="anchored" data-anchor-id="section-1"></h4>
 </section>
 </div>
-<section id="section-2" class="level3 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<section id="section-2" class="level3 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
 <h3 class="anchored" data-anchor-id="section-2"></h3>
 <ol start="7" type="1">
 <li><p>Troubleshooting</p></li>
@@ -1757,9 +1775,12 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 <h4 class="anchored" data-anchor-id="ci"><span style="font-size: 1.10em"><code>CI</code></span></h4>
 <p>Continuous integration can be handled with one of the GitHub Actions functions (make sure you’re using Git). See the <a href="https://usethis.r-lib.org/reference/use_github_action.html"><code>usethis</code> website</a> for more information on using GitHub Actions.</p>
 <p>If you’re using another CI management system, the following options are available.</p>
-<div class="quarto-layout-panel">
-<div class="quarto-layout-row quarto-layout-valign-top">
-<section id="github-actions-ci" class="level5 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<section id="github-actions-ci" class="level5 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
 <h5 class="anchored" data-anchor-id="github-actions-ci">Github Actions CI</h5>
 <ul>
 <li><p>Set up GitHub actions</p>
@@ -1779,7 +1800,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 </div></li>
 </ul>
 </section>
-<section id="other-ci-options" class="level5 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<section id="other-ci-options" class="level5 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
 <h5 class="anchored" data-anchor-id="other-ci-options">Other CI Options</h5>
 <ul>
 <li><p>Travis CI</p>
@@ -1850,7 +1871,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 </div></li>
 <li><p>UI module functions end with a <code>_ui</code> suffix:</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>show/hide mod_plot_ui()</summary>
 <div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a><span class="co">#' plot UI Function</span></span>
 <span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
@@ -1883,7 +1904,7 @@ Documenting &amp; exporting functions: <strong>NOTE</strong>
 </div></li>
 <li><p>Server module functions end with a <code>_server</code> suffix:</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>show/hide mod_plot_server()</summary>
 <div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="co">#' plot Server Functions</span></span>
 <span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
@@ -1978,14 +1999,14 @@ Module names: <strong>tip</strong>
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.05em; color: #696969;">
 <p>Including <code>mod</code> in the name of module scripts and functions makes it easier to separate them from other functions in my package namespace, if I’m using tab-completion, or if I’m searching for a particular file using <code>Ctrl</code> + <code>.</code>:</p>
-<div id="fig-go-to" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="go-to-file.png" style="width:90.0%;height:90.0%" class="figure-img"></p>
-</figure>
+<div id="fig-go-to" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-go-to-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="go-to-file.png" class="quarto-figure quarto-figure-center figure-img" style="width:90.0%;height:90.0%">
 </div>
-<figcaption class="figure-caption">Figure&nbsp;3: <strong>Go to File/Function</strong> in RStudio</figcaption>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-go-to-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: <strong>Go to File/Function</strong> in RStudio
+</figcaption>
 </figure>
 </div>
 </div>
@@ -2027,7 +2048,7 @@ Module names: <strong>tip</strong>
 <ul>
 <li><p>In <code>R/app_ui.R</code>, the <code>app_ui()</code> function contains the UI layout functions (<code>fluidPage()</code>, <code>sidebarLayout()</code>, etc.), and a call to <code>golem_add_external_resources()</code>:</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>show/hide app_ui()</summary>
 <div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="co">#' The application User-Interface</span></span>
 <span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a><span class="co">#'</span></span>
@@ -2066,7 +2087,7 @@ Module names: <strong>tip</strong>
 </div>
 <p>The <code>golem_add_external_resources()</code> function is below:</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>golem_add_external_resources()</summary>
 <div class="sourceCode cell-code" id="cb103"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this is also included in the app_ui.R script</span></span>
 <span id="cb103-2"><a href="#cb103-2" aria-hidden="true" tabindex="-1"></a>golem_add_external_resources <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
@@ -2128,7 +2149,7 @@ Module names: <strong>tip</strong>
 <li><span style="font-size: 0.90em"><code>Documenting</code></span></li>
 </ul>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>show/hide check() Documenting output</summary>
 <div class="sourceCode cell-code" id="cb105"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="ex">══</span> Documenting ═══════════════════════════════════════════════════════════</span>
 <span id="cb105-2"><a href="#cb105-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ℹ</span> Updating gap documentation</span>
@@ -2160,7 +2181,7 @@ Module names: <strong>tip</strong>
 <li><span style="font-size: 0.90em"><code>Checking</code></span></li>
 </ul>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>show/hide check() Checking output</summary>
 <div class="sourceCode cell-code" id="cb106"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a><span class="ex">══</span> Checking ══════════════════════════════════════════════════════════════</span>
 <span id="cb106-2"><a href="#cb106-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Setting</span> env vars:</span>
@@ -2250,7 +2271,7 @@ Module names: <strong>tip</strong>
 <li><span style="font-size: 0.90em"><code>spelling.R</code></span></li>
 </ul>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>show/hide check() spelling.R</summary>
 <div class="sourceCode cell-code" id="cb107"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a><span class="ex">✔</span>  Running ‘spelling.R’</span>
 <span id="cb107-2"><a href="#cb107-2" aria-hidden="true" tabindex="-1"></a><span class="ex">X</span>  Comparing ‘spelling.Rout’ to ‘spelling.Rout.save’ ...</span>
@@ -2305,7 +2326,7 @@ Module names: <strong>tip</strong>
 <li><span style="font-size: 0.90em"><code>testthat.R</code></span></li>
 </ul>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>show/hide check() tests and coverage</summary>
 <div class="sourceCode cell-code" id="cb108"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a><span class="ex">✔</span>  Running ‘testthat.R’ <span class="er">(</span><span class="ex">2.9s</span><span class="kw">)</span></span>
 <span id="cb108-2"><a href="#cb108-2" aria-hidden="true" tabindex="-1"></a><span class="ex">✔</span>  checking for unstated dependencies in vignettes ...</span>
@@ -2323,7 +2344,7 @@ Module names: <strong>tip</strong>
 <li><span style="font-size: 0.90em"><code>R CMD check results</code></span></li>
 </ul>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>show/hide check() R CMD check</summary>
 <div class="sourceCode cell-code" id="cb109"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a><span class="ex">──</span> R CMD check results ──────────────────────────────────── gap 0.0.0.9000 ────</span>
 <span id="cb109-2"><a href="#cb109-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Duration:</span> 48.2s</span>
@@ -2424,7 +2445,7 @@ Module names: <strong>tip</strong>
 <h5 class="anchored" data-anchor-id="docker"><span style="font-size: 1.10em"><code>Docker</code></span></h5>
 <p>If you use Docker to deploy applications, you can use the following functions:</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>show/hide docker functions</summary>
 <div class="sourceCode cell-code" id="cb113"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Docker ----</span></span>
 <span id="cb113-2"><a href="#cb113-2" aria-hidden="true" tabindex="-1"></a><span class="do">## If you want to deploy via a generic Dockerfile</span></span>
@@ -2547,16 +2568,24 @@ Module names: <strong>tip</strong>
 <section id="recap" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="recap">Recap</h2>
 <p>Building an application with <code>golem</code> is <em>very</em> similar to developing an R package. The overall process remains the same: New code is placed in <code>R/</code>, external resources are placed in <code>inst/</code>, tests are stored and run from <code>tests/testthat/</code>, etc. The figure below displays how the <code>golem</code> framework works within the R package structure to create ‘production-grade shiny applications’:</p>
-<div class="column-page-inset-right">
-<div id="fig-golem_framework_overview" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-golem_framework_overview" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="golem_framework_overview.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-golem_framework_overview"></p>
-<figcaption class="figure-caption">(a) <code>golem</code> app-package</figcaption>
+<div class="page-columns page-full">
+<div id="fig-golem_framework_overview" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-golem_framework_overview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-golem_framework_overview" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-golem_framework_overview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="golem_framework_overview.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%" data-ref-parent="fig-golem_framework_overview">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-golem_framework_overview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) <code>golem</code> app-package
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;4: <code>golem</code> framework overview</figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-golem_framework_overview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: <code>golem</code> framework overview
+</figcaption>
 </figure>
 </div>
 </div>
@@ -2645,10 +2674,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -2658,8 +2686,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -2672,6 +2709,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -2715,6 +2871,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -2740,6 +2897,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -2800,6 +2983,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 

@@ -1,42 +1,40 @@
 project:
   type: website
 
-description-meta: "Martin Frigaard's personal website."
-
 website:
-  title: "@mjfrigaard"
-  favicon: profile.png
+  title: '@mjfrigaard'
+  image: profile.png
   site-url: "https://mjfrigaard.github.io/"
   repo-url: https://github.com/mjfrigaard/mjfrigaard.github.io
   description: "Martin Frigaard's personal website"
-  twitter-card: true
   search:
     location: navbar
     type: textbox
   navbar:
     right:
+      - text: "About"
+        file: about.qmd
       - icon: github
         href: https://github.com/mjfrigaard
       - icon: twitter
         href: https://twitter.com/mjfrigaard
     left:
-      - text: "Blog"
-        menu:
-          - text: "Posts"
-            file: posts.qmd
-          - text: "Series"
-            file: series.qmd
+      - text: "Posts"
+        file: posts.qmd
+      - text: "Series"
+        file: series.qmd
       - text: "Code"
         file: code.qmd
         
 format:
   html:
     theme:
-      light: [litera, custom.scss]
+      light: [cosmo, custom.scss]
     dpi: 320
     fig-format: retina
     fig-asp: 0.618
-    fontsize: '10.5'
+    fontsize: 1.065em
+    linestretch: 1.25
 
 knitr:
   opts_chunk: 
