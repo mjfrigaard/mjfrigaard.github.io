@@ -2,11 +2,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.4.549">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Martin Frigaard’s personal website.">
 
 <title>@mjfrigaard - Series</title>
 <style>
@@ -31,7 +30,6 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./profile.png" rel="icon" type="image/png">
 <script src="site_libs/quarto-listing/list.min.js"></script>
 <script src="site_libs/quarto-listing/quarto-listing.js"></script>
 <script src="site_libs/quarto-html/quarto.js"></script>
@@ -49,7 +47,12 @@ ul.task-list li input[type="checkbox"] {
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -58,6 +61,7 @@ ul.task-list li input[type="checkbox"] {
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -73,7 +77,7 @@ ul.task-list li input[type="checkbox"] {
     }
 
     const options = {
-      valueNames: ['listing-title','listing-date',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-title-sort'] }],
+      valueNames: ['listing-title','listing-subtitle',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-title-sort'] }],
       
       searchColumns: ["listing-date","listing-title","listing-author"],
     };
@@ -101,7 +105,7 @@ ul.task-list li input[type="checkbox"] {
     }
 
     const options = {
-      valueNames: ['listing-title','listing-date',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-title-sort'] }],
+      valueNames: ['listing-title','listing-subtitle',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-title-sort'] }],
       
       searchColumns: ["listing-date","listing-title","listing-author"],
     };
@@ -124,18 +128,42 @@ ul.task-list li input[type="checkbox"] {
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<meta name="twitter:title" content="@mjfrigaard - Series">
-<meta name="twitter:description" content="">
-<meta name="twitter:card" content="summary">
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
 </head>
 
 <body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
     <span class="navbar-title"><span class="citation" data-cites="mjfrigaard">@mjfrigaard</span></span>
     </a>
@@ -146,41 +174,38 @@ ul.task-list li input[type="checkbox"] {
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-blog" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
- <span class="menu-text">Blog</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-blog">    
-        <li>
-    <a class="dropdown-item" href="./posts.html" rel="" target="">
- <span class="dropdown-text">Posts</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./series.html" rel="" target="">
- <span class="dropdown-text">Series</span></a>
-  </li>  
-    </ul>
-  </li>
   <li class="nav-item">
-    <a class="nav-link" href="./code.html" rel="" target="">
- <span class="menu-text">Code</span></a>
+    <a class="nav-link" href="./posts.html"> 
+<span class="menu-text">Posts</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="./series.html" aria-current="page"> 
+<span class="menu-text">Series</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./code.html"> 
+<span class="menu-text">Code</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/mjfrigaard" rel="" target=""><i class="bi bi-github" role="img">
-</i> 
- <span class="menu-text"></span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="./about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/mjfrigaard" rel="" target=""><i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://github.com/mjfrigaard"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/mjfrigaard"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-            <div class="quarto-navbar-tools">
-</div>
           </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -199,7 +224,7 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<div class="quarto-title-meta">
+<div class="quarto-title-meta column-page">
 
     
   
@@ -207,13 +232,14 @@ ul.task-list li input[type="checkbox"] {
   </div>
   
 
+
 </header>
+
 
 <section id="testing-shiny-apps" class="level2">
 <h2 class="anchored" data-anchor-id="testing-shiny-apps">Testing shiny apps</h2>
-<p>These posts focus on testing shiny applications with <code>testthat</code>, <code>shiny::testServer()</code>, and <code>shinytest2</code>.</p>
+<p>These posts focus on testing Shiny applications with <code>testthat</code>, <code>shiny</code>’s <code>testServer()</code> function, and <code>shinytest2</code>.</p>
 <div id="listing-testing" class="quarto-listing quarto-listing-container-table">
-
 <table class="quarto-listing-table table table-striped">
 <thead>
 <tr>
@@ -221,45 +247,52 @@ ul.task-list li input[type="checkbox"] {
 Title
 </th>
 <th>
-Date
+Subtitle
 </th>
 </tr>
 </thead>
 <tbody class="list">
-<tr data-index="0" data-categories="shiny,testing" data-listing-date-sort="1682924400000" data-listing-file-modified-sort="1702756778849" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="37" data-listing-title-sort="Unit testing Shiny utility functions" data-listing-filename-sort="index.qmd">
+<tr data-index="0" data-categories="shiny,testing" data-listing-date-sort="1682924400000" data-listing-file-modified-sort="1711382268388" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="34" data-listing-word-count-sort="6718" data-listing-title-sort="Behavior Driven Unit Tests" data-listing-filename-sort="index.qmd">
 <td>
-<a href="./series/testing/series-testing-p1/index.html" class="title listing-title">Unit testing Shiny utility functions</a>
+<a href="./series/testing/p1-bdd-testing/index.html" class="title listing-title">Behavior Driven Unit Tests</a>
 </td>
 <td>
-<span class="listing-date">May 1, 2023</span>
-</td>
-</tr>
-<tr data-index="1" data-categories="shiny,testing" data-listing-date-sort="1683442800000" data-listing-file-modified-sort="1702756792972" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="18" data-listing-title-sort="Unit tests for (non-package) shiny apps" data-listing-filename-sort="index.qmd">
-<td>
-<a href="./series/testing/series-testing-p2/index.html" class="title listing-title">Unit tests for (non-package) shiny apps</a>
-</td>
-<td>
-<span class="listing-date">May 7, 2023</span>
+<span class="listing-subtitle">Part 1 (series): testthat’s BDD testing functions</span>
 </td>
 </tr>
-<tr data-index="2" data-categories="shiny,testing" data-listing-date-sort="1687244400000" data-listing-file-modified-sort="1702756808950" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="28" data-listing-title-sort="Testing shiny module server functions" data-listing-filename-sort="index.qmd">
+<tr data-index="1" data-categories="shiny,testing" data-listing-date-sort="1683442800000" data-listing-file-modified-sort="1710884865515" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="18" data-listing-word-count-sort="3414" data-listing-title-sort="Using `testthat` with Shiny" data-listing-filename-sort="index.qmd">
 <td>
-<a href="./series/testing/series-testing-p3/index.html" class="title listing-title">Testing shiny module server functions</a>
+<a href="./series/testing/p2-nonpkg-unit-tests/index.html" class="title listing-title">Using <code>testthat</code> with Shiny</a>
 </td>
 <td>
-<span class="listing-date">Jun 20, 2023</span>
+<span class="listing-subtitle">Part 2 (series): Unit tests for non-package Shiny apps</span>
 </td>
 </tr>
-<tr data-index="3" data-categories="shiny,testing" data-listing-date-sort="1688454000000" data-listing-file-modified-sort="1702756818482" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="45" data-listing-title-sort="Testing shiny apps with `shinytest2`" data-listing-filename-sort="index.qmd">
+<tr data-index="2" data-categories="shiny,testing" data-listing-date-sort="1687244400000" data-listing-file-modified-sort="1710884851296" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="28" data-listing-word-count-sort="5567" data-listing-title-sort="Testing Shiny modules" data-listing-filename-sort="index.qmd">
 <td>
-<a href="./series/testing/series-testing-p4/index.html" class="title listing-title">Testing shiny apps with <code>shinytest2</code></a>
+<a href="./series/testing/p3-shiny-module-tests/index.html" class="title listing-title">Testing Shiny modules</a>
 </td>
 <td>
-<span class="listing-date">Jul 4, 2023</span>
+<span class="listing-subtitle">Part 3 (series): module server functions and <code>testServer()</code></span>
+</td>
+</tr>
+<tr data-index="3" data-categories="shiny,testing" data-listing-date-sort="1688454000000" data-listing-file-modified-sort="1710884833455" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="45" data-listing-word-count-sort="8944" data-listing-title-sort="Shiny system tests with `shinytest2`" data-listing-filename-sort="index.qmd">
+<td>
+<a href="./series/testing/p4-system-shiny/index.html" class="title listing-title">Shiny system tests with <code>shinytest2</code></a>
+</td>
+<td>
+<span class="listing-subtitle">Part 4 (series): recording tests and snapshots</span>
+</td>
+</tr>
+<tr data-index="4" data-categories="shiny,box,testing" data-listing-date-sort="1702018800000" data-listing-file-modified-sort="1710884810443" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-word-count-sort="431" data-listing-title-sort="Testing `rhino` apps" data-listing-filename-sort="index.qmd">
+<td>
+<a href="./series/testing/p5-rhino-tests/index.html" class="title listing-title">Testing <code>rhino</code> apps</a>
+</td>
+<td>
+<span class="listing-subtitle">Part 5 (series): Testing with <code>box</code> modules</span>
 </td>
 </tr>
 </tbody>
-
 </table>
 <div class="listing-no-matching d-none">
 No matching items
@@ -336,7 +369,6 @@ This series covers building shiny app-packages with [`devtools`](https://masteri
 </section>
 
 <div class="quarto-listing quarto-listing-container-table" id="listing-shiny-frameworks">
-
 <table class="quarto-listing-table table table-striped">
 <thead>
 <tr>
@@ -344,45 +376,44 @@ This series covers building shiny app-packages with [`devtools`](https://masteri
 Title
 </th>
 <th>
-Date
+Subtitle
 </th>
 </tr>
 </thead>
 <tbody class="list">
-<tr data-index="0" data-categories="shiny,golem,packages" data-listing-date-sort="1682924400000" data-listing-file-modified-sort="1689696136945" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="33" data-listing-title-sort="Creating a shiny app-package" data-listing-filename-sort="index.qmd">
+<tr data-index="0" data-categories="shiny,golem,packages" data-listing-date-sort="1682924400000" data-listing-file-modified-sort="1705780348781" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="33" data-listing-word-count-sort="6529" data-listing-title-sort="Creating a shiny app-package" data-listing-filename-sort="index.qmd">
 <td>
 <a href="./series/shiny-frameworks/devtools/index.html" class="title listing-title">Creating a shiny app-package</a>
 </td>
 <td>
-<span class="listing-date">May 1, 2023</span>
+<span class="listing-subtitle">Building Shiny app-packages with <code>devtools</code> &amp; <code>usethis</code></span>
 </td>
 </tr>
-<tr data-index="1" data-categories="shiny,golem,packages" data-listing-date-sort="1685602800000" data-listing-file-modified-sort="1689688054058" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="70" data-listing-title-sort="golem shiny app-packages" data-listing-filename-sort="index.qmd">
+<tr data-index="1" data-categories="shiny,golem,packages" data-listing-date-sort="1685602800000" data-listing-file-modified-sort="1705780273409" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="70" data-listing-word-count-sort="13886" data-listing-title-sort="golem shiny app-packages" data-listing-filename-sort="index.qmd">
 <td>
 <a href="./series/shiny-frameworks/golem/index.html" class="title listing-title">golem shiny app-packages</a>
 </td>
 <td>
-<span class="listing-date">Jun 1, 2023</span>
+<span class="listing-subtitle">Building production-grade Shiny apps</span>
 </td>
 </tr>
-<tr data-index="2" data-categories="shiny,rhino" data-listing-date-sort="1688194800000" data-listing-file-modified-sort="1701924614689" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-title-sort="rhino shiny apps" data-listing-filename-sort="index.qmd">
+<tr data-index="2" data-categories="shiny,rhino" data-listing-date-sort="1688194800000" data-listing-file-modified-sort="1705780296757" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-word-count-sort="463" data-listing-title-sort="rhino shiny apps" data-listing-filename-sort="index.qmd">
 <td>
 <a href="./series/shiny-frameworks/rhino/index.html" class="title listing-title">rhino shiny apps</a>
 </td>
 <td>
-<span class="listing-date">Jul 1, 2023</span>
+<span class="listing-subtitle">Building Shiny apps with <code>box</code> modules</span>
 </td>
 </tr>
-<tr data-index="3" data-categories="shiny,leprechaun" data-listing-date-sort="1689836400000" data-listing-file-modified-sort="1689809819588" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="61" data-listing-title-sort="leprechaun shiny app-packages" data-listing-filename-sort="index.qmd">
+<tr data-index="3" data-categories="shiny,leprechaun" data-listing-date-sort="1689836400000" data-listing-file-modified-sort="1705780320904" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="61" data-listing-word-count-sort="12134" data-listing-title-sort="leprechaun shiny app-packages" data-listing-filename-sort="index.qmd">
 <td>
 <a href="./series/shiny-frameworks/leprechaun/index.html" class="title listing-title">leprechaun shiny app-packages</a>
 </td>
 <td>
-<span class="listing-date">Jul 20, 2023</span>
+<span class="listing-subtitle">Building ‘<em><code>golem</code>-light</em>’ Shiny apps</span>
 </td>
 </tr>
 </tbody>
-
 </table>
 <div class="listing-no-matching d-none">
 No matching items
@@ -467,10 +498,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -480,8 +510,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -494,6 +533,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -537,6 +695,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -562,6 +721,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -622,6 +807,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 

@@ -2,13 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.4.549">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Martin Frigaard">
 <meta name="dcterms.date" content="2023-06-01">
-<meta name="description" content="Martin Frigaard’s personal website.">
 
 <title>@mjfrigaard - Debugging in RStudio</title>
 <style>
@@ -25,7 +24,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -67,7 +66,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
-<link href="../../profile.png" rel="icon" type="image/png">
 <script src="../../site_libs/quarto-html/quarto.js"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -83,7 +81,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -92,6 +95,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -99,21 +103,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
 
-<meta name="twitter:title" content="@mjfrigaard - Debugging in RStudio">
-<meta name="twitter:description" content="Developing code with browser()">
-<meta name="twitter:image" content="https://mjfrigaard.github.io/posts/debugging/image.png">
-<meta name="twitter:image-height" content="1316">
-<meta name="twitter:image-width" content="1128">
-<meta name="twitter:card" content="summary_large_image">
 </head>
 
 <body class="floating nav-fixed slimcontent">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title"><span class="citation" data-cites="mjfrigaard">@mjfrigaard</span></span>
     </a>
@@ -124,41 +122,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-blog" role="button" data-bs-toggle="dropdown" aria-expanded="false" rel="" target="">
- <span class="menu-text">Blog</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-blog">    
-        <li>
-    <a class="dropdown-item" href="../../posts.html" rel="" target="">
- <span class="dropdown-text">Posts</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../../series.html" rel="" target="">
- <span class="dropdown-text">Series</span></a>
-  </li>  
-    </ul>
-  </li>
   <li class="nav-item">
-    <a class="nav-link" href="../../code.html" rel="" target="">
- <span class="menu-text">Code</span></a>
+    <a class="nav-link" href="../../posts.html"> 
+<span class="menu-text">Posts</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../series.html"> 
+<span class="menu-text">Series</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../code.html"> 
+<span class="menu-text">Code</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/mjfrigaard" rel="" target=""><i class="bi bi-github" role="img">
-</i> 
- <span class="menu-text"></span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/mjfrigaard" rel="" target=""><i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://github.com/mjfrigaard"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/mjfrigaard"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-            <div class="quarto-navbar-tools">
-</div>
           </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -198,7 +193,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Contents</h2>
    
@@ -249,12 +244,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul>
 </nav>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+
 
 
 
@@ -335,7 +331,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This table shows the <code>storms</code> data from <code>dplyr</code> and the <code>mtcars</code> data from <code>datasets</code>. The columns include the <code>Package</code> the data came from, the dataset name (<code>Dataset</code>), the data <code>Title</code> from the documentation, the <code>Class</code> of the data object, the total number of <code>Columns</code> and <code>Rows</code>, and the number of columns by type (<code>Logical</code>, <code>Numeric</code>, <code>Character</code>, <code>Factor</code> and <code>List</code>).</p>
 <p>One of the first steps for creating this function is to verify a package’s namespace is loaded. I’ve written the <code>check_pkg_ns()</code> to check this.</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>check_pkg_ns()</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>check_pkg_ns <span class="ot">&lt;-</span> <span class="cf">function</span>(pkg, <span class="at">quiet =</span> <span class="cn">FALSE</span>) {</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">isFALSE</span>(quiet)) {</span>
@@ -431,15 +427,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="browser" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="browser">browser()</h2>
 <p>If I want to explore the behaviors of the namespace functions in <code>check_pkg_ns()</code>, I need to add <code>browser()</code> somewhere I can ‘step into’ this function and then proceed through line-by-line. In this case, the top of the function makes sense:</p>
-<div id="fig-browser_fun" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-browser_fun" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-browser_fun.png" class="img-fluid figure-img" style="width:80.0%" data-ref-parent="fig-browser_fun"></p>
-<figcaption class="figure-caption">(a) <code>browser()</code> in <code>check_pkg_ns()</code></figcaption>
+<div id="fig-browser_fun" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-browser_fun-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-browser_fun" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-browser_fun-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="dbg-browser_fun.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%" data-ref-parent="fig-browser_fun">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-browser_fun-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) <code>browser()</code> in <code>check_pkg_ns()</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;1: <code>browser()</code> placement in <code>check_pkg_ns()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-browser_fun-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: <code>browser()</code> placement in <code>check_pkg_ns()</code>
+</figcaption>
 </figure>
 </div>
 <section id="debug-mode" class="level3 page-columns page-full">
@@ -448,16 +452,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">check_pkg_ns</span>(<span class="st">"fs"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="column-page-inset-right">
-<div id="fig-dbg-debug_mode" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-dbg-debug_mode" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-debug_mode.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-debug_mode"></p>
-<figcaption class="figure-caption">(a) Debug mode</figcaption>
+<div class="page-columns page-full">
+<div id="fig-dbg-debug_mode" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-debug_mode-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-dbg-debug_mode" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-debug_mode-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="dbg-debug_mode.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%" data-ref-parent="fig-dbg-debug_mode">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dbg-debug_mode-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Debug mode
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;2: RStudio IDE in debug mode</figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dbg-debug_mode-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: RStudio IDE in debug mode
+</figcaption>
 </figure>
 </div>
 </div>
@@ -495,29 +507,45 @@ TIP: Other debugging methods
 <div class="sourceCode" id="cb13"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>Called from: check_pkg_ns("fs")</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>Browse[1]&gt; </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>I can use the <strong>Console</strong> to inspect variables and ‘step through’ the function code.</p>
-<div class="column-page-inset-right">
-<div id="fig-console" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-console" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-browse-console.png" class="img-fluid figure-img" style="width:80.0%" data-ref-parent="fig-console"></p>
-<figcaption class="figure-caption">(a) Debug mode in <strong>Console</strong></figcaption>
+<div class="page-columns page-full">
+<div id="fig-console" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-console-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-console" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-console-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="dbg-browse-console.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:80.0%" data-ref-parent="fig-console">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-console-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Debug mode in <strong>Console</strong>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;3: Debug mode with <code>browser()</code> in Console</figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-console-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Debug mode with <code>browser()</code> in Console
+</figcaption>
 </figure>
 </div>
 </div>
 <p>The debugger toolbar is also placed at the top of the <strong>Console</strong>:</p>
-<div id="fig-browser_toolbar" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-browser_toolbar" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-browser_toolbar.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-browser_toolbar"></p>
-<figcaption class="figure-caption">(a) Debug toolbar <strong>Console</strong></figcaption>
+<div id="fig-browser_toolbar" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-browser_toolbar-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-browser_toolbar" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-browser_toolbar-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="dbg-browser_toolbar.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-browser_toolbar">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-browser_toolbar-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Debug toolbar <strong>Console</strong>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;4: Debug toolbar in Console</figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-browser_toolbar-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Debug toolbar in Console
+</figcaption>
 </figure>
 </div>
 <p>I can use the toolbar or enter the following commands in the <strong>Console</strong>:</p>
@@ -533,16 +561,24 @@ TIP: Other debugging methods
 <section id="source" class="level3 page-columns page-full">
 <h3 class="anchored" data-anchor-id="source">Source</h3>
 <p>In the <strong>Source</strong> pane, we can see the line with <code>browser()</code> has been highlighted with an arrow:</p>
-<div class="column-page-inset-right">
-<div id="fig-source" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-source" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-browse-source.png" class="img-fluid figure-img" style="width:80.0%" data-ref-parent="fig-source"></p>
-<figcaption class="figure-caption">(a) Debug mode in <strong>Source</strong></figcaption>
+<div class="page-columns page-full">
+<div id="fig-source" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-source-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-source" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-source-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="dbg-browse-source.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:80.0%" data-ref-parent="fig-source">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-source-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Debug mode in <strong>Source</strong>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;5: Debug mode with <code>browser()</code> in Source</figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-source-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: Debug mode with <code>browser()</code> in Source
+</figcaption>
 </figure>
 </div>
 </div>
@@ -552,16 +588,24 @@ TIP: Other debugging methods
 <section id="environment" class="level3 page-columns page-full">
 <h3 class="anchored" data-anchor-id="environment">Environment</h3>
 <p>The <em>(Environment)</em> pane is changed from the global environment to the environment of the function that’s currently being executed in the <strong>Console</strong>:</p>
-<div class="column-page-inset-right">
-<div id="fig-env" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-env" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-browse-env.png" class="img-fluid figure-img" style="width:80.0%" data-ref-parent="fig-env"></p>
-<figcaption class="figure-caption">(a) Debug mode in <strong>Environment</strong></figcaption>
+<div class="page-columns page-full">
+<div id="fig-env" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-env-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-env" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-env-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="dbg-browse-env.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:80.0%" data-ref-parent="fig-env">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-env-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Debug mode in <strong>Environment</strong>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;6: Debug mode with <code>browser()</code> in Environment</figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-env-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: Debug mode with <code>browser()</code> in Environment
+</figcaption>
 </figure>
 </div>
 </div>
@@ -569,28 +613,40 @@ TIP: Other debugging methods
 <section id="other-environments" class="level4 page-columns page-full">
 <h4 class="anchored" data-anchor-id="other-environments">Other environments</h4>
 <p>The drop-down list of environments above the <strong>Values</strong> is arranged in reverse hierarchical order: The <strong>Global Environment</strong> is listed under the drop-down list, but it’s above the <code>check_pkg_ns()</code> environment in the search path:</p>
-<div class="column-page-inset-right">
-<div id="fig-env" class="quarto-layout-panel">
-<figure class="figure">
-<div class="quarto-layout-row quarto-layout-valign-top">
-<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 50.0%;justify-content: center;">
-<div id="fig-env-list" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-browse-env-list.png" class="img-fluid figure-img" data-ref-parent="fig-env"></p>
-<figcaption class="figure-caption">(a) Items in <strong>Environment</strong> debug mode</figcaption>
+<div class="page-columns page-full">
+<div id="fig-env" class="quarto-layout-panel page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-env-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div class="quarto-layout-row column-page-inset-right">
+<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-env" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-env-list" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-env-list-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="dbg-browse-env-list.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%" data-ref-parent="fig-env">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-env-list-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Items in <strong>Environment</strong> debug mode
+</figcaption>
 </figure>
 </div>
 </div>
-<div class="quarto-layout-cell quarto-layout-cell-subref" style="flex-basis: 50.0%;justify-content: center;">
-<div id="fig-env-list" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="search-path.png" title="Source: https://adv-r.hadley.nz/environments.html#search-path" class="img-fluid figure-img" data-ref-parent="fig-env"></p>
-<figcaption class="figure-caption">(b) <a href="https://adv-r.hadley.nz/environments.html#search-path">Package environments and the search path</a></figcaption>
+<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-env" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-env-list" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-env-list-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="search-path.png" title="Source: https://adv-r.hadley.nz/environments.html#search-path" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%" data-ref-parent="fig-env">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-env-list-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b) <a href="https://adv-r.hadley.nz/environments.html#search-path">Package environments and the search path</a>
+</figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p></p><figcaption class="figure-caption">Figure&nbsp;7: Environments with debugger</figcaption><p></p>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-env-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: Environments with debugger
+</figcaption>
 </figure>
 </div>
 </div>
@@ -598,28 +654,44 @@ TIP: Other debugging methods
 <section id="traceback" class="level4">
 <h4 class="anchored" data-anchor-id="traceback">Traceback</h4>
 <p>The traceback (or ‘call stack’) is the ‘stack’ of functions that have been run thus far:</p>
-<div id="fig-traceback" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-traceback" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-browse-traceback.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-traceback"></p>
-<figcaption class="figure-caption">(a) Traceback in <strong>Environment</strong></figcaption>
+<div id="fig-traceback" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-traceback-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-traceback" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-traceback-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="dbg-browse-traceback.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" data-ref-parent="fig-traceback">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-traceback-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Traceback in <strong>Environment</strong>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;8: Environment Traceback viewer</figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-traceback-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8: Environment Traceback viewer
+</figcaption>
 </figure>
 </div>
 <p>Clicking on an item in traceback will display the environment contents in the function’s code. Right now, it includes the call to <code>source("R/check_pkg_ns.R")</code>, and ‘Debug source’ call to <code>check_pkg_ns("fs")</code>.</p>
 <p>If the <strong><em>Show internals</em></strong> option is selected, the internal functions are shown (slightly subdued in gray).</p>
-<div id="fig-traceback-internals" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-traceback-internals" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-browse-traceback-internals.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-traceback-internals"></p>
-<figcaption class="figure-caption">(a) Traceback internals</figcaption>
+<div id="fig-traceback-internals" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-traceback-internals-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-traceback-internals" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-traceback-internals-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="dbg-browse-traceback-internals.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" data-ref-parent="fig-traceback-internals">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-traceback-internals-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Traceback internals
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;9: Traceback internals</figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-traceback-internals-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;9: Traceback internals
+</figcaption>
 </figure>
 </div>
 </section>
@@ -649,16 +721,24 @@ TIP: Other debugging methods
 <span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The prompt also changes from <code>Browse[1]&gt;</code> to <code>Browse[2]&gt;</code> to let me know I’m inside the <code>check_pkg_ns()</code> function.</p>
 <p>I’ll use <strong><code>n</code></strong> (or Next) to continue following the path <code>pkg</code> takes through the function:</p>
-<div class="column-page-inset-right">
-<div id="fig-dbg-next-console" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-dbg-next-console" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-next-console.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-next-console"></p>
-<figcaption class="figure-caption">(a) Use Console to step through function</figcaption>
+<div class="page-columns page-full">
+<div id="fig-dbg-next-console" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-next-console-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-dbg-next-console" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-next-console-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="dbg-next-console.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%" data-ref-parent="fig-dbg-next-console">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dbg-next-console-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Use Console to step through function
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;10: Use <code>n</code> to step through <code>check_pkg_ns()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dbg-next-console-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10: Use <code>n</code> to step through <code>check_pkg_ns()</code>
+</figcaption>
 </figure>
 </div>
 </div>
@@ -678,16 +758,24 @@ TIP: Other debugging methods
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>Called from: check_pkg_ns("roxygen2Comment")</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>Browse[1]&gt; </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>This time, when I step through <code>check_pkg_ns()</code>, I notice <code>pkg</code> takes an alternative path:</p>
-<div class="column-page-inset-right">
-<div id="fig-dbg-next-console-02" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-dbg-next-console-02" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-next-console-02.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-next-console-02"></p>
-<figcaption class="figure-caption">(a) Alternative path through function</figcaption>
+<div class="page-columns page-full">
+<div id="fig-dbg-next-console-02" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-next-console-02-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-dbg-next-console-02" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-next-console-02-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="dbg-next-console-02.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%" data-ref-parent="fig-dbg-next-console-02">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dbg-next-console-02-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Alternative path through function
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;11: Development package in <code>check_pkg_ns()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dbg-next-console-02-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11: Development package in <code>check_pkg_ns()</code>
+</figcaption>
 </figure>
 </div>
 </div>
@@ -721,15 +809,23 @@ TIP: Other debugging methods
 <section id="browser-recap" class="level3">
 <h3 class="anchored" data-anchor-id="browser-recap"><em>browser() recap</em></h3>
 <p>Once execution is paused with <code>browser()</code>, using the <strong><code>n</code></strong> command in the <strong>Console</strong> (or in the debugging toolbar at the top-right of the pane) lets me step through the code line-by-line.</p>
-<div id="fig-next_toolbar" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-next_toolbar" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-next_toolbar.png" class="img-fluid figure-img" style="width:75.0%" data-ref-parent="fig-next_toolbar"></p>
-<figcaption class="figure-caption">(a) Step through/over</figcaption>
+<div id="fig-next_toolbar" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-next_toolbar-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-next_toolbar" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-next_toolbar-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="dbg-next_toolbar.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:75.0%" data-ref-parent="fig-next_toolbar">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-next_toolbar-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Step through/over
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;12: Step through/over code</figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-next_toolbar-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;12: Step through/over code
+</figcaption>
 </figure>
 </div>
 <p>This allows me to inspect the state of the variables at various points within a function.</p>
@@ -740,7 +836,7 @@ TIP: Other debugging methods
 <p>The <code>check_pkg_ns()</code> function is fairly basic in that it performs a single ‘unit of work’ (i.e., <em>check if add-on packages package have been loaded and attached; if not, load and attach them</em>). When functions become more complex, it’s more efficient to use nested functions–i.e., functions within other functions–which allow me to execute multiple commands simultaneously.</p>
 <p>An example of this is the <code>pkg_data_results()</code> function below:</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>pkg_data_results()</summary>
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pkg_data_results</span>(<span class="st">"dplyr"</span>)</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 5 × 3</span></span>
@@ -755,20 +851,28 @@ TIP: Other debugging methods
 </div>
 <p><code>pkg_data_results()</code> returns a <code>data.frame</code> with three columns: <code>Package</code>, <code>Item</code>, and <code>Title</code>.</p>
 <p>The output from <code>pkg_data_results()</code> comes from the <code>data(package = "pkg")</code> output:</p>
-<div id="fig-next_toolbar" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-dbg-data_output" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-data_output.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-next_toolbar"></p>
-<figcaption class="figure-caption">(a) Output from <code>data(package = )</code></figcaption>
+<div id="fig-next_toolbar" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-next_toolbar-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-dbg-data_output" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-dbg-data_output-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="dbg-data_output.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" data-ref-parent="fig-next_toolbar">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dbg-data_output-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Output from <code>data(package = )</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;13: <code>data(package = "dplyr")</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-next_toolbar-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;13: <code>data(package = "dplyr")</code>
+</figcaption>
 </figure>
 </div>
 <p>This output is normally opened in a separate window, but it’s created as a matrix.</p>
 <div class="cell">
-<details open="">
+<details open="" class="code-fold">
 <summary>structure of data(package =)</summary>
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(<span class="fu">data</span>(<span class="at">package =</span> <span class="st">"dplyr"</span>))</span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="do">## List of 4</span></span>
@@ -785,15 +889,23 @@ TIP: Other debugging methods
 <p><code>pkg_data_results()</code> converts the matrix output into a <code>data.frame</code> three columns in (<code>Package</code>, <code>Title</code>, <code>Item</code>).</p>
 <p>I’ve placed <code>browser()</code> at the top of <code>pkg_data_results()</code> and run it with the <a href="https://fivethirtyeight-r.netlify.app/"><code>fivethirtyeight</code> package</a>.</p>
 <div class="sourceCode" id="cb29"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>pkg_data_results("fivethirtyeight")</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div id="fig-pkg_data_results_538" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-dbg-pkg_data_results_538" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-pkg_data_results_538.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-pkg_data_results_538"></p>
-<figcaption class="figure-caption">(a) browser() in pkg_data_results(“fivethirtyeight”)</figcaption>
+<div id="fig-pkg_data_results_538" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pkg_data_results_538-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-dbg-pkg_data_results_538" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-dbg-pkg_data_results_538-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="dbg-pkg_data_results_538.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" data-ref-parent="fig-pkg_data_results_538">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dbg-pkg_data_results_538-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) browser() in pkg_data_results(“fivethirtyeight”)
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;14: <code>browser()</code> in <code>pkg_data_results("fivethirtyeight")</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pkg_data_results_538-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;14: <code>browser()</code> in <code>pkg_data_results("fivethirtyeight")</code>
+</figcaption>
 </figure>
 </div>
 <section id="step-into" class="level3 page-columns page-full">
@@ -804,18 +916,26 @@ TIP: Other debugging methods
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="dbg-step_into_toolbar.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Step into a function</figcaption>
+<figcaption>Step into a function</figcaption>
 </figure>
 </div>
-</div></div><div id="fig-step_into_pkg_data_results" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-dbg-step_into_pkg_data_results" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-step_into_pkg_data_results.png" class="img-fluid figure-img" style="width:70.0%" data-ref-parent="fig-step_into_pkg_data_results"></p>
-<figcaption class="figure-caption">(a) browser() in pkg_data_results(“fivethirtyeight”)</figcaption>
+</div></div><div id="fig-step_into_pkg_data_results" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-step_into_pkg_data_results-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div id="fig-dbg-step_into_pkg_data_results" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-dbg-step_into_pkg_data_results-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="dbg-step_into_pkg_data_results.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%" data-ref-parent="fig-step_into_pkg_data_results">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dbg-step_into_pkg_data_results-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) browser() in pkg_data_results(“fivethirtyeight”)
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;15: Step into in <code>pkg_data_results("fivethirtyeight")</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-step_into_pkg_data_results-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;15: Step into in <code>pkg_data_results("fivethirtyeight")</code>
+</figcaption>
 </figure>
 </div>
 </section>
@@ -828,30 +948,46 @@ TIP: Other debugging methods
 <p>The <code>debug at</code> location is the the we location of the initial call to <code>browser()</code>, and <code>debugging in</code> is the function I <em>stepped into</em>.</p>
 <p>The prompt has also changed from <code>Browse[2]&gt;</code> to <code>Browse[3]&gt;</code>:</p>
 <div class="sourceCode" id="cb31"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>Browse[3]&gt;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="column-page-inset-right">
-<div id="fig-dbg-step_into_01" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-dbg-step_into_01" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-step_into_01.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-step_into_01"></p>
-<figcaption class="figure-caption">(a) Use <code>s</code> to step into check_pkg_ns()</figcaption>
+<div class="page-columns page-full">
+<div id="fig-dbg-step_into_01" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-step_into_01-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-dbg-step_into_01" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-step_into_01-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="dbg-step_into_01.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%" data-ref-parent="fig-dbg-step_into_01">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dbg-step_into_01-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Use <code>s</code> to step into check_pkg_ns()
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;16: Use <code>s</code> to step through <code>check_pkg_ns()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dbg-step_into_01-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;16: Use <code>s</code> to step through <code>check_pkg_ns()</code>
+</figcaption>
 </figure>
 </div>
 </div>
 <p>The <code>R/check_pkg_ns.R</code> file will open with the highlighted function. I can proceed through <code>check_pkg_ns()</code> using <strong><code>n</code></strong> until I reach <code>requireNamespace()</code>:</p>
-<div class="column-page-inset-right">
-<div id="fig-dbg-step_into_02" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-dbg-step_into_02" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-step_into_02.png" class="img-fluid figure-img" style="width:70.0%" data-ref-parent="fig-dbg-step_into_02"></p>
-<figcaption class="figure-caption">(a) Use <code>n</code> to step through <code>check_pkg_ns()</code></figcaption>
+<div class="page-columns page-full">
+<div id="fig-dbg-step_into_02" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-step_into_02-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-dbg-step_into_02" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-step_into_02-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="dbg-step_into_02.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:70.0%" data-ref-parent="fig-dbg-step_into_02">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dbg-step_into_02-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Use <code>n</code> to step through <code>check_pkg_ns()</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;17: Use <code>n</code> to step through <code>check_pkg_ns()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dbg-step_into_02-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;17: Use <code>n</code> to step through <code>check_pkg_ns()</code>
+</figcaption>
 </figure>
 </div>
 </div>
@@ -861,16 +997,24 @@ TIP: Other debugging methods
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>Browse[3]&gt; isNamespaceLoaded(pkg)</span>
 <span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>[1] TRUE</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>After the last line of <code>check_pkg_ns()</code> has been evaluated, the debugger will automatically return to the <code>pkg_data_results()</code> function. The <strong>Source</strong> pane will highlight the final step (and the prompt returns to <code>Browse[2]&gt;</code>):</p>
-<div class="column-page-inset-right">
-<div id="fig-dbg-step_into_03" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-dbg-step_into_03" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-step_into_03.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-step_into_03"></p>
-<figcaption class="figure-caption">(a) Step into/through <code>check_pkg_ns()</code> from <code>pkg_data_results()</code></figcaption>
+<div class="page-columns page-full">
+<div id="fig-dbg-step_into_03" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-step_into_03-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-dbg-step_into_03" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-step_into_03-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="dbg-step_into_03.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%" data-ref-parent="fig-dbg-step_into_03">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dbg-step_into_03-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Step into/through <code>check_pkg_ns()</code> from <code>pkg_data_results()</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;18: Step into and through <code>check_pkg_ns()</code> from <code>pkg_data_results()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dbg-step_into_03-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;18: Step into and through <code>check_pkg_ns()</code> from <code>pkg_data_results()</code>
+</figcaption>
 </figure>
 </div>
 </div>
@@ -897,7 +1041,7 @@ TIP: Other debugging methods
 <h2 class="anchored" data-anchor-id="put-it-all-together">Put it all together</h2>
 <p>The initial <code>pkg_data_str()</code> function for returning a table of ‘package data structures’ is below.</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>expand to see initial pkg_data_str()</summary>
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>pkg_data_str <span class="ot">&lt;-</span> <span class="cf">function</span>(pkg) {</span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1052,30 +1196,46 @@ TIP: Other debugging methods
 <section id="replicate-the-error" class="level4 page-columns page-full">
 <h4 class="anchored" data-anchor-id="replicate-the-error">Replicate the error</h4>
 <p>The <code>browser()</code> beings at the top of <code>pkg_data_str()</code>, where I’ll step into <code>pkg_data_results()</code></p>
-<div class="column-page-inset-right">
-<div id="fig-dbg-all_together_01" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-dbg-all_together_01" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-all_together_01.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-all_together_01"></p>
-<figcaption class="figure-caption">(a) <code>pkg_data_results()</code> from <code>pkg_data_str()</code></figcaption>
+<div class="page-columns page-full">
+<div id="fig-dbg-all_together_01" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-all_together_01-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-dbg-all_together_01" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-all_together_01-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="dbg-all_together_01.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%" data-ref-parent="fig-dbg-all_together_01">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dbg-all_together_01-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) <code>pkg_data_results()</code> from <code>pkg_data_str()</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;19: Step into <code>pkg_data_results()</code> from <code>pkg_data_str()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dbg-all_together_01-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;19: Step into <code>pkg_data_results()</code> from <code>pkg_data_str()</code>
+</figcaption>
 </figure>
 </div>
 </div>
 <p>When I’m inside <code>pkg_data_results()</code>, I’ll use <strong><code>n</code></strong> to verify the <code>fs</code> package namespace was loaded and the <code>tibble</code> was created:</p>
-<div class="column-page-inset-right">
-<div id="fig-dbg-all_together_02" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-dbg-all_together_02" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-all_together_02.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-all_together_02"></p>
-<figcaption class="figure-caption">(a) Step through <code>pkg_data_results()</code></figcaption>
+<div class="page-columns page-full">
+<div id="fig-dbg-all_together_02" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-all_together_02-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-dbg-all_together_02" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-all_together_02-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="dbg-all_together_02.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%" data-ref-parent="fig-dbg-all_together_02">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dbg-all_together_02-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Step through <code>pkg_data_results()</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;20: Step through <code>pkg_data_results()</code> (from <code>pkg_data_str()</code>)</figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dbg-all_together_02-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;20: Step through <code>pkg_data_results()</code> (from <code>pkg_data_str()</code>)
+</figcaption>
 </figure>
 </div>
 </div>
@@ -1084,32 +1244,48 @@ TIP: Other debugging methods
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a># A tibble: 0 × 3</span>
 <span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a># ℹ 3 variables: Package &lt;chr&gt;, Item &lt;chr&gt;, Title &lt;chr&gt;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>I see it’s empty. An empty <code>data_results</code> results in an empty list output from <code>purrr::map2()</code>:</p>
-<div class="column-page-inset-right">
-<div id="fig-dbg-all_together_03" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-dbg-all_together_03" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-all_together_03.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-all_together_03"></p>
-<figcaption class="figure-caption">(a) Step out of <code>pkg_data_results()</code></figcaption>
+<div class="page-columns page-full">
+<div id="fig-dbg-all_together_03" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-all_together_03-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-dbg-all_together_03" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-all_together_03-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="dbg-all_together_03.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%" data-ref-parent="fig-dbg-all_together_03">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dbg-all_together_03-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Step out of <code>pkg_data_results()</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;21: Step out of <code>pkg_data_results()</code> back into <code>pkg_data_str()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dbg-all_together_03-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21: Step out of <code>pkg_data_results()</code> back into <code>pkg_data_str()</code>
+</figcaption>
 </figure>
 </div>
 </div>
 <div class="sourceCode" id="cb46"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>Browse[2]&gt; ds_list</span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>list()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The empty <code>ds_list</code> results in <code>dplyr::mutate()</code> being unable to create the <code>Class</code> column in <code>cols_tbl</code>:</p>
-<div class="column-page-inset-right">
-<div id="fig-dbg-all_together_04" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-dbg-all_together_04" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-all_together_04.png" class="img-fluid figure-img" style="width:65.0%" data-ref-parent="fig-dbg-all_together_04"></p>
-<figcaption class="figure-caption">(a) <code>dplyr::mutate()</code> call in <code>get_ds_strs()</code></figcaption>
+<div class="page-columns page-full">
+<div id="fig-dbg-all_together_04" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-all_together_04-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-dbg-all_together_04" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-all_together_04-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="dbg-all_together_04.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:65.0%" data-ref-parent="fig-dbg-all_together_04">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dbg-all_together_04-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) <code>dplyr::mutate()</code> call in <code>get_ds_strs()</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;22: Create <code>Class</code> column in <code>get_ds_strs()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dbg-all_together_04-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;22: Create <code>Class</code> column in <code>get_ds_strs()</code>
+</figcaption>
 </figure>
 </div>
 </div>
@@ -1124,16 +1300,24 @@ TIP: Other debugging methods
 <span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>! object 'Class' not found</span>
 <span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>Run `rlang::last_trace()` to see where the error occurred.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The full path for the <code>fs</code> package through the initial <code>get_ds_str()</code> is outlined in the figure below:</p>
-<div class="column-page-inset-right">
-<div id="fig-dbg-all_together_05" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<div id="fig-dbg-all_together_05" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="dbg-all_together_05.png" class="img-fluid figure-img" style="width:100.0%" data-ref-parent="fig-dbg-all_together_05"></p>
-<figcaption class="figure-caption">(a) Error path in <code>get_ds_strs()</code></figcaption>
+<div class="page-columns page-full">
+<div id="fig-dbg-all_together_05" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-all_together_05-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div id="fig-dbg-all_together_05" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
+<div aria-describedby="fig-dbg-all_together_05-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="dbg-all_together_05.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%" data-ref-parent="fig-dbg-all_together_05">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dbg-all_together_05-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Error path in <code>get_ds_strs()</code>
+</figcaption>
 </figure>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;23: Replicate the error from <code>get_ds_strs()</code></figcaption>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dbg-all_together_05-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;23: Replicate the error from <code>get_ds_strs()</code>
+</figcaption>
 </figure>
 </div>
 </div>
@@ -1144,7 +1328,7 @@ TIP: Other debugging methods
 <p>To fix this error, I had to make some changes to <em>both</em> <code>pkg_data_results()</code> <em>and</em> <code>pkg_data_str()</code>:</p>
 <p>In <code>pkg_data_results()</code>, I added control flow to return a <code>tibble</code> of logical columns (all <code>NA</code>) if the package doesn’t have any data objects:</p>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Expand to view the updated pkg_data_results()</summary>
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>pkg_data_results <span class="ot">&lt;-</span> <span class="cf">function</span>(pkg) {</span>
 <span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># load packages</span></span>
@@ -1195,7 +1379,7 @@ TIP: Other debugging methods
 <li><p>the second <code>if</code> statement creates the <code>Class</code> column <em>first</em>, then filters the rows to only those containing a <code>data.frame</code> string pattern. If none of the data objects have the <code>data.frame</code> string pattern in their class, an empty <code>data_results</code> table is returned</p></li>
 </ul>
 <div class="cell">
-<details>
+<details class="code-fold">
 <summary>Expand to view the updated pkg_data_str()</summary>
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>pkg_data_str <span class="ot">&lt;-</span> <span class="cf">function</span>(pkg) {</span>
 <span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  </span>
@@ -1710,10 +1894,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -1723,8 +1906,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -1737,6 +1929,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -1780,6 +2091,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -1805,6 +2117,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -1865,6 +2203,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 
