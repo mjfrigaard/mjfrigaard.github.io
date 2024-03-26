@@ -40,8 +40,8 @@ library(testthat)
 library(shinytest2)
 options(width = 60)
 source("https://raw.githubusercontent.com/mjfrigaard/utap/main/tests/testthat/helper.R")
-remotes::install_github("mjfrigaard/utap", 
-  force = TRUE, quiet = TRUE)
+# remotes::install_github("mjfrigaard/utap", 
+#   force = TRUE, quiet = TRUE)
 # library(utap)
 source("../_common.R")
 ```

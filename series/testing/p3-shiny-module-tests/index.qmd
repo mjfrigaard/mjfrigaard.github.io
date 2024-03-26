@@ -30,57 +30,14 @@ execute:
 #| eval: true 
 #| echo: false 
 #| include: false
-source("https://raw.githubusercontent.com/mjfrigaard/mstsap/main/tests/testthat/helper.R")
-co_box <- function(color, header, contents = "Your text") {
-  class <- switch(color,
-    b = "note",
-    g = "tip",
-    r = "important",
-    o = "caution",
-    stop("Invalid `type`", call. = FALSE)
-  )
-  switch(color,
-  b = cat(paste0(
-    "\n",
-    ":::: {.callout-", class, " collapse='false'}", "\n\n",
-    "## ", header, "\n\n", 
-    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
-    glue::glue_collapse(contents), "\n\n",
-    "::: \n\n",
-    "::::", "\n")),
-  g = cat(paste0(
-    "\n",
-    ":::: {.callout-", class, " collapse='false'}", "\n\n",
-    "## ", header, "\n\n", 
-    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
-    glue::glue_collapse(contents), "\n\n",
-    "::: \n\n",
-    "::::", "\n")),
-  o = cat(paste0(
-    "\n",
-    ":::: {.callout-", class, " collapse='false'}", "\n\n",
-    "## ", header, "\n\n", 
-    "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
-    glue::glue_collapse(contents), "\n\n",
-    "::: \n\n",
-    "::::", "\n")),
-  r = cat(paste0(
-    "\n",
-    ":::: {.callout-", class, " collapse='false'}", "\n\n",
-    "## ", header, "\n\n", 
-    "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
-    glue::glue_collapse(contents), "\n\n",
-    "::: \n\n",
-    "::::", "\n")),
-  stop("Invalid `type`", call. = FALSE)
-  )
-}
+source("https://raw.githubusercontent.com/mjfrigaard/sapkgs/mstsap/tests/testthat/helper.R")
+source("../../_common.R")
 options(scipen = 999)
 library(shiny)
 library(lobstr)
 library(crayon)
 library(stringr)
-install.packages(c("NHANES", "palmerpenguins"))
+# install.packages(c("NHANES", "palmerpenguins"))
 library(NHANES)
 library(palmerpenguins)
 ```
@@ -88,14 +45,17 @@ library(palmerpenguins)
 
 ```{r}
 #| label: co_box_test
-#| eval: false 
+#| eval: true 
 #| results: asis
-#| include: false
-co_box(color = "r", "RED", "**This is red**
-  
-  **This is a new line**
-  
-  **this a another line**")
+#| echo: false
+co_box(
+  color = "r", 
+  size = "1.10", 
+  hsize = "1.20", 
+  header = "Updates to series", 
+  contents = "
+This series on testing has been updated with recent changes in `testthat`, `shinytest2`, and other packages to improve testing. 
+  ")
 ```
 
 This is the third post in a [series on testing](https://mjfrigaard.github.io/series.html) shiny applications. I'll cover testing shiny module server functions using the [`testhat` package](https://testthat.r-lib.org/) and shiny's [`testServer()` function](https://shiny.rstudio.com/reference/shiny/1.7.0/testserver).
@@ -104,7 +64,7 @@ This is the third post in a [series on testing](https://mjfrigaard.github.io/ser
 #| label: co_box_dev
 #| echo: false
 #| results: asis
-#| eval: true
+#| eval: false
 co_box(color = "r", 
   header = "STATUS: Under Development", 
   contents = "This post is currently under development. Thank you for your patience!")
@@ -116,24 +76,28 @@ co_box(color = "r",
 ![](shiny.png){width=40%}
 :::
 
-Shiny functions pose a couple of unique challenges for testing. First, we can't execute shiny `server` functions in the console. Second, as shiny apps become more complex, it's [highly](https://engineering-shiny.org/structuring-project.html#using-shiny-modules) [recommended](https://mastering-shiny.org/scaling-modules.html#module-motivation) to break up the code base into [modules](https://shiny.posit.co/r/articles/improve/modules/index.html). Modules have additional challenges due to their reactivity being split between interconnected UI and server functions.
+Shiny functions pose a couple of unique challenges for testing. First, we can't execute shiny `server` functions in the console. Second, as Shiny apps become more complex, it's [highly](https://engineering-shiny.org/structuring-project.html#using-shiny-modules) [recommended](https://mastering-shiny.org/scaling-modules.html#module-motivation) to break up the code base into [modules](https://shiny.posit.co/r/articles/improve/modules/index.html). Modules have additional challenges due to their reactivity being split between interconnected UI and server functions.
 
-`shiny` doesn't provide a direct, built-in way to test modules, but the [`testServer()`](https://shiny.posit.co/r/articles/improve/server-function-testing/) function addresses these challenges by testing "*reactive interactions*" in module server functions. `testServer()` also works with [`testthat`](https://testthat.r-lib.org/), which means we can structure these 'reactive interaction' tests just like other unit tests (for non-application functions).
+The `shiny` package doesn't provide a direct, built-in way to test modules, but the [`testServer()`](https://shiny.posit.co/r/articles/improve/server-function-testing/) function addresses these challenges by testing "*reactive interactions*" in module server functions. `testServer()` also works with [`testthat`](https://testthat.r-lib.org/), which means we can structure these 'reactive interaction' tests just like other unit tests (for non-application functions).
 
 
-## Shiny app-package
+## A Shiny App-Package
 
-`testthat` is designed to work within an R package, so I've put together the [`mstsap`](https://github.com/mjfrigaard/mstsap), (i.e., a **M**astering **S**hiny **t**est**S**erver **a**pp-**p**ackage) to demonstrate writing tests with `testServer()`. The functions, modules, and applications in `mstsap` come from the [Shiny Modules chapter](https://mastering-shiny.org/scaling-modules.html) of Mastering Shiny. Specifically, sections [19.3](https://mastering-shiny.org/scaling-modules.html#inputs-and-outputs) through [19.3.4](https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules). If you haven't read this chapter--start there. 
+`testthat` is designed to work within an R package, and the [`mstsap`](https://github.com/mjfrigaard/sapkgs/tree/mstsap) branch of `sapkgs` has a **M**astering **S**hiny **t**est**S**erver **a**pp-**p**ackage to demonstrate writing tests with `testServer()`. 
+
+The functions, modules, and applications in `mstsap` come from the [Shiny Modules chapter](https://mastering-shiny.org/scaling-modules.html) of Mastering Shiny.[^mastering-shiny-section] If you haven't read this chapter--start there. 
+
+[^mastering-shiny-section]: Specifically, the applications come from sections [19.3](https://mastering-shiny.org/scaling-modules.html#inputs-and-outputs) through [19.3.4](https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules). 
 
 ```{r}
-#| eval: true 
+#| eval: false 
 #| echo: true 
 #| message: false 
 #| warning: false 
 #| results: hide
 #| code-fold: false
 # to get the mstsap package used in this post:
-renv::install("mjfrigaard/mstsap", prompt = FALSE)
+devtools::load_all()
 library(mstsap)
 ```
 
@@ -142,129 +106,106 @@ library(mstsap)
 
 ## Modules 
 
-Shiny modules are ['*a pair of UI and server functions*'](https://mastering-shiny.org/scaling-modules.html) designed to compartmentalize input and output IDs into distinct namespaces ("*a namespace is to an ID as a directory is to a file*"). 
-
-```{r}
-#| echo: false 
-#| eval: true 
-#| code-fold: false
-#| comment: ""
-lobstr::ast(
-  shinyApp(
-    ui = `fluidPage`(
-         mod_ui(id = "X")),
-    server = `function(input, output, session)`,
-        mod_server(id = "X")
-    )
-)
-```
-
-In [a previous post](https://mjfrigaard.github.io/posts/test-shiny-p1/#unit-tests), I used the following definition for unit tests,
+In [a previous post](https://mjfrigaard.github.io/posts/p1-tests-unit-tests/), I used the following definition for unit tests,
 
 > "*A unit test is a piece of code that invokes a unit of work and checks one specific end result of that unit of work.*" - [The Art of Unit Testing, 2nd edition](https://www.manning.com/books/the-art-of-unit-testing-second-edition)
 
-Modules can also be broken into discrete 'units of work' with expected 'end results.' However, the 'unit of work' for a shiny module is usually accomplished using a combination of three functions: a module UI function, a module server function, and any helper/utility functions.
-
+Shiny modules can also be broken into discrete 'units of work' with expected 'end results.' Modules are ['*a pair of UI and server functions*'](https://mastering-shiny.org/scaling-modules.html) designed to compartmentalize input and output IDs into distinct namespaces.[^modules] 
 
 {{< include _co_modules.qmd >}}
 
-### Modules in `mstsap`
+[^modules]: The help files for `NS()` include the following description for a module namespace: "*a namespace is to an ID as a directory is to a file.*"
 
-`mstsap` contains three modules: `dataset`, `selectVar`, and `selectDataVar`. If you're like more information on a module, click on the links in the numbered list.  
-
-#### Dataset module
-
-1) [`datasetInput`](https://mastering-shiny.org/scaling-modules.html#getting-started-ui-input-server-output)/[`datasetServer`](https://mastering-shiny.org/scaling-modules.html#getting-started-ui-input-server-output): loads and returns data object from the `datasets` package (filtered by data frames or matrices) 
-
-::: {#fig-dataset}
-
-![`dataset` module](dataset.png){#fig-dataset fig-align="center" width=80%}
-
-`dataset` module 
-:::
-
--   The objects from `datasets` are filtered in the UI module function with a `filter` argument that can be used to *"limit the options to built-in datasets that are either data frames (`filter = is.data.frame`) or matrices (`filter = is.matrix`)"*. The `names` are passed to the `choices` in the `selectInput()`:
-
-    ```{r}
-    #| eval: false 
-    #| echo: true 
-    #| code-fold: show 
-    #| code-summary: 'show/hide choices in datasetInput()'
-    names <- ls("package:datasets")
-      if (!is.null(filter)) {
-        data <- lapply(names, get, "package:datasets")
-        names <- names[vapply(data, filter, logical(1))]
-      }
-    ```
-
--   The `datasets` object is returned with `get()` (wrapped in `reactive()`). See below:
-
-    ```{r}
-    #| eval: false 
-    #| echo: true 
-    #| code-fold: show 
-    #| code-summary: 'show/hide returned data from datasetServer()'
-    shiny::reactive(
-          get(input$dataset, "package:datasets")
-        )
-    ```
+However, the 'unit of work' for a Shiny module might be accomplished with a combination of a module UI and server functions, *and* a helper/utility function.
 
 
-#### selectVar module 
+`mstsap` contains three modules: `dataset`, `selectVar`, and `selectDataVar`. If you're like more information on these modules, click on the links below.  
 
-2) [`selectVarInput`](https://mastering-shiny.org/scaling-modules.html#case-study-selecting-a-numeric-variable)/[`selectVarServer`](https://mastering-shiny.org/scaling-modules.html#server-inputs): displays a `selectInput()` that "*allows the user to select variables of specified type from a given reactive dataset.*"
+### 1) Dataset input module
 
-::: {#fig-selectVar}
+:::: {layout="[65,35]" layout-valign="top"}
 
-![`selectVar` module](selectVar.png){#fig-selectVar fig-align="center" width=80%}
+![](dataset.png){fig-align="center" width=100%}
 
-`selectVar` module 
-:::
+[`datasetInput`](https://mastering-shiny.org/scaling-modules.html#getting-started-ui-input-server-output)/[`datasetServer`](https://mastering-shiny.org/scaling-modules.html#getting-started-ui-input-server-output): loads and returns data object from the `datasets` package (filtered by data frames or matrices) 
 
-The `data` argument in `selectVarServer()` is the returned value from `datasetServer()`:
 
--   `data()` is used with the `filter` argument in the `find_vars()` function:
+::::
 
-    ```{r}
-    #| eval: false 
-    #| echo: true 
-    #| code-fold: true 
-    #| code-summary: 'show/hide find_vars()'
-    find_vars <- function(data, filter) {
-     # I've included the updated version with the 'stopifnot()' checks!
-      stopifnot(is.data.frame(data))
-      stopifnot(is.function(filter))
-      names(data)[vapply(data, filter, logical(1))]
-    }
-    ```
+The objects from `datasets` are filtered in the UI module function with a `filter` argument that can be used to *"limit the options to built-in datasets that are either data frames (`filter = is.data.frame`) or matrices (`filter = is.matrix`)"*. The `names` are passed to the `choices` in the `selectInput()`:
+
+```{r}
+#| eval: false 
+#| echo: true 
+#| code-fold: show 
+#| code-summary: 'show/hide choices in datasetInput()'
+names <- ls("package:datasets")
+  if (!is.null(filter)) {
+    data <- lapply(names, get, "package:datasets")
+    names <- names[vapply(data, filter, logical(1))]
+  }
+```
+
+The `datasets` object is returned with `get()` (wrapped in `reactive()`). See below:
+
+```{r}
+#| eval: false 
+#| echo: true 
+#| code-fold: show 
+#| code-summary: 'show/hide returned data from datasetServer()'
+shiny::reactive(
+      get(input$dataset, "package:datasets")
+    )
+```
+
+### 2) selectVar module 
+
+:::: {layout="[65,35]" layout-valign="top"}
+
+![](selectVar.png){fig-align="center" width=100%}
+
+[`selectVarInput`](https://mastering-shiny.org/scaling-modules.html#case-study-selecting-a-numeric-variable)/[`selectVarServer`](https://mastering-shiny.org/scaling-modules.html#server-inputs): displays a `selectInput()` that "*allows the user to select variables of specified type from a given reactive dataset.*"
+
+::::
+
+The `data` argument in `selectVarServer()` is the returned value from `datasetServer()`. The `data()` is used with the `filter` argument in the `find_vars()` function:
+
+```{r}
+#| eval: false 
+#| echo: true 
+#| code-fold: true 
+#| code-summary: 'show/hide find_vars()'
+find_vars <- function(data, filter) {
+ # I've included the updated version with the 'stopifnot()' checks!
+  stopifnot(is.data.frame(data))
+  stopifnot(is.function(filter))
+  names(data)[vapply(data, filter, logical(1))]
+}
+```
     
-    -   The filter argument can be used to return variables by class/type (using `is.*` functions like `is.numeric()` or `is.character()`)
+The filter argument can be used to return variables by class/type (using `is.*` functions like `is.numeric()` or `is.character()`).
 
--   When `data()` changes, the output from `find_vars()` updates the choices in the variable `selectInput()` (i.e., `input$var`) (see below)
+When `data()` changes, the output from `find_vars()` updates the choices in the variable `selectInput()` (i.e., `input$var`). See below:
 
-::: {#fig-selectVar_find_vars}
+![](selectVar_find_vars.png){fig-align="center" width=100%}
 
-![`selectVar` and `find_vars()`](selectVar_find_vars.png){#fig-selectVar_find_vars fig-align="center" width=100%}
+`selectVarServer()` also returns the selected variable (`input$var`) as a reactive value (`var()`)
 
-`selectVar` module and `find_vars()` function
-:::
+### 3) selectDataVar module 
 
--   `selectVarServer()` also returns the selected variable (`input$var`) as a reactive value (`var()`)
+:::: {layout="[65,35]" layout-valign="top"}
 
-#### selectDataVar module 
+![](selectDataVar.png){fig-align="center" width=100%}
 
-3) [`selectDataVarUI`](https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules)/[`selectDataVarServer`](https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules): The `selectDataVar` module is from the section titled, "[*Modules inside of modules*](https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules)", so here we see the `dataset` and `selectVar` modules placed *inside* the `selectDataVar` module (each with a new namespace (`NS()`)).
+[`selectDataVarUI`](https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules)/[`selectDataVarServer`](https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules): The `selectDataVar` module is from the section titled, "[*Modules inside of modules*](https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules)", so here we see the `dataset` and `selectVar` modules placed *inside* the `selectDataVar` module (each with a new namespace (`NS()`)).
 
-::: {#fig-selectDataVar}
+::::
 
-![`selectDataVar` module](selectDataVar.png){#fig-selectDataVar fig-align="center" width=80%}
 
-`selectDataVar` module 
-:::
 
 {{< include _co_naming_modules.qmd >}}
 
-### Standalone app functions
+## Standalone App Functions
 
 `mstsap` contains three [standalone functions](https://mastering-shiny.org/scaling-packaging.html#converting-an-existing-app) for running each set of module functions. 
 
@@ -285,25 +226,19 @@ I've made a small change to each standalone app function--each app has a call to
 ```
 
 
-#### datasetApp
+### datasetApp
+
+:::: {layout="[65,35]" layout-valign="top"}
+
+![](datasetApp.png){fig-align="center" width=100%}
 
 `datasetApp()` contains a call to the `dataset` module, and includes a `tableOutput()` to render the selected data object: 
 
-::: {#fig-datasetApp}
-
-![`datasetApp`](datasetApp.png){#fig-datasetApp fig-align="center" width=80%}
-
-`datasetApp` 
-:::
+::::
 
 When `datasetApp()` is run, the app displays the dataset object in the `tableOutput()`, and the `verbatimTextOutput()` renders the reactive values as a text: 
 
-::: {#fig-datasetApp_run}
-
-![`datasetApp` with reactive values](datasetApp_run.png){#fig-datasetApp_run fig-align="center" width=100%}
-
-`datasetApp` with `reactiveValuesToList()`
-:::
+![](datasetApp_run.png){#fig-datasetApp_run fig-align="center" width=100%}
 
 The output above shows what `NS()` does in the `dataset` module--it appends the module `id` argument to the `inputId` (which is why we see `dataset-dataset`).
 
@@ -311,16 +246,16 @@ The output above shows what `NS()` does in the `dataset` module--it appends the 
 
 - **`dataset-dataset`** the `inputId` from the `selectInput()`
 
-#### selectVarApp
+### selectVarApp
+
+:::: {layout="[65,35]" layout-valign="top"}
+
+![](selectVarApp.png){fig-align="center" width=80%}
 
 `selectVarApp()` includes both `dataset` and `selectVar` modules, but instead of rendering the output in a table, the UI renders the variable output in a `verbatimTextOutput()`.
 
-::: {#fig-selectVarApp}
 
-![`selectVarApp`](selectVarApp.png){#fig-selectVarApp fig-align="center" width=80%}
-
-`selectVarApp` 
-:::
+::::
 
 Note that `selectVarApp()` contains namespaces for two modules: 
 
@@ -330,39 +265,28 @@ Note that `selectVarApp()` contains namespaces for two modules:
 
 These namespaced IDs are rendered below with `reactiveValuesToList()`:
 
-::: {#fig-selectVarApp_run}
+![](selectVarApp_run.png){fig-align="center" width=100%}
 
-![`selectVarApp` with reactive values](selectVarApp_run.png){#fig-selectVarApp_run fig-align="center" width=100%}
-
-`selectVarApp` with `reactiveValuesToList()`
-:::
 
 There's a lot happening in `selectVarApp()`, so I've created the figure below to display the code for the modules with their displayed outputs: 
 
 :::: {.column-page-inset-right}
 
-::: {#fig-selectVarApp_schema}
-
-![`selectVarApp` schema](selectVarApp_schema.png){#fig-selectVarApp_schema fig-align="center" width=100%}
-
-`dataset` and `selectVar` modules with rendered outputs
-:::
+![](selectVarApp_schema.png){fig-align="center" width=100%}
 
 ::::
 
 As we can see, the `data` output from the `dataset` module is used to generate the `vars()` reactive for the `verbatimTextOutput()` in `selectVarApp()`. Note that both `dataset` and `selectVar` modules don't contain any output functions--these have been provided in the UI for both `datasetApp()` and `selectVarApp()`.
 
-#### selectDataVarApp
+### selectDataVarApp
 
-The final app in `mstsap` is `selectDataVarApp()`. Here the inputs from `dataset` and `selectVar` have been moved into the `sidebarPanel()`, and the output is rendered in the `mainPanel()`. 
+:::: {layout="[65,35]" layout-valign="top"}
 
+![](selectDataVarApp.png){fig-align="center" width=100%}
 
-::: {#fig-selectDataVarApp}
+The final app in `mstsap` is `selectDataVarApp()`. Here the inputs from `dataset` and `selectVar` have been moved into the `sidebarPanel()`, and the output is rendered in the `mainPanel()`.
 
-![`selectDataVarApp`](selectDataVarApp.png){#fig-selectDataVarApp fig-align="center" width=80%}
-
-`selectDataVarApp` 
-:::
+::::
 
 
 The reactive values here show how the ['Modules inside of modules'](https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules) work--by adding the additional call to `NS()` in the `datasetInput()` and `selectVarInput()` functions *within* `selectDataVarUI()` and `selectDataVarServer()`, an additional namespace is appended to the reactive values (`input$dataset` and `input$var`):
@@ -390,21 +314,15 @@ Below is a figure that displays the contents of the `selectDataVar` modules (I'v
 ## testServer() 
 
 Module server functions can be tested the same way as a traditional shiny `server` function, as long as you provide the inputs and verify the correct outputs. Below I'll cover some general advice on module server tests (and the arguments in `testServer()`).
-
-### Testing module server functions
-
-Before writing tests, make sure you can answer the following:
-
-1. ***What is the overall purpose of the application?***
-    -   This information is typically referred to as the 'business logic' of the application, and should be stored in a specifications or requirements document. If I can't answer this question, I'm probably better off not writing test for code that is likely to undergo major changes. 
     
-2. ***How does this module fit within that overall purpose?***
-    -   Specifically, how does this module help the application achieve the specifications or requirements? This could also be considered the 'unit of work' and 'end result' for the module.
+### What should I test?
 
-3. ***What dependencies (i.e., utility functions, data, add-on packages) are required for the module to execute?***
-    -   If the module depends on other functions, data, or packages to perform it's expected behavior, those functions should either be included in the `testServer()` test, or have their own tests (or both).
-    
-#### What should I test?
+The best bit of advice I've found helpful when writing tests comes from [R Packages](https://r-pkgs.org/testing-design.html#what-to-test), 
+
+> *"focus your time on code that you’re not sure about, is fragile, or has complicated interdependencies"*
+
+
+The quote isn't in reference to testing modules or Shiny application functions, but I've found it's easy to fall into the trap of trying to test *everything* when a targeted approach is more efficient (and equally valid).
 
 The items below have been compiled from [Mastering Shiny](https://mastering-shiny.org/scaling-testing.html#basic-workflow), [R Packages](https://r-pkgs.org/testing-design.html#what-to-test), and [Engineering Production-Grade Shiny Apps](https://engineering-shiny.org/build-yourself-safety-net.html#testing-your-app): 
 
@@ -419,17 +337,12 @@ The items below have been compiled from [Mastering Shiny](https://mastering-shin
     
 4. ***How are errors handled in the module?***
     -   What errors are displayed from the module? Tests should simulate scenarios that can test if the module: 1) returns errors that are informative, 2) fails silently (when appropriate), or 3) falls back to the correct default behavior.
-    
-The last piece of advice I've found helpful when writing tests comes from [R Packages](https://r-pkgs.org/testing-design.html#what-to-test), 
-
-> *"focus your time on code that you’re not sure about, is fragile, or has complicated interdependencies"*
-
-
-The quote isn't in reference to testing modules or shiny application functions, but I've found it's easy to fall into the trap of trying to test *everything* when a targeted approach is more efficient (and equally valid).
 
 The first test I'll perform is for `datasetServer()`, the module used to return a data object from the `datasets` package.
 
-### `testServer()` arguments 
+### Arguments 
+
+`testServer()` has the following arguments: 
 
 -   `app` can be a module server function (i.e., `datasetServer`), or any [`shiny.appobj`](https://shiny.posit.co/r/reference/shiny/1.7.0/shiny.appobj.html) 
 
@@ -437,22 +350,20 @@ The first test I'll perform is for `datasetServer()`, the module used to return 
 
 -   `args` is a `list()` I can use to include any module server function arguments
 
-### Inputs
+### Testing inputs
 
-I created the test file with `usethis::use_test("datasetServer")` and the module server function is the first argument in `testServer()`.
-
-I'll start by testing if the initial input value (`input$dataset`) in `datasetServer()` is set to `NULL`:
+I'll start by testing if the initial input value (`input$dataset`) in `datasetServer()` is set to `NULL`. The module server function is the first argument in `testServer()`:
 
 ```{r}
 #| eval: false
 #| code-fold: false
-shiny::testServer(app = datasetServer, expr = {
-  testthat::expect_equal(input$dataset, NULL)
+testServer(app = datasetServer, expr = {
+  expect_equal(input$dataset, NULL)
   cat("\ndatasetServer: dataset$input is NULL", "\n")
 })
 ```
 
--   I'll add a custom message with `cat()` and the `inputId` I'm testing, load, document, and install the package, then run the test with `testthat::test_file()`:
+-   Add custom messages with `cat()` and the `inputId` we're testing. Then load, document, and install the package
 
     ```{verbatim}
     #| eval: false
@@ -496,26 +407,16 @@ shiny::testServer(app = datasetServer, expr = {
 session$setInputs(inputId = "value")
 ```
 
-I'll demonstrate with a test for `input$dataset` in `datasetServer()`:
+Below is a test for `input$dataset` in `datasetServer()`:
 
 ```{r}
 #| eval: false
 #| code-fold: false
   session$setInputs(dataset = "faithful")
-  testthat::expect_equal(
+  expect_equal(
     object = input$dataset,
     expected = "faithful")
   test_cmt("datasetServer", "dataset$input")
-```
-
-The results from `test_file()` are below:
-
-```{verbatim}
-#| eval: false
-#| code-fold: false 
-#| echo: true
-[ FAIL 0 | WARN 0 | SKIP 0 | PASS 2 ]
-	   datasetServer: dataset$input
 ```
 
 ### Returned values
@@ -528,30 +429,18 @@ Any returned values from module server functions can be accessed in `testServer(
 #| code-fold: show
 #| code-summary: 'show/hide test with session$returned()' 
   session$setInputs(dataset = "airquality")
-  testthat::expect_equal(
+  expect_equal(
     object = class(session$returned()),
     expected = "data.frame")
   test_cmt("datasetServer", "class(session$returned())")
 
   session$setInputs(dataset = "WorldPhones")
-  testthat::expect_true(
+  expect_true(
     object = is.matrix(session$returned()))
   test_cmt("datasetServer", "is.matrix(session$returned())")
 ```
 
 Note that both methods above can be used to check the class of the returned object. 
-
-The updated results from `test_file()` are below:
-
-```{verbatim}
-#| eval: false
-#| code-fold: false 
-#| echo: true
-[ FAIL 0 | WARN 0 | SKIP 0 | PASS 3 ]
-	   datasetServer: class(session$returned()) 
-[ FAIL 0 | WARN 0 | SKIP 0 | PASS 4 ]
-	   datasetServer: is.matrix(session$returned()) 
-```
 
 -   I can also use the `typeof(datasets::mtcars)` for a direct comparison: 
 
@@ -570,9 +459,9 @@ The updated results from `test_file()` are below:
     ```
 
 
-### Module server arguments
+### Server function arguments
 
-If the module server function has additional arguments beyond `id`, then it has additional functionality to verify with unit tests. To test additional module server arguments, pass these to [`testServer(args = list())`.](https://shiny.posit.co/r/articles/improve/server-function-testing/#modules-with-additional-parameters) The `args` list should include named arguments from the module server function, i.e., `list(arg1 = "param1", arg2 = "param2")`. 
+If the module server function has additional arguments beyond `id`, then it has additional functionality to verify with unit tests. To test additional module server arguments, pass these to [`testServer(args = list())`.](https://shiny.posit.co/r/articles/improve/server-function-testing/#modules-with-additional-parameters) The `args` list should include named arguments from the module server function, i.e., `list(param1 = "value1", param2 = "value2")`. 
 
 For example, `selectVarServer()` has `data` and `filter` arguments: 
 
@@ -597,25 +486,25 @@ Below is a test for `selectVarServer()` using `args` to verify the reactive `dat
 ```{r}
 #| eval: false
 #| code-fold: false
-shiny::testServer(selectVarServer,
-  args = list(data = datasets::mtcars,
+testServer(selectVarServer,
+  args = list(data = mtcars,
               filter = is.numeric), expr = {
-  testthat::expect_true(
+  expect_true(
     object = is.reactive(data))
   test_cmt("selectVarServer", "is.reactive(data())")
 })
 ```
 
-::: {style='font-size: 1.05em; color: #A20025;'}
+::: {style='font-size: 1.15em; font-style: italic; font-weight: bold; color: #A20025;'}
 
-***But this fails with the following error:***
+But this fails with the following error:
 
 :::
 
 ```{r}
 #| eval: false
 #| code-fold: false
-testthat::test_file("tests/testthat/test-selectVarServer.R")
+test_file("tests/testthat/test-selectVarServer.R")
 ```
 
 ```{verbatim}
@@ -624,14 +513,11 @@ testthat::test_file("tests/testthat/test-selectVarServer.R")
 [ FAIL 1 | WARN 0 | SKIP 0 | PASS 0 ]
 ── Error (test-selectVarServer.R:1:1): (code run outside of `test_that()`) ───
 Error in `(function (id, data, filter = is.numeric) 
-{
-    stopifnot(shiny::is.reactive(data))
-    stopifnot(!shiny::is.reactive(filter))
 ```
 
-::: {style='font-size: 1.05em; color: #006CD9;'}
+::: {style='font-size: 1.15em; font-style: italic; font-weight: bold; color: #006CD9;'}
 
-***What happened?***
+What happened?
 
 :::
 
@@ -658,10 +544,10 @@ I'll re-write the test above to a more basic test using `is.reactive()`:
 ```{r}
 #| eval: false
 #| code-fold: false
-shiny::testServer(selectVarServer,
-  args = list(data = reactive(datasets::mtcars), 
+testServer(selectVarServer,
+  args = list(data = reactive(mtcars), 
               filter = is.numeric), expr = {
-  testthat::expect_true(
+  expect_true(
     object = is.reactive(data()))
   test_cmt("selectVarServer", "is.reactive(data())")
 })
@@ -670,7 +556,7 @@ shiny::testServer(selectVarServer,
 ```{r}
 #| eval: false
 #| code-fold: false
-testthat::test_file("tests/testthat/test-selectVarServer.R")
+test_file("tests/testthat/test-selectVarServer.R")
 ```
 
 ```{verbatim}
@@ -685,7 +571,8 @@ is.reactive(data()) is not TRUE
 `expected`: TRUE 
 ```
 
-::: {style='font-size: 1.05em; color: #A20025;'}
+
+::: {style='font-size: 1.15em; font-style: italic; font-weight: bold; color: #A20025;'}
 
 ***Another failure???***
 
@@ -700,10 +587,10 @@ Removing the parentheses from `data()` will result in the proper test results:
 ```{r}
 #| eval: false
 #| code-fold: false
-shiny::testServer(selectVarServer,
-  args = list(data = reactive(datasets::mtcars), 
+testServer(selectVarServer,
+  args = list(data = reactive(mtcars), 
               filter = is.numeric), expr = {
-  testthat::expect_true(
+  expect_true(
     object = is.reactive(data))
   test_cmt("selectVarServer", "is.reactive(data())")
 })
@@ -712,7 +599,7 @@ shiny::testServer(selectVarServer,
 ```{r}
 #| eval: false
 #| code-fold: false
-testthat::test_file("tests/testthat/test-selectVarServer.R")
+test_file("tests/testthat/test-selectVarServer.R")
 ```
 
 ```{verbatim}
@@ -722,16 +609,18 @@ testthat::test_file("tests/testthat/test-selectVarServer.R")
 	   selectVarServer: is.reactive(data()) 
 ```
 
-### Utility functions
-
 Now that I have a reactive `data()` input, I can explore how this value is used inside `selectVarServer()`. To update `input$var`, the `data()` input is passed to `find_vars()` (a function that uses a `filter` argument "*used to select which variables to list*"). See the example below:
 
 ```{r}
-#| eval: true
+#| eval: false
 #| code-fold: false
-mstsap::find_vars(
-  data = datasets::chickwts, 
+find_vars(
+  data = chickwts, 
   filter = is.factor)
+```
+
+``` r
+#> [1] "feed"
 ```
 
 I'll write an expectation that captures the behavior of `find_vars()` in `selectVarServer()`:
@@ -739,23 +628,14 @@ I'll write an expectation that captures the behavior of `find_vars()` in `select
 ```{r}
 #| eval: false
 #| code-fold: false
-shiny::testServer(selectVarServer,
-  args = list(data = reactive(datasets::chickwts),
+testServer(selectVarServer,
+  args = list(data = reactive(chickwts),
               filter = is.numeric), expr = {
-  testthat::expect_equal(
+  expect_equal(
     object = find_vars(data(), is.factor),
     expected = "feed")
   test_cmt("selectVarServer", "find_vars()")
 })
-```
-
-The results are below:
-
-```{verbatim}
-#| eval: false
-#| code-fold: false
-[ FAIL 0 | WARN 0 | SKIP 0 | PASS 2 ]
-	   selectVarServer: find_vars()
 ```
 
 To verify that the returned object from `selectVarServer()` is the selected column, I'll need to simulate the application behavior in the tests:
@@ -766,8 +646,8 @@ To verify that the returned object from `selectVarServer()` is the selected colu
     #| eval: false
     #| code-fold: show
     #| code-summary: 'setting args = list()'
-      shiny::testServer(selectVarServer,
-        args = list(data = reactive(datasets::chickwts),
+      testServer(selectVarServer,
+        args = list(data = reactive(chickwts),
                     filter = is.numeric), expr = {
         
         # include expectations below...
@@ -782,7 +662,7 @@ To verify that the returned object from `selectVarServer()` is the selected colu
     #| code-fold: show
     #| code-summary: 'verify input$var'
       session$setInputs(var = "weight")
-      testthat::expect_equal(object = input$var,
+      expect_equal(object = input$var,
           expected = "weight")
       test_cmt("selectVarServer", "input$var")
     ```
@@ -794,21 +674,10 @@ To verify that the returned object from `selectVarServer()` is the selected colu
     #| code-fold: show
     #| code-summary: 'verify session$returned()'
       session$setInputs(var = "feed")
-      testthat::expect_equal(object = session$returned(),
-        expected = datasets::chickwts[["feed"]])
+      expect_equal(object = session$returned(),
+        expected = chickwts[["feed"]])
       test_cmt("selectVarServer", "session$returned()")
     ```
-
-The results from these tests are below:
-
-```{verbatim}
-#| eval: false
-#| code-fold: false
-[ FAIL 0 | WARN 0 | SKIP 0 | PASS 3 ]
-	   selectVarServer: input$var 
-[ FAIL 0 | WARN 0 | SKIP 0 | PASS 4 ]
-	   selectVarServer: session$returned() 
-```
 
 
 ### Module outputs
@@ -817,39 +686,50 @@ Rendered outputs can be accessed in `testServer()` just like inputs (i.e., with 
 
 Fortunately, app functions can also be passed to the `app` argument of `testServer()`. I'll use `datasetApp()` to demonstrate.
 
+:::: {layout="[65,35]" layout-valign="top"}
+
 ![](datasetApp.png){fig-align="center" width=80%}
 
-Testing a standalone app function is similar to testing a module server function, but with a few minor differences. First, the output from the standalone app function is [assigned to an object](https://shiny.posit.co/r/articles/improve/server-function-testing/#shiny-app-objects) (`ds_app`), then placed in the `app` argument: 
+::: {style='font-size: 0.85em;'}
 
-```{r}
-#| eval: false
-#| code-fold: false
+``` r
 ds_app <- datasetApp()
-  shiny::testServer(ds_app, expr = {
+  testServer(ds_app, 
+    expr = {
 
   })
 ```
 
- To use `session$setInputs()`  need to include the namespace for the `inputId`:
+:::
+
+::::
+
+Testing a standalone app function is similar to testing a module server function, but with a few minor differences. First, the output from the standalone app function is [assigned to an object](https://shiny.posit.co/r/articles/improve/server-function-testing/#shiny-app-objects) (`ds_app`), then placed in the `app` argument.
+
+
+To use `session$setInputs()`  need to include the namespace for the `inputId`. The output from `reactiveValuesToList()` in `datasetApp()` shows me how to access the `inputId` in the `datasetServer()` module (i.e., ``` input$`dataset-dataset` ```):
+
+:::: {layout="[65,35]" layout-valign="top"}
 
 ![](datasetApp_reactives.png){fig-align="center" width=100%}
 
-The output from `reactiveValuesToList()` in `datasetApp()` shows me how to access the `inputId` in the `datasetServer()` module (i.e., ``` input$`dataset-dataset` ```):
 
-```{r}
-#| eval: false
-#| code-fold: false
+::: {style='font-size: 0.75em;'}
+
+``` r
 ds_app <- datasetApp()
-shiny::testServer(ds_app, expr = {
-  session$setInputs(`dataset-dataset` = "chickwts")
-
+testServer(ds_app, 
+expr = {
+  session$setInputs(
+  `dataset-dataset` = "chickwts")
 })
 ```
 
+:::
 
-#### Output testing strategy
+::::
 
-Testing outputs with `testServer()` is different than testing outputs in regular unit tests, because shiny outputs are executed in the server, but then rendered in the UI. The [`testServer()` documentation](https://shiny.posit.co/r/articles/improve/server-function-testing/#complex-outputs-plots-htmlwidgets) outlines a testing strategy for complex outputs:
+Testing outputs with `testServer()` is different than testing outputs in regular unit tests, because Shiny outputs are executed in the server, but then rendered as HTML in the UI. `testServer()` [outlines](https://shiny.posit.co/r/articles/improve/server-function-testing/#complex-outputs-plots-htmlwidgets) a testing strategy for complex outputs:
 
 > *The goal for your tests should be to ask “is the code that I wrote producing the plot I want?” There are two components to that question:
 > 
@@ -860,13 +740,13 @@ Testing outputs with `testServer()` is different than testing outputs in regular
 
 If we replace *plot* with *table* in the advice above, the tests for `datasetApp()` should confirm `output$data` is generated without producing an error. 
 
-Instead of writing an expectation, I'll use `cat()` to display the contents of `output$data` after setting the ``` `dataset-dataset` ``` input:
+Instead of writing an expectation, we'll use `cat()` to display the contents of `output$data` after setting the ``` `dataset-dataset` ``` input:
     
 ```{r}
 #| eval: false
 #| code-fold: false
 ds_app <- datasetApp()
-shiny::testServer(ds_app, expr = {
+testServer(ds_app, expr = {
   session$setInputs(`dataset-dataset` = "chickwts")
   cat("\n\toutput$data:\n", output$data, "\n")
 })
@@ -877,7 +757,7 @@ The results from the test is below:
 ```{r}
 #| eval: false
 #| code-fold: false
-testthat::test_file("tests/testthat/test-datasetApp.R")
+test_file("tests/testthat/test-datasetApp.R")
 ```
 
 ```{verbatim}
@@ -913,16 +793,16 @@ The tests for `datasetApp()` will confirm the `inputId`, and verify the `class` 
 ```{r}
 #| eval: false
 #| code-fold: false
-  testthat::expect_equal(
+  expect_equal(
     object = input$`dataset-dataset`,
     expected = "chickwts")
   test_cmt("datasetApp", "input$`dataset-dataset`")
 
-  testthat::expect_true(
+  expect_true(
     object = is.data.frame(data()))
   test_cmt("datasetApp", "is.data.frame(data())")
 
-  testthat::expect_equal(
+  expect_equal(
     object = names(data()),
     expected = names(datasets::chickwts))
   test_cmt("datasetApp", "names(data())")
@@ -933,31 +813,10 @@ I can include a test for the `class` of `output$data`, but note that this is a c
 ```{r}
 #| eval: false
 #| code-fold: false
-  testthat::expect_equal(
-    object = class(output$data),
-    expected = "character")
-  test_cmt("datasetApp", "class(output$data)")
-```
-
-The results from `test_file()` are below:
-
-```{r}
-#| eval: false
-#| code-fold: false
-testthat::test_file("tests/testthat/test-datasetApp.R")
-```
-
-```{verbatim}
-#| eval: false
-#| code-fold: false
-[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
-	   datasetApp: input$`dataset-dataset` 
-[ FAIL 0 | WARN 0 | SKIP 0 | PASS 2 ]
-	   datasetApp: is.data.frame(data()) 
-[ FAIL 0 | WARN 0 | SKIP 0 | PASS 3 ]
-	   datasetApp: names(data()) 
-[ FAIL 0 | WARN 0 | SKIP 0 | PASS 4 ]
-	   datasetApp: class(output$data) 
+expect_equal(
+  object = class(output$data),
+  expected = "character")
+test_cmt("datasetApp", "class(output$data)")
 ```
 
 The same method can be used to test the `selectVarApp()`, but note this app requires passing both `inputId`s to `session$setInputs()`:
@@ -967,25 +826,25 @@ The same method can be used to test the `selectVarApp()`, but note this app requ
 #| code-fold: true 
 #| code-summary: 'show/hide selectVarApp() tests'
 sv_app <- selectVarApp()
-shiny::testServer(app = sv_app, expr = {
+testServer(app = sv_app, expr = {
   session$setInputs(`var-var` = "Ozone",
                     `data-dataset` = "airquality")
   # confirm contents of output$out
   cat("\n\toutput$out:\n", output$out, "\n")
   
   # confirm var is reactive 
-  testthat::expect_true(object = is.reactive(var))
+  expect_true(object = is.reactive(var))
   # confirm var input
-  testthat::expect_equal(
+  expect_equal(
     object = input$`var-var`,
     expected = "Ozone")
   # confirm data is reactive
-  testthat::expect_true(object = is.reactive(data))
+  expect_true(object = is.reactive(data))
   # confirm data() is a data.frame
-  testthat::expect_true(
+  expect_true(
     object = is.data.frame(data()))
   # confirm 'data' can be subsetted with 'var'
-  testthat::expect_equal(
+  expect_equal(
     object = data()[[input$`var-var`]],
     expected = airquality[["Ozone"]])
 })
@@ -1006,7 +865,7 @@ To access the `inputId`s in the nested modules, we need to pass the full 'append
 #| eval: false
 #| code-fold: false
 dv_app <- selectDataVarApp()
-shiny::testServer(app = dv_app, expr = {
+testServer(app = dv_app, expr = {
   session$setInputs(`var-var-var` = "Ozone",
                     `var-data-dataset` = "airquality")
 })
@@ -1018,7 +877,7 @@ After setting the inputs, I can confirm the contents of `output$out`
 #| eval: false
 #| code-fold: false
 dv_app <- selectDataVarApp()
-shiny::testServer(app = dv_app, expr = {
+testServer(app = dv_app, expr = {
   session$setInputs(`var-var-var` = "Ozone",
                     `var-data-dataset` = "airquality")
   cat("\n\toutput$out:\n", output$out, "\n")
@@ -1028,7 +887,7 @@ shiny::testServer(app = dv_app, expr = {
 ```{r}
 #| eval: false
 #| code-fold: false
-testthat::test_file("tests/testthat/test-selectDataVarApp.R")
+test_file("tests/testthat/test-selectDataVarApp.R")
 ```
 
 ```{verbatim}
@@ -1054,30 +913,15 @@ After confirming `output$out`, I'll test the inputs:
 ```{r}
 #| eval: false
 #| code-fold: false
-  testthat::expect_equal(
+  expect_equal(
     object = input$`var-var-var`,
     expected = "Ozone")
   test_cmt("selectDataVarApp", "input$`var-var-var`")
 
-  testthat::expect_equal(
+  expect_equal(
     object = input$`var-data-dataset`,
     expected = "airquality")
   test_cmt("selectDataVarApp", "input$`var-data-dataset`")
-```
-
-```{r}
-#| eval: false
-#| code-fold: false
-testthat::test_file("tests/testthat/test-selectDataVarApp.R")
-```
-
-```{verbatim}
-#| eval: false
-#| code-fold: false
-[ FAIL 0 | WARN 0 | SKIP 0 | PASS 1 ]
-	   selectDataVarApp: input$`var-var-var` 
-[ FAIL 0 | WARN 0 | SKIP 0 | PASS 2 ]
-	   selectDataVarApp: input$`var-data-dataset`
 ```
 
 I can also verify the contents of the reactive `var()` inside the test:
@@ -1085,7 +929,7 @@ I can also verify the contents of the reactive `var()` inside the test:
 ```{r}
 #| eval: false
 #| code-fold: false
-  testthat::expect_true(object = is.reactive(var))
+  expect_true(object = is.reactive(var))
   test_cmt("selectDataVarApp", "is.reactive(var)")
   cat("\n\tvar:\n", var(), "\n")
 ```
@@ -1093,7 +937,7 @@ I can also verify the contents of the reactive `var()` inside the test:
 ```{r}
 #| eval: false
 #| code-fold: false
-testthat::test_file("tests/testthat/test-selectDataVarApp.R")
+test_file("tests/testthat/test-selectDataVarApp.R")
 ```
 
 ```{verbatim}
