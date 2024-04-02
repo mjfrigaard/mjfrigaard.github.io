@@ -5,6 +5,7 @@ author: "Martin Frigaard"
 date: "2024-01-24"
 categories: [shiny, box, testing]
 image: "rhino.png"
+draft: true
 toc: true
 toc-depth: 5
 toc-title: 'Contents'
@@ -27,63 +28,21 @@ execute:
 
 ```{r}
 #| label: setup
-#| eval: true
-#| echo: false
+#| eval: true 
+#| echo: false 
 #| include: false
-co_box <- function(color, header, contents = "Your text") {
-  class <- switch(color,
-    b = "note",
-    g = "tip",
-    r = "important",
-    o = "caution",
-    stop("Invalid `type`", call. = FALSE)
-  )
-  switch(color,
-    b = cat(paste0(
-      "\n",
-      ":::: {.callout-", class, " collapse='true'}", "\n\n",
-      "## ", header, "\n\n",
-      "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
-      glue::glue_collapse(contents), "\n\n",
-      "::: \n\n",
-      "::::", "\n"
-    )),
-    g = cat(paste0(
-      "\n",
-      ":::: {.callout-", class, " collapse='true'}", "\n\n",
-      "## ", header, "\n\n",
-      "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
-      glue::glue_collapse(contents), "\n\n",
-      "::: \n\n",
-      "::::", "\n"
-    )),
-    o = cat(paste0(
-      "\n",
-      ":::: {.callout-", class, " collapse='false'}", "\n\n",
-      "## ", header, "\n\n",
-      "::: {style='font-size: 1.10em; color: #696969;'}\n\n",
-      glue::glue_collapse(contents), "\n\n",
-      "::: \n\n",
-      "::::", "\n"
-    )),
-    r = cat(paste0(
-      "\n",
-      ":::: {.callout-", class, " collapse='false'}", "\n\n",
-      "## ", header, "\n\n",
-      "::: {style='font-size: 1.10em; font-weight: bold; color: #696969;'}\n\n",
-      glue::glue_collapse(contents), "\n\n",
-      "::: \n\n",
-      "::::", "\n"
-    )),
-    stop("Invalid `type`", call. = FALSE)
-  )
-}
+source("https://raw.githubusercontent.com/mjfrigaard/sapkgs/mstsap/tests/testthat/helper.R")
+source("../_common.R")
 options(scipen = 999)
-# renv::install("mjfrigaard/msst2ap")
-# renv::install("lobstr")
+library(shiny)
 library(lobstr)
-library(dplyr)
+library(crayon)
+library(stringr)
+# install.packages(c("NHANES", "palmerpenguins"))
+library(NHANES)
+library(palmerpenguins)
 ```
+
 
 ```{r}
 #| label: pkgs
@@ -98,17 +57,17 @@ library(rhino)
 
 ```{r}
 #| label: co_box_test
-#| eval: false
+#| eval: true
 #| results: asis
-#| include: false
-co_box(color = "r", "RED", "**This is red**
-
-  **This is a new line**
-
-  **this a another line**")
+#| echo: false
+co_box(color = "r", 
+  header = "Note", 
+  contents = "
+This post is under construction.
+  ")
 ```
 
 The [`rhino` framework](https://appsilon.github.io/rhino/index.html) from [Appsilon](https://appsilon.com/) introduces a novel method for developing your Shiny application. Unlike the `golem` and `leprechaun` frameworks, `rhino` applications are not built inside R packages.
 
-The example `rhino` application we'll be using comes from my `moviesApp` repo covered in the [Shiny App-Packages](https://mjfrigaard.github.io/shiny-app-pkgs/) book (you can access this app using the [`shinyap` package](https://mjfrigaard.github.io/shinyap/) or directly from the [repo](https://github.com/mjfrigaard/moviesApp/branches/all)).
+The example `rhino` application we'll be using comes from my `moviesApp` repo covered in the [Shiny App-Packages](https://mjfrigaard.github.io/shiny-app-pkgs/) book (you can access this app using the [`shinypak` package](https://mjfrigaard.github.io/shinypak/) or directly from the [repo](https://github.com/mjfrigaard/moviesApp/tree/24_rhino)).
 

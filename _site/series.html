@@ -268,7 +268,7 @@ Subtitle
 <span class="listing-subtitle">Part 2 (series): Using <code>testthat</code> with Shiny outside of a package</span>
 </td>
 </tr>
-<tr data-index="2" data-categories="shiny,testing" data-listing-date-sort="1687244400000" data-listing-file-modified-sort="1711477395234" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="24" data-listing-word-count-sort="4661" data-listing-title-sort="Testing Shiny modules" data-listing-filename-sort="index.qmd">
+<tr data-index="2" data-categories="shiny,testing" data-listing-date-sort="1687244400000" data-listing-file-modified-sort="1711773064946" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="24" data-listing-word-count-sort="4661" data-listing-title-sort="Testing Shiny modules" data-listing-filename-sort="index.qmd">
 <td>
 <a href="./series/testing/p3-shiny-module-tests/index.html" class="title listing-title">Testing Shiny modules</a>
 </td>
@@ -276,12 +276,12 @@ Subtitle
 <span class="listing-subtitle">Part 3 (series): module server functions and <code>testServer()</code></span>
 </td>
 </tr>
-<tr data-index="3" data-categories="shiny,testing" data-listing-date-sort="1688454000000" data-listing-file-modified-sort="1710884833455" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="45" data-listing-word-count-sort="8944" data-listing-title-sort="Shiny system tests with `shinytest2`" data-listing-filename-sort="index.qmd">
+<tr data-index="3" data-categories="shiny,testing" data-listing-date-sort="1688454000000" data-listing-file-modified-sort="1712060009562" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="25" data-listing-word-count-sort="4953" data-listing-title-sort="Shiny system tests with `shinytest2`" data-listing-filename-sort="index.qmd">
 <td>
 <a href="./series/testing/p4-system-shiny/index.html" class="title listing-title">Shiny system tests with <code>shinytest2</code></a>
 </td>
 <td>
-<span class="listing-subtitle">Part 4 (series): recording tests and snapshots</span>
+<span class="listing-subtitle">Part 4 (series): writing efficient system tests</span>
 </td>
 </tr>
 <tr data-index="4" data-categories="shiny,box,testing" data-listing-date-sort="1702018800000" data-listing-file-modified-sort="1710884810443" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-word-count-sort="431" data-listing-title-sort="Testing `rhino` apps" data-listing-filename-sort="index.qmd">
@@ -747,25 +747,64 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         }
       };
     }
-      // Attach click handler to the DT
-      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
-      for (const annoteDlNode of annoteDls) {
-        annoteDlNode.addEventListener('click', (event) => {
-          const clickedEl = event.target;
-          if (clickedEl !== selectedAnnoteEl) {
-            unselectCodeLines();
-            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
-            if (activeEl) {
-              activeEl.classList.remove('code-annotation-active');
-            }
-            selectCodeLines(clickedEl);
-            clickedEl.classList.add('code-annotation-active');
-          } else {
-            // Unselect the line
-            unselectCodeLines();
-            clickedEl.classList.remove('code-annotation-active');
+      const annoteTargets = window.document.querySelectorAll('.code-annotation-anchor');
+      for (let i=0; i<annoteTargets.length; i++) {
+        const annoteTarget = annoteTargets[i];
+        const targetCell = annoteTarget.getAttribute("data-target-cell");
+        const targetAnnotation = annoteTarget.getAttribute("data-target-annotation");
+        const contentFn = () => {
+          const content = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          if (content) {
+            const tipContent = content.cloneNode(true);
+            tipContent.classList.add("code-annotation-tip-content");
+            return tipContent.outerHTML;
           }
-        });
+        }
+        const config = {
+          allowHTML: true,
+          content: contentFn,
+          onShow: (instance) => {
+            selectCodeLines(instance.reference);
+            instance.reference.classList.add('code-annotation-active');
+            window.tippy.hideAll();
+          },
+          onHide: (instance) => {
+            unselectCodeLines();
+            instance.reference.classList.remove('code-annotation-active');
+          },
+          maxWidth: 300,
+          delay: [50, 0],
+          duration: [200, 0],
+          offset: [5, 10],
+          arrow: true,
+          appendTo: function(el) {
+            return el.parentElement.parentElement.parentElement;
+          },
+          interactive: true,
+          interactiveBorder: 10,
+          theme: 'quarto',
+          placement: 'right',
+          popperOptions: {
+            modifiers: [
+            {
+              name: 'flip',
+              options: {
+                flipVariations: false, // true by default
+                allowedAutoPlacements: ['right'],
+                fallbackPlacements: ['right', 'top', 'top-start', 'top-end', 'bottom', 'bottom-start', 'bottom-end', 'left'],
+              },
+            },
+            {
+              name: 'preventOverflow',
+              options: {
+                mainAxis: false,
+                altAxis: false
+              }
+            }
+            ]        
+          }      
+        };
+        window.tippy(annoteTarget, config); 
       }
   const findCites = (el) => {
     const parentEl = el.parentElement;
