@@ -962,6 +962,6 @@ Duration: 21.3 s
 
 ## Recap
 
-This post has covered creating tests with `testthat` and `shinytest2` for an app-package containing a Shiny application. In general, `shinytest2` is designed for end-to-end testing of Shiny applications. System tests (or regression testing) can capture the state of a Shiny app (input, output, and exported values) during user interactions and compare them with a previous state (i.e., snapshots). As we can see, `shinytest2` makes it easier to test specific app behaviors and set expectations iteratively with the `AppDriver` makes. 
+This post has covered creating tests with `testthat` and `shinytest2` for an app-package containing a Shiny application. In general, `shinytest2` is designed for end-to-end testing of Shiny applications. System tests (or regression testing) can capture the state of a Shiny app (input, output, and exported values) during user interactions and compare them with a previous state (i.e., snapshots). As we can see, `shinytest2` makes it easier to test specific app behaviors and set expectations iteratively with the `AppDriver`. 
 
 `shinytest2` tests can also simulate user interaction in a way that `testServer()` tests can't, such as waiting for reactive outputs to update after the input changes, clicking on action buttons, etc. `shinytest2` can also be resource-intensive, so it's recommended to write these tests after you've completed the standard `testthat` unit tests and `testServer()` tests.
