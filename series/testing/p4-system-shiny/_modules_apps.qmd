@@ -166,7 +166,7 @@ datasetApp <- function(filter = NULL) {
 
 ::: {#fig-datasetApp}
 
-![`datasetApp()`](datasetApp.png){#fig-datasetApp fig-align="center" width=100%}
+![`datasetApp()`](img/datasetApp.png){#fig-datasetApp fig-align="center" width=100%}
 
 `datasetApp()` in `msst2ap`
 :::
@@ -306,7 +306,7 @@ selectVarApp <- function(filter = is.numeric) {
 
 ::: {#fig-selectVarApp}
 
-![`selectVarApp()`](selectVarApp.png){#fig-selectVarApp fig-align="center" width=100%}
+![`selectVarApp()`](img/selectVarApp.png){#fig-selectVarApp fig-align="center" width=100%}
 
 `selectVarApp()` in `msst2ap`
 :::
@@ -427,7 +427,7 @@ selectDataVarApp <- function(filter = is.numeric) {
 
 ::: {#fig-selectDataVarApp}
 
-![`selectDataVarApp()`](selectDataVarApp.png){#fig-selectDataVarApp fig-align="center" width=100%}
+![`selectDataVarApp()`](img/selectDataVarApp.png){#fig-selectDataVarApp fig-align="center" width=100%}
 
 `selectDataVarApp()` in `msst2ap`
 :::
@@ -573,8 +573,6 @@ I've made some changes to the `histogramServer()` function (to accomodate the ch
 
 ##### [`histogramApp()`]{style="font-size: 1.15em"}
 
-
-
 ```{r}
 #| eval: false
 #| echo: true
@@ -616,7 +614,7 @@ histogramApp <- function() {
 
 ::: {#fig-histogramApp}
 
-![`histogramApp()`](histogramApp.png){#fig-dataStrApp fig-align="center" width=100%}
+![`histogramApp()`](img/histogramApp.png){#fig-dataStrApp fig-align="center" width=100%}
 
 `histogramApp()` in `msst2ap`
 :::
