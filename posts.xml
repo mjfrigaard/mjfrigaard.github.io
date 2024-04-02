@@ -2848,7 +2848,7 @@ font-style: inherit;">test</span>()</span></code></pre></div>
 </section>
 <section id="recap" class="level2">
 <h2 class="anchored" data-anchor-id="recap">Recap</h2>
-<p>This post has covered creating tests with <code>testthat</code> and <code>shinytest2</code> for an app-package containing a Shiny application. In general, <code>shinytest2</code> is designed for end-to-end testing of Shiny applications. System tests (or regression testing) can capture the state of a Shiny app (input, output, and exported values) during user interactions and compare them with a previous state (i.e., snapshots). As we can see, <code>shinytest2</code> makes it easier to test specific app behaviors and set expectations iteratively with the <code>AppDriver</code> makes.</p>
+<p>This post has covered creating tests with <code>testthat</code> and <code>shinytest2</code> for an app-package containing a Shiny application. In general, <code>shinytest2</code> is designed for end-to-end testing of Shiny applications. System tests (or regression testing) can capture the state of a Shiny app (input, output, and exported values) during user interactions and compare them with a previous state (i.e., snapshots). As we can see, <code>shinytest2</code> makes it easier to test specific app behaviors and set expectations iteratively with the <code>AppDriver</code>.</p>
 <p><code>shinytest2</code> tests can also simulate user interaction in a way that <code>testServer()</code> tests can’t, such as waiting for reactive outputs to update after the input changes, clicking on action buttons, etc. <code>shinytest2</code> can also be resource-intensive, so it’s recommended to write these tests after you’ve completed the standard <code>testthat</code> unit tests and <code>testServer()</code> tests.</p>
 
 
@@ -3504,7 +3504,7 @@ font-style: inherit;">print</span>(x)</span>
 </div>
 </div>
 <p>When <code>datasetApp()</code> is run, the app displays the dataset object in the <code>tableOutput()</code>, and the <code>verbatimTextOutput()</code> renders the reactive values as a text:</p>
-<div id="fig-datasetApp_run" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center" width="100%">
+<div id="fig-datasetApp_run" class="quarto-figure quarto-figure-center quarto-float anchored" width="100%" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-datasetApp_run-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="https://mjfrigaard.github.io/posts/p3-test-shiny-module-tests/datasetApp_run.png" id="fig-datasetApp_run" class="img-fluid quarto-figure quarto-figure-center anchored figure-img" style="width:100.0%">
