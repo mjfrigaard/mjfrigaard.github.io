@@ -1,10 +1,10 @@
 ---
 title: "Testing `rhino` apps" 
-subtitle: "Part 4: Testing with `box` modules"
+subtitle: "Part 5: Testing with `box` modules"
 author: "Martin Frigaard"
 date: "2024-01-24"
 categories: [shiny, box, testing]
-image: "rhino.png"
+image: "img/rhino.png"
 draft: true
 toc: true
 toc-depth: 5
@@ -25,6 +25,7 @@ execute:
   warning: false
   eval: false
 ---
+
 
 ```{r}
 #| label: setup
@@ -63,11 +64,55 @@ library(rhino)
 co_box(color = "r", 
   header = "Note", 
   contents = "
-This post is under construction.
+This post demonstrates some of the updated features to the [`rhino` framework.](https://appsilon.github.io/rhino/index.html) I also cover rhino in the [Shiny App-Packages boook.](https://mjfrigaard.github.io/shiny-app-pkgs/)
   ")
 ```
 
+::: {.column-margin}
+
+![](img/rhino.png){width=50%}
+
+:::
+
 The [`rhino` framework](https://appsilon.github.io/rhino/index.html) from [Appsilon](https://appsilon.com/) introduces a novel method for developing your Shiny application. Unlike the `golem` and `leprechaun` frameworks, `rhino` applications are not built inside R packages.
 
-The example `rhino` application we'll be using comes from my `moviesApp` repo covered in the [Shiny App-Packages](https://mjfrigaard.github.io/shiny-app-pkgs/) book (you can access this app using the [`shinypak` package](https://mjfrigaard.github.io/shinypak/) or directly from the [repo](https://github.com/mjfrigaard/moviesApp/tree/24_rhino)).
+The example `rhino` application we'll be using comes from the [`sapkgs` repo](https://github.com/mjfrigaard/sapkgs/tree/rtapp). You can access this app using the following commands in the Terminal:
+
+```{bash}
+#| eval: false
+#| code-fold: false
+git clone https://github.com/mjfrigaard/sapkgs.git
+cd sapkgs
+open sapkgs.Rproj
+```
+
+Then checkout the `rtapp` branch:
+
+```{bash}
+#| eval: false
+#| code-fold: false
+git checkout rtapp
+```
+
+## Build pane
+
+If you happen to see the **Build** pane and want remove it, you can **Terminate the R** session in the IDE:
+
+:::{layout="[58, -2, 30]" layout-valign="top"}
+
+![**Build** Pane](img/build_pane.png){width='100%'}
+
+![**Session** > **Terminate R**](img/terminate.png){width='100%'}
+
+:::
+
+This isn't required, but it removes the temptation to run any `devtools` functions while you're working in your `rhino` app.[^app-pkgs]
+
+[^app-pkgs]: Read more about the differences between Shiny apps and Shiny app-packages [Packages chapter of Shiny App-Packages](https://mjfrigaard.github.io/shiny-app-pkgs/packages.html), specifically the [R Projects section](https://mjfrigaard.github.io/shiny-app-pkgs/packages.html#r-projects). 
+
+## App structure
+
+The rhino application in `rtapp` includes a layout with `bslib` and the `movies` data from [Building Web Applications with Shiny](https://rstudio-education.github.io/shiny-course/).
+
+
 

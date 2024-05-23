@@ -1,0 +1,50 @@
+---
+title: "`ggplot2` goodies" 
+subtitle: "Minor (major) changes and updates"
+author: "Martin Frigaard"
+date: "2024-04-15"
+categories: [ggplot2, data viz, tidyverse]
+image: "img/image.png"
+draft: true
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+# code-block-border-left: true
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+code-fold: show
+code-summary: 'show/hide'
+callout-icon: false
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("https://raw.githubusercontent.com/mjfrigaard/sapkgs/mstsap/tests/testthat/helper.R")
+source("../_common.R")
+options(scipen = 999)
+library(shiny)
+library(lobstr)
+library(crayon)
+library(stringr)
+# install.packages(c("NHANES", "palmerpenguins"))
+library(NHANES)
+library(palmerpenguins)
+```
+
+::: {.column-margin}
+![](img/image.png){width=70%}
+:::
+
+This post covers the 3.5.0 and development updates to the `ggplot2` package. 

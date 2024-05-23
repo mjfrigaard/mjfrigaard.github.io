@@ -1,0 +1,338 @@
+---
+title: "VS Code, meet Quarto." 
+subtitle: "Quarto, say 'hello' to Python."
+author: "Martin Frigaard"
+date: "2024-05-30"
+categories: [quarto, python, vscode]
+image: "img/quarto-vscode-python.png"
+draft: true
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+# code-block-border-left: true
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+code-fold: show
+code-summary: 'show/hide'
+callout-icon: false
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+
+```{r}
+#| label: setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("https://raw.githubusercontent.com/mjfrigaard/sapkgs/mstsap/tests/testthat/helper.R")
+source("../_common.R")
+options(scipen = 999)
+library(shiny)
+library(lobstr)
+library(crayon)
+library(stringr)
+# install.packages(c("NHANES", "palmerpenguins"))
+library(NHANES)
+library(palmerpenguins)
+```
+
+I've been developing more and more in Python lately, so I've decided to document my thoughts on adopting a new programming language, working with VS Code, and trying to use Python to solve problems I would previously solve with R. I've been an avid R/RStudio (Posit Workbench) user for over 15 years now, so a new IDE and programming language has taken some getting used to. This post covers setting up VS Code, potential sticky spots, learning pains, tips, and early successes. 
+
+<!--
+received my new copy of [Learning Data Science](https://learningds.org/intro.html) by Sam Lau, Joseph Gonzalez, and Deborah Nolan. The [code examples](https://github.com/DS-100/textbook/) are in Python, so I  
+-->
+
+## Install VS Code
+
+:::: {layout="[75, 25]"}
+
+If you haven’t already installed VS Code, download it from the [official website](https://code.visualstudio.com/) and follow the installation instructions for your operating system.[^RamiKrispin-vscode-python] After installing VS Code, you'll want to install the [Quarto extension](https://marketplace.visualstudio.com/items?itemName=quarto.quarto) and [Python extension from Microsoft](https://marketplace.visualstudio.com/items?itemName=ms-python.python). 
+
+![](img/vscode.jpeg){class="cover" width="450" fig-align="right"}
+
+::::
+
+![VS Code Start](img/vscode_start.png){fig-align='center' width='80%'}
+
+Below we'll cover configuring your Python installation in VS Code.
+
+<br>
+
+## Install Quarto
+
+:::: {layout="[25, 75]"}
+
+![](img/quarto.png){class="cover" width="500" fig-align="right"}
+
+Quarto can be installed from its [official website](https://quarto.org/docs/get-started/). Follow the platform-specific instructions to install it on your system. Make sure Quarto has been installed correctly and is available in your system’s `PATH`.
+
+::::
+
+```{r}
+#| label: co_box_macos
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "o", 
+  size = "1.10", hsize = "1.15",
+  header = "OS DISCLAIMER!", 
+  contents = "I'm using macOS Sonoma (14.4.1 (23E224)) with [Zsh](https://ohmyz.sh/) and [iTerm2](https://iterm2.com/).")
+```
+
+
+Check if Quarto is in `PATH`:
+
+```{bash}
+#| eval: true
+#| code-fold: show
+#| code-summary: 'In Terminal'
+quarto --version
+```
+
+If it isn't, you'll need to add the location of your quarto installation to `PATH`. You can do that with the commands below (depending on your shell).
+
+For Bash (common in Linux and older macOS versions):
+
+```bash
+echo 'export PATH="$PATH:/path/to/quarto"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+For Zsh (default in newer macOS versions):
+
+```bash
+echo 'export PATH="$PATH:/path/to/quarto"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+You can also use `which` to locate quarto path: 
+
+```{bash}
+#| eval: true
+#| code-fold: show
+#| code-summary: 'In Terminal'
+which quarto
+```
+
+On macOS, you can use `find` in the Terminal: 
+
+```bash
+find / -name quarto 2>/dev/null
+```
+
+<br>
+
+## Install Python
+
+::: {layout="[15, 85]"}
+
+![](img/python-black.png){class="cover" width="375" fig-align="right"}
+
+Installing python has always been a maze for me. I would find myself stuck on questions like, *'Do I use conda, miniconda, pip?'* *'Do I need to specify the version of pip (i.e., `pip3 install`)?'* *'What version of python do I have installed?'* *'Is it stored in `PATH`?'* The Python tutorial offered by VS Code clarified many of the issues I was having with Python. [^python-tutorial] 
+
+:::
+
+For example, I typically work on macOS, so I use Homebrew to install Python 3:
+
+```{bash}
+#| eval: false
+#| code-fold: show
+#| code-summary: 'In Terminal'
+brew install python3
+```
+
+If you're using Homebrew, it's important to note the different locations for python installations. The `which` command is helpful here:
+
+```{bash}
+#| eval: true
+#| echo: true
+#| code-fold: show
+#| code-summary: 'In Terminal'
+which python3
+```
+
+`/usr/bin/python3` is the **system-managed Python installation**. It's minimal and less likely to change, and is intended to ensure stability.
+
+### Python via Homebrew 
+
+If you're using Homebrew to install Python, you'll probably notice here are other installations of Python in `/usr/local/bin`.[^usr-local-bin] I display these below using the `tree` command:
+
+[^usr-local-bin]: `/usr/local/bin` is commonly used for user-installed software, separate from the system's default utilities.
+
+```{bash}
+#| eval: false
+#| echo: true
+#| code-fold: show
+#| code-summary: 'In Terminal'
+tree -P "py*" /usr/local/bin -L 2
+# /usr/local/bin
+# ├── pydoc3 -> ../Cellar/python@3.12/3.12.3/bin/pydoc3
+# ├── pydoc3.12 -> ../Cellar/python@3.12/3.12.3/bin/pydoc3.12
+# ├── python3 -> ../Cellar/python@3.12/3.12.3/bin/python3
+# ├── python3-config -> ../Cellar/python@3.12/3.12.3/bin/python3-config
+# ├── python3.12 -> ../Cellar/python@3.12/3.12.3/bin/python3.12
+# └── python3.12-config -> ../Cellar/python@3.12/3.12.3/bin/python3.12-config
+# 
+# 1 directory, 6 files
+```
+
+The output above shows the files and the [symbolic links](https://linuxize.com/post/how-to-create-symbolic-links-in-linux-using-the-ln-command/) they are referencing. The links are pointing to the actual binaries located under the `../Cellar/python@3.12/` directory.[^homebrew-links] 
+
+The symbolic links in `/usr/local/bin` are a modular approach to updating python. This is handy for user-installed environments where uninstallation or updates can be managed flexibly without disrupting the system's core functionality.
+
+## Quarto <> Python
+
+I highly recommend running `quarto check` to confirm Python and the other dependencies have been installed:
+
+`Quarto installation` displays the path to the installation of the current Quarto version.
+
+``` bash
+Quarto 1.5.28
+[✓] Checking versions of quarto binary dependencies...
+      Pandoc version 3.1.11: OK
+      Dart Sass version 1.70.0: OK
+      Deno version 1.41.0: OK
+      Typst version 0.10.0: OK
+[✓] Checking versions of quarto dependencies......OK
+[✓] Checking Quarto installation......OK
+      Version: 1.5.28
+      Path: /Applications/quarto/bin
+```
+
+`tools` checks for a [TinyTex](https://yihui.org/tinytex/) installation (and installs it if its not there), `Latex` confirms the installation of [LaTeX](https://www.latex-project.org/) or [TinyTex](https://yihui.org/tinytex/) and displays the path (in this case, the path to the TinyTex installation), and basic markdown rendering is confirmed.
+
+``` bash
+[✓] Checking tools....................OK
+      TinyTeX: (external install)
+      Chromium: 869685
+
+[✓] Checking LaTeX....................OK
+      Using: TinyTex
+      Path: /Users/username/Library/TinyTeX/bin/universal-darwin
+      Version: 2023
+
+[✓] Checking basic markdown render....OK
+```
+
+### Python Installations
+
+`Python 3 installation` returns the python and jupyter versions, the python installation path, and kernels.
+
+``` bash
+[✓] Checking Python 3 installation....OK
+      Version: 3.11.5 (Conda)
+      Path: /Users/username/miniconda3/bin/python
+      Jupyter: 5.7.2
+      Kernels: python3
+
+[✓] Checking Jupyter engine render....OK
+```
+
+Notice Quarto is using the python version installed in `/Users/username/miniconda3/bin/python`, not the `/usr/bin/python3` version above.
+
+`R installation` checks all the R stuff (`LibPaths`, `knitr`, `rmarkdown`)
+
+``` bash
+[✓] Checking R installation...........OK
+      Version: 4.3.2
+      Path: /Library/Frameworks/R.framework/Resources
+      LibPaths:
+        - /Library/Frameworks/R.framework/Versions/4.3-x86_64/Resources/library
+      knitr: 1.46
+      rmarkdown: 2.26
+
+[✓] Checking Knitr engine render......OK
+```
+
+## VS Code <> Quarto
+
+When I create a new folder (`py-quarto-hello`) and Quarto document (`hello.qmd`) following the introduction on the Quarto website, I end up with the following YAML header, python code, and output:
+
+![Hello Quarto](img/vscode_hello_quarto.png){fig-align='center' width='80%'}
+
+If I run `quarto check` in the Zsh terminal *inside* VS Code, I see the python version is stored in `/Users/username/.pyenv/versions/`:
+
+```{bash}
+#| eval: false
+#| echo: true
+#| code-fold: false
+[✓] Checking Python 3 installation....OK
+      Version: 3.9.15
+      Path: /Users/username/.pyenv/versions/3.9.15/bin/python3
+      Jupyter: 5.7.2
+      Kernels: python3
+```
+
+
+The differences in Python versions when running `quarto check` in the macOS Terminal versus the VS Code Terminal are due to distinct Python environments being picked up by each terminal session. This is a common situation caused by different environment settings, specifically the `PATH` environment variable, and potentially Python version management configurations. Here’s a breakdown of each:
+
+### macOS Terminal:
+
+- **Python Version**: 3.11.5
+- **Source**: Conda environment
+- **Path**: `/Users/user/miniconda3/bin/python`
+- This output suggests that when you run `quarto check` in the macOS Terminal, it is using Python from a Conda environment. Conda is a popular package, dependency, and environment management system which is typically used for scientific computing and data science, where managing complex dependencies is crucial. The Conda environment has its own isolated directory, separate from the system-wide installations.
+
+### VS Code Terminal:
+
+- **Python Version**: 3.9.15
+- **Source**: Pyenv environment
+- **Path**: `/Users/user/.pyenv/versions/3.9.15/bin/python3`
+- In the VS Code Terminal, `quarto check` uses Python installed via `pyenv`, another popular version management tool used to manage multiple Python versions. Pyenv modifies the PATH to prioritize its versions of Python over system-installed versions.
+
+### Key Differences and Implications
+
+1. **Environment Management Tools**:
+   - **Conda**: Generally creates and manages self-contained environments that include Python and other dependencies. It modifies the PATH within the shell it's activated in, which might be automatically configured in your standard macOS Terminal.
+   - **Pyenv**: Manages multiple Python versions by manipulating the PATH environment variable and does not concern itself with non-Python dependencies.
+
+2. **Configuration in VS Code**:
+   - VS Code might be configured to automatically activate a specific Python environment (like one managed by `pyenv`) upon opening a terminal. This configuration can be specified in VS Code’s settings (under `python.pythonPath` or via the Python extension that selects an interpreter).
+
+3. **PATH Environment Variable**:
+   - The primary reason for the difference is how the PATH environment variable is set up in each terminal instance. VS Code’s terminal might be configured to add the `pyenv` managed Python to the PATH ahead of the Conda managed version, resulting in the `pyenv` version being used when `quarto check` is executed.
+
+To harmonize the environments between the two terminals, you can either configure VS Code to recognize your Conda environment by default or adjust the PATH settings in your macOS Terminal to prioritize the `pyenv` version, depending on which Python version you prefer to use universally across both environments. This can be done by modifying the `.bash_profile`, `.zshrc`, or equivalent shell configuration files, or by adjusting settings directly within VS Code.
+
+In the command palette (<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>), I can see multiple Python interpreters to select from:
+
+![Python interpreter](img/py_interpreter.png){fig-align='center' width='70%'}
+
+[^homebrew-links]: This is typical of Homebrew installations on macOS, where Homebrew installs software under `/usr/local/Cellar` and creates symlinks in `/usr/local/bin` for easy execution.
+
+## Common tasks
+
+The first tasks I wanted to accomplish with Python were 1) connect to an API for data, and 2) perform some basic processing to prepare the data for visualizing. 
+
+### Connecting to and API
+
+
+
+### Manipulating data
+
+
+
+[^RamiKrispin-vscode-python]: [Rami Krispin](https://github.com/RamiKrispin) also has a great  [guide](https://github.com/RamiKrispin/vscode-python) for setting up Python and Docker in VS Code.
+
+[^python-tutorial]: [Getting Started with Python in VS Code](https://code.visualstudio.com/docs/python/python-tutorial).
+
+
+
+ 
+
+
+
+
+
+
+
+
+<br>
