@@ -4,6 +4,7 @@ subtitle: "Building a Shiny app within an R package: whole-game"
 author: "Martin Frigaard"
 date: "2023-04-10"
 categories: [shiny, usethis, devtools, packages]
+draft: true
 image: "img/image.png"
 toc: true
 toc-depth: 5
@@ -41,8 +42,8 @@ source("../_common.R")
 #| echo: false
 co_box(color = "r", 
   header = "Warning", 
-  hsize = '1.25', 
-  contents = "_This is a long post because it covers many of the steps used to build R packages. If you want more information on developing R packages *without* Shiny apps, I suggest starting with [the whole game section](https://r-pkgs.org/whole-game.html)._")
+  hsize = '1.15', 
+  contents = "This is a long post because it covers many of the steps used to build R packages. If you want more information on developing R packages *without* Shiny apps, I suggest starting with [the whole game section](https://r-pkgs.org/whole-game.html).")
 ```
 
 ```{r}
