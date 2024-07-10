@@ -1,0 +1,133 @@
+---
+title: "Python Apps" 
+subtitle: "Launching Python Applications from VS Code"
+author: "Martin Frigaard"
+date: "2024-07-12"
+categories: [python, vscode]
+image: "image.png"
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+# code-block-border-left: true
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+code-fold: show
+code-summary: 'show/hide'
+callout-icon: false
+draft: true
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+
+---
+
+```{r}
+#| label: setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("../_common.R")
+options(scipen = 999)
+library(shiny)
+library(lobstr)
+library(crayon)
+library(stringr)
+# install.packages(c("NHANES", "palmerpenguins"))
+library(NHANES)
+library(palmerpenguins)
+```
+
+```{r}
+#| label: co_box_dev
+#| results: asis 
+#| echo: false
+#| eval: true
+co_box(
+  color = 'b',
+  header = 'Note',
+  size = "1.05",
+  hsize = "1.10",
+  fold = FALSE,
+  look = 'simple',
+  contents = "This is the second post on working in VS Code with Python. I'll cover developing and publishing Python applications using Dash, Streamlit, and Bokeh."
+)
+```
+
+I've been demoing quite a few Python applications with VS Code lately and thought I'd write some notes and observations on the three popular libraries: Dash, Streamlit, and Bokeh.
+
+## Dash
+
+::: {.column-margin}
+![](img/dash.png){width=40%}
+:::
+
+**Overview**: Dash is a library for creating web applications that are especially good for data visualization. It’s developed by Plotly.
+
+**Pros**:
+
+- **Integration**: Works well with Plotly for creating detailed and interactive graphs.
+
+- **Flexibility**: Can handle complex applications with multiple interactive elements.
+
+- **Components**: Has a rich set of UI components like sliders, dropdowns, and more.
+
+**Cons**:
+
+- **Complexity**: Can be more complex to set up and use, especially for beginners.
+
+- **Performance**: Might be slower for very large datasets or highly interactive applications.
+
+## Streamlit
+
+::: {.column-margin}
+![](img/streamlit.png){width=40%}
+:::
+
+
+**Overview**: Streamlit is a library that makes it very easy to create web applications for data analysis and visualization. It’s known for its simplicity and ease of use.
+
+**Pros**:
+
+- **Simplicity**: Very easy to use, with a simple and intuitive API.
+
+- **Quick Prototyping**: Excellent for quickly turning Python scripts into interactive web apps.
+
+- **Real-Time Updates**: Automatically updates the app as you make changes to the code.
+
+**Cons**:
+
+- **Limited Customization**: Less flexible compared to Dash for creating complex applications.
+
+- **Performance**: Can struggle with very large datasets or highly interactive elements.
+
+## Bokeh
+
+Bokeh is a library in Python specifically designed for creating interactive and visually appealing graphs and charts.
+
+::: {.column-margin}
+![](img/bokeh.png){width=40%}
+:::
+
+**Overview**: Bokeh is a library for creating interactive and visually appealing plots and charts.
+
+**Pros**:
+
+- **Visualization Quality**: Produces high-quality, interactive visualizations.
+
+- **Flexibility**: Highly customizable for creating detailed and specific visualizations.
+
+- **Integration**: Can integrate with other web frameworks like Flask or Django.
+
+**Cons**:
+
+- **Complexity**: Can be more complex to learn and use, especially for beginners.
+
+- **Less Focus on Full Applications**: Primarily focused on visualization, not full-fledged web applications.
+
+## Shiny (for Python)

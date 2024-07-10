@@ -1,0 +1,60 @@
+---
+title: "Positron" 
+subtitle: "Test-driving the new IDE"
+author: "Martin Frigaard"
+date: "2024-07-19"
+categories: [R, quarto, Shiny]
+image: "img/image.png"
+draft: true
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+# code-block-border-left: true
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+code-fold: show
+code-summary: 'show/hide'
+callout-icon: false
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("https://raw.githubusercontent.com/mjfrigaard/sapkgs/mstsap/tests/testthat/helper.R")
+source("../_common.R")
+options(scipen = 999)
+library(shiny)
+library(lobstr)
+library(crayon)
+library(stringr)
+# install.packages(c("NHANES", "palmerpenguins"))
+library(NHANES)
+library(palmerpenguins)
+```
+
+::: {.column-margin}
+![](img/image.png){width=70%}
+:::
+
+I recently downloaded the new Positron IDE from Posit and took it for a spin. This post covers my initial take on the IDE's features.
+
+## Download 
+
+Users can download Positron from the [GitHub repository](https://github.com/posit-dev/positron). I'm running Positron on my MacBook (2019, 2.6 GHz 6-Core Intel Core i7, macOS Sonoma Version 14.5), so this involved downloading the .dmg file from the [releases page](https://github.com/posit-dev/positron/releases) and installing it like I would any new application.[^positron-version]
+
+[^positron-version]: I'm using version [2024.07.0-21](https://github.com/posit-dev/positron/releases/tag/2024.07.0-21)
+
+## Initial Impressions
+
+![Positron](img/initial_ide.png){fig-align="center" width="90%"}
