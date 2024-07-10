@@ -635,34 +635,53 @@ font-style: inherit;"># /Users/&lt;username&gt;/miniconda3/bin/python3</span></s
 background-color: null;
 font-style: inherit;">python</span> <span class="at" style="color: #657422;
 background-color: null;
-font-style: inherit;">-m</span> venv myenv</span>
+font-style: inherit;">-m</span> venv .venv</span>
 <span id="cb13-2"><span class="bu" style="color: null;
 background-color: null;
-font-style: inherit;">source</span> myenv/bin/activate</span></code></pre></div>
+font-style: inherit;">source</span> .venv/bin/activate</span></code></pre></div>
+</details>
+</div>
+<p>The commands above uses the <code>venv</code> module that is included with Python to create a virtual environment. <code>.venv</code> is the directory where the virtual environment will be created. Inside this directory, a standalone Python environment is set up. This environment includes its own Python interpreter and a <code>site-packages</code> directory where Python packages can be installed independently of the global Python environment.</p>
+<p>The <code>source .venv/bin/activate</code> command adjusts the environment variables so the shell uses the Python interpreter and libraries from the virtual environment instead of the global Python installation. Any Python packages installed using <code>pip</code> will be installed in the virtual environment’s <code>site-packages</code> directory.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>In VS Code Terminal</summary>
+<div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">pip</span> install jupyter matplotlib plotly pandas</span></code></pre></div>
 </details>
 </div>
 <p>Once all the dependencies are installed, we should generate a list of all installed packages along with their versions in a <code>requirements.txt</code> file using the <code>pip freeze</code> command:</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>In VS Code Terminal</summary>
-<div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><span class="ex" style="color: null;
-background-color: null;
-font-style: inherit;">pip</span> install jupyter matplotlib plotly pandas</span>
-<span id="cb14-2"><span class="ex" style="color: null;
+<div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><span class="ex" style="color: null;
 background-color: null;
 font-style: inherit;">pip</span> freeze <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">&gt;</span> requirements.txt</span></code></pre></div>
 </details>
 </div>
+<p>We should also include our virtual environment folder in the <code>.gitignore</code> file (because all of the dependencies are safely listed in the <code>requirements.txt</code>).</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>In .gitignore</summary>
+<div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Ignore the virtual environment directory</span></span>
+<span id="cb16-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">.venv/</span></span></code></pre></div>
+</details>
+</div>
 <p>We can also add a <code>_quarto.yml</code> file to store project-level metadata like styling, outputs, and code cell configurations.</p>
-<div class="sourceCode" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb15-1"><span class="fu" style="color: #4758AB;
+<div class="sourceCode" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb17-1"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">project</span><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">:</span></span>
-<span id="cb15-2"><span class="at" style="color: #657422;
+<span id="cb17-2"><span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">  </span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -674,7 +693,7 @@ background-color: null;
 font-style: inherit;"> </span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"Python in Quarto"</span></span>
-<span id="cb15-3"><span class="at" style="color: #657422;
+<span id="cb17-3"><span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">  </span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -684,8 +703,8 @@ font-weight: bold;
 font-style: inherit;">:</span><span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;"> .</span></span>
-<span id="cb15-4"></span>
-<span id="cb15-5"><span class="fu" style="color: #4758AB;
+<span id="cb17-4"></span>
+<span id="cb17-5"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">toc</span><span class="kw" style="color: #003B4F;
 background-color: null;
@@ -695,7 +714,7 @@ background-color: null;
 font-style: inherit;"> </span><span class="ch" style="color: #20794D;
 background-color: null;
 font-style: inherit;">true</span></span>
-<span id="cb15-6"><span class="fu" style="color: #4758AB;
+<span id="cb17-6"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">toc-title</span><span class="kw" style="color: #003B4F;
 background-color: null;
@@ -703,7 +722,7 @@ font-weight: bold;
 font-style: inherit;">:</span><span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;"> Contents</span></span>
-<span id="cb15-7"><span class="fu" style="color: #4758AB;
+<span id="cb17-7"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">toc-location</span><span class="kw" style="color: #003B4F;
 background-color: null;
@@ -711,7 +730,7 @@ font-weight: bold;
 font-style: inherit;">:</span><span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;"> left</span></span>
-<span id="cb15-8"><span class="fu" style="color: #4758AB;
+<span id="cb17-8"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">toc-expand</span><span class="kw" style="color: #003B4F;
 background-color: null;
@@ -721,7 +740,7 @@ background-color: null;
 font-style: inherit;"> </span><span class="ch" style="color: #20794D;
 background-color: null;
 font-style: inherit;">true</span></span>
-<span id="cb15-9"><span class="fu" style="color: #4758AB;
+<span id="cb17-9"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">number-sections</span><span class="kw" style="color: #003B4F;
 background-color: null;
@@ -731,14 +750,14 @@ background-color: null;
 font-style: inherit;"> </span><span class="ch" style="color: #20794D;
 background-color: null;
 font-style: inherit;">false</span></span>
-<span id="cb15-10"></span>
-<span id="cb15-11"><span class="fu" style="color: #4758AB;
+<span id="cb17-10"></span>
+<span id="cb17-11"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">format</span><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">:</span></span>
-<span id="cb15-12"><span class="at" style="color: #657422;
+<span id="cb17-12"><span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">  </span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -746,7 +765,7 @@ font-style: inherit;">html</span><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">:</span></span>
-<span id="cb15-13"><span class="at" style="color: #657422;
+<span id="cb17-13"><span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">    </span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -756,8 +775,8 @@ font-weight: bold;
 font-style: inherit;">:</span><span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;"> show</span></span>
-<span id="cb15-14"></span>
-<span id="cb15-15"><span class="fu" style="color: #4758AB;
+<span id="cb17-14"></span>
+<span id="cb17-15"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">editor</span><span class="kw" style="color: #003B4F;
 background-color: null;
@@ -765,7 +784,7 @@ font-weight: bold;
 font-style: inherit;">:</span><span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;"> </span></span>
-<span id="cb15-16"><span class="at" style="color: #657422;
+<span id="cb17-16"><span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">  </span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -4312,7 +4331,7 @@ font-style: inherit;">print</span>(x)</span>
 </div>
 </div>
 <p>When <code>datasetApp()</code> is run, the app displays the dataset object in the <code>tableOutput()</code>, and the <code>verbatimTextOutput()</code> renders the reactive values as a text:</p>
-<div id="fig-datasetApp_run" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center" width="100%">
+<div id="fig-datasetApp_run" class="quarto-figure quarto-figure-center quarto-float anchored" width="100%" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-datasetApp_run-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="https://mjfrigaard.github.io/posts/p3-test-shiny-module-tests/datasetApp_run.png" id="fig-datasetApp_run" class="img-fluid quarto-figure quarto-figure-center anchored figure-img" style="width:100.0%">

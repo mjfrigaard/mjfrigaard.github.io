@@ -458,8 +458,19 @@ If we continue adding the Python code [^more-python-code] to our Quarto document
 #| eval: false 
 #| code-fold: show 
 #| code-summary: 'In VS Code Terminal'
-python -m venv myenv
-source myenv/bin/activate
+python -m venv .venv
+source .venv/bin/activate
+```
+
+The commands above uses the `venv` module that is included with Python to create a virtual environment. `.venv` is the directory where the virtual environment will be created. Inside this directory, a standalone Python environment is set up. This environment includes its own Python interpreter and a `site-packages` directory where Python packages can be installed independently of the global Python environment.
+
+The `source .venv/bin/activate` command adjusts the environment variables so the shell uses the Python interpreter and libraries from the virtual environment instead of the global Python installation. Any Python packages installed using `pip` will be installed in the virtual environment's `site-packages` directory.
+
+```{bash}
+#| eval: false 
+#| code-fold: show 
+#| code-summary: 'In VS Code Terminal'
+pip install jupyter matplotlib plotly pandas
 ```
 
 Once all the dependencies are installed, we should generate a list of all installed packages along with their versions in a `requirements.txt` file using the `pip freeze` command:
@@ -468,11 +479,20 @@ Once all the dependencies are installed, we should generate a list of all instal
 #| eval: false 
 #| code-fold: show 
 #| code-summary: 'In VS Code Terminal'
-pip install jupyter matplotlib plotly pandas
 pip freeze > requirements.txt
 ```
 
-[^more-python-code]: The Python code we're using comes from the [Computations section](https://quarto.org/docs/get-started/computations/vscode.html) of the Quarto website.
+[^more-python-code]: The Python code we're using comes from the [Computations section](https://quarto.org/docs/get-started/computations/vscode.html) of the Quarto website. 
+
+We should also include our virtual environment folder in the `.gitignore` file (because all of the dependencies are safely listed in the `requirements.txt`).
+
+```{bash}
+#| eval: false 
+#| code-fold: show 
+#| code-summary: 'In .gitignore'
+# Ignore the virtual environment directory
+.venv/
+```
 
 We can also add a `_quarto.yml` file to store project-level metadata like styling, outputs, and code cell configurations.
 
