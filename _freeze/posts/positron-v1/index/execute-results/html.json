@@ -1,0 +1,15 @@
+{
+  "hash": "6c6ccb3f97a83a77f36734c7cee9e2b3",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Positron\" \nsubtitle: \"Test-driving the new IDE\"\nauthor: \"Martin Frigaard\"\ndate: \"2024-07-15\"\ncategories: [R, quarto, Shiny]\nimage: \"img/image.png\"\ndraft: false\ntoc: true\ntoc-depth: 5\ntoc-title: 'Contents'\ntoc-location: \"left\"\n# code-block-border-left: true\ncode-block-bg: \"#f8f8f8\"\ncode-block-border-left: \"#e8e8e8\"\ncode-fold: show\ncode-summary: 'show/hide'\ncallout-icon: false\n\nfreeze: true\n\nexecute:\n  echo: true\n  message: false\n  warning: false\n  eval: false\n---\n\n\n\n\n\n::: {.column-margin}\n![](img/image.png){width=70%}\n:::\n\nI recently downloaded the new Positron IDE from Posit and took it for a spin. This post covers my initial take on the IDE's features.\n\n## Download \n\nUsers can download Positron from the [GitHub repository](https://github.com/posit-dev/positron). I'm running Positron on my MacBook (2019, 2.6 GHz 6-Core Intel Core i7, macOS Sonoma Version 14.5), so this involved downloading the .dmg file from the [releases page](https://github.com/posit-dev/positron/releases) and installing it like I would any new application.[^positron-version]\n\n[^positron-version]: I'm using version [2024.07.0-21](https://github.com/posit-dev/positron/releases/tag/2024.07.0-21)\n\n## Initial Impressions\n\n![Positron](img/initial_ide.png){fig-align=\"center\" width=\"90%\"}\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}
