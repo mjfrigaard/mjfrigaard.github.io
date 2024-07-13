@@ -735,8 +735,6 @@ The **callback function** updates the scatter plot based on dropdown inputs.
    
 -   The `@app.callback` decorator defines reactive behavior, similar to `observeEvent()` or `reactive()` in Shiny.[^dash-callbacks]
 
-[^dash-callbacks]: Read more about Dash callback definitions in the [documentation](https://dash.plotly.com/basic-callbacks).
-
     ```{python}
     #| eval: false
     #| code-fold: false 
@@ -781,6 +779,8 @@ def update_scatter_plot(x_axis, y_axis):
     )
     return fig
 ```
+
+[^dash-callbacks]: Read more about Dash callback definitions in the [documentation](https://dash.plotly.com/basic-callbacks).
 
 ### For loops
 
@@ -956,6 +956,6 @@ The Dash application has an interactive scatter plot (with hover features) with 
 
 ## Recap 
 
-In summary, [Bokeh]() is excellent for creating detailed and interactive visualizations, comparable to `ggplot2` and `plotly` for interactive plots, but it's not focused on developing complete applications. [Streamlit]() is very user-friendly and ideal for quickly building and sharing simpler web apps, but with fewer options for customization. [Dash]() is capable of developing highly customizable and complex web applications (similar to Shiny), but has a steeper learning curve than Streamlit.
+In summary, [Bokeh](https://docs.bokeh.org/en/latest/) is excellent for creating detailed and interactive visualizations, comparable to `ggplot2` and `plotly` for interactive plots, but it's not focused on developing complete applications. [Streamlit](https://docs.streamlit.io/) is very user-friendly and ideal for quickly building and sharing simpler web apps, but with fewer options for customization. [Dash](https://dash.plotly.com/) is capable of developing highly customizable and complex web applications (similar to Shiny), but has a steeper learning curve than Streamlit.
 
 You can view the code used to create the apps in this [repo.](https://github.com/mjfrigaard/py-apps/tree/main)

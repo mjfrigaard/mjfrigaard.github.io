@@ -1474,9 +1474,28 @@ font-style: inherit;">'normal'</span></span>
 <h3 class="anchored" data-anchor-id="callback">Callback</h3>
 <p>The <strong>callback function</strong> updates the scatter plot based on dropdown inputs.</p>
 <ul>
-<li>The <code>@app.callback</code> decorator defines reactive behavior, similar to <code>observeEvent()</code> or <code>reactive()</code> in Shiny.<sup>6</sup></li>
-</ul>
-<ul>
+<li><p>The <code>@app.callback</code> decorator defines reactive behavior, similar to <code>observeEvent()</code> or <code>reactive()</code> in Shiny.<sup>6</sup></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@app.callback</span>(</span>
+<span id="cb40-2">      Output(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'scatter-plot'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'figure'</span>),</span>
+<span id="cb40-3">      [Input(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'x-axis'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'value'</span>),</span>
+<span id="cb40-4">       Input(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'y-axis'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'value'</span>)]</span>
+<span id="cb40-5">  )</span></code></pre></div>
+</div></li>
 <li><p>The function <code>update_scatter_plot</code> takes inputs from dropdowns and updates the plot, using <code>plotly.express</code> and our <code>format_label()</code> utility function to create the scatter plot, similar to using <code>ggplot2</code> in R.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb41" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1">  <span class="kw" style="color: #003B4F;
@@ -2089,7 +2108,7 @@ font-style: inherit;">*</span> Debug mode: on</span></code></pre></div>
 </section>
 <section id="recap" class="level2">
 <h2 class="anchored" data-anchor-id="recap">Recap</h2>
-<p>In summary, <a href="">Bokeh</a> is excellent for creating detailed and interactive visualizations, comparable to <code>ggplot2</code> and <code>plotly</code> for interactive plots, but it’s not focused on developing complete applications. <a href="">Streamlit</a> is very user-friendly and ideal for quickly building and sharing simpler web apps, but with fewer options for customization. <a href="">Dash</a> is capable of developing highly customizable and complex web applications (similar to Shiny), but has a steeper learning curve than Streamlit.</p>
+<p>In summary, <a href="https://docs.bokeh.org/en/latest/">Bokeh</a> is excellent for creating detailed and interactive visualizations, comparable to <code>ggplot2</code> and <code>plotly</code> for interactive plots, but it’s not focused on developing complete applications. <a href="https://docs.streamlit.io/">Streamlit</a> is very user-friendly and ideal for quickly building and sharing simpler web apps, but with fewer options for customization. <a href="https://dash.plotly.com/">Dash</a> is capable of developing highly customizable and complex web applications (similar to Shiny), but has a steeper learning curve than Streamlit.</p>
 <p>You can view the code used to create the apps in this <a href="https://github.com/mjfrigaard/py-apps/tree/main">repo.</a></p>
 
 
@@ -2104,29 +2123,7 @@ font-style: inherit;">*</span> Debug mode: on</span></code></pre></div>
 <li id="fn3"><p>Watch <a href="https://youtu.be/mTsZL-VmRVE?si=C6mkTzQYAI0FlCRJ">The Dash Callback - Input, Output, State, and more</a> on the <a href="https://www.youtube.com/@CharmingData">Charming Data YouTube channel</a>.↩︎</p></li>
 <li id="fn4"><p><code>pd.read_csv</code> is analogous to <code>read.csv</code> or <code>readr::read_csv</code> in R.↩︎</p></li>
 <li id="fn5"><p>Read all the arguments for dash.Dash in the <a href="https://dash.plotly.com/reference#dash.dash">documentation.</a>↩︎</p></li>
-<li id="fn6"><p>Read more about Dash callback definitions in the <a href="https://dash.plotly.com/basic-callbacks">documentation</a>.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb40" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1">  <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">@app.callback</span>(</span>
-<span id="cb40-2">      Output(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'scatter-plot'</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'figure'</span>),</span>
-<span id="cb40-3">      [Input(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'x-axis'</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'value'</span>),</span>
-<span id="cb40-4">       Input(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'y-axis'</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'value'</span>)]</span>
-<span id="cb40-5">  )</span></code></pre></div>
-</div>
-↩︎</li>
+<li id="fn6"><p>Read more about Dash callback definitions in the <a href="https://dash.plotly.com/basic-callbacks">documentation</a>.↩︎</p></li>
 </ol>
 </section></div> ]]></description>
   <category>python</category>
