@@ -2,7 +2,7 @@
 title: "Python Apps" 
 subtitle: "Launching Python Applications from VS Code"
 author: "Martin Frigaard"
-date: "2024-07-12"
+date: "2024-07-13"
 categories: [python, vscode]
 image: "image.png"
 toc: true
@@ -15,7 +15,7 @@ code-block-border-left: "#e8e8e8"
 code-fold: show
 code-summary: 'show/hide'
 callout-icon: false
-draft: true
+draft: false
 
 freeze: true
 
@@ -41,6 +41,7 @@ library(stringr)
 # install.packages(c("NHANES", "palmerpenguins"))
 library(NHANES)
 library(palmerpenguins)
+library(reticulate)
 ```
 
 ```{r}
@@ -55,33 +56,375 @@ co_box(
   hsize = "1.10",
   fold = FALSE,
   look = 'simple',
-  contents = "This is the second post on working in VS Code with Python. I'll cover developing and publishing Python applications using Dash, Streamlit, and Bokeh."
+  contents = "This is the second post on working in VS Code with Python. I'll cover developing and publishing Python applications using Bokeh, Streamlit, and Dash."
 )
 ```
 
-I've been demoing quite a few Python applications with VS Code lately and thought I'd write some notes and observations on the three popular libraries: Dash, Streamlit, and Bokeh.
+I've been demoing quite a few Python applications with VS Code lately and thought I'd write some notes and observations on running and deploying the three popular libraries: [Bokeh](https://docs.bokeh.org/en/latest/), [Streamlit](https://docs.streamlit.io/), and [Dash](https://dash.plotly.com/).
 
-## Dash
+## Virtual environments 
+
+Python virtual environments are designed to manage project-specific dependencies and ensure that the correct versions of packages are used in a given project. Similar to the renv package in R, Python comes with a a `venv` command for creating a virtual environment.[^venv] It's common practice to name the virtual environment something like `myenv` or `.venv`. 
+
+``` sh
+python -m venv .venv
+```
+
+`venv` works by creating a directory with a copy of the Python interpreter and the necessary executables to use it. After creating the virtual environment folder, we can activate it using the following command: 
+
+``` sh
+source .venv/bin/activate
+# windows
+# myenv\Scripts\activate
+```
+
+[^venv]: `venv` is a module that comes built-in with [Python 3.3 and later versions](https://docs.python.org/3/library/venv.html), so we do not need to install it separately.
+
+If you're using VS Code, this activate the following prompt to set your workspace folder: 
+
+![Workspace folder](img/venv_vs_code.png){fig-align='center' width='90%'}
+
+Click **Yes**, then make sure all the dependencies listed in the requirements.txt file are installed in the virtual environment using [`pip`](https://pypi.org/project/pip/), the package installer for Python.
+
+``` sh
+pip install -r requirements.txt
+```
+
+As you're developing, new dependencies can be recorded in `requirements.txt` using `pip freeze`:
+
+``` sh
+pip freeze > requirements.txt
+```
+
+### Git history
+
+The virtual environment will store all the dependencies for a project, so it's a good practice to remove it from any Git repositories. You can do this with the following commands in the terminal: 
+
+``` sh
+echo ".venv/" >> .gitignore
+git add .gitignore
+git commit -m "Add .venv to .gitignore"
+```
+
+You can also remove the `.venv` directory from the latest commit:
+
+``` sh
+git rm -r --cached .venv
+git commit -m "Remove .venv directory"
+```
+
+
+
+
+```{r}
+#| label: co_box_venv
+#| results: asis 
+#| echo: false
+#| eval: true
+co_box(
+  color = 'g',
+  header = 'Using `venv`',
+  size = "1.10",
+  hsize = "1.15",
+  fold = TRUE,
+  look = 'simple',
+  contents = "
+`venv` allows us to manage dependencies more effectively, ensuring a clean and isolated environment for each Python app project.
+
+\`\`\`sh
+# create a virtual environment
+python -m venv .venv
+
+# activate the virtual environment on macOS/Linux
+source .venv/bin/activate  
+
+# install necessary packages
+pip install dash streamlit bokeh
+
+# save your current environment's packages
+pip freeze > requirements.txt
+
+# install the packages in a new environment
+pip install -r requirements.txt
+
+# deactivate the virtual environment when done
+deactivate
+\`\`\`
+
+")
+
+```
+
+
+
+[Bokeh](https://docs.bokeh.org/en/latest/), [Streamlit](https://docs.streamlit.io/), and [Dash](https://dash.plotly.com/) are three popular libraries for creating interactive Python applications, particularly for visualizations and dashboards. Below we'll explore building an application in each framework using the [`palmerpenuins` data](https://allisonhorst.github.io/palmerpenguins/). For uniformity, each app will include a scatter plot comparing the numeric variables and a table output.
+
+## Bokeh
 
 ::: {.column-margin}
-![](img/dash.png){width=40%}
+![](img/bokeh.png){width=40%}
 :::
 
-**Overview**: Dash is a library for creating web applications that are especially good for data visualization. It’s developed by Plotly.
+[Bokeh](https://docs.bokeh.org/en/latest/) is a library in Python specifically designed for creating interactive and visually appealing interactive graphs and charts. Bokeh can also create static HTML files without a server, similar to RMarkdown's HTML output.
 
-**Pros**:
+### Importing Libraries
 
-- **Integration**: Works well with Plotly for creating detailed and interactive graphs.
+Create a main.py script and install the following libraries using `pip`. `pandas` is for data manipulation, `bokeh` will be used for the interactive visualizations, and the `palmerpenguins` package will load the `penguins` dataset.
 
-- **Flexibility**: Can handle complex applications with multiple interactive elements.
+```{python}
+#| eval: false
+#| code-fold: false
+import pandas as pd
+from bokeh.layouts import column, row
+from bokeh.models import ColumnDataSource, DataTable, TableColumn, NumberFormatter, Select
+from bokeh.plotting import figure, curdoc
+from palmerpenguins import load_penguins
+```
 
-- **Components**: Has a rich set of UI components like sliders, dropdowns, and more.
+Similar to R, where you might use `library(dplyr)` for data manipulation and `library(ggplot2)` for visualizations. For interactive visualizations, you might use `library(shiny)`.
 
-**Cons**:
+```{r}
+#| label: co_box_py_vs_r_import
+#| results: asis 
+#| echo: false
+#| eval: true
+co_box(
+  color = 'g',
+  header = '**Python vs. R**: Key Differences When Importing Libraries',
+  size = "1.10",
+  hsize = "1.15",
+  fold = TRUE,
+  look = 'simple',
+  contents = "
+<br>
 
-- **Complexity**: Can be more complex to set up and use, especially for beginners.
+**Library Import Syntax**\n
 
-- **Performance**: Might be slower for very large datasets or highly interactive applications.
+Python emphasizes explicit control over imports and namespaces:
+
+- Python uses the `import` statement  
+  - `import package_name`
+- Aliases are often used to shorten package names  
+  - `import package_name as alias`
+- Python uses `from` to import specific functions or classes
+  - `from package_name import specific_function`
+
+R uses the `library()` or `require()` function to import packages. R loads the entire package into the namespace by default. If you have functions with the same name in different packages, you can specify the package explicitly with `package::function()`.
+
+")
+```
+
+### Loading Data
+
+The `penguins` dataset is loaded into a `pandas` `DataFrame` using the `load_penguins()` function and the missing data is removed.
+
+```{python}
+#| eval: false
+#| code-fold: false
+df = load_penguins()
+df = df.dropna()
+```
+
+A `ColumnDataSource` is created from the `DataFrame`, which is used by Bokeh for efficient data handling. This intermediate step doesn't really have an R equivalent.
+
+```{python}
+#| eval: false
+#| code-fold: false
+source = ColumnDataSource(df)
+```
+
+A list of numeric columns is defined for use in the scatter plot. To define columns of interest in R we could use `colnames()` or `dplyr::select()`:
+
+```{python}
+#| eval: false
+#| code-fold: false
+numeric_columns = ['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm', 'body_mass_g']
+```
+
+### App Inputs
+
+Two dropdown widgets are created for selecting x and y axes variables. If this was a Shiny app, we would use `selectInput()`.
+
+```{python}
+#| eval: false
+#| code-fold: false
+x_select = Select(title="X Axis", value="bill_length_mm", options=numeric_columns)
+y_select = Select(title="Y Axis", value="bill_depth_mm", options=numeric_columns)
+```
+
+### Scatter Plot 
+
+The scatter plot is created initialized with default axis labels and data.
+
+```{python}
+#| eval: false
+#| code-fold: false
+scatter_plot = figure(title="Scatter Plot",
+                      x_axis_label='Bill Length (mm)',
+                      y_axis_label='Bill Depth (mm)')
+scatter_plot.scatter(x='bill_length_mm', y='bill_depth_mm', source=source, size=10)
+```
+
+In `ggplot2`, this would look like:
+
+```{r}
+#| eval: false
+#| code-fold: true
+#| code-summary: 'show/hide ggplot2 equivalent code'
+ggplot(df, 
+  aes(x = bill_length_mm, y = bill_depth_mm)) + 
+  geom_point()
+```
+
+### Interactivity
+
+Below we define a function that updates the scatter plot when a new variable is selected for the x or y axis. It changes axis labels and re-renders the plot with new data. In `shiny`, you would use `observeEvent()` or `reactive()` to update plots dynamically.
+
+```{python}
+#| eval: false
+#| code-fold: false
+def update_plot(attr, old, new):
+    x = x_select.value
+    y = y_select.value
+    scatter_plot.xaxis.axis_label = x.replace('_', ' ').title()
+    scatter_plot.yaxis.axis_label = y.replace('_', ' ').title()
+    scatter_plot.renderers = []  # clear existing renderers
+    scatter_plot.scatter(x=x, y=y, source=source, size=10)
+
+x_select.on_change("value", update_plot)
+y_select.on_change("value", update_plot)
+```
+
+### Table Display
+
+The code below defines columns and their formatters for the data table to be displayed. `DataTable()` creates `data_table` a DataTable widget that displays the data. This is similar to using `DT::datatable(df)` in R.
+
+```{python}
+#| eval: false
+#| code-fold: false
+columns = [
+    TableColumn(field="species", title="Species"),
+    TableColumn(field="island", title="Island"),
+    TableColumn(field="bill_length_mm", title="Bill Length (mm)", formatter=NumberFormatter(format="0.0")),
+    TableColumn(field="bill_depth_mm", title="Bill Depth (mm)", formatter=NumberFormatter(format="0.0")),
+    TableColumn(field="flipper_length_mm", title="Flipper Length (mm)", formatter=NumberFormatter(format="0")),
+    TableColumn(field="body_mass_g", title="Body Mass (g)", formatter=NumberFormatter(format="0")),
+    TableColumn(field="sex", title="Sex"),
+    TableColumn(field="year", title="Year", formatter=NumberFormatter(format="0"))
+]
+
+data_table = DataTable(source=source, columns=columns, width=800)
+```
+
+### Layout 
+
+The layout is defined and added to the current document for rendering. In `shiny`, you would use `fluidPage()`, `sidebarLayout()`, `mainPanel()`, etc., to arrange UI components.
+
+```{python}
+#| eval: false
+#| code-fold: false
+layout = column(row(x_select, y_select), scatter_plot, data_table)
+curdoc().add_root(layout)
+```
+
+### Run the App
+
+To run this code, save `main.py` and use the `bokeh serve` command:
+
+```{python}
+#| eval: false
+#| code-fold: false
+bokeh serve --show main.py
+```
+
+In R, you would run a `shiny` app using `shinyApp(ui, server)` and the `runApp()` function.
+
+The full code in `main.py` is available below: 
+
+```{python}
+#| eval: false
+#| code-fold: true 
+#| code-summary: 'show/hide main.py' 
+#| code-line-numbers: true
+import pandas as pd
+from bokeh.layouts import column, row
+from bokeh.models import ColumnDataSource, DataTable, TableColumn, NumberFormatter, Select
+from bokeh.plotting import figure, curdoc
+from palmerpenguins import load_penguins
+
+# load the penguins dataset
+df = load_penguins()
+
+# drop missing data 
+df = df.dropna()
+
+# create ColumnDataSource
+source = ColumnDataSource(df)
+
+# numeric columns
+numeric_columns = ['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm', 'body_mass_g']
+
+# create select widgets for x and y axis
+x_select = Select(title="X Axis", value="bill_length_mm", options=numeric_columns)
+y_select = Select(title="Y Axis", value="bill_depth_mm", options=numeric_columns)
+
+# scatter plot comparing selected variables
+scatter_plot = figure(title="Scatter Plot",
+                      x_axis_label='Bill Length (mm)',
+                      y_axis_label='Bill Depth (mm)')
+
+scatter_plot.scatter(x='bill_length_mm', y='bill_depth_mm', source=source, size=10)
+
+def update_plot(attr, old, new):
+    x = x_select.value
+    y = y_select.value
+    scatter_plot.xaxis.axis_label = x.replace('_', ' ').title()
+    scatter_plot.yaxis.axis_label = y.replace('_', ' ').title()
+    scatter_plot.renderers = []  # Clear existing renderers
+    scatter_plot.scatter(x=x, y=y, source=source, size=10)
+
+x_select.on_change("value", update_plot)
+y_select.on_change("value", update_plot)
+
+# define columns 
+columns = [
+    TableColumn(field="species", title="Species"),
+    TableColumn(field="island", title="Island"),
+    TableColumn(field="bill_length_mm", title="Bill Length (mm)", formatter=NumberFormatter(format="0.0")),
+    TableColumn(field="bill_depth_mm", title="Bill Depth (mm)", formatter=NumberFormatter(format="0.0")),
+    TableColumn(field="flipper_length_mm", title="Flipper Length (mm)", formatter=NumberFormatter(format="0")),
+    TableColumn(field="body_mass_g", title="Body Mass (g)", formatter=NumberFormatter(format="0")),
+    TableColumn(field="sex", title="Sex"),
+    TableColumn(field="year", title="Year", formatter=NumberFormatter(format="0"))
+]
+
+# create DataTable
+data_table = DataTable(source=source, columns=columns, width=800)
+
+# Layout
+layout = column(row(x_select, y_select), scatter_plot, data_table)
+
+# add layout to curdoc
+curdoc().add_root(layout)
+```
+
+</details>
+
+After running the `bokeh serve` command, the terminal will display the local URL we can use to view our app: 
+
+```sh
+Starting Bokeh server version 3.4.2 (running on Tornado 6.4)
+User authentication hooks NOT provided (default user enabled)
+Bokeh app running at: http://localhost:5006/main
+Starting Bokeh server with process id: 88167
+WebSocket connection opened
+ServerConnection created
+```
+
+![Bokeh Python App](img/bokeh_penguins_app.png){width=100% fig-align='center'}
+
+
+As we can see, the layout is simple, and it gets the job done quickly with a modest amount of code. Bokeh is not really designed for full-fledged applications, but it *is* capable of creating detailed and interactive plots and tables.
 
 ## Streamlit
 
@@ -90,44 +433,529 @@ I've been demoing quite a few Python applications with VS Code lately and though
 :::
 
 
-**Overview**: Streamlit is a library that makes it very easy to create web applications for data analysis and visualization. It’s known for its simplicity and ease of use.
+[Streamlit](https://docs.streamlit.io/) is another library for creating web applications for data analysis and visualization. It’s known for its simplicity and generally requires less code to build functional applications.
 
-**Pros**:
+### Importing Libraries 
 
-- **Simplicity**: Very easy to use, with a simple and intuitive API.
+After creating and activating a Python virtual environment with `venv`, ensure you have `streamlit`, `palmerpenguins`, and the other necessary libraries installed using `pip`. Create an `app.py` file and import the following libraries:
+ 
+```{python}
+#| eval: false
+#| code-fold: false
+import streamlit as st
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from palmerpenguins import load_penguins
+```
 
-- **Quick Prototyping**: Excellent for quickly turning Python scripts into interactive web apps.
+### Loading Data
 
-- **Real-Time Updates**: Automatically updates the app as you make changes to the code.
+Load the `penguins` data as a `pandas` `DataFrame` using the `load_penguins()` function from the `palmerpenguins`:
 
-**Cons**:
+```{python}
+#| eval: false
+#| code-fold: false
+# load the dataset
+penguins = load_penguins()
+```
 
-- **Limited Customization**: Less flexible compared to Dash for creating complex applications.
+### App Inputs
 
-- **Performance**: Can struggle with very large datasets or highly interactive elements.
+The code below creates a streamlit application that includes a scatter plot with a dropdown menu for selecting the X-axis and Y-axis variables among the numeric columns (minus `year`). The scatter plot differentiates the species by color. 
 
-## Bokeh
+  - `st.title` sets the title of the app.
+  
+    ```{python}
+    #| eval: false
+    #| code-fold: false
+    st.title('Palmer Penguins Dashboard')
+    ```
+  
+  - `st.write` displays text and the datase.t[^st-write]
+  
+    ```{python}
+    #| eval: false
+    #| code-fold: false
+    st.write("### Scatter Plot")
+    ```
+  
+  - `st.selectbox` creates dropdown menus for selecting variables for the scatter plot.
+  
+    ```{python}
+    #| eval: false
+    #| code-fold: false
+    x_axis = st.selectbox('X-axis variable', numeric_columns)
+    ```
+  
+[^st-write]: [`st.write()`](https://docs.streamlit.io/develop/api-reference/write-magic/st.write) is incredibly versatile. We're passing it Markdown-formatted text in this example, but it can be used to display DataFrames, models, and more.
 
-Bokeh is a library in Python specifically designed for creating interactive and visually appealing graphs and charts.
+### Scatter Plot
+
+The scatter plot is created using `seaborn`, a visualization library built on top of `matplotlib`.
+
+```{python}
+#| eval: false
+#| code-fold: false
+if x_axis and y_axis:
+    fig, ax = plt.subplots()
+    sns.scatterplot(data=penguins, x=x_axis, y=y_axis, hue='species', ax=ax)
+    st.pyplot(fig)
+```
+
+### Table Display
+
+The `st.dataframe` method displays the dataset in a table format within the `streamlit` app.
+
+```{python}
+#| eval: false
+#| code-fold: false
+st.dataframe(penguins)
+```
+
+```{r}
+#| label: co_box_py_vs_r_data
+#| results: asis 
+#| echo: false
+#| eval: true
+co_box(
+  color = 'g',
+  header = '**Python vs. R**: Key Syntax Differences',
+  size = "1.10",
+  hsize = "1.15",
+  fold = TRUE,
+  look = 'simple',
+  contents = "
+
+<br>
+
+**Assignment Operators**\n
+- Python uses `=` for assignment.  
+- R typically uses `<-` for assignment, although `=` can also be used.
+
+**Function Calls**\n
+- Python calls `st.selectbox()` where `st` is an alias for `streamlit`.  
+- R can call `selectInput()` after loading the `shiny` library, although `shiny::selectInput()` can be used (if `shiny` is installed).
+
+**Data Structures**\n
+   - In Python, the data is read into a `pandas DataFrame`.  
+   - In R, the data is read into a `tibble`, which is part of the `tidyverse` and is a modern reimagining of the traditional data frame.
+")
+```
+
+The full application code is available below: 
+
+```{python}
+#| eval: false
+#| code-fold: true
+#| code-summary: 'show/hide app.py'
+#| code-line-numbers: true
+# app title
+st.title('Palmer Penguins Dashboard')
+
+# numeric columns for scatter plot
+numeric_columns = penguins.select_dtypes(include=['float64', 'int64']).columns
+# drop year
+numeric_columns = numeric_columns.drop('year')
+
+# scatter plot
+st.write("### Scatter Plot")
+x_axis = st.selectbox('X-axis variable', numeric_columns)
+y_axis = st.selectbox('Y-axis variable', numeric_columns, index=1)
+
+if x_axis and y_axis:
+    fig, ax = plt.subplots()
+    sns.scatterplot(data=penguins, x=x_axis, y=y_axis, hue='species', ax=ax)
+    st.pyplot(fig)
+
+# display the dataframe as a table
+st.write("### Dataset")
+st.dataframe(penguins)
+
+# footer
+st.write("Data Source: [palmerpenguins](https://github.com/allisonhorst/palmerpenguins)")
+```
+
+
+### Run the App
+
+ Open your terminal, navigate to the directory containing `app.py`, and run:
+ 
+ ```sh
+ streamlit run app.py
+ ```
+ 
+![Streamlit Python App](img/streamlit_penguins_app.png){fig-align='center' width='100%'}
+
+With streamlit we're able to create an interactive graph and table display with about 1/3 the code we used in Bokeh, which is why they are ideal for quickly building and sharing simpler web apps (similar to flexdashboard in R). However, Streamlit apps have limited customization and may not handle very complex apps or large datasets efficiently.
+
+## Dash
 
 ::: {.column-margin}
-![](img/bokeh.png){width=40%}
+![](img/dash.png){width=40%}
 :::
 
-**Overview**: Bokeh is a library for creating interactive and visually appealing plots and charts.
+[Dash](https://dash.plotly.com/) is a framework developed by Plotly for building analytical web applications using Python. It’s especially well-suited for interactive visualizations and dashboards.
 
-**Pros**:
+### Importing Libraries 
 
-- **Visualization Quality**: Produces high-quality, interactive visualizations.
+In an `app.py` file, we'll start by importing the following necessary libraries. `dash` and `dash.dependencies` [^dash-depends] are used for building web applications (similar to `shiny`), `pandas` is imported for data manipulation, `plotly.express` is used for creating plots (akin to `ggplot2`), and `dash_bootstrap_components` allows us to use Bootstrap themes for styling the app.
 
-- **Flexibility**: Highly customizable for creating detailed and specific visualizations.
+[^dash-depends]: Watch [The Dash Callback - Input, Output, State, and more](https://youtu.be/mTsZL-VmRVE?si=C6mkTzQYAI0FlCRJ) on the [Charming Data YouTube channel](https://www.youtube.com/@CharmingData).
 
-- **Integration**: Can integrate with other web frameworks like Flask or Django.
+```{python}
+#| eval: false
+#| code-fold: false
+import dash
+from dash import dcc, html, dash_table
+from dash.dependencies import Input, Output
+import pandas as pd
+import plotly.express as px
+import dash_bootstrap_components as dbc
+```
 
-**Cons**:
 
-- **Complexity**: Can be more complex to learn and use, especially for beginners.
+### Loading Data
 
-- **Less Focus on Full Applications**: Primarily focused on visualization, not full-fledged web applications.
+Now that we've identified and imported the dependencies, we can read the data into the application using `pandas`. We can assign the URL to the raw `.csv` file to `url`, then have `pd.read_csv()` read the CSV file into a `pandas` DataFrame.[^pd_read_csv]
 
-## Shiny (for Python)
+```{python}
+#| eval: false
+#| code-fold: false
+url = "https://raw.githubusercontent.com/allisonhorst/palmerpenguins/main/inst/extdata/penguins.csv"
+df = pd.read_csv(url)
+```
+
+[^pd_read_csv]: `pd.read_csv` is analogous to `read.csv` or `readr::read_csv` in R.
+
+### Utility Function
+
+```{python}
+#| eval: false
+#| code-fold: false
+def format_label(label):
+    return label.replace('_', ' ').title()
+```
+
+This function replaces underscores with spaces and capitalizes words. In R, you would define a similar function using `gsub()` and `tools::toTitleCase()`.
+
+### Define Columns
+
+We want to omit the `year` column from the drop-dowwns, so we'll define `numerical_columns` outside of the app so we don't have to repeat this code later. Type `float64` or `int64` are numeric columns.
+
+```{python}
+#| eval: false
+#| code-fold: false
+numerical_columns = [col for col in df.select_dtypes(include=['float64', 'int64']).columns if col != 'year']
+```
+
+### Initialize App
+
+`dash.Dash` creates a Dash app instance with Bootstrap styling by supplying `dbc.themes.BOOTSTRAP` to the `external_stylesheets` argument.[^dash-dash] This is somewhat similar to initializing a Shiny app with `shiny::shinyApp()`.
+
+[^dash-dash]: Read all the arguments for dash.Dash in the [documentation.](https://dash.plotly.com/reference#dash.dash)
+
+```{python}
+#| eval: false
+#| code-fold: false
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+```
+
+In the case of initializing a Dash app, `__name__` is passed as an argument to the `dash.Dash()` constructor to specify the `name` of the application. We'll encounter this again when we launch the application below.
+
+### Layout
+
+The majority of the code is contributed to defining the app layout using Bootstrap components.
+
+-   `dbc.Container`, `dbc.Row`, and `dbc.Col` arrange components in a grid, similar to layout functions in Shiny like `fluidPage()`, `sidebarLayout()`, etc.
+
+    ```{python}
+    #| eval: false
+    #| code-fold: false 
+    app.layout = dbc.Container([
+        dbc.Row([
+            dbc.Col([
+            
+            ])
+        ])
+    ])
+    ```
+   
+-   `html.H1` creates a header, like `tags$h1()` in Shiny.
+
+    ```{python}
+    #| eval: false
+    #| code-fold: false 
+      html.H1("Palmer Penguins Dashboard")
+    ```
+
+-   `dcc.Dropdown` creates dropdown menus for user input, similar to `selectInput()` in Shiny.
+
+    ```{python}
+    #| eval: false
+    #| code-fold: false 
+      dcc.Dropdown(
+          id='x-axis',
+          options=[{'label': col, 'value': col} for col in numerical_columns],
+          value='bill_length_mm',
+          clearable=False
+      )
+    ```
+
+-   `dcc.Graph` places a plot in the app, analogous to `plotOutput()` in Shiny.
+
+    ```{python}
+    #| eval: false
+    #| code-fold: false 
+      dcc.Graph(id='scatter-plot')
+    ```
+
+-   `dash_table.DataTable` displays data in a table, similar to `DT::dataTableOutput()` in R.
+
+    ```{python}
+    #| eval: false
+    #| code-fold: false 
+      dash_table.DataTable(
+          id='table',
+          columns=[{"name": i, "id": i} for i in df.columns],
+          data=df.to_dict('records'),
+          page_size=10,
+          style_table={'overflowX': 'auto'},
+          style_cell={
+              'height': 'auto',
+              'minWidth': '140px', 'width': '140px', 'maxWidth': '140px',
+              'whiteSpace': 'normal'
+          }
+      )
+    ```
+
+### Callback 
+
+The **callback function** updates the scatter plot based on dropdown inputs.
+   
+-   The `@app.callback` decorator defines reactive behavior, similar to `observeEvent()` or `reactive()` in Shiny.[^dash-callbacks]
+
+[^dash-callbacks]: Read more about Dash callback definitions in the [documentation](https://dash.plotly.com/basic-callbacks).
+
+    ```{python}
+    #| eval: false
+    #| code-fold: false 
+      @app.callback(
+          Output('scatter-plot', 'figure'),
+          [Input('x-axis', 'value'),
+           Input('y-axis', 'value')]
+      )
+    ```
+
+-   The function `update_scatter_plot` takes inputs from dropdowns and updates the plot, using `plotly.express` and our `format_label()` utility function to create the scatter plot, similar to using `ggplot2` in R.
+
+    ```{python}
+    #| eval: false
+    #| code-fold: false 
+      def update_scatter_plot(x_axis, y_axis):
+          fig = px.scatter(
+              df, x=x_axis, y=y_axis, color='species',
+              labels={x_axis: format_label(x_axis), y_axis: format_label(y_axis)},
+              title=f'Scatter Plot of {format_label(x_axis)} vs {format_label(y_axis)}'
+          )
+          return fig
+    ```
+
+
+The full callback code is below: 
+
+```{python}
+#| eval: false
+#| code-fold: true
+#| code-summary: 'show/hide app callback in app.py' 
+@app.callback(
+    Output('scatter-plot', 'figure'),
+    [Input('x-axis', 'value'),
+     Input('y-axis', 'value')]
+)
+def update_scatter_plot(x_axis, y_axis):
+    fig = px.scatter(
+        df, x=x_axis, y=y_axis, color='species',
+        labels={x_axis: format_label(x_axis), y_axis: format_label(y_axis)},
+        title=f'Scatter Plot of {format_label(x_axis)} vs {format_label(y_axis)}'
+    )
+    return fig
+```
+
+### For loops
+
+Python often relies on explicit iteration using for loops, which means Python code tends to use for loops more frequently than R code. The reason for this goes beyond the scope of this blog post, but it's rooted in the distinct practices and strengths of each language. 
+
+Coming from R (and `purrr` or the `apply` family of functions), writing `for` loops can take some getting used to, so I've broken down the `numerical_columns` and `dcc.Dropdown()` examples from our Dash app. 
+
+```{python}
+#| eval: false 
+#| code-fold: false
+numerical_columns = [col for col in df.select_dtypes(include=['float64', 'int64']).columns if col != 'year']
+```
+
+1. `[col for col in ...]` is a list comprehension--it iterates over each column name (`col`) in the filtered list of column names.
+
+2. `df` is a DataFrame, and `select_dtypes` is a method that filters the DataFrame columns based on their data types. It includes columns with data types `float64` and `int64` (similar to numeric types in R).
+
+3. `.columns` retrieves the names of the columns that have been filtered by `select_dtypes`.
+
+4. `if col != 'year'` is the condition to ensure that the column `year` is excluded from the resulting list, even if it has a numeric type.
+
+```{python}
+#| eval: false 
+#| code-fold: false
+options=[{'label': col, 'value': col} for col in numerical_columns]
+```
+
+This `for` loop iterates over each column name (`col`) in the `numerical_columns` list.
+
+1. For each column name, it creates a dictionary (`{'label': col, 'value': col}`). 
+
+2. `label` is the text displayed in the Dropdown, and `value` is the actual value assigned to this option.
+
+```{python}
+#| eval: false 
+#| code-fold: false
+columns=[{"name": i, "id": i} for i in df.columns]
+```
+
+This `for` loop iterates over all columns of the DataFrame `df`. 
+
+1. For each column, it creates a dictionary with `name` and `id` both set to the column name. 
+
+2. These dictionaries are used to define the columns of the `dash_table.DataTable()`.
+
+The entire app layout code is below:
+
+```{python}
+#| eval: false 
+#| code-fold: true 
+#| code-summary: 'show/hide full Dash app in app.py'
+#| code-line-numbers: true
+import dash
+from dash import dcc, html, dash_table
+from dash.dependencies import Input, Output
+import pandas as pd
+import plotly.express as px
+import dash_bootstrap_components as dbc
+
+# load the dataset
+url = "https://raw.githubusercontent.com/allisonhorst/palmerpenguins/main/inst/extdata/penguins.csv"
+df = pd.read_csv(url)
+
+# remove the 'year' column 
+numerical_columns = [col for col in df.select_dtypes(include=['float64', 'int64']).columns if col != 'year']
+
+# initialize the Dash app
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+
+# function to replace underscores with spaces
+def format_label(label):
+    return label.replace('_', ' ').title()
+
+# app layout
+app.layout = dbc.Container([
+    dbc.Row(
+        dbc.Col(
+            html.H1("Palmer Penguins Dashboard"), 
+        width=12)
+    ),
+    dbc.Row(
+        html.H3("Inputs")
+    ),
+    dbc.Row([
+        dbc.Col(
+            dcc.Dropdown(
+                id='x-axis',
+                options=[{'label': col, 'value': col} for col in numerical_columns],
+                value='bill_length_mm',
+                clearable=False
+            ), width=3
+        ),
+        dbc.Col(
+            dcc.Dropdown(
+                id='y-axis',
+                options=[{'label': col, 'value': col} for col in numerical_columns],
+                value='bill_depth_mm',
+                clearable=False
+            ), width=3
+        )
+    ]),
+    dbc.Row([
+        dbc.Col([
+            html.H3("Scatter Plot"),
+            dcc.Graph(id='scatter-plot')
+        ], width=6),
+        dbc.Col([
+            html.H3("Table"),
+            dash_table.DataTable(
+                id='table',
+                columns=[{"name": i, "id": i} for i in df.columns],
+                data=df.to_dict('records'),
+                page_size=10,
+                style_table={'overflowX': 'auto'},
+                style_cell={
+                    'height': 'auto',
+                    'minWidth': '140px', 'width': '140px', 'maxWidth': '140px',
+                    'whiteSpace': 'normal'
+                }
+            )
+        ], width=6)
+    ])
+])
+
+# callback to update the scatter plot
+@app.callback(
+    Output('scatter-plot', 'figure'),
+    [Input('x-axis', 'value'),
+     Input('y-axis', 'value')]
+)
+def update_scatter_plot(x_axis, y_axis):
+    fig = px.scatter(
+        df, x=x_axis, y=y_axis, color='species',
+        labels={x_axis: format_label(x_axis), y_axis: format_label(y_axis)},
+        title=f'Scatter Plot of {format_label(x_axis)} vs {format_label(y_axis)}'
+    )
+    return fig
+
+# run the app
+if __name__ == '__main__':
+    app.run_server(debug=True)
+```
+
+### Run the App
+
+The code below runs the application. Note that the `__name__ == '__main__'` condition corresponds to the `dash.Dash(__name__, ...)` we used to initialize the application above. 
+
+```{python}
+#| eval: false 
+#| code-fold: false
+if __name__ == '__main__':
+    app.run_server(debug=True)
+```
+
+Run the application by running the following commands in the terminal: 
+
+``` sh
+python app.py
+```
+
+``` sh
+Dash is running on http://127.0.0.1:8050/
+
+ * Serving Flask app 'app'
+ * Debug mode: on
+```
+
+Use <kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + click on the URL to open the web browser with our application:
+
+![Penguins Dash App](img/dash_penguins_app.png){fig-align='center' width='100%'}
+
+The Dash application has an interactive scatter plot (with hover features) with a side-by-side table display. The layout functions in Dash give us more control over output placement in the UI, and the additional HTML functions give us the ability to build our application up like a standard webpage (or Shiny app).
+
+## Recap 
+
+In summary, [Bokeh]() is excellent for creating detailed and interactive visualizations, comparable to `ggplot2` and `plotly` for interactive plots, but it's not focused on developing complete applications. [Streamlit]() is very user-friendly and ideal for quickly building and sharing simpler web apps, but with fewer options for customization. [Dash]() is capable of developing highly customizable and complex web applications (similar to Shiny), but has a steeper learning curve than Streamlit.
+
+You can view the code used to create the apps in this [repo.](https://github.com/mjfrigaard/py-apps/tree/main)
