@@ -17,7 +17,2124 @@
 <width>144</width>
 </image>
 <generator>quarto-1.5.28</generator>
-<lastBuildDate>Fri, 05 Jul 2024 07:00:00 GMT</lastBuildDate>
+<lastBuildDate>Sat, 13 Jul 2024 07:00:00 GMT</lastBuildDate>
+<item>
+  <title>Python Apps</title>
+  <dc:creator>Martin Frigaard</dc:creator>
+  <link>https://mjfrigaard.github.io/posts/py-apps/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<div class="callout callout-style-simple callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.10em;">Note</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.05em; color: #282b2d;">
+<p>This is the second post on working in VS Code with Python. I’ll cover developing and publishing Python applications using Bokeh, Streamlit, and Dash.</p>
+</div>
+</div>
+</div>
+</div>
+<p>I’ve been demoing quite a few Python applications with VS Code lately and thought I’d write some notes and observations on running and deploying the three popular libraries: <a href="https://docs.bokeh.org/en/latest/">Bokeh</a>, <a href="https://docs.streamlit.io/">Streamlit</a>, and <a href="https://dash.plotly.com/">Dash</a>.</p>
+<section id="virtual-environments" class="level2">
+<h2 class="anchored" data-anchor-id="virtual-environments">Virtual environments</h2>
+<p>Python virtual environments are designed to manage project-specific dependencies and ensure that the correct versions of packages are used in a given project. Similar to the renv package in R, Python comes with a a <code>venv</code> command for creating a virtual environment.<sup>1</sup> It’s common practice to name the virtual environment something like <code>myenv</code> or <code>.venv</code>.</p>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">python</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-m</span> venv .venv</span></code></pre></div>
+<p><code>venv</code> works by creating a directory with a copy of the Python interpreter and the necessary executables to use it. After creating the virtual environment folder, we can activate it using the following command:</p>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">source</span> .venv/bin/activate</span>
+<span id="cb2-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># windows</span></span>
+<span id="cb2-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># myenv\Scripts\activate</span></span></code></pre></div>
+<p>If you’re using VS Code, this activate the following prompt to set your workspace folder:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://mjfrigaard.github.io/posts/py-apps/img/venv_vs_code.png" class="img-fluid figure-img" style="width:90.0%"></p>
+<figcaption>Workspace folder</figcaption>
+</figure>
+</div>
+<p>Click <strong>Yes</strong>, then make sure all the dependencies listed in the requirements.txt file are installed in the virtual environment using <a href="https://pypi.org/project/pip/"><code>pip</code></a>, the package installer for Python.</p>
+<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">pip</span> install <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-r</span> requirements.txt</span></code></pre></div>
+<p>As you’re developing, new dependencies can be recorded in <code>requirements.txt</code> using <code>pip freeze</code>:</p>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">pip</span> freeze <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> requirements.txt</span></code></pre></div>
+<section id="git-history" class="level3">
+<h3 class="anchored" data-anchor-id="git-history">Git history</h3>
+<p>The virtual environment will store all the dependencies for a project, so it’s a good practice to remove it from any Git repositories. You can do this with the following commands in the terminal:</p>
+<div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">echo</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">".venv/"</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;&gt;</span> .gitignore</span>
+<span id="cb5-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> add .gitignore</span>
+<span id="cb5-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> commit <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-m</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Add .venv to .gitignore"</span></span></code></pre></div>
+<p>You can also remove the <code>.venv</code> directory from the latest commit:</p>
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> rm <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-r</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--cached</span> .venv</span>
+<span id="cb6-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> commit <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-m</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Remove .venv directory"</span></span></code></pre></div>
+<div class="callout callout-style-simple callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.15em;">Using <code>venv</code></span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p><code>venv</code> allows us to manage dependencies more effectively, ensuring a clean and isolated environment for each Python app project.</p>
+<div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># create a virtual environment</span></span>
+<span id="cb7-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">python</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-m</span> venv .venv</span>
+<span id="cb7-3"></span>
+<span id="cb7-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># activate the virtual environment on macOS/Linux</span></span>
+<span id="cb7-5"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">source</span> .venv/bin/activate  </span>
+<span id="cb7-6"></span>
+<span id="cb7-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># install necessary packages</span></span>
+<span id="cb7-8"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">pip</span> install dash streamlit bokeh</span>
+<span id="cb7-9"></span>
+<span id="cb7-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># save your current environment's packages</span></span>
+<span id="cb7-11"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">pip</span> freeze <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> requirements.txt</span>
+<span id="cb7-12"></span>
+<span id="cb7-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># install the packages in a new environment</span></span>
+<span id="cb7-14"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">pip</span> install <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-r</span> requirements.txt</span>
+<span id="cb7-15"></span>
+<span id="cb7-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># deactivate the virtual environment when done</span></span>
+<span id="cb7-17"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">deactivate</span></span></code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p><a href="https://docs.bokeh.org/en/latest/">Bokeh</a>, <a href="https://docs.streamlit.io/">Streamlit</a>, and <a href="https://dash.plotly.com/">Dash</a> are three popular libraries for creating interactive Python applications, particularly for visualizations and dashboards. Below we’ll explore building an application in each framework using the <a href="https://allisonhorst.github.io/palmerpenguins/"><code>palmerpenuins</code> data</a>. For uniformity, each app will include a scatter plot comparing the numeric variables and a table output.</p>
+</section>
+</section>
+<section id="bokeh" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="bokeh">Bokeh</h2>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><img src="https://mjfrigaard.github.io/posts/py-apps/img/bokeh.png" class="img-fluid" style="width:40.0%"></p>
+</div></div><p><a href="https://docs.bokeh.org/en/latest/">Bokeh</a> is a library in Python specifically designed for creating interactive and visually appealing interactive graphs and charts. Bokeh can also create static HTML files without a server, similar to RMarkdown’s HTML output.</p>
+<section id="importing-libraries" class="level3">
+<h3 class="anchored" data-anchor-id="importing-libraries">Importing Libraries</h3>
+<p>Create a main.py script and install the following libraries using <code>pip</code>. <code>pandas</code> is for data manipulation, <code>bokeh</code> will be used for the interactive visualizations, and the <code>palmerpenguins</code> package will load the <code>penguins</code> dataset.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pd</span>
+<span id="cb8-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> bokeh.layouts <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> column, row</span>
+<span id="cb8-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> bokeh.models <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> ColumnDataSource, DataTable, TableColumn, NumberFormatter, Select</span>
+<span id="cb8-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> bokeh.plotting <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> figure, curdoc</span>
+<span id="cb8-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> palmerpenguins <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> load_penguins</span></code></pre></div>
+</div>
+<p>Similar to R, where you might use <code>library(dplyr)</code> for data manipulation and <code>library(ggplot2)</code> for visualizations. For interactive visualizations, you might use <code>library(shiny)</code>.</p>
+<div class="callout callout-style-simple callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.15em;"><strong>Python vs.&nbsp;R</strong>: Key Differences When Importing Libraries</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p><br></p>
+<p><strong>Library Import Syntax</strong></p>
+<p>Python emphasizes explicit control over imports and namespaces:</p>
+<ul>
+<li>Python uses the <code>import</code> statement
+<ul>
+<li><code>import package_name</code></li>
+</ul></li>
+<li>Aliases are often used to shorten package names
+<ul>
+<li><code>import package_name as alias</code></li>
+</ul></li>
+<li>Python uses <code>from</code> to import specific functions or classes
+<ul>
+<li><code>from package_name import specific_function</code></li>
+</ul></li>
+</ul>
+<p>R uses the <code>library()</code> or <code>require()</code> function to import packages. R loads the entire package into the namespace by default. If you have functions with the same name in different packages, you can specify the package explicitly with <code>package::function()</code>.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="loading-data" class="level3">
+<h3 class="anchored" data-anchor-id="loading-data">Loading Data</h3>
+<p>The <code>penguins</code> dataset is loaded into a <code>pandas</code> <code>DataFrame</code> using the <code>load_penguins()</code> function and the missing data is removed.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> load_penguins()</span>
+<span id="cb9-2">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df.dropna()</span></code></pre></div>
+</div>
+<p>A <code>ColumnDataSource</code> is created from the <code>DataFrame</code>, which is used by Bokeh for efficient data handling. This intermediate step doesn’t really have an R equivalent.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1">source <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> ColumnDataSource(df)</span></code></pre></div>
+</div>
+<p>A list of numeric columns is defined for use in the scatter plot. To define columns of interest in R we could use <code>colnames()</code> or <code>dplyr::select()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1">numeric_columns <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'bill_length_mm'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'bill_depth_mm'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'flipper_length_mm'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'body_mass_g'</span>]</span></code></pre></div>
+</div>
+</section>
+<section id="app-inputs" class="level3">
+<h3 class="anchored" data-anchor-id="app-inputs">App Inputs</h3>
+<p>Two dropdown widgets are created for selecting x and y axes variables. If this was a Shiny app, we would use <code>selectInput()</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1">x_select <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Select(title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"X Axis"</span>, value<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bill_length_mm"</span>, options<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>numeric_columns)</span>
+<span id="cb12-2">y_select <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Select(title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Y Axis"</span>, value<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bill_depth_mm"</span>, options<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>numeric_columns)</span></code></pre></div>
+</div>
+</section>
+<section id="scatter-plot" class="level3">
+<h3 class="anchored" data-anchor-id="scatter-plot">Scatter Plot</h3>
+<p>The scatter plot is created initialized with default axis labels and data.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1">scatter_plot <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> figure(title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Scatter Plot"</span>,</span>
+<span id="cb13-2">                      x_axis_label<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Bill Length (mm)'</span>,</span>
+<span id="cb13-3">                      y_axis_label<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Bill Depth (mm)'</span>)</span>
+<span id="cb13-4">scatter_plot.scatter(x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'bill_length_mm'</span>, y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'bill_depth_mm'</span>, source<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>source, size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>)</span></code></pre></div>
+</div>
+<p>In <code>ggplot2</code>, this would look like:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>show/hide ggplot2 equivalent code</summary>
+<div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ggplot</span>(df, </span>
+<span id="cb14-2">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">aes</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x =</span> bill_length_mm, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y =</span> bill_depth_mm)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> </span>
+<span id="cb14-3">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">geom_point</span>()</span></code></pre></div>
+</details>
+</div>
+</section>
+<section id="interactivity" class="level3">
+<h3 class="anchored" data-anchor-id="interactivity">Interactivity</h3>
+<p>Below we define a function that updates the scatter plot when a new variable is selected for the x or y axis. It changes axis labels and re-renders the plot with new data. In <code>shiny</code>, you would use <code>observeEvent()</code> or <code>reactive()</code> to update plots dynamically.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> update_plot(attr, old, new):</span>
+<span id="cb15-2">    x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> x_select.value</span>
+<span id="cb15-3">    y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> y_select.value</span>
+<span id="cb15-4">    scatter_plot.xaxis.axis_label <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> x.replace(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'_'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">' '</span>).title()</span>
+<span id="cb15-5">    scatter_plot.yaxis.axis_label <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> y.replace(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'_'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">' '</span>).title()</span>
+<span id="cb15-6">    scatter_plot.renderers <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> []  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># clear existing renderers</span></span>
+<span id="cb15-7">    scatter_plot.scatter(x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>x, y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>y, source<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>source, size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>)</span>
+<span id="cb15-8"></span>
+<span id="cb15-9">x_select.on_change(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"value"</span>, update_plot)</span>
+<span id="cb15-10">y_select.on_change(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"value"</span>, update_plot)</span></code></pre></div>
+</div>
+</section>
+<section id="table-display" class="level3">
+<h3 class="anchored" data-anchor-id="table-display">Table Display</h3>
+<p>The code below defines columns and their formatters for the data table to be displayed. <code>DataTable()</code> creates <code>data_table</code> a DataTable widget that displays the data. This is similar to using <code>DT::datatable(df)</code> in R.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1">columns <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [</span>
+<span id="cb16-2">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"species"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Species"</span>),</span>
+<span id="cb16-3">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"island"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Island"</span>),</span>
+<span id="cb16-4">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bill_length_mm"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Bill Length (mm)"</span>, formatter<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>NumberFormatter(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">format</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"0.0"</span>)),</span>
+<span id="cb16-5">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bill_depth_mm"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Bill Depth (mm)"</span>, formatter<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>NumberFormatter(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">format</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"0.0"</span>)),</span>
+<span id="cb16-6">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"flipper_length_mm"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Flipper Length (mm)"</span>, formatter<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>NumberFormatter(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">format</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"0"</span>)),</span>
+<span id="cb16-7">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"body_mass_g"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Body Mass (g)"</span>, formatter<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>NumberFormatter(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">format</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"0"</span>)),</span>
+<span id="cb16-8">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"sex"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Sex"</span>),</span>
+<span id="cb16-9">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"year"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Year"</span>, formatter<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>NumberFormatter(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">format</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"0"</span>))</span>
+<span id="cb16-10">]</span>
+<span id="cb16-11"></span>
+<span id="cb16-12">data_table <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> DataTable(source<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>source, columns<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>columns, width<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">800</span>)</span></code></pre></div>
+</div>
+</section>
+<section id="layout" class="level3">
+<h3 class="anchored" data-anchor-id="layout">Layout</h3>
+<p>The layout is defined and added to the current document for rendering. In <code>shiny</code>, you would use <code>fluidPage()</code>, <code>sidebarLayout()</code>, <code>mainPanel()</code>, etc., to arrange UI components.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1">layout <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> column(row(x_select, y_select), scatter_plot, data_table)</span>
+<span id="cb17-2">curdoc().add_root(layout)</span></code></pre></div>
+</div>
+</section>
+<section id="run-the-app" class="level3">
+<h3 class="anchored" data-anchor-id="run-the-app">Run the App</h3>
+<p>To run this code, save <code>main.py</code> and use the <code>bokeh serve</code> command:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1">bokeh serve <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">--</span>show main.py</span></code></pre></div>
+</div>
+<p>In R, you would run a <code>shiny</code> app using <code>shinyApp(ui, server)</code> and the <code>runApp()</code> function.</p>
+<p>The full code in <code>main.py</code> is available below:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>show/hide main.py</summary>
+<div class="sourceCode cell-code" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pd</span>
+<span id="cb19-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> bokeh.layouts <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> column, row</span>
+<span id="cb19-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> bokeh.models <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> ColumnDataSource, DataTable, TableColumn, NumberFormatter, Select</span>
+<span id="cb19-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> bokeh.plotting <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> figure, curdoc</span>
+<span id="cb19-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> palmerpenguins <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> load_penguins</span>
+<span id="cb19-6"></span>
+<span id="cb19-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># load the penguins dataset</span></span>
+<span id="cb19-8">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> load_penguins()</span>
+<span id="cb19-9"></span>
+<span id="cb19-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># drop missing data </span></span>
+<span id="cb19-11">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df.dropna()</span>
+<span id="cb19-12"></span>
+<span id="cb19-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># create ColumnDataSource</span></span>
+<span id="cb19-14">source <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> ColumnDataSource(df)</span>
+<span id="cb19-15"></span>
+<span id="cb19-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># numeric columns</span></span>
+<span id="cb19-17">numeric_columns <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'bill_length_mm'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'bill_depth_mm'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'flipper_length_mm'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'body_mass_g'</span>]</span>
+<span id="cb19-18"></span>
+<span id="cb19-19"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># create select widgets for x and y axis</span></span>
+<span id="cb19-20">x_select <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Select(title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"X Axis"</span>, value<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bill_length_mm"</span>, options<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>numeric_columns)</span>
+<span id="cb19-21">y_select <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Select(title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Y Axis"</span>, value<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bill_depth_mm"</span>, options<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>numeric_columns)</span>
+<span id="cb19-22"></span>
+<span id="cb19-23"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># scatter plot comparing selected variables</span></span>
+<span id="cb19-24">scatter_plot <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> figure(title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Scatter Plot"</span>,</span>
+<span id="cb19-25">                      x_axis_label<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Bill Length (mm)'</span>,</span>
+<span id="cb19-26">                      y_axis_label<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Bill Depth (mm)'</span>)</span>
+<span id="cb19-27"></span>
+<span id="cb19-28">scatter_plot.scatter(x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'bill_length_mm'</span>, y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'bill_depth_mm'</span>, source<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>source, size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>)</span>
+<span id="cb19-29"></span>
+<span id="cb19-30"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> update_plot(attr, old, new):</span>
+<span id="cb19-31">    x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> x_select.value</span>
+<span id="cb19-32">    y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> y_select.value</span>
+<span id="cb19-33">    scatter_plot.xaxis.axis_label <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> x.replace(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'_'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">' '</span>).title()</span>
+<span id="cb19-34">    scatter_plot.yaxis.axis_label <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> y.replace(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'_'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">' '</span>).title()</span>
+<span id="cb19-35">    scatter_plot.renderers <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> []  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Clear existing renderers</span></span>
+<span id="cb19-36">    scatter_plot.scatter(x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>x, y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>y, source<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>source, size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>)</span>
+<span id="cb19-37"></span>
+<span id="cb19-38">x_select.on_change(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"value"</span>, update_plot)</span>
+<span id="cb19-39">y_select.on_change(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"value"</span>, update_plot)</span>
+<span id="cb19-40"></span>
+<span id="cb19-41"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># define columns </span></span>
+<span id="cb19-42">columns <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [</span>
+<span id="cb19-43">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"species"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Species"</span>),</span>
+<span id="cb19-44">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"island"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Island"</span>),</span>
+<span id="cb19-45">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bill_length_mm"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Bill Length (mm)"</span>, formatter<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>NumberFormatter(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">format</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"0.0"</span>)),</span>
+<span id="cb19-46">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bill_depth_mm"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Bill Depth (mm)"</span>, formatter<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>NumberFormatter(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">format</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"0.0"</span>)),</span>
+<span id="cb19-47">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"flipper_length_mm"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Flipper Length (mm)"</span>, formatter<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>NumberFormatter(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">format</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"0"</span>)),</span>
+<span id="cb19-48">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"body_mass_g"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Body Mass (g)"</span>, formatter<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>NumberFormatter(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">format</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"0"</span>)),</span>
+<span id="cb19-49">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"sex"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Sex"</span>),</span>
+<span id="cb19-50">    TableColumn(field<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"year"</span>, title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Year"</span>, formatter<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>NumberFormatter(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">format</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"0"</span>))</span>
+<span id="cb19-51">]</span>
+<span id="cb19-52"></span>
+<span id="cb19-53"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># create DataTable</span></span>
+<span id="cb19-54">data_table <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> DataTable(source<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>source, columns<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>columns, width<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">800</span>)</span>
+<span id="cb19-55"></span>
+<span id="cb19-56"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Layout</span></span>
+<span id="cb19-57">layout <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> column(row(x_select, y_select), scatter_plot, data_table)</span>
+<span id="cb19-58"></span>
+<span id="cb19-59"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># add layout to curdoc</span></span>
+<span id="cb19-60">curdoc().add_root(layout)</span></code></pre></div>
+</details>
+</div>
+
+<p>After running the <code>bokeh serve</code> command, the terminal will display the local URL we can use to view our app:</p>
+<div class="sourceCode" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Starting</span> Bokeh server version 3.4.2 <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">running</span> on Tornado 6.4<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb20-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">User</span> authentication hooks NOT provided <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">default</span> user enabled<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb20-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Bokeh</span> app running at: http://localhost:5006/main</span>
+<span id="cb20-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Starting</span> Bokeh server with process id: 88167</span>
+<span id="cb20-5"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">WebSocket</span> connection opened</span>
+<span id="cb20-6"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ServerConnection</span> created</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://mjfrigaard.github.io/posts/py-apps/img/bokeh_penguins_app.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Bokeh Python App</figcaption>
+</figure>
+</div>
+<p>As we can see, the layout is simple, and it gets the job done quickly with a modest amount of code. Bokeh is not really designed for full-fledged applications, but it <em>is</em> capable of creating detailed and interactive plots and tables.</p>
+</section>
+</section>
+<section id="streamlit" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="streamlit">Streamlit</h2>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><img src="https://mjfrigaard.github.io/posts/py-apps/img/streamlit.png" class="img-fluid" style="width:40.0%"></p>
+</div></div><p><a href="https://docs.streamlit.io/">Streamlit</a> is another library for creating web applications for data analysis and visualization. It’s known for its simplicity and generally requires less code to build functional applications.</p>
+<section id="importing-libraries-1" class="level3">
+<h3 class="anchored" data-anchor-id="importing-libraries-1">Importing Libraries</h3>
+<p>After creating and activating a Python virtual environment with <code>venv</code>, ensure you have <code>streamlit</code>, <code>palmerpenguins</code>, and the other necessary libraries installed using <code>pip</code>. Create an <code>app.py</code> file and import the following libraries:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> streamlit <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> st</span>
+<span id="cb21-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pd</span>
+<span id="cb21-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> seaborn <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> sns</span>
+<span id="cb21-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> matplotlib.pyplot <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> plt</span>
+<span id="cb21-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> palmerpenguins <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> load_penguins</span></code></pre></div>
+</div>
+</section>
+<section id="loading-data-1" class="level3">
+<h3 class="anchored" data-anchor-id="loading-data-1">Loading Data</h3>
+<p>Load the <code>penguins</code> data as a <code>pandas</code> <code>DataFrame</code> using the <code>load_penguins()</code> function from the <code>palmerpenguins</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># load the dataset</span></span>
+<span id="cb22-2">penguins <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> load_penguins()</span></code></pre></div>
+</div>
+</section>
+<section id="app-inputs-1" class="level3">
+<h3 class="anchored" data-anchor-id="app-inputs-1">App Inputs</h3>
+<p>The code below creates a streamlit application that includes a scatter plot with a dropdown menu for selecting the X-axis and Y-axis variables among the numeric columns (minus <code>year</code>). The scatter plot differentiates the species by color.</p>
+<ul>
+<li><p><code>st.title</code> sets the title of the app.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1">st.title(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Palmer Penguins Dashboard'</span>)</span></code></pre></div>
+</div></li>
+<li><p><code>st.write</code> displays text and the datase.t<sup>2</sup></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1">st.write(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"### Scatter Plot"</span>)</span></code></pre></div>
+</div></li>
+<li><p><code>st.selectbox</code> creates dropdown menus for selecting variables for the scatter plot.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1">x_axis <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> st.selectbox(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'X-axis variable'</span>, numeric_columns)</span></code></pre></div>
+</div></li>
+</ul>
+</section>
+<section id="scatter-plot-1" class="level3">
+<h3 class="anchored" data-anchor-id="scatter-plot-1">Scatter Plot</h3>
+<p>The scatter plot is created using <code>seaborn</code>, a visualization library built on top of <code>matplotlib</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> x_axis <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">and</span> y_axis:</span>
+<span id="cb26-2">    fig, ax <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> plt.subplots()</span>
+<span id="cb26-3">    sns.scatterplot(data<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>penguins, x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>x_axis, y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>y_axis, hue<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'species'</span>, ax<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>ax)</span>
+<span id="cb26-4">    st.pyplot(fig)</span></code></pre></div>
+</div>
+</section>
+<section id="table-display-1" class="level3">
+<h3 class="anchored" data-anchor-id="table-display-1">Table Display</h3>
+<p>The <code>st.dataframe</code> method displays the dataset in a table format within the <code>streamlit</code> app.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1">st.dataframe(penguins)</span></code></pre></div>
+</div>
+<div class="callout callout-style-simple callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.15em;"><strong>Python vs.&nbsp;R</strong>: Key Syntax Differences</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p><br></p>
+<p><strong>Assignment Operators</strong></p>
+<ul>
+<li>Python uses <code>=</code> for assignment.<br>
+</li>
+<li>R typically uses <code>&lt;-</code> for assignment, although <code>=</code> can also be used.</li>
+</ul>
+<p><strong>Function Calls</strong></p>
+<ul>
+<li>Python calls <code>st.selectbox()</code> where <code>st</code> is an alias for <code>streamlit</code>.<br>
+</li>
+<li>R can call <code>selectInput()</code> after loading the <code>shiny</code> library, although <code>shiny::selectInput()</code> can be used (if <code>shiny</code> is installed).</li>
+</ul>
+<p><strong>Data Structures</strong></p>
+<ul>
+<li>In Python, the data is read into a <code>pandas DataFrame</code>.<br>
+</li>
+<li>In R, the data is read into a <code>tibble</code>, which is part of the <code>tidyverse</code> and is a modern reimagining of the traditional data frame.</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<p>The full application code is available below:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>show/hide app.py</summary>
+<div class="sourceCode cell-code" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># app title</span></span>
+<span id="cb28-2">st.title(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Palmer Penguins Dashboard'</span>)</span>
+<span id="cb28-3"></span>
+<span id="cb28-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># numeric columns for scatter plot</span></span>
+<span id="cb28-5">numeric_columns <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> penguins.select_dtypes(include<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'float64'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'int64'</span>]).columns</span>
+<span id="cb28-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># drop year</span></span>
+<span id="cb28-7">numeric_columns <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> numeric_columns.drop(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'year'</span>)</span>
+<span id="cb28-8"></span>
+<span id="cb28-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># scatter plot</span></span>
+<span id="cb28-10">st.write(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"### Scatter Plot"</span>)</span>
+<span id="cb28-11">x_axis <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> st.selectbox(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'X-axis variable'</span>, numeric_columns)</span>
+<span id="cb28-12">y_axis <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> st.selectbox(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Y-axis variable'</span>, numeric_columns, index<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb28-13"></span>
+<span id="cb28-14"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> x_axis <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">and</span> y_axis:</span>
+<span id="cb28-15">    fig, ax <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> plt.subplots()</span>
+<span id="cb28-16">    sns.scatterplot(data<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>penguins, x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>x_axis, y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>y_axis, hue<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'species'</span>, ax<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>ax)</span>
+<span id="cb28-17">    st.pyplot(fig)</span>
+<span id="cb28-18"></span>
+<span id="cb28-19"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># display the dataframe as a table</span></span>
+<span id="cb28-20">st.write(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"### Dataset"</span>)</span>
+<span id="cb28-21">st.dataframe(penguins)</span>
+<span id="cb28-22"></span>
+<span id="cb28-23"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># footer</span></span>
+<span id="cb28-24">st.write(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Data Source: [palmerpenguins](https://github.com/allisonhorst/palmerpenguins)"</span>)</span></code></pre></div>
+</details>
+</div>
+</section>
+<section id="run-the-app-1" class="level3">
+<h3 class="anchored" data-anchor-id="run-the-app-1">Run the App</h3>
+<p>Open your terminal, navigate to the directory containing <code>app.py</code>, and run:</p>
+<div class="sourceCode" id="cb29" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb29-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">streamlit</span> run app.py</span></code></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://mjfrigaard.github.io/posts/py-apps/img/streamlit_penguins_app.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Streamlit Python App</figcaption>
+</figure>
+</div>
+<p>With streamlit we’re able to create an interactive graph and table display with about 1/3 the code we used in Bokeh, which is why they are ideal for quickly building and sharing simpler web apps (similar to flexdashboard in R). However, Streamlit apps have limited customization and may not handle very complex apps or large datasets efficiently.</p>
+</section>
+</section>
+<section id="dash" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="dash">Dash</h2>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><img src="https://mjfrigaard.github.io/posts/py-apps/img/dash.png" class="img-fluid" style="width:40.0%"></p>
+</div></div><p><a href="https://dash.plotly.com/">Dash</a> is a framework developed by Plotly for building analytical web applications using Python. It’s especially well-suited for interactive visualizations and dashboards.</p>
+<section id="importing-libraries-2" class="level3">
+<h3 class="anchored" data-anchor-id="importing-libraries-2">Importing Libraries</h3>
+<p>In an <code>app.py</code> file, we’ll start by importing the following necessary libraries. <code>dash</code> and <code>dash.dependencies</code> <sup>3</sup> are used for building web applications (similar to <code>shiny</code>), <code>pandas</code> is imported for data manipulation, <code>plotly.express</code> is used for creating plots (akin to <code>ggplot2</code>), and <code>dash_bootstrap_components</code> allows us to use Bootstrap themes for styling the app.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> dash</span>
+<span id="cb30-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> dash <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> dcc, html, dash_table</span>
+<span id="cb30-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> dash.dependencies <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Input, Output</span>
+<span id="cb30-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pd</span>
+<span id="cb30-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> plotly.express <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> px</span>
+<span id="cb30-6"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> dash_bootstrap_components <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> dbc</span></code></pre></div>
+</div>
+</section>
+<section id="loading-data-2" class="level3">
+<h3 class="anchored" data-anchor-id="loading-data-2">Loading Data</h3>
+<p>Now that we’ve identified and imported the dependencies, we can read the data into the application using <code>pandas</code>. We can assign the URL to the raw <code>.csv</code> file to <code>url</code>, then have <code>pd.read_csv()</code> read the CSV file into a <code>pandas</code> DataFrame.<sup>4</sup></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1">url <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://raw.githubusercontent.com/allisonhorst/palmerpenguins/main/inst/extdata/penguins.csv"</span></span>
+<span id="cb31-2">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.read_csv(url)</span></code></pre></div>
+</div>
+</section>
+<section id="utility-function" class="level3">
+<h3 class="anchored" data-anchor-id="utility-function">Utility Function</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> format_label(label):</span>
+<span id="cb32-2">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> label.replace(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'_'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">' '</span>).title()</span></code></pre></div>
+</div>
+<p>This function replaces underscores with spaces and capitalizes words. In R, you would define a similar function using <code>gsub()</code> and <code>tools::toTitleCase()</code>.</p>
+</section>
+<section id="define-columns" class="level3">
+<h3 class="anchored" data-anchor-id="define-columns">Define Columns</h3>
+<p>We want to omit the <code>year</code> column from the drop-dowwns, so we’ll define <code>numerical_columns</code> outside of the app so we don’t have to repeat this code later. Type <code>float64</code> or <code>int64</code> are numeric columns.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1">numerical_columns <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [col <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> col <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> df.select_dtypes(include<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'float64'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'int64'</span>]).columns <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> col <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'year'</span>]</span></code></pre></div>
+</div>
+</section>
+<section id="initialize-app" class="level3">
+<h3 class="anchored" data-anchor-id="initialize-app">Initialize App</h3>
+<p><code>dash.Dash</code> creates a Dash app instance with Bootstrap styling by supplying <code>dbc.themes.BOOTSTRAP</code> to the <code>external_stylesheets</code> argument.<sup>5</sup> This is somewhat similar to initializing a Shiny app with <code>shiny::shinyApp()</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1">app <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> dash.Dash(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">__name__</span>, external_stylesheets<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[dbc.themes.BOOTSTRAP])</span></code></pre></div>
+</div>
+<p>In the case of initializing a Dash app, <code>__name__</code> is passed as an argument to the <code>dash.Dash()</code> constructor to specify the <code>name</code> of the application. We’ll encounter this again when we launch the application below.</p>
+</section>
+<section id="layout-1" class="level3">
+<h3 class="anchored" data-anchor-id="layout-1">Layout</h3>
+<p>The majority of the code is contributed to defining the app layout using Bootstrap components.</p>
+<ul>
+<li><p><code>dbc.Container</code>, <code>dbc.Row</code>, and <code>dbc.Col</code> arrange components in a grid, similar to layout functions in Shiny like <code>fluidPage()</code>, <code>sidebarLayout()</code>, etc.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1">app.layout <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> dbc.Container([</span>
+<span id="cb35-2">    dbc.Row([</span>
+<span id="cb35-3">        dbc.Col([</span>
+<span id="cb35-4"></span>
+<span id="cb35-5">        ])</span>
+<span id="cb35-6">    ])</span>
+<span id="cb35-7">])</span></code></pre></div>
+</div></li>
+<li><p><code>html.H1</code> creates a header, like <code>tags$h1()</code> in Shiny.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1">  html.H1(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Palmer Penguins Dashboard"</span>)</span></code></pre></div>
+</div></li>
+<li><p><code>dcc.Dropdown</code> creates dropdown menus for user input, similar to <code>selectInput()</code> in Shiny.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1">  dcc.Dropdown(</span>
+<span id="cb37-2">      <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">id</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'x-axis'</span>,</span>
+<span id="cb37-3">      options<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'label'</span>: col, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'value'</span>: col} <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> col <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> numerical_columns],</span>
+<span id="cb37-4">      value<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'bill_length_mm'</span>,</span>
+<span id="cb37-5">      clearable<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span></span>
+<span id="cb37-6">  )</span></code></pre></div>
+</div></li>
+<li><p><code>dcc.Graph</code> places a plot in the app, analogous to <code>plotOutput()</code> in Shiny.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1">  dcc.Graph(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">id</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'scatter-plot'</span>)</span></code></pre></div>
+</div></li>
+<li><p><code>dash_table.DataTable</code> displays data in a table, similar to <code>DT::dataTableOutput()</code> in R.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1">  dash_table.DataTable(</span>
+<span id="cb39-2">      <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">id</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'table'</span>,</span>
+<span id="cb39-3">      columns<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"name"</span>: i, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"id"</span>: i} <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> df.columns],</span>
+<span id="cb39-4">      data<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>df.to_dict(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'records'</span>),</span>
+<span id="cb39-5">      page_size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>,</span>
+<span id="cb39-6">      style_table<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'overflowX'</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'auto'</span>},</span>
+<span id="cb39-7">      style_cell<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>{</span>
+<span id="cb39-8">          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'height'</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'auto'</span>,</span>
+<span id="cb39-9">          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'minWidth'</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'140px'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'width'</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'140px'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'maxWidth'</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'140px'</span>,</span>
+<span id="cb39-10">          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'whiteSpace'</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'normal'</span></span>
+<span id="cb39-11">      }</span>
+<span id="cb39-12">  )</span></code></pre></div>
+</div></li>
+</ul>
+</section>
+<section id="callback" class="level3">
+<h3 class="anchored" data-anchor-id="callback">Callback</h3>
+<p>The <strong>callback function</strong> updates the scatter plot based on dropdown inputs.</p>
+<ul>
+<li>The <code>@app.callback</code> decorator defines reactive behavior, similar to <code>observeEvent()</code> or <code>reactive()</code> in Shiny.<sup>6</sup></li>
+</ul>
+<ul>
+<li><p>The function <code>update_scatter_plot</code> takes inputs from dropdowns and updates the plot, using <code>plotly.express</code> and our <code>format_label()</code> utility function to create the scatter plot, similar to using <code>ggplot2</code> in R.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1">  <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> update_scatter_plot(x_axis, y_axis):</span>
+<span id="cb41-2">      fig <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> px.scatter(</span>
+<span id="cb41-3">          df, x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>x_axis, y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>y_axis, color<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'species'</span>,</span>
+<span id="cb41-4">          labels<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>{x_axis: format_label(x_axis), y_axis: format_label(y_axis)},</span>
+<span id="cb41-5">          title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'Scatter Plot of </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>format_label(x_axis)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> vs </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>format_label(y_axis)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span></span>
+<span id="cb41-6">      )</span>
+<span id="cb41-7">      <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> fig</span></code></pre></div>
+</div></li>
+</ul>
+<p>The full callback code is below:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>show/hide app callback in app.py</summary>
+<div class="sourceCode cell-code" id="cb42" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@app.callback</span>(</span>
+<span id="cb42-2">    Output(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'scatter-plot'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'figure'</span>),</span>
+<span id="cb42-3">    [Input(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'x-axis'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'value'</span>),</span>
+<span id="cb42-4">     Input(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'y-axis'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'value'</span>)]</span>
+<span id="cb42-5">)</span>
+<span id="cb42-6"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> update_scatter_plot(x_axis, y_axis):</span>
+<span id="cb42-7">    fig <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> px.scatter(</span>
+<span id="cb42-8">        df, x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>x_axis, y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>y_axis, color<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'species'</span>,</span>
+<span id="cb42-9">        labels<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>{x_axis: format_label(x_axis), y_axis: format_label(y_axis)},</span>
+<span id="cb42-10">        title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'Scatter Plot of </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>format_label(x_axis)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> vs </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>format_label(y_axis)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span></span>
+<span id="cb42-11">    )</span>
+<span id="cb42-12">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> fig</span></code></pre></div>
+</details>
+</div>
+</section>
+<section id="for-loops" class="level3">
+<h3 class="anchored" data-anchor-id="for-loops">For loops</h3>
+<p>Python often relies on explicit iteration using for loops, which means Python code tends to use for loops more frequently than R code. The reason for this goes beyond the scope of this blog post, but it’s rooted in the distinct practices and strengths of each language.</p>
+<p>Coming from R (and <code>purrr</code> or the <code>apply</code> family of functions), writing <code>for</code> loops can take some getting used to, so I’ve broken down the <code>numerical_columns</code> and <code>dcc.Dropdown()</code> examples from our Dash app.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1">numerical_columns <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [col <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> col <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> df.select_dtypes(include<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'float64'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'int64'</span>]).columns <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> col <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'year'</span>]</span></code></pre></div>
+</div>
+<ol type="1">
+<li><p><code>[col for col in ...]</code> is a list comprehension–it iterates over each column name (<code>col</code>) in the filtered list of column names.</p></li>
+<li><p><code>df</code> is a DataFrame, and <code>select_dtypes</code> is a method that filters the DataFrame columns based on their data types. It includes columns with data types <code>float64</code> and <code>int64</code> (similar to numeric types in R).</p></li>
+<li><p><code>.columns</code> retrieves the names of the columns that have been filtered by <code>select_dtypes</code>.</p></li>
+<li><p><code>if col != 'year'</code> is the condition to ensure that the column <code>year</code> is excluded from the resulting list, even if it has a numeric type.</p></li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1">options<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'label'</span>: col, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'value'</span>: col} <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> col <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> numerical_columns]</span></code></pre></div>
+</div>
+<p>This <code>for</code> loop iterates over each column name (<code>col</code>) in the <code>numerical_columns</code> list.</p>
+<ol type="1">
+<li><p>For each column name, it creates a dictionary (<code>{'label': col, 'value': col}</code>).</p></li>
+<li><p><code>label</code> is the text displayed in the Dropdown, and <code>value</code> is the actual value assigned to this option.</p></li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1">columns<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"name"</span>: i, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"id"</span>: i} <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> df.columns]</span></code></pre></div>
+</div>
+<p>This <code>for</code> loop iterates over all columns of the DataFrame <code>df</code>.</p>
+<ol type="1">
+<li><p>For each column, it creates a dictionary with <code>name</code> and <code>id</code> both set to the column name.</p></li>
+<li><p>These dictionaries are used to define the columns of the <code>dash_table.DataTable()</code>.</p></li>
+</ol>
+<p>The entire app layout code is below:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>show/hide full Dash app in app.py</summary>
+<div class="sourceCode cell-code" id="cb46" style="background: #f1f3f5;"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> dash</span>
+<span id="cb46-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> dash <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> dcc, html, dash_table</span>
+<span id="cb46-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> dash.dependencies <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Input, Output</span>
+<span id="cb46-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pd</span>
+<span id="cb46-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> plotly.express <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> px</span>
+<span id="cb46-6"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> dash_bootstrap_components <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> dbc</span>
+<span id="cb46-7"></span>
+<span id="cb46-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># load the dataset</span></span>
+<span id="cb46-9">url <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://raw.githubusercontent.com/allisonhorst/palmerpenguins/main/inst/extdata/penguins.csv"</span></span>
+<span id="cb46-10">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.read_csv(url)</span>
+<span id="cb46-11"></span>
+<span id="cb46-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># remove the 'year' column </span></span>
+<span id="cb46-13">numerical_columns <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [col <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> col <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> df.select_dtypes(include<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'float64'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'int64'</span>]).columns <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> col <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'year'</span>]</span>
+<span id="cb46-14"></span>
+<span id="cb46-15"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># initialize the Dash app</span></span>
+<span id="cb46-16">app <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> dash.Dash(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">__name__</span>, external_stylesheets<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[dbc.themes.BOOTSTRAP])</span>
+<span id="cb46-17"></span>
+<span id="cb46-18"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># function to replace underscores with spaces</span></span>
+<span id="cb46-19"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> format_label(label):</span>
+<span id="cb46-20">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> label.replace(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'_'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">' '</span>).title()</span>
+<span id="cb46-21"></span>
+<span id="cb46-22"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># app layout</span></span>
+<span id="cb46-23">app.layout <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> dbc.Container([</span>
+<span id="cb46-24">    dbc.Row(</span>
+<span id="cb46-25">        dbc.Col(</span>
+<span id="cb46-26">            html.H1(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Palmer Penguins Dashboard"</span>), </span>
+<span id="cb46-27">        width<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12</span>)</span>
+<span id="cb46-28">    ),</span>
+<span id="cb46-29">    dbc.Row(</span>
+<span id="cb46-30">        html.H3(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Inputs"</span>)</span>
+<span id="cb46-31">    ),</span>
+<span id="cb46-32">    dbc.Row([</span>
+<span id="cb46-33">        dbc.Col(</span>
+<span id="cb46-34">            dcc.Dropdown(</span>
+<span id="cb46-35">                <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">id</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'x-axis'</span>,</span>
+<span id="cb46-36">                options<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'label'</span>: col, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'value'</span>: col} <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> col <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> numerical_columns],</span>
+<span id="cb46-37">                value<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'bill_length_mm'</span>,</span>
+<span id="cb46-38">                clearable<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span></span>
+<span id="cb46-39">            ), width<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span></span>
+<span id="cb46-40">        ),</span>
+<span id="cb46-41">        dbc.Col(</span>
+<span id="cb46-42">            dcc.Dropdown(</span>
+<span id="cb46-43">                <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">id</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'y-axis'</span>,</span>
+<span id="cb46-44">                options<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'label'</span>: col, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'value'</span>: col} <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> col <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> numerical_columns],</span>
+<span id="cb46-45">                value<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'bill_depth_mm'</span>,</span>
+<span id="cb46-46">                clearable<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span></span>
+<span id="cb46-47">            ), width<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span></span>
+<span id="cb46-48">        )</span>
+<span id="cb46-49">    ]),</span>
+<span id="cb46-50">    dbc.Row([</span>
+<span id="cb46-51">        dbc.Col([</span>
+<span id="cb46-52">            html.H3(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Scatter Plot"</span>),</span>
+<span id="cb46-53">            dcc.Graph(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">id</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'scatter-plot'</span>)</span>
+<span id="cb46-54">        ], width<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>),</span>
+<span id="cb46-55">        dbc.Col([</span>
+<span id="cb46-56">            html.H3(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Table"</span>),</span>
+<span id="cb46-57">            dash_table.DataTable(</span>
+<span id="cb46-58">                <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">id</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'table'</span>,</span>
+<span id="cb46-59">                columns<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"name"</span>: i, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"id"</span>: i} <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> df.columns],</span>
+<span id="cb46-60">                data<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>df.to_dict(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'records'</span>),</span>
+<span id="cb46-61">                page_size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>,</span>
+<span id="cb46-62">                style_table<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'overflowX'</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'auto'</span>},</span>
+<span id="cb46-63">                style_cell<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>{</span>
+<span id="cb46-64">                    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'height'</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'auto'</span>,</span>
+<span id="cb46-65">                    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'minWidth'</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'140px'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'width'</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'140px'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'maxWidth'</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'140px'</span>,</span>
+<span id="cb46-66">                    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'whiteSpace'</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'normal'</span></span>
+<span id="cb46-67">                }</span>
+<span id="cb46-68">            )</span>
+<span id="cb46-69">        ], width<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>)</span>
+<span id="cb46-70">    ])</span>
+<span id="cb46-71">])</span>
+<span id="cb46-72"></span>
+<span id="cb46-73"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># callback to update the scatter plot</span></span>
+<span id="cb46-74"><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@app.callback</span>(</span>
+<span id="cb46-75">    Output(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'scatter-plot'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'figure'</span>),</span>
+<span id="cb46-76">    [Input(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'x-axis'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'value'</span>),</span>
+<span id="cb46-77">     Input(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'y-axis'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'value'</span>)]</span>
+<span id="cb46-78">)</span>
+<span id="cb46-79"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> update_scatter_plot(x_axis, y_axis):</span>
+<span id="cb46-80">    fig <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> px.scatter(</span>
+<span id="cb46-81">        df, x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>x_axis, y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>y_axis, color<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'species'</span>,</span>
+<span id="cb46-82">        labels<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>{x_axis: format_label(x_axis), y_axis: format_label(y_axis)},</span>
+<span id="cb46-83">        title<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'Scatter Plot of </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>format_label(x_axis)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> vs </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>format_label(y_axis)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span></span>
+<span id="cb46-84">    )</span>
+<span id="cb46-85">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> fig</span>
+<span id="cb46-86"></span>
+<span id="cb46-87"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># run the app</span></span>
+<span id="cb46-88"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">__name__</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'__main__'</span>:</span>
+<span id="cb46-89">    app.run_server(debug<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span></code></pre></div>
+</details>
+</div>
+</section>
+<section id="run-the-app-2" class="level3">
+<h3 class="anchored" data-anchor-id="run-the-app-2">Run the App</h3>
+<p>The code below runs the application. Note that the <code>__name__ == '__main__'</code> condition corresponds to the <code>dash.Dash(__name__, ...)</code> we used to initialize the application above.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb47" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">__name__</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'__main__'</span>:</span>
+<span id="cb47-2">    app.run_server(debug<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span></code></pre></div>
+</div>
+<p>Run the application by running the following commands in the terminal:</p>
+<div class="sourceCode" id="cb48" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb48-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">python</span> app.py</span></code></pre></div>
+<div class="sourceCode" id="cb49" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb49-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Dash</span> is running on http://127.0.0.1:8050/</span>
+<span id="cb49-2"></span>
+<span id="cb49-3"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">*</span> Serving Flask app <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'app'</span></span>
+<span id="cb49-4"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">*</span> Debug mode: on</span></code></pre></div>
+<p>Use <kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + click on the URL to open the web browser with our application:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://mjfrigaard.github.io/posts/py-apps/img/dash_penguins_app.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Penguins Dash App</figcaption>
+</figure>
+</div>
+<p>The Dash application has an interactive scatter plot (with hover features) with a side-by-side table display. The layout functions in Dash give us more control over output placement in the UI, and the additional HTML functions give us the ability to build our application up like a standard webpage (or Shiny app).</p>
+</section>
+</section>
+<section id="recap" class="level2">
+<h2 class="anchored" data-anchor-id="recap">Recap</h2>
+<p>In summary, <a href="">Bokeh</a> is excellent for creating detailed and interactive visualizations, comparable to <code>ggplot2</code> and <code>plotly</code> for interactive plots, but it’s not focused on developing complete applications. <a href="">Streamlit</a> is very user-friendly and ideal for quickly building and sharing simpler web apps, but with fewer options for customization. <a href="">Dash</a> is capable of developing highly customizable and complex web applications (similar to Shiny), but has a steeper learning curve than Streamlit.</p>
+<p>You can view the code used to create the apps in this <a href="https://github.com/mjfrigaard/py-apps/tree/main">repo.</a></p>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p><code>venv</code> is a module that comes built-in with <a href="https://docs.python.org/3/library/venv.html">Python 3.3 and later versions</a>, so we do not need to install it separately.↩︎</p></li>
+<li id="fn2"><p><a href="https://docs.streamlit.io/develop/api-reference/write-magic/st.write"><code>st.write()</code></a> is incredibly versatile. We’re passing it Markdown-formatted text in this example, but it can be used to display DataFrames, models, and more.↩︎</p></li>
+<li id="fn3"><p>Watch <a href="https://youtu.be/mTsZL-VmRVE?si=C6mkTzQYAI0FlCRJ">The Dash Callback - Input, Output, State, and more</a> on the <a href="https://www.youtube.com/@CharmingData">Charming Data YouTube channel</a>.↩︎</p></li>
+<li id="fn4"><p><code>pd.read_csv</code> is analogous to <code>read.csv</code> or <code>readr::read_csv</code> in R.↩︎</p></li>
+<li id="fn5"><p>Read all the arguments for dash.Dash in the <a href="https://dash.plotly.com/reference#dash.dash">documentation.</a>↩︎</p></li>
+<li id="fn6"><p>Read more about Dash callback definitions in the <a href="https://dash.plotly.com/basic-callbacks">documentation</a>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@app.callback</span>(</span>
+<span id="cb40-2">      Output(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'scatter-plot'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'figure'</span>),</span>
+<span id="cb40-3">      [Input(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'x-axis'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'value'</span>),</span>
+<span id="cb40-4">       Input(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'y-axis'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'value'</span>)]</span>
+<span id="cb40-5">  )</span></code></pre></div>
+</div>
+↩︎</li>
+</ol>
+</section></div> ]]></description>
+  <category>python</category>
+  <category>vscode</category>
+  <guid>https://mjfrigaard.github.io/posts/py-apps/</guid>
+  <pubDate>Sat, 13 Jul 2024 07:00:00 GMT</pubDate>
+  <media:content url="https://mjfrigaard.github.io/posts/py-apps/image.png" medium="image" type="image/png" height="122" width="144"/>
+</item>
 <item>
   <title>VS Code, meet Quarto.</title>
   <dc:creator>Martin Frigaard</dc:creator>
