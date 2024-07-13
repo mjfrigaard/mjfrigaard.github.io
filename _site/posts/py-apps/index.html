@@ -1,2 +1,1478 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"></html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.28">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Martin Frigaard">
+<meta name="dcterms.date" content="2024-07-13">
+
+<title>@mjfrigaard – Python Apps</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="floating nav-fixed slimcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title"><span class="citation" data-cites="mjfrigaard">@mjfrigaard</span></span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../posts.html"> 
+<span class="menu-text">Posts</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../series.html"> 
+<span class="menu-text">Series</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../code.html"> 
+<span class="menu-text">Code</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/mjfrigaard"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/mjfrigaard"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Python Apps</h1>
+            <p class="subtitle lead">Launching Python Applications from VS Code</p>
+                                <div class="quarto-categories">
+                <div class="quarto-category">python</div>
+                <div class="quarto-category">vscode</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Martin Frigaard </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">July 13, 2024</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#virtual-environments" id="toc-virtual-environments" class="nav-link active" data-scroll-target="#virtual-environments">Virtual environments</a>
+  <ul>
+  <li><a href="#git-history" id="toc-git-history" class="nav-link" data-scroll-target="#git-history">Git history</a></li>
+  </ul></li>
+  <li><a href="#bokeh" id="toc-bokeh" class="nav-link" data-scroll-target="#bokeh">Bokeh</a>
+  <ul>
+  <li><a href="#importing-libraries" id="toc-importing-libraries" class="nav-link" data-scroll-target="#importing-libraries">Importing Libraries</a></li>
+  <li><a href="#loading-data" id="toc-loading-data" class="nav-link" data-scroll-target="#loading-data">Loading Data</a></li>
+  <li><a href="#app-inputs" id="toc-app-inputs" class="nav-link" data-scroll-target="#app-inputs">App Inputs</a></li>
+  <li><a href="#scatter-plot" id="toc-scatter-plot" class="nav-link" data-scroll-target="#scatter-plot">Scatter Plot</a></li>
+  <li><a href="#interactivity" id="toc-interactivity" class="nav-link" data-scroll-target="#interactivity">Interactivity</a></li>
+  <li><a href="#table-display" id="toc-table-display" class="nav-link" data-scroll-target="#table-display">Table Display</a></li>
+  <li><a href="#layout" id="toc-layout" class="nav-link" data-scroll-target="#layout">Layout</a></li>
+  <li><a href="#run-the-app" id="toc-run-the-app" class="nav-link" data-scroll-target="#run-the-app">Run the App</a></li>
+  </ul></li>
+  <li><a href="#streamlit" id="toc-streamlit" class="nav-link" data-scroll-target="#streamlit">Streamlit</a>
+  <ul>
+  <li><a href="#importing-libraries-1" id="toc-importing-libraries-1" class="nav-link" data-scroll-target="#importing-libraries-1">Importing Libraries</a></li>
+  <li><a href="#loading-data-1" id="toc-loading-data-1" class="nav-link" data-scroll-target="#loading-data-1">Loading Data</a></li>
+  <li><a href="#app-inputs-1" id="toc-app-inputs-1" class="nav-link" data-scroll-target="#app-inputs-1">App Inputs</a></li>
+  <li><a href="#scatter-plot-1" id="toc-scatter-plot-1" class="nav-link" data-scroll-target="#scatter-plot-1">Scatter Plot</a></li>
+  <li><a href="#table-display-1" id="toc-table-display-1" class="nav-link" data-scroll-target="#table-display-1">Table Display</a></li>
+  <li><a href="#run-the-app-1" id="toc-run-the-app-1" class="nav-link" data-scroll-target="#run-the-app-1">Run the App</a></li>
+  </ul></li>
+  <li><a href="#dash" id="toc-dash" class="nav-link" data-scroll-target="#dash">Dash</a>
+  <ul>
+  <li><a href="#importing-libraries-2" id="toc-importing-libraries-2" class="nav-link" data-scroll-target="#importing-libraries-2">Importing Libraries</a></li>
+  <li><a href="#loading-data-2" id="toc-loading-data-2" class="nav-link" data-scroll-target="#loading-data-2">Loading Data</a></li>
+  <li><a href="#utility-function" id="toc-utility-function" class="nav-link" data-scroll-target="#utility-function">Utility Function</a></li>
+  <li><a href="#define-columns" id="toc-define-columns" class="nav-link" data-scroll-target="#define-columns">Define Columns</a></li>
+  <li><a href="#initialize-app" id="toc-initialize-app" class="nav-link" data-scroll-target="#initialize-app">Initialize App</a></li>
+  <li><a href="#layout-1" id="toc-layout-1" class="nav-link" data-scroll-target="#layout-1">Layout</a></li>
+  <li><a href="#callback" id="toc-callback" class="nav-link" data-scroll-target="#callback">Callback</a></li>
+  <li><a href="#for-loops" id="toc-for-loops" class="nav-link" data-scroll-target="#for-loops">For loops</a></li>
+  <li><a href="#run-the-app-2" id="toc-run-the-app-2" class="nav-link" data-scroll-target="#run-the-app-2">Run the App</a></li>
+  </ul></li>
+  <li><a href="#recap" id="toc-recap" class="nav-link" data-scroll-target="#recap">Recap</a></li>
+  </ul>
+</nav>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+
+
+
+
+
+<div class="callout callout-style-simple callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.10em;">Note</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.05em; color: #282b2d;">
+<p>This is the second post on working in VS Code with Python. I’ll cover developing and publishing Python applications using Bokeh, Streamlit, and Dash.</p>
+</div>
+</div>
+</div>
+</div>
+<p>I’ve been demoing quite a few Python applications with VS Code lately and thought I’d write some notes and observations on running and deploying the three popular libraries: <a href="https://docs.bokeh.org/en/latest/">Bokeh</a>, <a href="https://docs.streamlit.io/">Streamlit</a>, and <a href="https://dash.plotly.com/">Dash</a>.</p>
+<section id="virtual-environments" class="level2">
+<h2 class="anchored" data-anchor-id="virtual-environments">Virtual environments</h2>
+<p>Python virtual environments are designed to manage project-specific dependencies and ensure that the correct versions of packages are used in a given project. Similar to the renv package in R, Python comes with a a <code>venv</code> command for creating a virtual environment.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> It’s common practice to name the virtual environment something like <code>myenv</code> or <code>.venv</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> venv .venv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>venv</code> works by creating a directory with a copy of the Python interpreter and the necessary executables to use it. After creating the virtual environment folder, we can activate it using the following command:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> .venv/bin/activate</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># windows</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># myenv\Scripts\activate</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If you’re using VS Code, this activate the following prompt to set your workspace folder:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/venv_vs_code.png" class="img-fluid figure-img" style="width:90.0%"></p>
+<figcaption>Workspace folder</figcaption>
+</figure>
+</div>
+<p>Click <strong>Yes</strong>, then make sure all the dependencies listed in the requirements.txt file are installed in the virtual environment using <a href="https://pypi.org/project/pip/"><code>pip</code></a>, the package installer for Python.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-r</span> requirements.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>As you’re developing, new dependencies can be recorded in <code>requirements.txt</code> using <code>pip freeze</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> freeze <span class="op">&gt;</span> requirements.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="git-history" class="level3">
+<h3 class="anchored" data-anchor-id="git-history">Git history</h3>
+<p>The virtual environment will store all the dependencies for a project, so it’s a good practice to remove it from any Git repositories. You can do this with the following commands in the terminal:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">".venv/"</span> <span class="op">&gt;&gt;</span> .gitignore</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add .gitignore</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"Add .venv to .gitignore"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>You can also remove the <code>.venv</code> directory from the latest commit:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> rm <span class="at">-r</span> <span class="at">--cached</span> .venv</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"Remove .venv directory"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-simple callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.15em;">Using <code>venv</code></span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p><code>venv</code> allows us to manage dependencies more effectively, ensuring a clean and isolated environment for each Python app project.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create a virtual environment</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> venv .venv</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># activate the virtual environment on macOS/Linux</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> .venv/bin/activate  </span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># install necessary packages</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install dash streamlit bokeh</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co"># save your current environment's packages</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> freeze <span class="op">&gt;</span> requirements.txt</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co"># install the packages in a new environment</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-r</span> requirements.txt</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co"># deactivate the virtual environment when done</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="ex">deactivate</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p><a href="https://docs.bokeh.org/en/latest/">Bokeh</a>, <a href="https://docs.streamlit.io/">Streamlit</a>, and <a href="https://dash.plotly.com/">Dash</a> are three popular libraries for creating interactive Python applications, particularly for visualizations and dashboards. Below we’ll explore building an application in each framework using the <a href="https://allisonhorst.github.io/palmerpenguins/"><code>palmerpenuins</code> data</a>. For uniformity, each app will include a scatter plot comparing the numeric variables and a table output.</p>
+</section>
+</section>
+<section id="bokeh" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="bokeh">Bokeh</h2>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><img src="img/bokeh.png" class="img-fluid" style="width:40.0%"></p>
+</div></div><p><a href="https://docs.bokeh.org/en/latest/">Bokeh</a> is a library in Python specifically designed for creating interactive and visually appealing interactive graphs and charts. Bokeh can also create static HTML files without a server, similar to RMarkdown’s HTML output.</p>
+<section id="importing-libraries" class="level3">
+<h3 class="anchored" data-anchor-id="importing-libraries">Importing Libraries</h3>
+<p>Create a main.py script and install the following libraries using <code>pip</code>. <code>pandas</code> is for data manipulation, <code>bokeh</code> will be used for the interactive visualizations, and the <code>palmerpenguins</code> package will load the <code>penguins</code> dataset.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> bokeh.layouts <span class="im">import</span> column, row</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> bokeh.models <span class="im">import</span> ColumnDataSource, DataTable, TableColumn, NumberFormatter, Select</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> bokeh.plotting <span class="im">import</span> figure, curdoc</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> palmerpenguins <span class="im">import</span> load_penguins</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Similar to R, where you might use <code>library(dplyr)</code> for data manipulation and <code>library(ggplot2)</code> for visualizations. For interactive visualizations, you might use <code>library(shiny)</code>.</p>
+<div class="callout callout-style-simple callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.15em;"><strong>Python vs.&nbsp;R</strong>: Key Differences When Importing Libraries</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p><br></p>
+<p><strong>Library Import Syntax</strong></p>
+<p>Python emphasizes explicit control over imports and namespaces:</p>
+<ul>
+<li>Python uses the <code>import</code> statement
+<ul>
+<li><code>import package_name</code></li>
+</ul></li>
+<li>Aliases are often used to shorten package names
+<ul>
+<li><code>import package_name as alias</code></li>
+</ul></li>
+<li>Python uses <code>from</code> to import specific functions or classes
+<ul>
+<li><code>from package_name import specific_function</code></li>
+</ul></li>
+</ul>
+<p>R uses the <code>library()</code> or <code>require()</code> function to import packages. R loads the entire package into the namespace by default. If you have functions with the same name in different packages, you can specify the package explicitly with <code>package::function()</code>.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="loading-data" class="level3">
+<h3 class="anchored" data-anchor-id="loading-data">Loading Data</h3>
+<p>The <code>penguins</code> dataset is loaded into a <code>pandas</code> <code>DataFrame</code> using the <code>load_penguins()</code> function and the missing data is removed.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> load_penguins()</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.dropna()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>A <code>ColumnDataSource</code> is created from the <code>DataFrame</code>, which is used by Bokeh for efficient data handling. This intermediate step doesn’t really have an R equivalent.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>source <span class="op">=</span> ColumnDataSource(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>A list of numeric columns is defined for use in the scatter plot. To define columns of interest in R we could use <code>colnames()</code> or <code>dplyr::select()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>numeric_columns <span class="op">=</span> [<span class="st">'bill_length_mm'</span>, <span class="st">'bill_depth_mm'</span>, <span class="st">'flipper_length_mm'</span>, <span class="st">'body_mass_g'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="app-inputs" class="level3">
+<h3 class="anchored" data-anchor-id="app-inputs">App Inputs</h3>
+<p>Two dropdown widgets are created for selecting x and y axes variables. If this was a Shiny app, we would use <code>selectInput()</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>x_select <span class="op">=</span> Select(title<span class="op">=</span><span class="st">"X Axis"</span>, value<span class="op">=</span><span class="st">"bill_length_mm"</span>, options<span class="op">=</span>numeric_columns)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>y_select <span class="op">=</span> Select(title<span class="op">=</span><span class="st">"Y Axis"</span>, value<span class="op">=</span><span class="st">"bill_depth_mm"</span>, options<span class="op">=</span>numeric_columns)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="scatter-plot" class="level3">
+<h3 class="anchored" data-anchor-id="scatter-plot">Scatter Plot</h3>
+<p>The scatter plot is created initialized with default axis labels and data.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>scatter_plot <span class="op">=</span> figure(title<span class="op">=</span><span class="st">"Scatter Plot"</span>,</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>                      x_axis_label<span class="op">=</span><span class="st">'Bill Length (mm)'</span>,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>                      y_axis_label<span class="op">=</span><span class="st">'Bill Depth (mm)'</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>scatter_plot.scatter(x<span class="op">=</span><span class="st">'bill_length_mm'</span>, y<span class="op">=</span><span class="st">'bill_depth_mm'</span>, source<span class="op">=</span>source, size<span class="op">=</span><span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In <code>ggplot2</code>, this would look like:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>show/hide ggplot2 equivalent code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">aes</span>(<span class="at">x =</span> bill_length_mm, <span class="at">y =</span> bill_depth_mm)) <span class="sc">+</span> </span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="interactivity" class="level3">
+<h3 class="anchored" data-anchor-id="interactivity">Interactivity</h3>
+<p>Below we define a function that updates the scatter plot when a new variable is selected for the x or y axis. It changes axis labels and re-renders the plot with new data. In <code>shiny</code>, you would use <code>observeEvent()</code> or <code>reactive()</code> to update plots dynamically.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> update_plot(attr, old, new):</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> x_select.value</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> y_select.value</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    scatter_plot.xaxis.axis_label <span class="op">=</span> x.replace(<span class="st">'_'</span>, <span class="st">' '</span>).title()</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    scatter_plot.yaxis.axis_label <span class="op">=</span> y.replace(<span class="st">'_'</span>, <span class="st">' '</span>).title()</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    scatter_plot.renderers <span class="op">=</span> []  <span class="co"># clear existing renderers</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    scatter_plot.scatter(x<span class="op">=</span>x, y<span class="op">=</span>y, source<span class="op">=</span>source, size<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>x_select.on_change(<span class="st">"value"</span>, update_plot)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>y_select.on_change(<span class="st">"value"</span>, update_plot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="table-display" class="level3">
+<h3 class="anchored" data-anchor-id="table-display">Table Display</h3>
+<p>The code below defines columns and their formatters for the data table to be displayed. <code>DataTable()</code> creates <code>data_table</code> a DataTable widget that displays the data. This is similar to using <code>DT::datatable(df)</code> in R.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>columns <span class="op">=</span> [</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    TableColumn(field<span class="op">=</span><span class="st">"species"</span>, title<span class="op">=</span><span class="st">"Species"</span>),</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    TableColumn(field<span class="op">=</span><span class="st">"island"</span>, title<span class="op">=</span><span class="st">"Island"</span>),</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    TableColumn(field<span class="op">=</span><span class="st">"bill_length_mm"</span>, title<span class="op">=</span><span class="st">"Bill Length (mm)"</span>, formatter<span class="op">=</span>NumberFormatter(<span class="bu">format</span><span class="op">=</span><span class="st">"0.0"</span>)),</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    TableColumn(field<span class="op">=</span><span class="st">"bill_depth_mm"</span>, title<span class="op">=</span><span class="st">"Bill Depth (mm)"</span>, formatter<span class="op">=</span>NumberFormatter(<span class="bu">format</span><span class="op">=</span><span class="st">"0.0"</span>)),</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    TableColumn(field<span class="op">=</span><span class="st">"flipper_length_mm"</span>, title<span class="op">=</span><span class="st">"Flipper Length (mm)"</span>, formatter<span class="op">=</span>NumberFormatter(<span class="bu">format</span><span class="op">=</span><span class="st">"0"</span>)),</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    TableColumn(field<span class="op">=</span><span class="st">"body_mass_g"</span>, title<span class="op">=</span><span class="st">"Body Mass (g)"</span>, formatter<span class="op">=</span>NumberFormatter(<span class="bu">format</span><span class="op">=</span><span class="st">"0"</span>)),</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    TableColumn(field<span class="op">=</span><span class="st">"sex"</span>, title<span class="op">=</span><span class="st">"Sex"</span>),</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    TableColumn(field<span class="op">=</span><span class="st">"year"</span>, title<span class="op">=</span><span class="st">"Year"</span>, formatter<span class="op">=</span>NumberFormatter(<span class="bu">format</span><span class="op">=</span><span class="st">"0"</span>))</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>data_table <span class="op">=</span> DataTable(source<span class="op">=</span>source, columns<span class="op">=</span>columns, width<span class="op">=</span><span class="dv">800</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="layout" class="level3">
+<h3 class="anchored" data-anchor-id="layout">Layout</h3>
+<p>The layout is defined and added to the current document for rendering. In <code>shiny</code>, you would use <code>fluidPage()</code>, <code>sidebarLayout()</code>, <code>mainPanel()</code>, etc., to arrange UI components.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>layout <span class="op">=</span> column(row(x_select, y_select), scatter_plot, data_table)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>curdoc().add_root(layout)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="run-the-app" class="level3">
+<h3 class="anchored" data-anchor-id="run-the-app">Run the App</h3>
+<p>To run this code, save <code>main.py</code> and use the <code>bokeh serve</code> command:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>bokeh serve <span class="op">--</span>show main.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In R, you would run a <code>shiny</code> app using <code>shinyApp(ui, server)</code> and the <code>runApp()</code> function.</p>
+<p>The full code in <code>main.py</code> is available below:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>show/hide main.py</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb19-2"><a href="#cb19-2"></a><span class="im">from</span> bokeh.layouts <span class="im">import</span> column, row</span>
+<span id="cb19-3"><a href="#cb19-3"></a><span class="im">from</span> bokeh.models <span class="im">import</span> ColumnDataSource, DataTable, TableColumn, NumberFormatter, Select</span>
+<span id="cb19-4"><a href="#cb19-4"></a><span class="im">from</span> bokeh.plotting <span class="im">import</span> figure, curdoc</span>
+<span id="cb19-5"><a href="#cb19-5"></a><span class="im">from</span> palmerpenguins <span class="im">import</span> load_penguins</span>
+<span id="cb19-6"><a href="#cb19-6"></a></span>
+<span id="cb19-7"><a href="#cb19-7"></a><span class="co"># load the penguins dataset</span></span>
+<span id="cb19-8"><a href="#cb19-8"></a>df <span class="op">=</span> load_penguins()</span>
+<span id="cb19-9"><a href="#cb19-9"></a></span>
+<span id="cb19-10"><a href="#cb19-10"></a><span class="co"># drop missing data </span></span>
+<span id="cb19-11"><a href="#cb19-11"></a>df <span class="op">=</span> df.dropna()</span>
+<span id="cb19-12"><a href="#cb19-12"></a></span>
+<span id="cb19-13"><a href="#cb19-13"></a><span class="co"># create ColumnDataSource</span></span>
+<span id="cb19-14"><a href="#cb19-14"></a>source <span class="op">=</span> ColumnDataSource(df)</span>
+<span id="cb19-15"><a href="#cb19-15"></a></span>
+<span id="cb19-16"><a href="#cb19-16"></a><span class="co"># numeric columns</span></span>
+<span id="cb19-17"><a href="#cb19-17"></a>numeric_columns <span class="op">=</span> [<span class="st">'bill_length_mm'</span>, <span class="st">'bill_depth_mm'</span>, <span class="st">'flipper_length_mm'</span>, <span class="st">'body_mass_g'</span>]</span>
+<span id="cb19-18"><a href="#cb19-18"></a></span>
+<span id="cb19-19"><a href="#cb19-19"></a><span class="co"># create select widgets for x and y axis</span></span>
+<span id="cb19-20"><a href="#cb19-20"></a>x_select <span class="op">=</span> Select(title<span class="op">=</span><span class="st">"X Axis"</span>, value<span class="op">=</span><span class="st">"bill_length_mm"</span>, options<span class="op">=</span>numeric_columns)</span>
+<span id="cb19-21"><a href="#cb19-21"></a>y_select <span class="op">=</span> Select(title<span class="op">=</span><span class="st">"Y Axis"</span>, value<span class="op">=</span><span class="st">"bill_depth_mm"</span>, options<span class="op">=</span>numeric_columns)</span>
+<span id="cb19-22"><a href="#cb19-22"></a></span>
+<span id="cb19-23"><a href="#cb19-23"></a><span class="co"># scatter plot comparing selected variables</span></span>
+<span id="cb19-24"><a href="#cb19-24"></a>scatter_plot <span class="op">=</span> figure(title<span class="op">=</span><span class="st">"Scatter Plot"</span>,</span>
+<span id="cb19-25"><a href="#cb19-25"></a>                      x_axis_label<span class="op">=</span><span class="st">'Bill Length (mm)'</span>,</span>
+<span id="cb19-26"><a href="#cb19-26"></a>                      y_axis_label<span class="op">=</span><span class="st">'Bill Depth (mm)'</span>)</span>
+<span id="cb19-27"><a href="#cb19-27"></a></span>
+<span id="cb19-28"><a href="#cb19-28"></a>scatter_plot.scatter(x<span class="op">=</span><span class="st">'bill_length_mm'</span>, y<span class="op">=</span><span class="st">'bill_depth_mm'</span>, source<span class="op">=</span>source, size<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb19-29"><a href="#cb19-29"></a></span>
+<span id="cb19-30"><a href="#cb19-30"></a><span class="kw">def</span> update_plot(attr, old, new):</span>
+<span id="cb19-31"><a href="#cb19-31"></a>    x <span class="op">=</span> x_select.value</span>
+<span id="cb19-32"><a href="#cb19-32"></a>    y <span class="op">=</span> y_select.value</span>
+<span id="cb19-33"><a href="#cb19-33"></a>    scatter_plot.xaxis.axis_label <span class="op">=</span> x.replace(<span class="st">'_'</span>, <span class="st">' '</span>).title()</span>
+<span id="cb19-34"><a href="#cb19-34"></a>    scatter_plot.yaxis.axis_label <span class="op">=</span> y.replace(<span class="st">'_'</span>, <span class="st">' '</span>).title()</span>
+<span id="cb19-35"><a href="#cb19-35"></a>    scatter_plot.renderers <span class="op">=</span> []  <span class="co"># Clear existing renderers</span></span>
+<span id="cb19-36"><a href="#cb19-36"></a>    scatter_plot.scatter(x<span class="op">=</span>x, y<span class="op">=</span>y, source<span class="op">=</span>source, size<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb19-37"><a href="#cb19-37"></a></span>
+<span id="cb19-38"><a href="#cb19-38"></a>x_select.on_change(<span class="st">"value"</span>, update_plot)</span>
+<span id="cb19-39"><a href="#cb19-39"></a>y_select.on_change(<span class="st">"value"</span>, update_plot)</span>
+<span id="cb19-40"><a href="#cb19-40"></a></span>
+<span id="cb19-41"><a href="#cb19-41"></a><span class="co"># define columns </span></span>
+<span id="cb19-42"><a href="#cb19-42"></a>columns <span class="op">=</span> [</span>
+<span id="cb19-43"><a href="#cb19-43"></a>    TableColumn(field<span class="op">=</span><span class="st">"species"</span>, title<span class="op">=</span><span class="st">"Species"</span>),</span>
+<span id="cb19-44"><a href="#cb19-44"></a>    TableColumn(field<span class="op">=</span><span class="st">"island"</span>, title<span class="op">=</span><span class="st">"Island"</span>),</span>
+<span id="cb19-45"><a href="#cb19-45"></a>    TableColumn(field<span class="op">=</span><span class="st">"bill_length_mm"</span>, title<span class="op">=</span><span class="st">"Bill Length (mm)"</span>, formatter<span class="op">=</span>NumberFormatter(<span class="bu">format</span><span class="op">=</span><span class="st">"0.0"</span>)),</span>
+<span id="cb19-46"><a href="#cb19-46"></a>    TableColumn(field<span class="op">=</span><span class="st">"bill_depth_mm"</span>, title<span class="op">=</span><span class="st">"Bill Depth (mm)"</span>, formatter<span class="op">=</span>NumberFormatter(<span class="bu">format</span><span class="op">=</span><span class="st">"0.0"</span>)),</span>
+<span id="cb19-47"><a href="#cb19-47"></a>    TableColumn(field<span class="op">=</span><span class="st">"flipper_length_mm"</span>, title<span class="op">=</span><span class="st">"Flipper Length (mm)"</span>, formatter<span class="op">=</span>NumberFormatter(<span class="bu">format</span><span class="op">=</span><span class="st">"0"</span>)),</span>
+<span id="cb19-48"><a href="#cb19-48"></a>    TableColumn(field<span class="op">=</span><span class="st">"body_mass_g"</span>, title<span class="op">=</span><span class="st">"Body Mass (g)"</span>, formatter<span class="op">=</span>NumberFormatter(<span class="bu">format</span><span class="op">=</span><span class="st">"0"</span>)),</span>
+<span id="cb19-49"><a href="#cb19-49"></a>    TableColumn(field<span class="op">=</span><span class="st">"sex"</span>, title<span class="op">=</span><span class="st">"Sex"</span>),</span>
+<span id="cb19-50"><a href="#cb19-50"></a>    TableColumn(field<span class="op">=</span><span class="st">"year"</span>, title<span class="op">=</span><span class="st">"Year"</span>, formatter<span class="op">=</span>NumberFormatter(<span class="bu">format</span><span class="op">=</span><span class="st">"0"</span>))</span>
+<span id="cb19-51"><a href="#cb19-51"></a>]</span>
+<span id="cb19-52"><a href="#cb19-52"></a></span>
+<span id="cb19-53"><a href="#cb19-53"></a><span class="co"># create DataTable</span></span>
+<span id="cb19-54"><a href="#cb19-54"></a>data_table <span class="op">=</span> DataTable(source<span class="op">=</span>source, columns<span class="op">=</span>columns, width<span class="op">=</span><span class="dv">800</span>)</span>
+<span id="cb19-55"><a href="#cb19-55"></a></span>
+<span id="cb19-56"><a href="#cb19-56"></a><span class="co"># Layout</span></span>
+<span id="cb19-57"><a href="#cb19-57"></a>layout <span class="op">=</span> column(row(x_select, y_select), scatter_plot, data_table)</span>
+<span id="cb19-58"><a href="#cb19-58"></a></span>
+<span id="cb19-59"><a href="#cb19-59"></a><span class="co"># add layout to curdoc</span></span>
+<span id="cb19-60"><a href="#cb19-60"></a>curdoc().add_root(layout)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+
+<p>After running the <code>bokeh serve</code> command, the terminal will display the local URL we can use to view our app:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Starting</span> Bokeh server version 3.4.2 <span class="er">(</span><span class="ex">running</span> on Tornado 6.4<span class="kw">)</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="ex">User</span> authentication hooks NOT provided <span class="er">(</span><span class="ex">default</span> user enabled<span class="kw">)</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Bokeh</span> app running at: http://localhost:5006/main</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Starting</span> Bokeh server with process id: 88167</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="ex">WebSocket</span> connection opened</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="ex">ServerConnection</span> created</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/bokeh_penguins_app.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Bokeh Python App</figcaption>
+</figure>
+</div>
+<p>As we can see, the layout is simple, and it gets the job done quickly with a modest amount of code. Bokeh is not really designed for full-fledged applications, but it <em>is</em> capable of creating detailed and interactive plots and tables.</p>
+</section>
+</section>
+<section id="streamlit" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="streamlit">Streamlit</h2>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><img src="img/streamlit.png" class="img-fluid" style="width:40.0%"></p>
+</div></div><p><a href="https://docs.streamlit.io/">Streamlit</a> is another library for creating web applications for data analysis and visualization. It’s known for its simplicity and generally requires less code to build functional applications.</p>
+<section id="importing-libraries-1" class="level3">
+<h3 class="anchored" data-anchor-id="importing-libraries-1">Importing Libraries</h3>
+<p>After creating and activating a Python virtual environment with <code>venv</code>, ensure you have <code>streamlit</code>, <code>palmerpenguins</code>, and the other necessary libraries installed using <code>pip</code>. Create an <code>app.py</code> file and import the following libraries:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> streamlit <span class="im">as</span> st</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> palmerpenguins <span class="im">import</span> load_penguins</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="loading-data-1" class="level3">
+<h3 class="anchored" data-anchor-id="loading-data-1">Loading Data</h3>
+<p>Load the <code>penguins</code> data as a <code>pandas</code> <code>DataFrame</code> using the <code>load_penguins()</code> function from the <code>palmerpenguins</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load the dataset</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>penguins <span class="op">=</span> load_penguins()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="app-inputs-1" class="level3">
+<h3 class="anchored" data-anchor-id="app-inputs-1">App Inputs</h3>
+<p>The code below creates a streamlit application that includes a scatter plot with a dropdown menu for selecting the X-axis and Y-axis variables among the numeric columns (minus <code>year</code>). The scatter plot differentiates the species by color.</p>
+<ul>
+<li><p><code>st.title</code> sets the title of the app.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>st.title(<span class="st">'Palmer Penguins Dashboard'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><p><code>st.write</code> displays text and the datase.t<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>st.write(<span class="st">"### Scatter Plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><p><code>st.selectbox</code> creates dropdown menus for selecting variables for the scatter plot.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>x_axis <span class="op">=</span> st.selectbox(<span class="st">'X-axis variable'</span>, numeric_columns)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+</ul>
+</section>
+<section id="scatter-plot-1" class="level3">
+<h3 class="anchored" data-anchor-id="scatter-plot-1">Scatter Plot</h3>
+<p>The scatter plot is created using <code>seaborn</code>, a visualization library built on top of <code>matplotlib</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> x_axis <span class="kw">and</span> y_axis:</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    sns.scatterplot(data<span class="op">=</span>penguins, x<span class="op">=</span>x_axis, y<span class="op">=</span>y_axis, hue<span class="op">=</span><span class="st">'species'</span>, ax<span class="op">=</span>ax)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    st.pyplot(fig)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="table-display-1" class="level3">
+<h3 class="anchored" data-anchor-id="table-display-1">Table Display</h3>
+<p>The <code>st.dataframe</code> method displays the dataset in a table format within the <code>streamlit</code> app.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>st.dataframe(penguins)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-simple callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.15em;"><strong>Python vs.&nbsp;R</strong>: Key Syntax Differences</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p><br></p>
+<p><strong>Assignment Operators</strong></p>
+<ul>
+<li>Python uses <code>=</code> for assignment.<br>
+</li>
+<li>R typically uses <code>&lt;-</code> for assignment, although <code>=</code> can also be used.</li>
+</ul>
+<p><strong>Function Calls</strong></p>
+<ul>
+<li>Python calls <code>st.selectbox()</code> where <code>st</code> is an alias for <code>streamlit</code>.<br>
+</li>
+<li>R can call <code>selectInput()</code> after loading the <code>shiny</code> library, although <code>shiny::selectInput()</code> can be used (if <code>shiny</code> is installed).</li>
+</ul>
+<p><strong>Data Structures</strong></p>
+<ul>
+<li>In Python, the data is read into a <code>pandas DataFrame</code>.<br>
+</li>
+<li>In R, the data is read into a <code>tibble</code>, which is part of the <code>tidyverse</code> and is a modern reimagining of the traditional data frame.</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<p>The full application code is available below:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>show/hide app.py</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a><span class="co"># app title</span></span>
+<span id="cb28-2"><a href="#cb28-2"></a>st.title(<span class="st">'Palmer Penguins Dashboard'</span>)</span>
+<span id="cb28-3"><a href="#cb28-3"></a></span>
+<span id="cb28-4"><a href="#cb28-4"></a><span class="co"># numeric columns for scatter plot</span></span>
+<span id="cb28-5"><a href="#cb28-5"></a>numeric_columns <span class="op">=</span> penguins.select_dtypes(include<span class="op">=</span>[<span class="st">'float64'</span>, <span class="st">'int64'</span>]).columns</span>
+<span id="cb28-6"><a href="#cb28-6"></a><span class="co"># drop year</span></span>
+<span id="cb28-7"><a href="#cb28-7"></a>numeric_columns <span class="op">=</span> numeric_columns.drop(<span class="st">'year'</span>)</span>
+<span id="cb28-8"><a href="#cb28-8"></a></span>
+<span id="cb28-9"><a href="#cb28-9"></a><span class="co"># scatter plot</span></span>
+<span id="cb28-10"><a href="#cb28-10"></a>st.write(<span class="st">"### Scatter Plot"</span>)</span>
+<span id="cb28-11"><a href="#cb28-11"></a>x_axis <span class="op">=</span> st.selectbox(<span class="st">'X-axis variable'</span>, numeric_columns)</span>
+<span id="cb28-12"><a href="#cb28-12"></a>y_axis <span class="op">=</span> st.selectbox(<span class="st">'Y-axis variable'</span>, numeric_columns, index<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb28-13"><a href="#cb28-13"></a></span>
+<span id="cb28-14"><a href="#cb28-14"></a><span class="cf">if</span> x_axis <span class="kw">and</span> y_axis:</span>
+<span id="cb28-15"><a href="#cb28-15"></a>    fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb28-16"><a href="#cb28-16"></a>    sns.scatterplot(data<span class="op">=</span>penguins, x<span class="op">=</span>x_axis, y<span class="op">=</span>y_axis, hue<span class="op">=</span><span class="st">'species'</span>, ax<span class="op">=</span>ax)</span>
+<span id="cb28-17"><a href="#cb28-17"></a>    st.pyplot(fig)</span>
+<span id="cb28-18"><a href="#cb28-18"></a></span>
+<span id="cb28-19"><a href="#cb28-19"></a><span class="co"># display the dataframe as a table</span></span>
+<span id="cb28-20"><a href="#cb28-20"></a>st.write(<span class="st">"### Dataset"</span>)</span>
+<span id="cb28-21"><a href="#cb28-21"></a>st.dataframe(penguins)</span>
+<span id="cb28-22"><a href="#cb28-22"></a></span>
+<span id="cb28-23"><a href="#cb28-23"></a><span class="co"># footer</span></span>
+<span id="cb28-24"><a href="#cb28-24"></a>st.write(<span class="st">"Data Source: [palmerpenguins](https://github.com/allisonhorst/palmerpenguins)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="run-the-app-1" class="level3">
+<h3 class="anchored" data-anchor-id="run-the-app-1">Run the App</h3>
+<p>Open your terminal, navigate to the directory containing <code>app.py</code>, and run:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="ex">streamlit</span> run app.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/streamlit_penguins_app.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Streamlit Python App</figcaption>
+</figure>
+</div>
+<p>With streamlit we’re able to create an interactive graph and table display with about 1/3 the code we used in Bokeh, which is why they are ideal for quickly building and sharing simpler web apps (similar to flexdashboard in R). However, Streamlit apps have limited customization and may not handle very complex apps or large datasets efficiently.</p>
+</section>
+</section>
+<section id="dash" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="dash">Dash</h2>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><img src="img/dash.png" class="img-fluid" style="width:40.0%"></p>
+</div></div><p><a href="https://dash.plotly.com/">Dash</a> is a framework developed by Plotly for building analytical web applications using Python. It’s especially well-suited for interactive visualizations and dashboards.</p>
+<section id="importing-libraries-2" class="level3">
+<h3 class="anchored" data-anchor-id="importing-libraries-2">Importing Libraries</h3>
+<p>In an <code>app.py</code> file, we’ll start by importing the following necessary libraries. <code>dash</code> and <code>dash.dependencies</code> <a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> are used for building web applications (similar to <code>shiny</code>), <code>pandas</code> is imported for data manipulation, <code>plotly.express</code> is used for creating plots (akin to <code>ggplot2</code>), and <code>dash_bootstrap_components</code> allows us to use Bootstrap themes for styling the app.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> dash</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dash <span class="im">import</span> dcc, html, dash_table</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dash.dependencies <span class="im">import</span> Input, Output</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> plotly.express <span class="im">as</span> px</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> dash_bootstrap_components <span class="im">as</span> dbc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="loading-data-2" class="level3">
+<h3 class="anchored" data-anchor-id="loading-data-2">Loading Data</h3>
+<p>Now that we’ve identified and imported the dependencies, we can read the data into the application using <code>pandas</code>. We can assign the URL to the raw <code>.csv</code> file to <code>url</code>, then have <code>pd.read_csv()</code> read the CSV file into a <code>pandas</code> DataFrame.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/allisonhorst/palmerpenguins/main/inst/extdata/penguins.csv"</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(url)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="utility-function" class="level3">
+<h3 class="anchored" data-anchor-id="utility-function">Utility Function</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> format_label(label):</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> label.replace(<span class="st">'_'</span>, <span class="st">' '</span>).title()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This function replaces underscores with spaces and capitalizes words. In R, you would define a similar function using <code>gsub()</code> and <code>tools::toTitleCase()</code>.</p>
+</section>
+<section id="define-columns" class="level3">
+<h3 class="anchored" data-anchor-id="define-columns">Define Columns</h3>
+<p>We want to omit the <code>year</code> column from the drop-dowwns, so we’ll define <code>numerical_columns</code> outside of the app so we don’t have to repeat this code later. Type <code>float64</code> or <code>int64</code> are numeric columns.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>numerical_columns <span class="op">=</span> [col <span class="cf">for</span> col <span class="kw">in</span> df.select_dtypes(include<span class="op">=</span>[<span class="st">'float64'</span>, <span class="st">'int64'</span>]).columns <span class="cf">if</span> col <span class="op">!=</span> <span class="st">'year'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="initialize-app" class="level3">
+<h3 class="anchored" data-anchor-id="initialize-app">Initialize App</h3>
+<p><code>dash.Dash</code> creates a Dash app instance with Bootstrap styling by supplying <code>dbc.themes.BOOTSTRAP</code> to the <code>external_stylesheets</code> argument.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> This is somewhat similar to initializing a Shiny app with <code>shiny::shinyApp()</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> dash.Dash(<span class="va">__name__</span>, external_stylesheets<span class="op">=</span>[dbc.themes.BOOTSTRAP])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In the case of initializing a Dash app, <code>__name__</code> is passed as an argument to the <code>dash.Dash()</code> constructor to specify the <code>name</code> of the application. We’ll encounter this again when we launch the application below.</p>
+</section>
+<section id="layout-1" class="level3">
+<h3 class="anchored" data-anchor-id="layout-1">Layout</h3>
+<p>The majority of the code is contributed to defining the app layout using Bootstrap components.</p>
+<ul>
+<li><p><code>dbc.Container</code>, <code>dbc.Row</code>, and <code>dbc.Col</code> arrange components in a grid, similar to layout functions in Shiny like <code>fluidPage()</code>, <code>sidebarLayout()</code>, etc.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>app.layout <span class="op">=</span> dbc.Container([</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    dbc.Row([</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>        dbc.Col([</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>        ])</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    ])</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><p><code>html.H1</code> creates a header, like <code>tags$h1()</code> in Shiny.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>  html.H1(<span class="st">"Palmer Penguins Dashboard"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><p><code>dcc.Dropdown</code> creates dropdown menus for user input, similar to <code>selectInput()</code> in Shiny.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>  dcc.Dropdown(</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>      <span class="bu">id</span><span class="op">=</span><span class="st">'x-axis'</span>,</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>      options<span class="op">=</span>[{<span class="st">'label'</span>: col, <span class="st">'value'</span>: col} <span class="cf">for</span> col <span class="kw">in</span> numerical_columns],</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>      value<span class="op">=</span><span class="st">'bill_length_mm'</span>,</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>      clearable<span class="op">=</span><span class="va">False</span></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><p><code>dcc.Graph</code> places a plot in the app, analogous to <code>plotOutput()</code> in Shiny.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>  dcc.Graph(<span class="bu">id</span><span class="op">=</span><span class="st">'scatter-plot'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+<li><p><code>dash_table.DataTable</code> displays data in a table, similar to <code>DT::dataTableOutput()</code> in R.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>  dash_table.DataTable(</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>      <span class="bu">id</span><span class="op">=</span><span class="st">'table'</span>,</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>      columns<span class="op">=</span>[{<span class="st">"name"</span>: i, <span class="st">"id"</span>: i} <span class="cf">for</span> i <span class="kw">in</span> df.columns],</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>      data<span class="op">=</span>df.to_dict(<span class="st">'records'</span>),</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>      page_size<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>      style_table<span class="op">=</span>{<span class="st">'overflowX'</span>: <span class="st">'auto'</span>},</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>      style_cell<span class="op">=</span>{</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>          <span class="st">'height'</span>: <span class="st">'auto'</span>,</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>          <span class="st">'minWidth'</span>: <span class="st">'140px'</span>, <span class="st">'width'</span>: <span class="st">'140px'</span>, <span class="st">'maxWidth'</span>: <span class="st">'140px'</span>,</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>          <span class="st">'whiteSpace'</span>: <span class="st">'normal'</span></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+</ul>
+</section>
+<section id="callback" class="level3">
+<h3 class="anchored" data-anchor-id="callback">Callback</h3>
+<p>The <strong>callback function</strong> updates the scatter plot based on dropdown inputs.</p>
+<ul>
+<li>The <code>@app.callback</code> decorator defines reactive behavior, similar to <code>observeEvent()</code> or <code>reactive()</code> in Shiny.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></li>
+</ul>
+<ul>
+<li><p>The function <code>update_scatter_plot</code> takes inputs from dropdowns and updates the plot, using <code>plotly.express</code> and our <code>format_label()</code> utility function to create the scatter plot, similar to using <code>ggplot2</code> in R.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> update_scatter_plot(x_axis, y_axis):</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>      fig <span class="op">=</span> px.scatter(</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>          df, x<span class="op">=</span>x_axis, y<span class="op">=</span>y_axis, color<span class="op">=</span><span class="st">'species'</span>,</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>          labels<span class="op">=</span>{x_axis: format_label(x_axis), y_axis: format_label(y_axis)},</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>          title<span class="op">=</span><span class="ss">f'Scatter Plot of </span><span class="sc">{</span>format_label(x_axis)<span class="sc">}</span><span class="ss"> vs </span><span class="sc">{</span>format_label(y_axis)<span class="sc">}</span><span class="ss">'</span></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> fig</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></li>
+</ul>
+<p>The full callback code is below:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>show/hide app callback in app.py</summary>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="at">@app.callback</span>(</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>    Output(<span class="st">'scatter-plot'</span>, <span class="st">'figure'</span>),</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    [Input(<span class="st">'x-axis'</span>, <span class="st">'value'</span>),</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>     Input(<span class="st">'y-axis'</span>, <span class="st">'value'</span>)]</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> update_scatter_plot(x_axis, y_axis):</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>    fig <span class="op">=</span> px.scatter(</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>        df, x<span class="op">=</span>x_axis, y<span class="op">=</span>y_axis, color<span class="op">=</span><span class="st">'species'</span>,</span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>        labels<span class="op">=</span>{x_axis: format_label(x_axis), y_axis: format_label(y_axis)},</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>        title<span class="op">=</span><span class="ss">f'Scatter Plot of </span><span class="sc">{</span>format_label(x_axis)<span class="sc">}</span><span class="ss"> vs </span><span class="sc">{</span>format_label(y_axis)<span class="sc">}</span><span class="ss">'</span></span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fig</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="for-loops" class="level3">
+<h3 class="anchored" data-anchor-id="for-loops">For loops</h3>
+<p>Python often relies on explicit iteration using for loops, which means Python code tends to use for loops more frequently than R code. The reason for this goes beyond the scope of this blog post, but it’s rooted in the distinct practices and strengths of each language.</p>
+<p>Coming from R (and <code>purrr</code> or the <code>apply</code> family of functions), writing <code>for</code> loops can take some getting used to, so I’ve broken down the <code>numerical_columns</code> and <code>dcc.Dropdown()</code> examples from our Dash app.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>numerical_columns <span class="op">=</span> [col <span class="cf">for</span> col <span class="kw">in</span> df.select_dtypes(include<span class="op">=</span>[<span class="st">'float64'</span>, <span class="st">'int64'</span>]).columns <span class="cf">if</span> col <span class="op">!=</span> <span class="st">'year'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ol type="1">
+<li><p><code>[col for col in ...]</code> is a list comprehension–it iterates over each column name (<code>col</code>) in the filtered list of column names.</p></li>
+<li><p><code>df</code> is a DataFrame, and <code>select_dtypes</code> is a method that filters the DataFrame columns based on their data types. It includes columns with data types <code>float64</code> and <code>int64</code> (similar to numeric types in R).</p></li>
+<li><p><code>.columns</code> retrieves the names of the columns that have been filtered by <code>select_dtypes</code>.</p></li>
+<li><p><code>if col != 'year'</code> is the condition to ensure that the column <code>year</code> is excluded from the resulting list, even if it has a numeric type.</p></li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>options<span class="op">=</span>[{<span class="st">'label'</span>: col, <span class="st">'value'</span>: col} <span class="cf">for</span> col <span class="kw">in</span> numerical_columns]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This <code>for</code> loop iterates over each column name (<code>col</code>) in the <code>numerical_columns</code> list.</p>
+<ol type="1">
+<li><p>For each column name, it creates a dictionary (<code>{'label': col, 'value': col}</code>).</p></li>
+<li><p><code>label</code> is the text displayed in the Dropdown, and <code>value</code> is the actual value assigned to this option.</p></li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>columns<span class="op">=</span>[{<span class="st">"name"</span>: i, <span class="st">"id"</span>: i} <span class="cf">for</span> i <span class="kw">in</span> df.columns]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This <code>for</code> loop iterates over all columns of the DataFrame <code>df</code>.</p>
+<ol type="1">
+<li><p>For each column, it creates a dictionary with <code>name</code> and <code>id</code> both set to the column name.</p></li>
+<li><p>These dictionaries are used to define the columns of the <code>dash_table.DataTable()</code>.</p></li>
+</ol>
+<p>The entire app layout code is below:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>show/hide full Dash app in app.py</summary>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1"></a><span class="im">import</span> dash</span>
+<span id="cb46-2"><a href="#cb46-2"></a><span class="im">from</span> dash <span class="im">import</span> dcc, html, dash_table</span>
+<span id="cb46-3"><a href="#cb46-3"></a><span class="im">from</span> dash.dependencies <span class="im">import</span> Input, Output</span>
+<span id="cb46-4"><a href="#cb46-4"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb46-5"><a href="#cb46-5"></a><span class="im">import</span> plotly.express <span class="im">as</span> px</span>
+<span id="cb46-6"><a href="#cb46-6"></a><span class="im">import</span> dash_bootstrap_components <span class="im">as</span> dbc</span>
+<span id="cb46-7"><a href="#cb46-7"></a></span>
+<span id="cb46-8"><a href="#cb46-8"></a><span class="co"># load the dataset</span></span>
+<span id="cb46-9"><a href="#cb46-9"></a>url <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/allisonhorst/palmerpenguins/main/inst/extdata/penguins.csv"</span></span>
+<span id="cb46-10"><a href="#cb46-10"></a>df <span class="op">=</span> pd.read_csv(url)</span>
+<span id="cb46-11"><a href="#cb46-11"></a></span>
+<span id="cb46-12"><a href="#cb46-12"></a><span class="co"># remove the 'year' column </span></span>
+<span id="cb46-13"><a href="#cb46-13"></a>numerical_columns <span class="op">=</span> [col <span class="cf">for</span> col <span class="kw">in</span> df.select_dtypes(include<span class="op">=</span>[<span class="st">'float64'</span>, <span class="st">'int64'</span>]).columns <span class="cf">if</span> col <span class="op">!=</span> <span class="st">'year'</span>]</span>
+<span id="cb46-14"><a href="#cb46-14"></a></span>
+<span id="cb46-15"><a href="#cb46-15"></a><span class="co"># initialize the Dash app</span></span>
+<span id="cb46-16"><a href="#cb46-16"></a>app <span class="op">=</span> dash.Dash(<span class="va">__name__</span>, external_stylesheets<span class="op">=</span>[dbc.themes.BOOTSTRAP])</span>
+<span id="cb46-17"><a href="#cb46-17"></a></span>
+<span id="cb46-18"><a href="#cb46-18"></a><span class="co"># function to replace underscores with spaces</span></span>
+<span id="cb46-19"><a href="#cb46-19"></a><span class="kw">def</span> format_label(label):</span>
+<span id="cb46-20"><a href="#cb46-20"></a>    <span class="cf">return</span> label.replace(<span class="st">'_'</span>, <span class="st">' '</span>).title()</span>
+<span id="cb46-21"><a href="#cb46-21"></a></span>
+<span id="cb46-22"><a href="#cb46-22"></a><span class="co"># app layout</span></span>
+<span id="cb46-23"><a href="#cb46-23"></a>app.layout <span class="op">=</span> dbc.Container([</span>
+<span id="cb46-24"><a href="#cb46-24"></a>    dbc.Row(</span>
+<span id="cb46-25"><a href="#cb46-25"></a>        dbc.Col(</span>
+<span id="cb46-26"><a href="#cb46-26"></a>            html.H1(<span class="st">"Palmer Penguins Dashboard"</span>), </span>
+<span id="cb46-27"><a href="#cb46-27"></a>        width<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb46-28"><a href="#cb46-28"></a>    ),</span>
+<span id="cb46-29"><a href="#cb46-29"></a>    dbc.Row(</span>
+<span id="cb46-30"><a href="#cb46-30"></a>        html.H3(<span class="st">"Inputs"</span>)</span>
+<span id="cb46-31"><a href="#cb46-31"></a>    ),</span>
+<span id="cb46-32"><a href="#cb46-32"></a>    dbc.Row([</span>
+<span id="cb46-33"><a href="#cb46-33"></a>        dbc.Col(</span>
+<span id="cb46-34"><a href="#cb46-34"></a>            dcc.Dropdown(</span>
+<span id="cb46-35"><a href="#cb46-35"></a>                <span class="bu">id</span><span class="op">=</span><span class="st">'x-axis'</span>,</span>
+<span id="cb46-36"><a href="#cb46-36"></a>                options<span class="op">=</span>[{<span class="st">'label'</span>: col, <span class="st">'value'</span>: col} <span class="cf">for</span> col <span class="kw">in</span> numerical_columns],</span>
+<span id="cb46-37"><a href="#cb46-37"></a>                value<span class="op">=</span><span class="st">'bill_length_mm'</span>,</span>
+<span id="cb46-38"><a href="#cb46-38"></a>                clearable<span class="op">=</span><span class="va">False</span></span>
+<span id="cb46-39"><a href="#cb46-39"></a>            ), width<span class="op">=</span><span class="dv">3</span></span>
+<span id="cb46-40"><a href="#cb46-40"></a>        ),</span>
+<span id="cb46-41"><a href="#cb46-41"></a>        dbc.Col(</span>
+<span id="cb46-42"><a href="#cb46-42"></a>            dcc.Dropdown(</span>
+<span id="cb46-43"><a href="#cb46-43"></a>                <span class="bu">id</span><span class="op">=</span><span class="st">'y-axis'</span>,</span>
+<span id="cb46-44"><a href="#cb46-44"></a>                options<span class="op">=</span>[{<span class="st">'label'</span>: col, <span class="st">'value'</span>: col} <span class="cf">for</span> col <span class="kw">in</span> numerical_columns],</span>
+<span id="cb46-45"><a href="#cb46-45"></a>                value<span class="op">=</span><span class="st">'bill_depth_mm'</span>,</span>
+<span id="cb46-46"><a href="#cb46-46"></a>                clearable<span class="op">=</span><span class="va">False</span></span>
+<span id="cb46-47"><a href="#cb46-47"></a>            ), width<span class="op">=</span><span class="dv">3</span></span>
+<span id="cb46-48"><a href="#cb46-48"></a>        )</span>
+<span id="cb46-49"><a href="#cb46-49"></a>    ]),</span>
+<span id="cb46-50"><a href="#cb46-50"></a>    dbc.Row([</span>
+<span id="cb46-51"><a href="#cb46-51"></a>        dbc.Col([</span>
+<span id="cb46-52"><a href="#cb46-52"></a>            html.H3(<span class="st">"Scatter Plot"</span>),</span>
+<span id="cb46-53"><a href="#cb46-53"></a>            dcc.Graph(<span class="bu">id</span><span class="op">=</span><span class="st">'scatter-plot'</span>)</span>
+<span id="cb46-54"><a href="#cb46-54"></a>        ], width<span class="op">=</span><span class="dv">6</span>),</span>
+<span id="cb46-55"><a href="#cb46-55"></a>        dbc.Col([</span>
+<span id="cb46-56"><a href="#cb46-56"></a>            html.H3(<span class="st">"Table"</span>),</span>
+<span id="cb46-57"><a href="#cb46-57"></a>            dash_table.DataTable(</span>
+<span id="cb46-58"><a href="#cb46-58"></a>                <span class="bu">id</span><span class="op">=</span><span class="st">'table'</span>,</span>
+<span id="cb46-59"><a href="#cb46-59"></a>                columns<span class="op">=</span>[{<span class="st">"name"</span>: i, <span class="st">"id"</span>: i} <span class="cf">for</span> i <span class="kw">in</span> df.columns],</span>
+<span id="cb46-60"><a href="#cb46-60"></a>                data<span class="op">=</span>df.to_dict(<span class="st">'records'</span>),</span>
+<span id="cb46-61"><a href="#cb46-61"></a>                page_size<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb46-62"><a href="#cb46-62"></a>                style_table<span class="op">=</span>{<span class="st">'overflowX'</span>: <span class="st">'auto'</span>},</span>
+<span id="cb46-63"><a href="#cb46-63"></a>                style_cell<span class="op">=</span>{</span>
+<span id="cb46-64"><a href="#cb46-64"></a>                    <span class="st">'height'</span>: <span class="st">'auto'</span>,</span>
+<span id="cb46-65"><a href="#cb46-65"></a>                    <span class="st">'minWidth'</span>: <span class="st">'140px'</span>, <span class="st">'width'</span>: <span class="st">'140px'</span>, <span class="st">'maxWidth'</span>: <span class="st">'140px'</span>,</span>
+<span id="cb46-66"><a href="#cb46-66"></a>                    <span class="st">'whiteSpace'</span>: <span class="st">'normal'</span></span>
+<span id="cb46-67"><a href="#cb46-67"></a>                }</span>
+<span id="cb46-68"><a href="#cb46-68"></a>            )</span>
+<span id="cb46-69"><a href="#cb46-69"></a>        ], width<span class="op">=</span><span class="dv">6</span>)</span>
+<span id="cb46-70"><a href="#cb46-70"></a>    ])</span>
+<span id="cb46-71"><a href="#cb46-71"></a>])</span>
+<span id="cb46-72"><a href="#cb46-72"></a></span>
+<span id="cb46-73"><a href="#cb46-73"></a><span class="co"># callback to update the scatter plot</span></span>
+<span id="cb46-74"><a href="#cb46-74"></a><span class="at">@app.callback</span>(</span>
+<span id="cb46-75"><a href="#cb46-75"></a>    Output(<span class="st">'scatter-plot'</span>, <span class="st">'figure'</span>),</span>
+<span id="cb46-76"><a href="#cb46-76"></a>    [Input(<span class="st">'x-axis'</span>, <span class="st">'value'</span>),</span>
+<span id="cb46-77"><a href="#cb46-77"></a>     Input(<span class="st">'y-axis'</span>, <span class="st">'value'</span>)]</span>
+<span id="cb46-78"><a href="#cb46-78"></a>)</span>
+<span id="cb46-79"><a href="#cb46-79"></a><span class="kw">def</span> update_scatter_plot(x_axis, y_axis):</span>
+<span id="cb46-80"><a href="#cb46-80"></a>    fig <span class="op">=</span> px.scatter(</span>
+<span id="cb46-81"><a href="#cb46-81"></a>        df, x<span class="op">=</span>x_axis, y<span class="op">=</span>y_axis, color<span class="op">=</span><span class="st">'species'</span>,</span>
+<span id="cb46-82"><a href="#cb46-82"></a>        labels<span class="op">=</span>{x_axis: format_label(x_axis), y_axis: format_label(y_axis)},</span>
+<span id="cb46-83"><a href="#cb46-83"></a>        title<span class="op">=</span><span class="ss">f'Scatter Plot of </span><span class="sc">{</span>format_label(x_axis)<span class="sc">}</span><span class="ss"> vs </span><span class="sc">{</span>format_label(y_axis)<span class="sc">}</span><span class="ss">'</span></span>
+<span id="cb46-84"><a href="#cb46-84"></a>    )</span>
+<span id="cb46-85"><a href="#cb46-85"></a>    <span class="cf">return</span> fig</span>
+<span id="cb46-86"><a href="#cb46-86"></a></span>
+<span id="cb46-87"><a href="#cb46-87"></a><span class="co"># run the app</span></span>
+<span id="cb46-88"><a href="#cb46-88"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">'__main__'</span>:</span>
+<span id="cb46-89"><a href="#cb46-89"></a>    app.run_server(debug<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="run-the-app-2" class="level3">
+<h3 class="anchored" data-anchor-id="run-the-app-2">Run the App</h3>
+<p>The code below runs the application. Note that the <code>__name__ == '__main__'</code> condition corresponds to the <code>dash.Dash(__name__, ...)</code> we used to initialize the application above.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">'__main__'</span>:</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>    app.run_server(debug<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Run the application by running the following commands in the terminal:</p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> app.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb49"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Dash</span> is running on http://127.0.0.1:8050/</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a> <span class="ex">*</span> Serving Flask app <span class="st">'app'</span></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a> <span class="ex">*</span> Debug mode: on</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Use <kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + click on the URL to open the web browser with our application:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/dash_penguins_app.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Penguins Dash App</figcaption>
+</figure>
+</div>
+<p>The Dash application has an interactive scatter plot (with hover features) with a side-by-side table display. The layout functions in Dash give us more control over output placement in the UI, and the additional HTML functions give us the ability to build our application up like a standard webpage (or Shiny app).</p>
+</section>
+</section>
+<section id="recap" class="level2">
+<h2 class="anchored" data-anchor-id="recap">Recap</h2>
+<p>In summary, <a href="">Bokeh</a> is excellent for creating detailed and interactive visualizations, comparable to <code>ggplot2</code> and <code>plotly</code> for interactive plots, but it’s not focused on developing complete applications. <a href="">Streamlit</a> is very user-friendly and ideal for quickly building and sharing simpler web apps, but with fewer options for customization. <a href="">Dash</a> is capable of developing highly customizable and complex web applications (similar to Shiny), but has a steeper learning curve than Streamlit.</p>
+<p>You can view the code used to create the apps in this <a href="https://github.com/mjfrigaard/py-apps/tree/main">repo.</a></p>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p><code>venv</code> is a module that comes built-in with <a href="https://docs.python.org/3/library/venv.html">Python 3.3 and later versions</a>, so we do not need to install it separately.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p><a href="https://docs.streamlit.io/develop/api-reference/write-magic/st.write"><code>st.write()</code></a> is incredibly versatile. We’re passing it Markdown-formatted text in this example, but it can be used to display DataFrames, models, and more.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Watch <a href="https://youtu.be/mTsZL-VmRVE?si=C6mkTzQYAI0FlCRJ">The Dash Callback - Input, Output, State, and more</a> on the <a href="https://www.youtube.com/@CharmingData">Charming Data YouTube channel</a>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p><code>pd.read_csv</code> is analogous to <code>read.csv</code> or <code>readr::read_csv</code> in R.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>Read all the arguments for dash.Dash in the <a href="https://dash.plotly.com/reference#dash.dash">documentation.</a><a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>Read more about Dash callback definitions in the <a href="https://dash.plotly.com/basic-callbacks">documentation</a>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>  <span class="at">@app.callback</span>(</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>      Output(<span class="st">'scatter-plot'</span>, <span class="st">'figure'</span>),</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>      [Input(<span class="st">'x-axis'</span>, <span class="st">'value'</span>),</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>       Input(<span class="st">'y-axis'</span>, <span class="st">'value'</span>)]</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/mjfrigaard\.github\.io\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      const annoteTargets = window.document.querySelectorAll('.code-annotation-anchor');
+      for (let i=0; i<annoteTargets.length; i++) {
+        const annoteTarget = annoteTargets[i];
+        const targetCell = annoteTarget.getAttribute("data-target-cell");
+        const targetAnnotation = annoteTarget.getAttribute("data-target-annotation");
+        const contentFn = () => {
+          const content = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          if (content) {
+            const tipContent = content.cloneNode(true);
+            tipContent.classList.add("code-annotation-tip-content");
+            return tipContent.outerHTML;
+          }
+        }
+        const config = {
+          allowHTML: true,
+          content: contentFn,
+          onShow: (instance) => {
+            selectCodeLines(instance.reference);
+            instance.reference.classList.add('code-annotation-active');
+            window.tippy.hideAll();
+          },
+          onHide: (instance) => {
+            unselectCodeLines();
+            instance.reference.classList.remove('code-annotation-active');
+          },
+          maxWidth: 300,
+          delay: [50, 0],
+          duration: [200, 0],
+          offset: [5, 10],
+          arrow: true,
+          appendTo: function(el) {
+            return el.parentElement.parentElement.parentElement;
+          },
+          interactive: true,
+          interactiveBorder: 10,
+          theme: 'quarto',
+          placement: 'right',
+          popperOptions: {
+            modifiers: [
+            {
+              name: 'flip',
+              options: {
+                flipVariations: false, // true by default
+                allowedAutoPlacements: ['right'],
+                fallbackPlacements: ['right', 'top', 'top-start', 'top-end', 'bottom', 'bottom-start', 'bottom-end', 'left'],
+              },
+            },
+            {
+              name: 'preventOverflow',
+              options: {
+                mainAxis: false,
+                altAxis: false
+              }
+            }
+            ]        
+          }      
+        };
+        window.tippy(annoteTarget, config); 
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
