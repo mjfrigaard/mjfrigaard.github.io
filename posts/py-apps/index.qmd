@@ -60,11 +60,11 @@ co_box(
 )
 ```
 
-I've been demoing quite a few Python applications with VS Code lately and thought I'd write some notes and observations on running and deploying the three popular libraries: [Bokeh](https://docs.bokeh.org/en/latest/), [Streamlit](https://docs.streamlit.io/), and [Dash](https://dash.plotly.com/).
+I've been building quite a few Python applications with VS Code lately and thought I'd write some observations on [Bokeh](https://docs.bokeh.org/en/latest/), [Streamlit](https://docs.streamlit.io/), and [Dash](https://dash.plotly.com/). I'll cover managing dependencies, a few key differences between Python and R, and running the applications in VS Code.
 
 ## Virtual environments 
 
-Python virtual environments are designed to manage project-specific dependencies and ensure that the correct versions of packages are used in a given project. Similar to the renv package in R, Python comes with a a `venv` command for creating a virtual environment.[^venv] It's common practice to name the virtual environment something like `myenv` or `.venv`. 
+Python virtual environments are designed to manage project-specific dependencies and ensure that the correct versions of packages are used in a given project. Similar to the [`renv` package](https://rstudio.github.io/renv/articles/renv.html) in R, Python comes with a a [`venv` command](https://docs.python.org/3/library/venv.html) for creating a virtual environment.[^venv] It's common practice to name the virtual environment something like `myenv` or `.venv`. 
 
 ``` sh
 python -m venv .venv
@@ -84,7 +84,7 @@ If you're using VS Code, this activate the following prompt to set your workspac
 
 ![Workspace folder](img/venv_vs_code.png){fig-align='center' width='90%'}
 
-Click **Yes**, then make sure all the dependencies listed in the requirements.txt file are installed in the virtual environment using [`pip`](https://pypi.org/project/pip/), the package installer for Python.
+Click **Yes**, then make sure all the dependencies listed in the `requirements.txt` file are installed in the virtual environment using [`pip`](https://pypi.org/project/pip/), the package installer for Python.
 
 ``` sh
 pip install -r requirements.txt
@@ -95,6 +95,17 @@ As you're developing, new dependencies can be recorded in `requirements.txt` usi
 ``` sh
 pip freeze > requirements.txt
 ```
+
+The .`venv/` directory will store the Python version and packages used in the Python project:
+
+``` sh
+.venv/
+  └──lib/
+      └── python3.9/
+            └── site-packages/
+```
+
+Packages installed into `.venv/lib/python3.9/site-packages` do not affect the global Python installation or other virtual environments. This isolation helps prevent version conflicts and makes dependency management easier.
 
 ### Git history
 
@@ -169,7 +180,7 @@ deactivate
 
 ### Importing Libraries
 
-Create a main.py script and install the following libraries using `pip`. `pandas` is for data manipulation, `bokeh` will be used for the interactive visualizations, and the `palmerpenguins` package will load the `penguins` dataset.
+Create a `main.py` script and install the following libraries using `pip`. `pandas` is for data manipulation, `bokeh` will be used for the interactive visualizations, and the `palmerpenguins` package will load the `penguins` dataset.
 
 ```{python}
 #| eval: false
@@ -181,7 +192,7 @@ from bokeh.plotting import figure, curdoc
 from palmerpenguins import load_penguins
 ```
 
-Similar to R, where you might use `library(dplyr)` for data manipulation and `library(ggplot2)` for visualizations. For interactive visualizations, you might use `library(shiny)`.
+in R, we might use `dplyr` for data manipulation and `ggplot2` for visualizations. For interactive visualizations, we might use `plotly`.
 
 ```{r}
 #| label: co_box_py_vs_r_import
@@ -216,7 +227,7 @@ R uses the `library()` or `require()` function to import packages. R loads the e
 
 ### Loading Data
 
-The `penguins` dataset is loaded into a `pandas` `DataFrame` using the `load_penguins()` function and the missing data is removed.
+The `penguins` dataset is loaded into a `pandas` DataFrame using `load_penguins()` and the missing data is removed with `df.dropna()`.
 
 ```{python}
 #| eval: false
@@ -225,7 +236,7 @@ df = load_penguins()
 df = df.dropna()
 ```
 
-A `ColumnDataSource` is created from the `DataFrame`, which is used by Bokeh for efficient data handling. This intermediate step doesn't really have an R equivalent.
+A `ColumnDataSource` is created from the `DataFrame`, which is used by Bokeh for efficient data handling (this intermediate step doesn't really have an R equivalent).
 
 ```{python}
 #| eval: false
@@ -233,7 +244,7 @@ A `ColumnDataSource` is created from the `DataFrame`, which is used by Bokeh for
 source = ColumnDataSource(df)
 ```
 
-A list of numeric columns is defined for use in the scatter plot. To define columns of interest in R we could use `colnames()` or `dplyr::select()`:
+A list of numeric columns is defined to use in the scatter plot drop-downs. If we were doing this in R, we could use `colnames()` or `dplyr::select()`:
 
 ```{python}
 #| eval: false
@@ -243,7 +254,7 @@ numeric_columns = ['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm', 'body
 
 ### App Inputs
 
-Two dropdown widgets are created for selecting x and y axes variables. If this was a Shiny app, we would use `selectInput()`.
+Two drop-down `Select()` widgets can be created for selecting x and y axes variables. 
 
 ```{python}
 #| eval: false
@@ -252,9 +263,11 @@ x_select = Select(title="X Axis", value="bill_length_mm", options=numeric_column
 y_select = Select(title="Y Axis", value="bill_depth_mm", options=numeric_columns)
 ```
 
+If this was a Shiny app, we would use `selectInput()`.
+
 ### Scatter Plot 
 
-The scatter plot is created initialized with default axis labels and data.
+We can initialize a scatter plot with the default axis labels and data:
 
 ```{python}
 #| eval: false
@@ -278,7 +291,7 @@ ggplot(df,
 
 ### Interactivity
 
-Below we define a function that updates the scatter plot when a new variable is selected for the x or y axis. It changes axis labels and re-renders the plot with new data. In `shiny`, you would use `observeEvent()` or `reactive()` to update plots dynamically.
+Below we define `update_plot()`, a function for updating the scatter plot when a new variable is selected for the x or y axis. It changes axis labels and re-renders the plot with new data. 
 
 ```{python}
 #| eval: false
@@ -295,9 +308,11 @@ x_select.on_change("value", update_plot)
 y_select.on_change("value", update_plot)
 ```
 
+In `shiny`, you would use `observeEvent()` or `reactive()` to update plots dynamically.
+
 ### Table Display
 
-The code below defines columns and their formatters for the data table to be displayed. `DataTable()` creates `data_table` a DataTable widget that displays the data. This is similar to using `DT::datatable(df)` in R.
+The code below defines `columns` and their formatters for the data table to be displayed. `DataTable()` creates `data_table`, a [DataTable](https://docs.bokeh.org/en/latest/docs/reference/models/widgets/tables.html#bokeh.models.DataTable) widget that displays the data. This is similar to using `DT::datatable(df)` in R.
 
 ```{python}
 #| eval: false
@@ -318,7 +333,7 @@ data_table = DataTable(source=source, columns=columns, width=800)
 
 ### Layout 
 
-The layout is defined and added to the current document for rendering. In `shiny`, you would use `fluidPage()`, `sidebarLayout()`, `mainPanel()`, etc., to arrange UI components.
+The `layout` is defined using `column` and `row` and added to the current document for rendering. In `shiny`, you would use `fluidPage()`, `sidebarLayout()`, `mainPanel()`, etc., to arrange UI components.
 
 ```{python}
 #| eval: false

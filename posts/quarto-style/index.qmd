@@ -1,0 +1,209 @@
+---
+title: "Quarto Shiny Apps in R Packages" 
+subtitle: "modules, launching and deployment"
+author: "Martin Frigaard"
+date: "2024-11-06"
+categories: [quarto, shiny, scss]
+image: "img/quarto.png"
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+# code-block-border-left: true
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+code-fold: show
+code-summary: 'show/hide'
+callout-icon: false
+draft: true
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+
+---
+
+```{r}
+#| label: setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("../_common.R")
+options(scipen = 999)
+library(shiny)
+library(lobstr)
+library(crayon)
+library(stringr)
+# install.packages(c("NHANES", "palmerpenguins"))
+library(NHANES)
+library(palmerpenguins)
+library(reticulate)
+```
+
+```{r}
+#| label: co_box_dev
+#| results: asis 
+#| echo: false
+#| eval: true
+co_box(
+  color = 'r',
+  header = 'Important!',
+  size = "1.05",
+  hsize = "1.10",
+  fold = FALSE,
+  look = 'default',
+  contents = "This is currently under development. Thank you for your patience."
+)
+```
+
+This post was prompted by a new chapter I've been working on for Shiny App-Packages. I've recently been building a Shiny application in a Quarto document[^quarto-interactivity], and noticed quite a few deviations from the standard app-package practices that deserve some attention. I'll cover how to include modules *inside* a Quarto document, creating a standalone function to launch your Quarto + Shiny app, and how to deploy a Quarto + Shiny dashboard from an app-package.
+
+[^quarto-interactivity]: Shiny is covered in the [Interactivity section](https://quarto.org/docs/interactive/shiny/) of the Quarto documentation. 
+
+## Reactivity 
+
+Quarto documents can be converted into Shiny's apps using the `server` option in the YAML header:
+
+{{< include _shiny_options.qmd >}}
+
+### Modules 
+
+If you're developing a Quarto + Shiny application using modules (and you should be[^shiny-mods-1] [^shiny-mods-2]), the module functions can be placed in the code blocks like regular Shiny code:
+
+
+
+[^shiny-mods-1]: See the [Modularizing Shiny app code](https://shiny.posit.co/r/articles/improve/modules/) in the Shiny documentation.
+
+[^shiny-mods-2]: See the [Shiny modules chapter](https://mastering-shiny.org/scaling-modules.html) of Mastering Shiny.
+
+
+
+## Dashboards
+
+Dashboard layouts are covered extensively in the Quarto documentation[^quarto-dashs] and elsewhere[^youtube], and I've included example layouts in the [code repo](https://github.com/mjfrigaard/quarto-dash-r). Key things to remember about Quarto dashboard layouts:
+
+1. Dashboard layouts are configured using a combination of YAML fields and markdown headings. By default, the `orientation` field is set to `rows`, but multiple code chunks will add new columns:
+    
+    ```yml
+    format: 
+      dashboard:
+        orientation: columns
+    ```
+    
+2. Level 1 headers create pages (with titles)
+
+    ```markdown
+    # Page 1
+    ```
+
+3. Level 2 and 3 headers create columns and rows (with height and width options)
+
+    ```markdown
+    ## Row {height=20%}
+
+    ### Column {width=35%}
+    ```
+
+4. Tabsets can be created `{.tabset}`:
+
+    ```markdown
+    ### Column {.tabset}
+    ```
+
+5. Inside the columns and rows, cards provide a flexible, grid-based structure for presenting different types of content. Cards are automatically created with text or a code chunk, and they can be labeled with a `title`. Cards can also be included using `{.card}` inside a div (`:::`):
+
+    ```markdown
+    #| title: Cost per week
+    ```
+
+    ```markdown
+    ::: {.card title="Cost per week"}
+
+    :::
+    ```
+
+6. To customize the navigation bar in a Quarto dashboard, we can incorporate elements such as a `logo` and `nav-buttons`.
+
+    ```yml
+    format:
+      dashboard:
+        nav-buttons:
+          - text: About
+            href: https://quarto.org/
+          - icon: github
+            href: https://github.com/mjfrigaard/quarto-dash-r
+          - icon: wikipedia
+            target: _blank
+            href: https://en.wikipedia.org/wiki/RStudio#Reproducible_analyses_with_vignettes
+    ```
+    
+<!-- {{< include _navbar.qmd >}} -->
+
+::: {.column-margin}
+
+View various layouts in the [GitHub repository.](https://github.com/mjfrigaard/quarto-dash-r) for this post.
+
+:::
+
+Below is an example dashboard layout with most of the features mentioned above. Note that the standard code chunk options are also available (i.e., code echo/folding):
+
+![Quarto layout options page 1 (click to enlarge)](img/layout_p1.png)
+
+![Quarto layout options page 2 (click to enlarge)](img/layout_p2.png)
+
+View the code used for the layout above (and others[^layouts]) in the GitHub repository.
+
+[^layouts]: The [`.qmd` files ending in `layout`](https://github.com/search?q=repo%3Amjfrigaard%2Fquarto-dash-r+path%3A%22layout.qmd%22&type=code) are examples of various dashboard layouts.  
+
+## Styling
+
+When building a Quarto dashboard, SCSS (Sassy CSS) can be a powerful tool for customizing its appearance. Unlike standard CSS, SCSS introduces features like variables, nesting, and mixins, which help keep the code organized and modular. These features can be particularly useful in a Quarto dashboards, where we might want complex styling requirements.
+
+### SCSS
+
+SCSS is a syntax of [SASS (Syntactically Awesome Style Sheets)](https://en.wikipedia.org/wiki/Sass_(style_sheet_language)), which extends [CSS (Cascading Style Sheets)](https://en.wikipedia.org/wiki/CSS).
+
+#### Display options
+
+We'll start by covering how to style our Quarto dashboard the HTML document/website layout options. Let's assume we want to change the width of our dashboard to be fixed (similar to Streamlit apps[^streamlit-width]). 
+
+We'll start with a 
+
+We can adjust column and row width *within* the dashboard, but I wanted the overall width to be fixed. 
+
+[^streamlit-width]: The width of Streamlit apps can be adjusted with the [`st.set_page_config(layout="wide")` option](https://docs.streamlit.io/develop/quick-reference/cheat-sheet#placeholders-help-and-options). Read more [here.](https://discuss.streamlit.io/t/how-to-increase-the-width-of-web-page/7697/4)
+
+#### External SCSS file
+
+with an external `.scss` file. Having a dedicated `.scss` file keeps styles organized and separated from content, improving readability and maintainability. 
+
+
+
+### Custom elements
+
+```html
+<button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px;">
+  Click Me
+</button>
+```
+
+
+
+## Deploying
+
+### Launching
+
+## Recap
+
+[^quarto-dashs]: [Quarto dashboards.](https://quarto.org/docs/dashboards/)
+
+[^youtube]: Mine Çetinkaya-Rundel has an excellent three part tutorial on Posit's YouTube channel ([part 1](https://youtu.be/HW7QbqI4fH0?si=WuBui8y9uRjOVQzD), [part 2](https://www.youtube.com/watch?v=KdsQgwaY950), [part 3](https://www.youtube.com/watch?v=NigWSB-jG4Y&t=112s)).
+
+
+https://www.w3schools.com/sass/sass_intro.asp
+
+https://icons.getbootstrap.com/

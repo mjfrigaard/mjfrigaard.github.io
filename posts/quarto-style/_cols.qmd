@@ -1,0 +1,63 @@
+### Columns
+
+The columns below split the dashboard layout in half (`width=50%`), with two rows each (alternating 70 and 30 percent).
+
+:::{layout="[50,50]" layout-valign="top"}
+
+```yml
+format: 
+  dashboard:
+    orientation: columns
+```
+
+````{verbatim}
+
+## Column {width=50%}
+
+### Row {height=70%}
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+### Row {height=30%}
+
+```{r}
+
+```
+
+## Column {width=50%}
+
+### Row {height=30%}
+
+```{r}
+
+```
+
+### Row {height=70%}
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+````
+
+:::
+
+The screenshot below displays the heights, widths, and hierarchies of the columns and rows.
+
+:::{.column-margin}
+
+Note that all new subsequent code chunks will be placed in columns.
+
+:::
+
+![Click to enlarge](img/basic_columns.png)

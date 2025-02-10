@@ -1,0 +1,124 @@
+### Pages
+
+If the contents of our dashboard becomes too cluttered to organize in columns and rows, we can add multiple pages by including a level 1 header (`#`). 
+
+We will keep the YAML header similar to the dashboards above (oriented by rows) and self-contained. 
+
+```yml
+format: 
+  dashboard:
+    embed-resources: true
+    orientation: rows
+```
+
+The first page begins with a level-one header and title (`# Page (row layout)`), followed by our rows and columns:
+
+````{verbatim}
+# Page (row layout)
+
+## Row {height=20%}
+
+### Column {width=50%}
+
+```{r}
+#| title: Install
+#| eval: false 
+#| echo: true
+install.packages('tidyverse')
+```
+
+### Column {width=50%}
+
+```{r}
+#| title: Load
+#| eval: true 
+#| echo: true
+library(tidyverse)
+```
+
+## Row {height=80%}
+
+### Column {width=40%}
+
+```{r}
+#| title: Logo
+#| eval: true 
+tidyverse_logo()
+```
+
+### Column {width=60%}
+
+```{r}
+#| title: Packages
+#| eval: true 
+#| echo: true
+#| code-fold: true 
+#| code-summary: 'show/hide tibble/reactable code'
+tibble(
+  packages = tidyverse_packages()
+  ) |> 
+  reactable(
+    highlight = TRUE, 
+    striped = TRUE, 
+    compact = TRUE,
+    defaultPageSize = 15)
+```
+````
+
+As we can see, the text following the level-one header is the title for the page. We've also added the `title` option to each code chunk to give each card a label. Other options like `code-fold` and `code-summary` come in handy if we want to make the code available to the audience.
+
+![Click to enlarge](img/page_layout_01.png)
+
+On the second page, we provide a title and switch the orientation to `columns` in the level 1 header:
+
+````{verbatim}
+# Page (column layout) {orientation="columns"}
+
+## Column {width=45%}
+
+```{r}
+#| title: Dependencies
+#| echo: true
+#| code-fold: true 
+#| code-summary: 'show/hide tibble/reactable code'
+reactable(tidyverse_deps(), 
+    highlight = TRUE, 
+    striped = TRUE, 
+    compact = TRUE,
+    defaultPageSize = 15)
+```
+
+## Column {width=55%}
+
+### Row {height=20%}
+
+::: {.card}
+Cards can also be given a `title`:  
+```{verbatim}
+::: {.card title="Sitrep"}
+tidyverse_sitrep()
+:::
+```
+:::
+
+### Row {height=60%}
+
+::: {.card title="Sitrep"}
+```{r}
+tidyverse_sitrep()
+```
+:::
+
+### Row {height=20%}
+
+::: {.card title="Conflicts"}
+```{r}
+tidyverse_conflicts()
+```
+:::
+````
+
+If we're using div to create a customized `.card`, we can also add a `title`:
+
+![Click to enlarge](img/page_layout_02.png)
+

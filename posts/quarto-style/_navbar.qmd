@@ -1,0 +1,38 @@
+### Logos
+
+The `logo` parameter allows us to add a custom logo to the navigation bar, which helps with branding and visual appeal. We can specify the path to our logo image file (e.g., `quarto.png`) in the YAML header of the Quarto dashboard.
+
+```yml
+format:
+  dashboard:
+    logo: img/quarto.png
+```
+
+### Buttons
+
+The `nav-buttons` option can be used to add custom buttons for links, downloads, or other functionality directly in the navigation bar.
+
+```yml
+format:
+  dashboard:
+    nav-buttons:
+      - text: About
+        href: https://quarto.org/
+      - icon: github
+        href: https://github.com/mjfrigaard/quarto-dash-r
+      - icon: wikipedia
+        target: _blank
+        href: https://www.wikipedia.org
+```
+
+The `nav-buttons` parameter allows us to add various buttons to the navigation bar:
+
+-   `text` is the button text. For example, `"About"` will appear as a clickable button.
+
+-   `href` is the absolute or relative URL the button links to. 
+
+-   `icon` an icon name (e.g., Wikipedia) for Font Awesome icons if we want an icon-only button. `icon` can replace or accompany the `text` field.
+
+-   `target` specifying `_blank` will open the link in a new tab, which is useful for external links.
+
+![Click to enlarge](img/narbar_layout.png)

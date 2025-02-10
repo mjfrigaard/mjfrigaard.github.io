@@ -23,6 +23,10 @@ website:
         file: posts.qmd
       - text: "Series"
         file: series.qmd
+      - text: "Books"
+        file: books.qmd
+      - text: "Articles"
+        file: articles.qmd
       - text: "Code"
         file: code.qmd
         
@@ -31,6 +35,7 @@ format:
     theme:
       light: [cosmo, custom.scss]
     dpi: 320
+    lightbox: true
     fig-format: retina
     fig-asp: 0.618
     fontsize: 1.015em
