@@ -1,11 +1,11 @@
 ---
 title: "Positron" 
-subtitle: "Test-driving the new IDE"
+subtitle: "Initial thoughts on Shiny App/R Package Development"
 author: "Martin Frigaard"
-date: "2024-07-19"
+date: "2024-10-14"
 categories: [R, quarto, Shiny]
 image: "img/image.png"
-draft: true
+draft: false
 toc: true
 toc-depth: 5
 toc-title: 'Contents'
@@ -16,8 +16,9 @@ code-block-border-left: "#e8e8e8"
 code-fold: show
 code-summary: 'show/hide'
 callout-icon: false
-
+engine: knitr
 freeze: true
+callout-appearance: simple
 
 execute:
   echo: true
@@ -47,14 +48,663 @@ library(palmerpenguins)
 ![](img/image.png){width=70%}
 :::
 
-I recently downloaded the new Positron IDE from Posit and took it for a spin. This post covers my initial take on the IDE's features.
+I’ve been trying out Posit’s new Positron IDE for a few weeks, so I put together a post covering my initial impressions of developing Shiny apps and R packages.
 
-## Download 
+## Why switch?
 
-Users can download Positron from the [GitHub repository](https://github.com/posit-dev/positron). I'm running Positron on my MacBook (2019, 2.6 GHz 6-Core Intel Core i7, macOS Sonoma Version 14.5), so this involved downloading the .dmg file from the [releases page](https://github.com/posit-dev/positron/releases) and installing it like I would any new application.[^positron-version]
+I use RStudio daily for R development and have no complaints about the IDE's capabilities. However, I've recently started using VS Code for Python and JavaScript. When I heard about Positron, I wondered if it would offer enough overlapping features to allow me to use a single IDE for all three languages.
 
-[^positron-version]: I'm using version [2024.07.0-21](https://github.com/posit-dev/positron/releases/tag/2024.07.0-21)
+Positron was covered [at posit::conf(2024)](https://youtu.be/8uRcB34Hhsw?si=kVUQOjxNfaZjavLe), and the [Getting Started](https://positron.posit.co/start.html#is-positron-for-me) article on the new website lists reasons you might (or might not) want to switch IDEs. I’ve summarized them below:
 
-## Initial Impressions
+:::{layout="[50,50]" layout-valign="top"}
 
-![Positron](img/initial_ide.png){fig-align="center" width="90%"}
+### Switch
+
+- [ ] You use VS Code or JupyterLab for data science but want more features.
+
+- [x] You want more customization in RStudio. 
+
+- [x] You program in languages other than R/Python.
+
+### Don't switch
+
+- [ ] You need reliable and fully functioning software (Positron is still a work-in-progress, so some features may not be stable or polished).
+
+- [ ] You need all RStudio's features (i.e., inline output for Quarto and R Markdown, Sweave, Add-In support, profiling, etc.). Not all these features are implemented in Positron.
+
+:::
+
+<!-- https://www.andrewheiss.com/blog/2024/07/08/fun-with-positron/ -->
+
+```{r}
+#| label: co_box_install
+#| results: asis 
+#| echo: false
+#| eval: true
+co_box(
+  color = 'g',
+  header = 'Download and Install Positron',
+  size = "1.10",
+  hsize = "1.20",
+  fold = TRUE,
+  look = 'default',
+  contents = "Positron now has [a website](https://positron.posit.co) with much of the information below (without the screenshots).
+  
+Positron can be downloaded from it's [GitHub repository](https://github.com/posit-dev/positron). I'm running it on my MacBook (2019, 2.6 GHz 6-Core Intel Core i7, macOS Sonoma Version 14.5), so this involved downloading the .dmg file from the [releases page](https://github.com/posit-dev/positron/releases) and installing it like I would any new application.[^positron-version]
+  
+[^positron-version]: I'm using version [2024.07.0-107](https://github.com/posit-dev/positron/releases/tag/2024.07.0-107)
+"
+)
+```
+
+## IDE Layout
+
+```{r}
+#| label: co_box_disclaimer
+#| results: asis 
+#| echo: false
+#| eval: true
+co_box(
+  color = 'b',
+  header = 'NOTE',
+  size = "1.10",
+  hsize = "1.20",
+  fold = FALSE,
+  look = 'default',
+  contents = "Throughout this post, I'll make the assumption the reader hasn't spent much time in VS Code (if you have, Positron will be easier to navigate and use)."
+)
+```
+
+
+<!-- https://open-vsx.org/extension/grrrck/positron-plus-1-e -->
+
+At first glance, Positron looks like VS Code, but with the four panes we're used to seeing in RStudio. The default layout includes a [Welcome]{style="color: #990000; font-weight: bold;"} pane with options for opening files and folders above the [Panel]{style="color: #990000; font-weight: bold;"}, which displays the current version of R running:  
+
+[^variables]: The **Variables** pane is similar to the **Environments** pane in RStudio.
+
+:::: {.column-page-inset-right}
+
+::: {layout="[50,50]"}
+
+![Welcome page](img/positron_welcome.png){fig-align="center" width="100%"}
+
+![Console](img/positron_console.png){fig-align="center" width="100%"}
+
+:::
+
+::::
+
+The [Panel]{style="color: #990000; font-weight: bold;"} is similar to the **Console** in RStudio but also includes tabs for Terminal, Problems, Output, etc.
+
+:::{layout="[50,50]" layout-valign="top"}
+
+![Positron's panel (click to enlarge)](img/positron_panel.png){fig-align="center" width="100%"}
+
+![RStudio's console (click to enlarge)](img/rstudio_console.png){fig-align="center" width="100%"}
+
+:::
+
+The [Session]{style="color: #990000; font-weight: bold;"} and [Variables]{style="color: #990000; font-weight: bold;"}[^variables]  panes are open and initially empty, but we can see this where our [Plots]{style="color: #990000; font-weight: bold;"} will be displayed.
+
+::: {.column-page-inset-right}
+
+![Session and Variables (click to enlarge)](img/positron_session_vars.png){fig-align="center" width="80%"}
+
+:::
+
+### Layout options
+
+To customize Positron's panes, we can use the layout presets icon (in the upper-right corner of the IDE). 
+
+:::{.column-margin}
+
+![Layout presets icon ](img/layout_presets.png){fig-align="left" width="70%"}
+
+:::
+
+![Layout outptions (click to enlarge)](img/customize_layout.png){fig-align="center" width="90%"}
+
+
+Or we can position each pane manually via **View** >  **Appearance** > **Panel Position** ...
+
+![Positron's view options (click to enlarge)](img/view_appearance_options.png){fig-align="center" width="90%"}
+
+We'll continue using the default  '*Stacked Layout*' configuration in this post, but I recommend exploring the other options to find a customization that fits your needs.  
+
+### R & Python versions
+
+I had R ([R 4.4.1]{style="color: #990000; font-weight: bold;"}) and Python (3.11.5) previously installed, and Positron quickly located both R and Python versions (and displays them in multiple places in the IDE): 
+
+::: {.column-page-inset-right}
+
+![R versions (click to enlarge)](img/r-version.png){fig-align="center" width="90%"}
+
+:::
+
+For more information on detecting Python and R versions, see the [Interpreter Selection](https://positron.posit.co/interpreters.html) section of the documentation. 
+
+### R Dependencies 
+
+Positron's documentation recommends installing the following packages:[^pkg-depends]
+
+```{r}
+#| label: pkgs
+#| eval: false
+#| code-fold: false
+pak::pak(c("usethis", "cli", "crayon", 
+           "rlang", "roxygen2", "pkgload"))
+```
+
+[^pkg-depends]: These packages are described in the [R prerequisites section](https://positron.posit.co/start.html#r-prerequisites).
+
+### Files, Folders and Projects
+
+I use the [folder icon]{style="color: #990000; font-weight: bold;"} in the upper right corner of the IDE to locate and open project folders. Still, Positron has multiple options for opening project folders from the [welcome page]{style="color: #990000; font-weight: bold;"} and with the [explorer]{style="color: #990000; font-weight: bold;"} sidebar menu item:
+
+
+::: {.column-page-inset-right}
+
+![Open folder (click to enlarge)](img/open_folder.png){fig-align="center" width="90%"}
+
+:::
+
+I'll be using my [`sap`](https://github.com/mjfrigaard/sap) repository because it contains the following:
+
+1. Version control   
+2. An R project (i.e., with an `.Rproj` file)   
+3. A Shiny app   
+4. An R package[^movies-app]  
+
+[^movies-app]: [`sap`](https://github.com/mjfrigaard/sap) is the Shiny app-package I used to demonstrate development in my [Shiny-App-Packages](https://mjfrigaard.github.io/shiny-app-pkgs/) book. 
+
+### Activity bar 
+
+One of Positron's major distinguishing factors is its activity bar. This sidebar lets us open and edit files, perform searches, access source control (like Git), and find/install extensions.
+
+![Positron Layout (click to enlarge)](img/positron-wireframe.png){width="100%" fig-align="center"}
+
+I’ll briefly cover a few of Positron’s sidebar menu items in the sections below.
+
+#### Explorer 
+
+:::: {layout="[-2, 8, 90]"}
+
+![](img/explorer.png)
+
+As noted above, the [Explorer]{style="color: #990000; font-weight: bold;"} menu item can open project files and folders.
+
+::::
+
+This closely resembles the **Files** pane in RStudio. 
+
+::: {layout="[50,50]"}
+
+![Shiny app files (click to enlarge)](img/files.png){width="100%" fig-align="center"}
+
+![RStudio Files Pane (click to enlarge)](img/rs_files.png){width="100%" fig-align="center"}
+
+:::
+
+Clicking on files in the [Explorer]{style="color: #990000; font-weight: bold;"} will open them in the [Editor]{style="color: #990000; font-weight: bold;"}. After opening files, the cursor location will also display additional information on hover (i.e., version control information):
+
+![Hover information in Editor (click to enlarge)](img/editor_hover_info.png)
+
+#### Search
+
+:::: {layout="[-2, 8, 90]"}
+
+![](img/search.png){fig-align="right"}
+
+The [Search]{style="color: #990000; font-weight: bold;"} menu item allows us to find and replace across all files.
+
+::::
+
+Similar to the **Find in Files** (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd>) window in RStudio.
+
+::: {layout="[50,50]"}
+
+![Search and replace (click to enlarge)](img/search_replace.png){width="100%" fig-align="center"}
+
+
+![RStudio 'Find in Files' (click to enlarge)](img/rs_find_in_files.png){width="100%" fig-align="center"}
+
+:::
+
+#### Source Control
+
+:::: {layout="[-2, 8, 90]"}
+
+![](img/source_control.png){fig-align="right"}
+
+The [Source Control]{style="color: #990000; font-weight: bold;"} menu can open local Git folders and clone repositories. 
+
+::::
+
+When in a Git repo, it displays Git commits, branches, remotes, stashes, tags, work trees, and contributors (similar to the **Git pane** in RStudio).
+
+::: {layout="[40,60]"}
+
+![Source control menu (click to enlarge)](img/initial_source_control.png){width="100%" fig-align="center"}
+
+
+![RStudio Git Pane (click to enlarge)](img/rs_git_pane.png){width="100%" fig-align="center"}
+
+:::
+
+In RStudio, I still use the Terminal for ~90% of my interactions with Git, but Positron also comes with a [Source Control]{style="color: #990000; font-weight: bold;"} menu.[^non-pkg-app]
+
+[^non-pkg-app]: I'm using a branch from [`sap`](https://github.com/mjfrigaard/sap/), which is a collection of Shiny apps/R packages. 
+
+![Checking out Git branch with [Source Control]{style='color: #990000; font-weight: bold;'} (click to enlarge)](img/source_control_branch.png){width='100%' fig-align="center"}
+
+#### Extensions
+
+:::: {layout="[-2, 8, 90]"}
+
+![](img/extensions.png){fig-align="right"}
+
+We can install Positron extensions from the **Extensions** menu item. 
+
+::::
+
+Positron’s extensions are somewhat similar to RStudio Addins but with a few key differences:
+
+1. Positron extensions enhance the IDE's capabilities by interacting with the VS Code API. They can range from language support (e.g., R, Python) to tools and features for general coding tasks (debugging, version control, syntax highlighting, code snippets, etc.)
+
+2. [RStudio Addins](https://rstudio.github.io/rstudio-extensions/rstudio_addins.html) are custom tools and features to extend IDE’s functionality, focusing on R-specific tasks (package development, customizing visualizations, R markdown document generation, etc.)
+
+::: {layout="[50,50]"}
+
+![Positron Extensions via Positron +1e (click to enlarge)](img/posit_publisher_ext.png){width="100%" fig-align="center"}
+
+
+![RStudio Addins (click to enlarge)](img/rs_addins.png){width="100%" fig-align="center"}
+
+:::
+
+At a minimum, be sure to install the [Posit Publisher extension](https://open-vsx.org/extension/posit/publisher). I've also installed [Positron +1e](https://open-vsx.org/extension/grrrck/positron-plus-1-e), a collection of extensions curated by Garrick Aden-Buie[^garrick] for '*git-backed data science and dev work shared primarily on GitHub*'. 
+
+[^garrick]: Read more on [Garrick's blog](https://www.garrickadenbuie.com/)
+
+```{r}
+#| label: co_box_extensions
+#| results: asis 
+#| echo: false
+#| eval: true
+co_box(
+  color = 'g',
+  header = 'Positron Extensions',
+  size = "1.10",
+  hsize = "1.20",
+  fold = TRUE,
+  look = 'default',
+  contents = "
+Extensions can be installed from [VS Code Marketplace](https://marketplace.visualstudio.com/) or the [Open VXS Registry](https://open-vsx.org/). VS Code Marketplace is maintained by Microsoft, ensuring high-quality and secure extensions, whereas the Open VXS Registry is an open-source alternative for those looking to avoid vendor lock-in.[^eclipse] Most extensions on Open VXS Registry are identical to those found on the VS Code marketplace, but with a focus on open-source principles.
+
+For more Positron extensions, I recommend checking out [this post](https://www.andrewheiss.com/blog/2024/07/08/fun-with-positron/#my-extensions) from Andrew Heiss[^andrew] and [this LinkedIn post](https://www.linkedin.com/posts/veerlevanleemput_positron-r-rstats-activity-7221481394013642752-60Pg?utm_source=share&utm_medium=member_desktop) from Veerle van Leemput.[^veerle]")
+```
+
+[^eclipse]: The Open VXS Registry is manages by the [Eclipse Foundation](https://www.eclipse.org/).
+
+[^andrew]: Read more on [Andrew's blog](https://www.andrewheiss.com/blog/) 
+
+[^veerle]: Read more on [Veerle's blog](https://hypebright.nl/index.php/home/blog/) 
+
+## Shiny Apps
+
+I've checked out a branch of `sap` that's in the early stages of development, so it's a Shiny app (and not an R package yet).[^app-pkg] The image below highlights some of the IDE's features after opening the [app.R file]{style="color: #990000; font-weight: bold;"}: 
+
+[^app-pkg]: I'm demoing the [`02.1_shiny-app`](https://github.com/mjfrigaard/moviesApp/tree/02.1_shiny-app), which is a boilerplate Shiny app project with the Old Faithful Geyser data.  
+
+![Open `app.R` file (click to enlarge)](img/shiny_app_files.png){fig-align="center" width="90%"}
+
+::: {.column-margin}
+
+Positron displays the [current folder]{style="color: #990000; font-weight: bold;"} (or project) in a familiar location, and the active [Git branch]{style="color: #990000; font-weight: bold;"} and [Quarto version]{style="color: #990000; font-weight: bold;"} are conveniently placed in the footer.  
+
+:::
+
+As we can see from the image above, Positron displays much of the same information as the RStudio IDE but with a VS Code*ish* layout. The most notable change I had to adapt to was the new location of the [project files]{style="color: #990000; font-weight: bold;"} in the file [Explorer]{style="color: #990000; font-weight: bold;"}.
+
+### Running Applications
+
+Positron detects that I’m developing a Shiny application and places a [Run Shiny App]{style="color: #990000; font-weight: bold;"} icon at the top of the `app.R` file. Clicking the [Run Shiny App]{style="color: #990000; font-weight: bold;"} button launches our application in the [Viewer]{style="color: #990000; font-weight: bold;"} pane. 
+
+![Terminal runs the Shiny app (click to enlarge)](img/shiny_runs_in_terminal.png){fig-align="center" width="100%"}
+
+
+:::{.column-margin}
+
+![](img/shiny_terminal.png){width='50%' fig-align="center"}
+
+Unlike RStudio, Positron runs Shiny applications from the [Terminal]{style="color: #990000; font-weight: bold;"} with a dedicated Shiny process when the [Run Shiny App]{style="color: #990000; font-weight: bold;"} button is clicked.
+
+:::
+
+In the [Terminal]{style="color: #990000; font-weight: bold;"}, a message tells us that `autoreload` has been turned on (which means we can make live updates to our application):
+
+::: {.column-page-inset-right}
+
+![Live updates to Shiny app](img/app_refresh.gif){fig-align="center" width="100%"}
+
+:::
+
+We’re also told that the application runs with the ‘minified’ JavaScript file (`shiny.min.js`), which results in using `--devmode`. Both of these options are covered in the [Shiny documentation](https://shiny.posit.co/r/reference/shiny/0.13.1/shiny-options.html).
+
+```{r}
+#| label: co_box_shiny_terminal
+#| results: asis 
+#| echo: false
+#| eval: true
+co_box(
+  color = 'g',
+  header = 'Run Shiny App Terminal Commands',
+  size = "1.10",
+  hsize = "1.20",
+  fold = TRUE,
+  look = 'default',
+  contents = "
+I've broken down the Shiny terminal commands below: 
+
+The first commands specifies the `Rscript` interpreter, the scripting front-end for R. `Rscript` allows the execution of R scripts directly from the command line.
+
+\`\`\`sh
+# Rscript interpreter 
+$/usr/local/bin/Rscript 
+\`\`\`
+
+The next command is the path to an R script that comes with your Positron installation for running Shiny applications. 
+
+\`\`\`sh
+# runShinyApp.R Positron Shiny extension  
+$/Users/username/.positron/extensions/posit.shiny-1.0.0-universal/rscripts/runShinyApp.R 
+\`\`\`
+
+You can view the contents of `runShinyApp.R` by passing the path into another Terminal window preceded by `cat`.
+
+The final Terminal command is the path to the `moviesApp` Shiny application's main `app.R` script (with two additional arguments):
+
+\`\`\`sh
+# moviesApp app.R file
+/Users/username/projects/apps/R/moviesApp/app.R 51146 --devmode 
+\`\`\`
+
+-   `51146` specifies the port on which the Shiny application will run.
+
+-  `--devmode` enables development mode for the Shiny application.[^devmode]
+
+[^devmode]: Read more about Shiny development mode [here.](https://shiny.posit.co/r/reference/shiny/latest/devmode.html)")
+```
+
+### Stopping Applications
+
+We can stop the application like we would any other [Terminal]{style="color: #990000; font-weight: bold;"} process:
+
+```{css echo=FALSE}
+.column {
+text-align: center;
+}
+```
+
+
+:::: {.columns}
+
+::: {.column width="40%"}
+
+:::
+
+::: {.column width="20%"}
+
+[<kbd>Ctrl</kbd> + <kbd>C</kbd>]{style="font-size: 1.20em; font-weight: bold;"}
+
+:::
+
+::: {.column width="40%"}
+
+:::
+
+::::
+
+After stopping the application, you can clear the [Viewer]{style="color: #990000; font-weight: bold;"} by clicking on the [Clear the current URL]{style="color: #990000; font-weight: bold;"} icon in the upper-right corner.
+
+![Clear viewer (click to enlarge)](img/clear_current_url.png){width='100%' fig-align="center"}
+
+These changes make application development much more seamless, and now the `app.R` file also includes icon for editing our Shiny UI with the [`shinyuieditor` package](https://rstudio.github.io/shinyuieditor/) (provided it's installed).
+
+![Run Shiny App Options](img/run_shiny_app_options.png){fig-align="center" width="90%"}
+
+## Package Development
+
+Transitioning from developing R packages in RStudio to Positron has been pretty smooth. For example, I wanted to change the [`display_type()`](https://mjfrigaard.github.io/shiny-app-pkgs/launch.html#shiny.launch.browser) function to check if the application runs in RStudio before setting the `shiny.launch.browser` option.[^launch-app-pkg]
+
+[^launch-app-pkg]: This is covered in the  [`08_launch-app`](https://github.com/mjfrigaard/sap/tree/08_launch-app) branch of `moviesApp`, which is covered in the [Launch](https://mjfrigaard.github.io/shiny-app-pkgs/launch.html) chapter of Shiny-App-Packages. 
+
+
+```{r}
+#| label: co_box_intellisense
+#| results: asis 
+#| echo: false
+#| eval: true
+co_box(
+  color = 'g',
+  header = 'Positron tab-completion',
+  size = "1.10",
+  hsize = "1.20",
+  fold = TRUE,
+  look = 'default',
+  contents = "Positron also comes with IntelliSense for R functions.  Place your cursor inside the parentheses and use <kbd>^</kbd>+<kbd>SPACE</kbd> or <kbd>tab</kbd>:
+
+![Positron function IntelliSense](img/fun_intel.gif){width='100%' fig-align='center'}
+"
+)
+```
+
+### Loading & Documenting
+
+After making changes to `R/display_type.R`, I can use the same keyboard shortcuts from `devtools` to load and document the package:
+
+<br>
+
+:::: {.columns}
+
+::: {.column width="10%"}
+
+:::
+
+::: {.column width="80%"}
+
+[<kbd>Cmd</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> =  `devtools::load_all()`]{style="font-size: 1.05em; font-weight: bold;"}
+
+:::
+
+::: {.column width="10%"}
+
+:::
+
+::::
+
+:::: {.columns}
+
+::: {.column width="10%"}
+
+:::
+
+::: {.column width="80%"}
+
+[<kbd>Cmd</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd> = `devtools::document()`]{style="font-size: 1.05em; font-weight: bold;"}
+
+:::
+
+::: {.column width="10%"}
+
+:::
+
+::::
+
+<br>
+
+Under the hood, Positron calls [`devtools::load_all()`](https://r-pkgs.org/code.html#sec-code-load-all) and [`devtools::document()`](https://r-pkgs.org/man.html), but instead of launching a **Build** pane, Positron displays the messages from  in the [Console]{style="color: #990000; font-weight: bold;"}:
+
+![Document R/display_type.R (click to enlarge)](img/devtools_document.png){width='80%' fig-align="center"}
+
+The [display_type.Rd]{style="color: #990000; font-weight: bold;"} in the [Console]{style="color: #990000; font-weight: bold;"} is a hyperlink we can use to preview our updated help file.
+
+::: {.column-page-inset-right}
+
+![Preview help file for R/display_type.R (click to enlarge)](img/preview_rd_file.gif){width='100%' fig-align="center"}
+
+:::
+
+### Installing
+
+Positron uses the same keyboard shortcut as RStudio for installing packages, but the underlying process differs slightly. Instead of calling [`devtools::install()`](https://devtools.r-lib.org/reference/install.html) in the *Build* pane, Positron launches the [Terminal]{style="color: #990000; font-weight: bold;"} and runs `pak::local_install(upgrade = FALSE)`:
+
+<br>
+
+:::: {.columns}
+
+::: {.column width="1%"}
+
+:::
+
+::: {.column width="98%"}
+
+[<kbd>Cmd</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd> = `pak::local_install(upgrade = FALSE)`]{style="font-size: 1.05em; font-weight: bold;"}
+
+:::
+
+::: {.column width="1%"}
+
+:::
+
+::::
+
+<br>
+
+![The new package install Terminal commands are bookended with an asterick (`*`) and a message (click to enlarge)](img/terminal_install.png){width='100%' fig-align="center"}
+
+:::{.column-margin}
+
+![](img/install_r_pkg_task.png){width='100%' fig-align="center"}
+
+The [Terminal]{style="color: #990000; font-weight: bold;"} pane displays a dedicated Install R package task when a package is installed.
+
+:::
+
+[`local_install(upgrade = FALSE)`](https://pak.r-lib.org/reference/local_install.html) updates the package with the minimum work needed, upgrading dependencies only if the package or one of its dependencies requires a higher version. It prefers binary packages to source packages, even if the binaries are older.
+
+`local_install()` also seems to takes a bit longer to run than `devtools::install()`, but the end result is the same (i.e., the package is installed, the R session restarts, and the package is loaded with `library()` in the [Console]{style="color: #990000; font-weight: bold;"}).
+
+```{r}
+#| label: co_box_tab_comp
+#| results: asis 
+#| echo: false
+#| eval: true
+co_box(
+  color = 'g',
+  header = 'IntelliSense',
+  size = "1.10",
+  hsize = "1.20",
+  fold = TRUE,
+  look = 'default',
+  contents = "\n
+<br>
+
+In the [Console]{style='color: #990000; font-weight: bold;'}, Positron's tab completion and IntelliSense displays a large preview each function's help file:
+
+![Preview of help file with IntelliSense](img/launch_app_intel.gif){width='100%' fig-align='center'}")
+```
+
+### Testing
+
+Positron comes with a variety of options for testing code. We can use the standard keyboard shortcut to call `devtools::test()`. This will open a [Terminal]{style="color: #990000; font-weight: bold;"} task with the test results:[^test-app-pkg]
+
+[^test-app-pkg]: I'm demonstrating with the [`12.3_tests-snapshots`](https://github.com/mjfrigaard/sap/tree/12.3_tests-snapshots) branch of `sap`, which is covered in the [Test Tools](https://mjfrigaard.github.io/shiny-app-pkgs/test_tools.html) chapter of Shiny-App-Packages. 
+
+<br>
+
+:::: {.columns}
+
+::: {.column width="10%"}
+
+:::
+
+::: {.column width="80%"}
+
+[<kbd>Cmd</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> = `devtools::test()`]{style="font-size: 1.05em; font-weight: bold;"}
+
+:::
+
+::: {.column width="10%"}
+
+:::
+
+::::
+
+<br>
+
+![Running `devtools::test()` (click to enlarge)](img/run_devtools_test.gif){width="100%" fig-align="center"}
+
+:::: {layout="[8, 92]"}
+
+![](img/testing.png){width="100%" fig-align="left"}
+
+Positron also has a dedicated [testing]{style="color: #990000; font-weight: bold;"} sidebar menu item that allows us to select or filter the test files in the `tests/testthat/` folder.
+
+::::
+
+![Test files in `tests/testthat/` (click to enlarge)](img/test_files.png){width="80%" fig-align="center"}
+
+The [testing]{style="color: #990000; font-weight: bold;"} sidebar menu also displays the contents of each test file. If you're using `testthat`'s behavior-driven development functions (`describe` and `it`), the descriptions are organized hierarchically under [TESTING]{style="color: #990000; font-weight: bold;"}: 
+
+![BDD test descriptions (click to enlarge)](img/bdd_funs_display.png){width="100%" fig-align="center"}
+
+If `test_that()` is used, the function being tested is displayed each time an `expect_*` function is called: 
+
+![`test_that()` test descriptions (click to enlarge)](img/test_that_funs_display.png){width="80%" fig-align="center"}
+
+### Running tests
+
+The ![](img/run_tests_icon.png){width=80} icon under the [TESTING]{style="color: #990000; font-weight: bold;"} sidebar menu item can also be used to run all the tests in the `testthat` folder. 
+
+![Running tests with icon (click to enlarge)](img/running_tests_icon.gif){width="100%" fig-align="center"}
+
+
+```{r}
+#| label: co_box_pkg_dev_shrtcts
+#| results: asis 
+#| echo: false
+#| eval: true
+co_box(
+  color = 'g',
+  header = 'Package Development Keyboard Shortcuts',
+  size = "1.10",
+  hsize = "1.20",
+  fold = TRUE,
+  look = 'default',
+  contents = "
+
+Two additional shortcuts I recommend adding are:
+<br><br>
+<kbd>Cmd</kbd> / <kbd>Ctrl</kbd>  + <kbd>T</kbd> = `devtools::test_active_file()` 
+<br><br>
+<kbd>Cmd</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> = `devtools::test_coverage_active_file()`
+<br><br>
+
+Check out Andrew Heiss' [Positron post](https://www.andrewheiss.com/blog/2024/07/08/fun-with-positron/) for more information on changing keyboard shortcuts")
+```
+
+
+## Recap
+
+Positron brings a refined experience for RStudio users, blending powerful tools in a streamlined layout that promotes an efficient workflow. Here’s a recap of the features we've explored:
+
+* **IDE Layout**: Positron’s design ensures smooth navigation. It focuses on customizable panels that allow developers to arrange code editors, data viewers, and debugging consoles based on their workflow. 
+
+* **Support for R & Python**: The IDE accommodates multiple versions of R and Python, offering a consistent environment for both languages. Integrated version control helps manage and switch between environments seamlessly, making it ideal for teams working on cross-language projects.
+
+* **Shiny App Development**: Positron provides robust tools for developers to build, test, and deploy Shiny applications. The IDE simplifies UI-building with live previews and reactive programming support, enabling users to refine interactive components.
+
+* **Package Development**: Positron includes a comprehensive suite for R package development, with features that streamline code documentation, testing, and version management. These tools make it easier to follow best practices, ensuring well-organized, maintainable packages.
+
+Positron can enhance productivity for R and Python users, making it a strong choice for data science and development.

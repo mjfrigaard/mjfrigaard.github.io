@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.28">
+<meta name="generator" content="quarto-1.6.37">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Martin Frigaard">
 <meta name="dcterms.date" content="2023-05-01">
 
-<title>@mjfrigaard – Creating a shiny app-package</title>
+<title>Creating a shiny app-package – @mjfrigaard</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -35,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -71,10 +71,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-29e2c20b02301cfff04dc8050bf30c7e.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-747aaf05d8975e3ef368fff1e99695dc.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -117,7 +120,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
@@ -129,6 +132,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li class="nav-item">
     <a class="nav-link" href="../../../series.html"> 
 <span class="menu-text">Series</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../books.html"> 
+<span class="menu-text">Books</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../articles.html"> 
+<span class="menu-text">Articles</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="../../../code.html"> 
@@ -335,13 +346,13 @@ Warning
 </div>
 <p>If I take a quick look at the available panes in the IDE, I can confirm none of the <strong>Build</strong> tools are available:</p>
 <div class="page-columns page-full">
-<div id="fig-shiny_app_ide" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<div id="fig-shiny_app_ide" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <div aria-describedby="fig-shiny_app_ide-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<div id="fig-shiny_app_ide" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<div id="fig-shiny_app_ide" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center">
 <figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
 <div aria-describedby="fig-shiny_app_ide-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="shiny_app_ide.png" class="quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%;height:100.0%" data-ref-parent="fig-shiny_app_ide">
+<a href="shiny_app_ide.png" class="lightbox page-columns page-full" data-gallery="fig-shiny_app_ide" title="Figure&nbsp;1&nbsp;(a): shiny app IDE"><img src="shiny_app_ide.png" class="quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%;height:100.0%" data-ref-parent="fig-shiny_app_ide"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-shiny_app_ide-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) shiny app IDE
@@ -364,10 +375,10 @@ Figure&nbsp;1: Project IDE panes
 <div aria-describedby="fig-terminate-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-terminate" style="flex-basis: 50.0%;justify-content: flex-start;">
-<div id="fig-terminate_session" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-terminate_session" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-terminate_session-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="terminate_session.png" class="img-fluid figure-img" data-ref-parent="fig-terminate">
+<a href="terminate_session.png" class="lightbox" data-gallery="fig-terminate" title="Figure&nbsp;2&nbsp;(a): Session > Terminate"><img src="terminate_session.png" class="img-fluid figure-img" data-ref-parent="fig-terminate"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-terminate_session-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) Session &gt; Terminate
@@ -376,10 +387,10 @@ Figure&nbsp;1: Project IDE panes
 </div>
 </div>
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-terminate" style="flex-basis: 50.0%;justify-content: flex-start;">
-<div id="fig-terminate_yes" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-terminate_yes" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-terminate_yes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="terminate_yes.png" class="img-fluid figure-img" data-ref-parent="fig-terminate">
+<a href="terminate_yes.png" class="lightbox" data-gallery="fig-terminate" title="Figure&nbsp;2&nbsp;(b): Click Yes"><img src="terminate_yes.png" class="img-fluid figure-img" data-ref-parent="fig-terminate"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-terminate_yes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (b) Click Yes
@@ -431,13 +442,13 @@ Figure&nbsp;2: Terminate your R session
 <p>It’s not important that you know the meaning for each of these fields, but you can probably tell they’re for converting our previous project into a package (and you’ll see the third one again during package development!)</p>
 <p>I’ll take another look at the RStudio IDE to review the available panes:</p>
 <div class="page-columns page-full">
-<div id="fig-shiny_app_pkg_ide" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<div id="fig-shiny_app_pkg_ide" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <div aria-describedby="fig-shiny_app_pkg_ide-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<div id="fig-shiny_app_pkg_ide" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<div id="fig-shiny_app_pkg_ide" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center">
 <figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
 <div aria-describedby="fig-shiny_app_pkg_ide-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="shiny_app_pkg_ide.png" class="quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%;height:100.0%" data-ref-parent="fig-shiny_app_pkg_ide">
+<a href="shiny_app_pkg_ide.png" class="lightbox page-columns page-full" data-gallery="fig-shiny_app_pkg_ide" title="Figure&nbsp;3&nbsp;(a): shiny app-package IDE"><img src="shiny_app_pkg_ide.png" class="quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%;height:100.0%" data-ref-parent="fig-shiny_app_pkg_ide"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-shiny_app_pkg_ide-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) shiny app-package IDE
@@ -457,13 +468,13 @@ Figure&nbsp;3: App-package IDE panes
 <h4 class="anchored" data-anchor-id="what-happened-to-rutils.r">What happened to <span style="font-size: 1.10em"><code>R/utils.R</code></span>?</h4>
 <p>But wait–if I open <code>R/utils.R</code>, I notice that file is now empty:</p>
 <div class="page-columns page-full">
-<div id="fig-clean_out_R" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<div id="fig-clean_out_R" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <div aria-describedby="fig-clean_out_R-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<div id="fig-clean_out_R" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<div id="fig-clean_out_R" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center">
 <figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
 <div aria-describedby="fig-clean_out_R-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="clean_out_R.png" class="quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%;height:100.0%" data-ref-parent="fig-clean_out_R">
+<a href="clean_out_R.png" class="lightbox page-columns page-full" data-gallery="fig-clean_out_R" title="Figure&nbsp;4&nbsp;(a): Empty R/ file"><img src="clean_out_R.png" class="quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%;height:100.0%" data-ref-parent="fig-clean_out_R"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-clean_out_R-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) Empty R/ file
@@ -514,10 +525,10 @@ Converting projects to packages with <code>DESCRIPTION</code> files
 <section id="from-the-project-wizard" class="level3">
 <h3 class="anchored" data-anchor-id="from-the-project-wizard">From the Project Wizard</h3>
 <p>If I am using RStudio’s <strong>New Project Wizard</strong> to create a new shiny app package, I’d see the following defaults:</p>
-<div id="fig-rpkg-setup" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-rpkg-setup" class="column quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-rpkg-setup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="rpkg-setup.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
+<a href="rpkg-setup.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Figure&nbsp;5: Default usethis::create_package project setup"><img src="rpkg-setup.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-rpkg-setup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;5: Default <code>usethis::create_package</code> project setup
@@ -585,10 +596,10 @@ Figure&nbsp;5: Default <code>usethis::create_package</code> project setup
 <span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>RoxygenNote: 7.2.3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The package name is automatically added, but the remaining fields need to be completed (consult <a href="https://r-pkgs.org/description.html#the-description-file">R packages</a> for more information on filling out the <code>DESCRIPTION</code> file).</p>
 <p>The <code>DESCRIPTION</code> file in the <code>duap</code> prompts the RStudio IDE to activate the <strong>Build</strong> tools pane (see below):</p>
-<div id="fig-rpkg-ide" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-rpkg-ide" class="column quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-rpkg-ide-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="rpkg-ide.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
+<a href="rpkg-ide.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;6: Package Build tools"><img src="rpkg-ide.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-rpkg-ide-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;6: Package <strong>Build</strong> tools
@@ -850,10 +861,10 @@ Tip: <code>roxygen2</code> skeleton
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.05em; color: #696969;">
 <p><em>As well as generating <code>.Rd</code> files, <code>roxygen</code> will also create a <code>NAMESPACE</code> for you, and will manage the <code>Collate</code> field in <code>DESCRIPTION</code></em></p>
-<div id="fig-roxygen2-tags" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-roxygen2-tags" class="column quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-roxygen2-tags-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="ide-roxygen-skeleton.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
+<a href="ide-roxygen-skeleton.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Figure&nbsp;7: Standard roxygen2 skeleton"><img src="ide-roxygen-skeleton.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-roxygen2-tags-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;7: Standard <code>roxygen2</code> skeleton
@@ -1077,20 +1088,20 @@ Nothing
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(duap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>You can also use <strong>Install</strong> icon in the <strong>Build</strong> pane, which installs the package, restarts the R session, and loads the package all with one click!</p>
-<div id="fig-build-install" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-build-install" class="column quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-build-install-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="build-install.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
+<a href="build-install.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="Figure&nbsp;8: Build install package"><img src="build-install.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-build-install-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;8: <strong>Build</strong> install package
 </figcaption>
 </figure>
 </div>
-<div id="fig-build-restart" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-build-restart" class="column quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-build-restart-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="build-restart.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
+<a href="build-restart.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="Figure&nbsp;9: Build restart and load"><img src="build-restart.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-build-restart-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;9: <strong>Build</strong> restart and load
@@ -1110,10 +1121,10 @@ Figure&nbsp;9: <strong>Build</strong> restart and load
 <li>I can also access functions I’ve written <em>outside</em> by adding <code>@export</code></li>
 </ul></li>
 </ul>
-<div id="fig-pkg-man" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-pkg-man" class="column quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-pkg-man-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="pkg-man.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
+<a href="pkg-man.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11" title="Figure&nbsp;10: Function documentation in man/ folder"><img src="pkg-man.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pkg-man-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;10: Function documentation in <code>man/</code> folder
@@ -1251,10 +1262,10 @@ The <code>inst/</code> folder
 <section id="recap-data-and-installed-files" class="level4">
 <h4 class="anchored" data-anchor-id="recap-data-and-installed-files">Recap: data and installed files</h4>
 <p>R Packages have a consistent and standardized way of storing data, and have designated locations for internal and external data.</p>
-<div id="fig-pkg-data" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-pkg-data" class="column quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-pkg-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="pkg-data.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
+<a href="pkg-data.png" class="lightbox" data-gallery="quarto-lightbox-gallery-12" title="Figure&nbsp;11: Package data folders"><img src="pkg-data.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pkg-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;11: Package data folders
@@ -1310,10 +1321,10 @@ Figure&nbsp;11: Package data folders
 <span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>1 directory, 1 file</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>By combining <code>rmarkdown</code> and <code>knitr</code>, R packages have a documentation framework that has the added benefit of being somewhat fool-proof: vignettes have to successfully render for the package to be installed.</p>
-<div id="fig-build-vignettes" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-build-vignettes" class="column quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-build-vignettes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="install-vignettes.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
+<a href="install-vignettes.png" class="lightbox" data-gallery="quarto-lightbox-gallery-13" title="Figure&nbsp;12: Package vignettes"><img src="install-vignettes.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-build-vignettes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;12: Package vignettes
@@ -1348,10 +1359,10 @@ Vignette figures
 <section id="recap-documentation" class="level4">
 <h4 class="anchored" data-anchor-id="recap-documentation">Recap: documentation</h4>
 <p>The vignettes folder will long-form documentation about how the application works, use cases, and features (and <code>roxygen2</code> will document each function).</p>
-<div id="fig-pkg-docs" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-pkg-docs" class="column quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-pkg-docs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="pkg-docs.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
+<a href="pkg-docs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-14" title="Figure&nbsp;13: Documentation in README and vignettes/"><img src="pkg-docs.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pkg-docs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;13: Documentation in <code>README</code> and <code>vignettes/</code>
@@ -1389,10 +1400,10 @@ Figure&nbsp;13: Documentation in <code>README</code> and <code>vignettes/</code>
 <section id="recap-testing" class="level4">
 <h4 class="anchored" data-anchor-id="recap-testing">Recap: testing</h4>
 <p>Testing is well described in the <a href="https://shiny.rstudio.com/articles/testing-overview.html">shiny documentation</a> and in <a href="https://mastering-shiny.org/scaling-testing.html">Mastering Shiny</a>. Generally speaking, unit tests are performed with <a href="https://testthat.r-lib.org/"><code>testthat</code></a>, and module testing can be done with <a href="https://shiny.rstudio.com/reference/shiny/1.7.0/testserver"><code>shiny::testServer()</code></a>. To test the full application (or a specific behavior) use the <a href="https://rstudio.github.io/shinytest2/"><code>shinytest2</code></a> package.</p>
-<div id="fig-pkg-tests" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-pkg-tests" class="column quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-pkg-tests-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="pkg-tests.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
+<a href="pkg-tests.png" class="lightbox" data-gallery="quarto-lightbox-gallery-15" title="Figure&nbsp;14: Testing framework from testthat"><img src="pkg-tests.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pkg-tests-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;14: Testing framework from <code>testthat</code>
@@ -1406,10 +1417,10 @@ Figure&nbsp;14: Testing framework from <code>testthat</code>
 <section id="use" class="level1">
 <h1>Use</h1>
 <p>Using an app built as a package is similar to using any R function we’ve loaded from a package. After successfully loading, documenting, and installing the package, I can run the app by loading the <code>duap</code> (with <code>library(duap)</code>) and <code>moviesApp()</code>:</p>
-<div id="fig-duap-inst-app" class="column quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-duap-inst-app" class="column quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-duap-inst-app-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="duap-app.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%">
+<a href="duap-app.png" class="lightbox" data-gallery="quarto-lightbox-gallery-16" title="Figure&nbsp;15: duap::moviesApp()"><img src="duap-app.png" class="quarto-figure quarto-figure-center figure-img" style="width:100.0%;height:100.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-duap-inst-app-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;15: <code>duap::moviesApp()</code>
@@ -1508,8 +1519,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   });
   clipboard.on('success', onCopySuccess);
   if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    // For code content inside modals, clipBoardJS needs to be initialized with a container option
-    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
     const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
       text: getTextToCopy,
       container: window.document.getElementById('quarto-embedded-source-code-modal')
@@ -1620,7 +1629,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {
@@ -1886,6 +1894,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

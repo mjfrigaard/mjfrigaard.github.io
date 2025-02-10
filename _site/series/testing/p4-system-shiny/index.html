@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.28">
+<meta name="generator" content="quarto-1.6.37">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Martin Frigaard">
 <meta name="dcterms.date" content="2023-07-04">
 
-<title>@mjfrigaard – Shiny system tests with shinytest2</title>
+<title>Shiny system tests with shinytest2 – @mjfrigaard</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -35,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -71,10 +71,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-29e2c20b02301cfff04dc8050bf30c7e.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-7246a90fd7fce57841499c4ef90837f1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -117,7 +120,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
@@ -129,6 +132,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li class="nav-item">
     <a class="nav-link" href="../../../series.html"> 
 <span class="menu-text">Series</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../books.html"> 
+<span class="menu-text">Books</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../articles.html"> 
+<span class="menu-text">Articles</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="../../../code.html"> 
@@ -237,7 +248,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This is the fourth post in a <a href="https://mjfrigaard.github.io/series.html#testing-shiny-applications">series on testing</a> Shiny applications. The previous posts have covered using <a href="https://mjfrigaard.github.io/posts/p1-tests-unit-tests/">BDD in unit tests</a>, testing apps <a href="https://mjfrigaard.github.io/posts/p2-tests-nonpkg-unit-tests/">outside of an R package</a> structure, and <a href="https://mjfrigaard.github.io/posts/p3-test-shiny-module-tests/">testing module server functions</a>. In this post, we’ll be covering testing Shiny applications using <code>testthat</code> and <code>shinytest2</code>.</p>
 
 <div class="no-row-height column-margin column-container"><div class="">
-<p><img src="img/image.svg" class="img-fluid" style="width:70.0%"></p>
+<p><a href="img/image.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="img/image.svg" class="img-fluid" style="width:70.0%"></a></p>
 </div></div><section id="app-packages" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="app-packages">App-Packages</h2>
 <p>In the previous post, we stored the modules and applications from the <a href="https://mastering-shiny.org/scaling-modules.html">Shiny modules chapter</a> of Mastering Shiny in the <a href="https://github.com/mjfrigaard/sapkgs/tree/mstsap"><code>mstsap</code></a> branch of <code>sapkgs</code>, which you can install using the code below:</p>
@@ -291,7 +302,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  app<span class="sc">$</span><span class="fu">view</span>()</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><img src="img/app_view_datasetApp.png" class="img-fluid" style="width:100.0%"></p>
+<p><a href="img/app_view_datasetApp.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="img/app_view_datasetApp.png" class="img-fluid" style="width:100.0%"></a></p>
 <p>The first things we’ll check with our test is the window size we’ve provided and the <code>system.file()</code> path to the <code>datasetApp</code> in <code>mstsap</code>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">"mstsap::datasetApp"</span>, {</span>
@@ -324,10 +335,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div aria-describedby="fig-set_inputs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
 <div class="quarto-layout-row page-full">
 <div class="quarto-layout-cell-subref quarto-layout-cell page-columns page-full" data-ref-parent="fig-set_inputs" style="flex-basis: 100.0%;justify-content: flex-start;">
-<div id="fig-app_set_inputs" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<div id="fig-app_set_inputs" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
 <figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
 <div aria-describedby="fig-app_set_inputs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="img/app_set_inputs.png" class="img-fluid figure-img column-page-right" data-ref-parent="fig-set_inputs">
+<a href="img/app_set_inputs.png" class="lightbox page-columns page-full" data-gallery="fig-set_inputs" title="Figure&nbsp;1&nbsp;(a): app$set_inputs()"><img src="img/app_set_inputs.png" class="img-fluid figure-img column-page-right" data-ref-parent="fig-set_inputs"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-app_set_inputs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) <code>app$set_inputs()</code>
@@ -452,10 +463,10 @@ Figure&nbsp;1: Set application inputs with <code>app$set_inputs()</code>
 <div aria-describedby="fig-app_view_selectVarApp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
 <div class="quarto-layout-row page-full">
 <div class="quarto-layout-cell-subref quarto-layout-cell page-columns page-full" data-ref-parent="fig-app_view_selectVarApp" style="flex-basis: 100.0%;justify-content: flex-start;">
-<div id="fig-app_view_selectVarApp" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<div id="fig-app_view_selectVarApp" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
 <figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
 <div aria-describedby="fig-app_view_selectVarApp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="img/app_view_selectVarApp.png" class="img-fluid figure-img column-body-outset-right" data-ref-parent="fig-app_view_selectVarApp">
+<a href="img/app_view_selectVarApp.png" class="lightbox page-columns page-full" data-gallery="fig-app_view_selectVarApp" title="Figure&nbsp;2&nbsp;(a): app$view()"><img src="img/app_view_selectVarApp.png" class="img-fluid figure-img column-body-outset-right" data-ref-parent="fig-app_view_selectVarApp"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-app_view_selectVarApp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) <code>app$view()</code>
@@ -521,10 +532,10 @@ Figure&nbsp;2: View <code>selectVarApp()</code> application with <code>app$view(
 <div aria-describedby="fig-selectVarApp_changes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
 <div class="quarto-layout-row page-full">
 <div class="quarto-layout-cell-subref quarto-layout-cell page-columns page-full" data-ref-parent="fig-selectVarApp_changes" style="flex-basis: 100.0%;justify-content: flex-start;">
-<div id="fig-selectVarApp_changes" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<div id="fig-selectVarApp_changes" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
 <figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
 <div aria-describedby="fig-selectVarApp_changes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="img/selectVarApp_changes.gif" class="img-fluid figure-img column-body-outset-right" data-ref-parent="fig-selectVarApp_changes">
+<a href="img/selectVarApp_changes.gif" class="lightbox page-columns page-full" data-gallery="fig-selectVarApp_changes" title="Figure&nbsp;3&nbsp;(a): Set data-dataset"><img src="img/selectVarApp_changes.gif" class="img-fluid figure-img column-body-outset-right" data-ref-parent="fig-selectVarApp_changes"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-selectVarApp_changes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) Set <code>data-dataset</code>
@@ -653,10 +664,10 @@ Figure&nbsp;3: View <code>selectVarApp()</code> after setting <code>data-dataset
 <div aria-describedby="fig-sbs_histogramApp_ggHistApp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="quarto-layout-row">
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-sbs_histogramApp_ggHistApp" style="flex-basis: 50.0%;justify-content: flex-start;">
-<div id="fig-sbs_histogramApp" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-sbs_histogramApp" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-sbs_histogramApp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="img/sbs_histogramApp.png" class="img-fluid figure-img" data-ref-parent="fig-sbs_histogramApp_ggHistApp">
+<a href="img/sbs_histogramApp.png" class="lightbox" data-gallery="fig-sbs_histogramApp_ggHistApp" title="Figure&nbsp;4&nbsp;(a): histogramApp()"><img src="img/sbs_histogramApp.png" class="img-fluid figure-img" data-ref-parent="fig-sbs_histogramApp_ggHistApp"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-sbs_histogramApp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) <code>histogramApp()</code>
@@ -665,10 +676,10 @@ Figure&nbsp;3: View <code>selectVarApp()</code> after setting <code>data-dataset
 </div>
 </div>
 <div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-sbs_histogramApp_ggHistApp" style="flex-basis: 50.0%;justify-content: flex-start;">
-<div id="fig-sbs_ggHistApp" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-sbs_ggHistApp" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-sbs_ggHistApp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="img/sbs_ggHistApp.png" class="img-fluid figure-img" data-ref-parent="fig-sbs_histogramApp_ggHistApp">
+<a href="img/sbs_ggHistApp.png" class="lightbox" data-gallery="fig-sbs_histogramApp_ggHistApp" title="Figure&nbsp;4&nbsp;(b): ggHistApp()"><img src="img/sbs_ggHistApp.png" class="img-fluid figure-img" data-ref-parent="fig-sbs_histogramApp_ggHistApp"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-sbs_ggHistApp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (b) <code>ggHistApp()</code>
@@ -998,10 +1009,10 @@ Figure&nbsp;4: <code>histogramApp()</code> vs.&nbsp;<code>ggHistApp()</code>
 <div aria-describedby="fig-app_view_ggHistApp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
 <div class="quarto-layout-row page-full">
 <div class="quarto-layout-cell-subref quarto-layout-cell page-columns page-full" data-ref-parent="fig-app_view_ggHistApp" style="flex-basis: 100.0%;justify-content: flex-start;">
-<div id="fig-app_view_ggHistApp" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<div id="fig-app_view_ggHistApp" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
 <figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
 <div aria-describedby="fig-app_view_ggHistApp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="img/app_view_ggHistApp.png" class="img-fluid figure-img column-body-outset-right" data-ref-parent="fig-app_view_ggHistApp">
+<a href="img/app_view_ggHistApp.png" class="lightbox page-columns page-full" data-gallery="fig-app_view_ggHistApp" title="Figure&nbsp;5&nbsp;(a): app$view()"><img src="img/app_view_ggHistApp.png" class="img-fluid figure-img column-body-outset-right" data-ref-parent="fig-app_view_ggHistApp"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-app_view_ggHistApp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) <code>app$view()</code>
@@ -1314,8 +1325,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   });
   clipboard.on('success', onCopySuccess);
   if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    // For code content inside modals, clipBoardJS needs to be initialized with a container option
-    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
     const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
       text: getTextToCopy,
       container: window.document.getElementById('quarto-embedded-source-code-modal')
@@ -1426,7 +1435,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {
@@ -1692,6 +1700,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

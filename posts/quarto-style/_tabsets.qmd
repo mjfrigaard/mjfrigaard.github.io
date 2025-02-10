@@ -1,0 +1,69 @@
+### Tabsets
+
+Another layout option to conserve space to organize your content into tabsets. The code below include tabs for installing and loading the `tidyverse`, and a third tab for displaying the `tidyverse` logo:
+
+:::{layout="[40,60]" layout-valign="top"}
+
+````{verbatim}
+## Row {.tabset}
+
+```{r}
+#| title: Install
+#| echo: true 
+install.packages('tidyverse')
+```
+
+```{r}
+#| title: Load
+#| echo: true 
+library(tidyverse)
+```
+
+```{r}
+#| title: Logo
+tidyverse_logo()
+```
+````
+
+![Click to enlarge](img/tabset_01.png)
+
+:::
+
+Tabsets work with columns, too. 
+
+:::{layout="[40,60]" layout-valign="top"}
+
+````{verbatim}
+## Row {height=70%}
+
+### Column 
+
+```{r}
+#| title: Conflicts
+tidyverse_conflicts()
+```
+
+### Column {.tabset}
+
+```{r}
+#| title: Packages
+#| echo: false 
+#| eval: true
+tibble(
+  packages = tidyverse_packages()
+    ) |> 
+  gt::gt()
+```
+
+```{r}
+#| title: Dependencies
+#| echo: false 
+#| eval: true
+tidyverse_deps() |> 
+  gt::gt()
+```
+````
+
+![Click to enlarge](img/tabset_02.png)
+
+:::

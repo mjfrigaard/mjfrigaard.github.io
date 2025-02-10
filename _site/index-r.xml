@@ -16,7 +16,975 @@
 <height>109</height>
 <width>144</width>
 </image>
-<generator>quarto-1.5.28</generator>
-<lastBuildDate>Sat, 13 Jul 2024 06:31:28 GMT</lastBuildDate>
+<generator>quarto-1.6.37</generator>
+<lastBuildDate>Mon, 14 Oct 2024 07:00:00 GMT</lastBuildDate>
+<item>
+  <title>Positron</title>
+  <dc:creator>Martin Frigaard</dc:creator>
+  <link>https://mjfrigaard.github.io/posts/positron-v1/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><a href="img/image.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/image.png" class="img-fluid" style="width:70.0%"></a></p>
+</div></div><p>I’ve been trying out Posit’s new Positron IDE for a few weeks, so I put together a post covering my initial impressions of developing Shiny apps and R packages.</p>
+<section id="why-switch" class="level2">
+<h2 class="anchored" data-anchor-id="why-switch">Why switch?</h2>
+<p>I use RStudio daily for R development and have no complaints about the IDE’s capabilities. However, I’ve recently started using VS Code for Python and JavaScript. When I heard about Positron, I wondered if it would offer enough overlapping features to allow me to use a single IDE for all three languages.</p>
+<p>Positron was covered <a href="https://youtu.be/8uRcB34Hhsw?si=kVUQOjxNfaZjavLe">at posit::conf(2024)</a>, and the <a href="https://positron.posit.co/start.html#is-positron-for-me">Getting Started</a> article on the new website lists reasons you might (or might not) want to switch IDEs. I’ve summarized them below:</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[50,50]">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<section id="switch" class="level3 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<h3 class="anchored" data-anchor-id="switch">Switch</h3>
+<ul class="task-list">
+<li><p><label><input type="checkbox">You use VS Code or JupyterLab for data science but want more features.</label></p></li>
+<li><p><label><input type="checkbox" checked="">You want more customization in RStudio.</label></p></li>
+<li><p><label><input type="checkbox" checked="">You program in languages other than R/Python.</label></p></li>
+</ul>
+</section>
+<section id="dont-switch" class="level3 quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<h3 class="anchored" data-anchor-id="dont-switch">Don’t switch</h3>
+<ul class="task-list">
+<li><p><label><input type="checkbox">You need reliable and fully functioning software (Positron is still a work-in-progress, so some features may not be stable or polished).</label></p></li>
+<li><p><label><input type="checkbox">You need all RStudio’s features (i.e., inline output for Quarto and R Markdown, Sweave, Add-In support, profiling, etc.). Not all these features are implemented in Positron.</label></p></li>
+</ul>
+</section>
+</div>
+</div>
+<!-- https://www.andrewheiss.com/blog/2024/07/08/fun-with-positron/ -->
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.20em;">Download and Install Positron</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>Positron now has <a href="https://positron.posit.co">a website</a> with much of the information below (without the screenshots).</p>
+<p>Positron can be downloaded from it’s <a href="https://github.com/posit-dev/positron">GitHub repository</a>. I’m running it on my MacBook (2019, 2.6 GHz 6-Core Intel Core i7, macOS Sonoma Version 14.5), so this involved downloading the .dmg file from the <a href="https://github.com/posit-dev/positron/releases">releases page</a> and installing it like I would any new application.<sup>1</sup></p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="ide-layout" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="ide-layout">IDE Layout</h2>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.20em;">NOTE</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>Throughout this post, I’ll make the assumption the reader hasn’t spent much time in VS Code (if you have, Positron will be easier to navigate and use).</p>
+</div>
+</div>
+</div>
+</div>
+<!-- https://open-vsx.org/extension/grrrck/positron-plus-1-e -->
+<p>At first glance, Positron looks like VS Code, but with the four panes we’re used to seeing in RStudio. The default layout includes a <span style="color: #990000; font-weight: bold;">Welcome</span> pane with options for opening files and folders above the <span style="color: #990000; font-weight: bold;">Panel</span>, which displays the current version of R running:</p>
+<div class="column-page-inset-right">
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[50,50]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/positron_welcome.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Welcome page"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/positron_welcome.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Welcome page"></a></p>
+</figure>
+</div>
+<figcaption>Welcome page</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/positron_console.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Console"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/positron_console.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Console"></a></p>
+</figure>
+</div>
+<figcaption>Console</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>The <span style="color: #990000; font-weight: bold;">Panel</span> is similar to the <strong>Console</strong> in RStudio but also includes tabs for Terminal, Problems, Output, etc.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[50,50]">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/positron_panel.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Positron’s panel (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/positron_panel.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Positron’s panel (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Positron’s panel (click to enlarge)</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/rstudio_console.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="RStudio’s console (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/rstudio_console.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="RStudio’s console (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>RStudio’s console (click to enlarge)</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>The <span style="color: #990000; font-weight: bold;">Session</span> and <span style="color: #990000; font-weight: bold;">Variables</span><sup>2</sup> panes are open and initially empty, but we can see this where our <span style="color: #990000; font-weight: bold;">Plots</span> will be displayed.</p>
+<div class="page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="img/positron_session_vars.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-6" title="Session and Variables (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/positron_session_vars.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:80.0%" alt="Session and Variables (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Session and Variables (click to enlarge)</figcaption>
+</figure>
+</div>
+</div>
+<section id="layout-options" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="layout-options">Layout options</h3>
+<p>To customize Positron’s panes, we can use the layout presets icon (in the upper-right corner of the IDE).</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><a href="img/layout_presets.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Layout presets icon"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/layout_presets.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:70.0%" alt="Layout presets icon"></a></p>
+</figure>
+</div>
+<figcaption>Layout presets icon</figcaption>
+</figure>
+</div>
+</div></div><div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/customize_layout.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Layout outptions (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/customize_layout.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%" alt="Layout outptions (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Layout outptions (click to enlarge)</figcaption>
+</figure>
+</div>
+<p>Or we can position each pane manually via <strong>View</strong> &gt; <strong>Appearance</strong> &gt; <strong>Panel Position</strong> …</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/view_appearance_options.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="Positron’s view options (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/view_appearance_options.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%" alt="Positron’s view options (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Positron’s view options (click to enlarge)</figcaption>
+</figure>
+</div>
+<p>We’ll continue using the default ‘<em>Stacked Layout</em>’ configuration in this post, but I recommend exploring the other options to find a customization that fits your needs.</p>
+</section>
+<section id="r-python-versions" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="r-python-versions">R &amp; Python versions</h3>
+<p>I had R (<span style="color: #990000; font-weight: bold;">R 4.4.1</span>) and Python (3.11.5) previously installed, and Positron quickly located both R and Python versions (and displays them in multiple places in the IDE):</p>
+<div class="page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="img/r-version.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-10" title="R versions (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/r-version.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:90.0%" alt="R versions (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>R versions (click to enlarge)</figcaption>
+</figure>
+</div>
+</div>
+<p>For more information on detecting Python and R versions, see the <a href="https://positron.posit.co/interpreters.html">Interpreter Selection</a> section of the documentation.</p>
+</section>
+<section id="r-dependencies" class="level3">
+<h3 class="anchored" data-anchor-id="r-dependencies">R Dependencies</h3>
+<p>Positron’s documentation recommends installing the following packages:<sup>3</sup></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1">pak<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">pak</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"usethis"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cli"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"crayon"</span>, </span>
+<span id="cb1-2">           <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"rlang"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"roxygen2"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"pkgload"</span>))</span></code></pre></div>
+</div>
+</section>
+<section id="files-folders-and-projects" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="files-folders-and-projects">Files, Folders and Projects</h3>
+<p>I use the <span style="color: #990000; font-weight: bold;">folder icon</span> in the upper right corner of the IDE to locate and open project folders. Still, Positron has multiple options for opening project folders from the <span style="color: #990000; font-weight: bold;">welcome page</span> and with the <span style="color: #990000; font-weight: bold;">explorer</span> sidebar menu item:</p>
+<div class="page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="img/open_folder.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-11" title="Open folder (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/open_folder.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:90.0%" alt="Open folder (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Open folder (click to enlarge)</figcaption>
+</figure>
+</div>
+</div>
+<p>I’ll be using my <a href="https://github.com/mjfrigaard/sap"><code>sap</code></a> repository because it contains the following:</p>
+<ol type="1">
+<li>Version control<br>
+</li>
+<li>An R project (i.e., with an&nbsp;<code>.Rproj</code>&nbsp;file)<br>
+</li>
+<li>A Shiny app<br>
+</li>
+<li>An R package<sup>4</sup></li>
+</ol>
+</section>
+<section id="activity-bar" class="level3">
+<h3 class="anchored" data-anchor-id="activity-bar">Activity bar</h3>
+<p>One of Positron’s major distinguishing factors is its activity bar. This sidebar lets us open and edit files, perform searches, access source control (like Git), and find/install extensions.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/positron-wireframe.png" class="lightbox" data-gallery="quarto-lightbox-gallery-12" title="Positron Layout (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/positron-wireframe.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Positron Layout (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Positron Layout (click to enlarge)</figcaption>
+</figure>
+</div>
+<p>I’ll briefly cover a few of Positron’s sidebar menu items in the sections below.</p>
+<section id="explorer" class="level4">
+<h4 class="anchored" data-anchor-id="explorer">Explorer</h4>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[-2, 8, 90]">
+<div class="quarto-layout-row">
+<div class="quarto-figure-spacer quarto-layout-cell" style="flex-basis: 2.0%;justify-content: flex-start;">
+<p>&nbsp;</p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 8.0%;justify-content: center;">
+<p><a href="img/explorer.png" class="lightbox" data-gallery="quarto-lightbox-gallery-13"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/explorer.png" class="img-fluid"></a></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 90.0%;justify-content: flex-start;">
+<p>As noted above, the <span style="color: #990000; font-weight: bold;">Explorer</span> menu item can open project files and folders.</p>
+</div>
+</div>
+</div>
+<p>This closely resembles the <strong>Files</strong> pane in RStudio.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[50,50]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/files.png" class="lightbox" data-gallery="quarto-lightbox-gallery-14" title="Shiny app files (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/files.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Shiny app files (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Shiny app files (click to enlarge)</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/rs_files.png" class="lightbox" data-gallery="quarto-lightbox-gallery-15" title="RStudio Files Pane (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/rs_files.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="RStudio Files Pane (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>RStudio Files Pane (click to enlarge)</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>Clicking on files in the <span style="color: #990000; font-weight: bold;">Explorer</span> will open them in the <span style="color: #990000; font-weight: bold;">Editor</span>. After opening files, the cursor location will also display additional information on hover (i.e., version control information):</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/editor_hover_info.png" class="lightbox" data-gallery="quarto-lightbox-gallery-16" title="Hover information in Editor (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/editor_hover_info.png" class="img-fluid figure-img" alt="Hover information in Editor (click to enlarge)"></a></p>
+<figcaption>Hover information in Editor (click to enlarge)</figcaption>
+</figure>
+</div>
+</section>
+<section id="search" class="level4">
+<h4 class="anchored" data-anchor-id="search">Search</h4>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[-2, 8, 90]">
+<div class="quarto-layout-row">
+<div class="quarto-figure-spacer quarto-layout-cell" style="flex-basis: 2.0%;justify-content: flex-start;">
+<p>&nbsp;</p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 8.0%;justify-content: center;">
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><a href="img/search.png" class="lightbox" data-gallery="quarto-lightbox-gallery-17"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/search.png" class="img-fluid quarto-figure quarto-figure-right figure-img"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 90.0%;justify-content: flex-start;">
+<p>The&nbsp;<span style="color: #990000; font-weight: bold;">Search</span> menu item allows us to find and replace across all files.</p>
+</div>
+</div>
+</div>
+<p>Similar to the <strong>Find in Files</strong> (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd>) window in RStudio.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[50,50]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/search_replace.png" class="lightbox" data-gallery="quarto-lightbox-gallery-18" title="Search and replace (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/search_replace.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Search and replace (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Search and replace (click to enlarge)</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/rs_find_in_files.png" class="lightbox" data-gallery="quarto-lightbox-gallery-19" title="RStudio ‘Find in Files’ (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/rs_find_in_files.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="RStudio ‘Find in Files’ (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>RStudio ‘Find in Files’ (click to enlarge)</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="source-control" class="level4">
+<h4 class="anchored" data-anchor-id="source-control">Source Control</h4>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[-2, 8, 90]">
+<div class="quarto-layout-row">
+<div class="quarto-figure-spacer quarto-layout-cell" style="flex-basis: 2.0%;justify-content: flex-start;">
+<p>&nbsp;</p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 8.0%;justify-content: center;">
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><a href="img/source_control.png" class="lightbox" data-gallery="quarto-lightbox-gallery-20"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/source_control.png" class="img-fluid quarto-figure quarto-figure-right figure-img"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 90.0%;justify-content: flex-start;">
+<p>The&nbsp;<span style="color: #990000; font-weight: bold;">Source Control</span>&nbsp;menu can open local Git folders and clone repositories.</p>
+</div>
+</div>
+</div>
+<p>When in a Git repo, it displays Git commits, branches, remotes, stashes, tags, work trees, and contributors (similar to the&nbsp;<strong>Git pane</strong>&nbsp;in RStudio).</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[40,60]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 40.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/initial_source_control.png" class="lightbox" data-gallery="quarto-lightbox-gallery-21" title="Source control menu (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/initial_source_control.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Source control menu (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Source control menu (click to enlarge)</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 60.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/rs_git_pane.png" class="lightbox" data-gallery="quarto-lightbox-gallery-22" title="RStudio Git Pane (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/rs_git_pane.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="RStudio Git Pane (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>RStudio Git Pane (click to enlarge)</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>In RStudio, I still use the Terminal for ~90% of my interactions with Git, but Positron also comes with a <span style="color: #990000; font-weight: bold;">Source Control</span> menu.<sup>5</sup></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/source_control_branch.png" class="lightbox" data-gallery="quarto-lightbox-gallery-23" title="Checking out Git branch with Source Control (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/source_control_branch.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Checking out Git branch with Source Control (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Checking out Git branch with <span style="color: #990000; font-weight: bold;">Source Control</span> (click to enlarge)</figcaption>
+</figure>
+</div>
+</section>
+<section id="extensions" class="level4">
+<h4 class="anchored" data-anchor-id="extensions">Extensions</h4>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[-2, 8, 90]">
+<div class="quarto-layout-row">
+<div class="quarto-figure-spacer quarto-layout-cell" style="flex-basis: 2.0%;justify-content: flex-start;">
+<p>&nbsp;</p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 8.0%;justify-content: center;">
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><a href="img/extensions.png" class="lightbox" data-gallery="quarto-lightbox-gallery-24"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/extensions.png" class="img-fluid quarto-figure quarto-figure-right figure-img"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 90.0%;justify-content: flex-start;">
+<p>We can install Positron extensions from the <strong>Extensions</strong> menu item.</p>
+</div>
+</div>
+</div>
+<p>Positron’s extensions are somewhat similar to RStudio Addins but with a few key differences:</p>
+<ol type="1">
+<li><p>Positron extensions enhance the IDE’s capabilities by interacting with the VS Code API. They can range from language support (e.g., R, Python) to tools and features for general coding tasks (debugging, version control, syntax highlighting, code snippets, etc.)</p></li>
+<li><p><a href="https://rstudio.github.io/rstudio-extensions/rstudio_addins.html">RStudio Addins</a> are custom tools and features to extend IDE’s functionality, focusing on R-specific tasks (package development, customizing visualizations, R markdown document generation, etc.)</p></li>
+</ol>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[50,50]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/posit_publisher_ext.png" class="lightbox" data-gallery="quarto-lightbox-gallery-25" title="Positron Extensions via Positron +1e (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/posit_publisher_ext.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Positron Extensions via Positron +1e (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Positron Extensions via Positron +1e (click to enlarge)</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/rs_addins.png" class="lightbox" data-gallery="quarto-lightbox-gallery-26" title="RStudio Addins (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/rs_addins.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="RStudio Addins (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>RStudio Addins (click to enlarge)</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>At a minimum, be sure to install the <a href="https://open-vsx.org/extension/posit/publisher">Posit Publisher extension</a>. I’ve also installed <a href="https://open-vsx.org/extension/grrrck/positron-plus-1-e">Positron +1e</a>, a collection of extensions curated by Garrick Aden-Buie<sup>6</sup> for ‘<em>git-backed data science and dev work shared primarily on GitHub</em>’.</p>
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.20em;">Positron Extensions</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>Extensions can be installed from <a href="https://marketplace.visualstudio.com/">VS Code Marketplace</a> or the <a href="https://open-vsx.org/">Open VXS Registry</a>. VS Code Marketplace is maintained by Microsoft, ensuring high-quality and secure extensions, whereas the Open VXS Registry is an open-source alternative for those looking to avoid vendor lock-in.<sup>7</sup> Most extensions on Open VXS Registry are identical to those found on the VS Code marketplace, but with a focus on open-source principles.</p>
+<p>For more Positron extensions, I recommend checking out <a href="https://www.andrewheiss.com/blog/2024/07/08/fun-with-positron/#my-extensions">this post</a> from Andrew Heiss<sup>8</sup> and <a href="https://www.linkedin.com/posts/veerlevanleemput_positron-r-rstats-activity-7221481394013642752-60Pg?utm_source=share&amp;utm_medium=member_desktop">this LinkedIn post</a> from Veerle van Leemput.<sup>9</sup></p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="shiny-apps" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="shiny-apps">Shiny Apps</h2>
+<p>I’ve checked out a branch of <code>sap</code> that’s in the early stages of development, so it’s a Shiny app (and not an R package yet).<sup>10</sup> The image below highlights some of the IDE’s features after opening the <span style="color: #990000; font-weight: bold;">app.R file</span>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/shiny_app_files.png" class="lightbox" data-gallery="quarto-lightbox-gallery-27" title="Open app.R file (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/shiny_app_files.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%" alt="Open app.R file (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Open <code>app.R</code> file (click to enlarge)</figcaption>
+</figure>
+</div>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p>Positron displays the <span style="color: #990000; font-weight: bold;">current folder</span> (or project) in a familiar location, and the active <span style="color: #990000; font-weight: bold;">Git branch</span> and <span style="color: #990000; font-weight: bold;">Quarto version</span> are conveniently placed in the footer.</p>
+</div></div><p>As we can see from the image above, Positron displays much of the same information as the RStudio IDE but with a VS Code<em>ish</em>&nbsp;layout. The most notable change I had to adapt to was the new location of the&nbsp;<span style="color: #990000; font-weight: bold;">project files</span>&nbsp;in the file <span style="color: #990000; font-weight: bold;">Explorer</span>.</p>
+<section id="running-applications" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="running-applications">Running Applications</h3>
+<p>Positron detects that I’m developing a Shiny application and places a <span style="color: #990000; font-weight: bold;">Run Shiny App</span> icon at the top of the <code>app.R</code> file. Clicking the <span style="color: #990000; font-weight: bold;">Run Shiny App</span> button launches our application in the <span style="color: #990000; font-weight: bold;">Viewer</span> pane.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/shiny_runs_in_terminal.png" class="lightbox" data-gallery="quarto-lightbox-gallery-28" title="Terminal runs the Shiny app (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/shiny_runs_in_terminal.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Terminal runs the Shiny app (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Terminal runs the Shiny app (click to enlarge)</figcaption>
+</figure>
+</div>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/shiny_terminal.png" class="lightbox" data-gallery="quarto-lightbox-gallery-29"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/shiny_terminal.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></a></p>
+</figure>
+</div>
+<p>Unlike RStudio, Positron runs Shiny applications from the <span style="color: #990000; font-weight: bold;">Terminal</span> with a dedicated Shiny process when the <span style="color: #990000; font-weight: bold;">Run Shiny App</span> button is clicked.</p>
+</div></div><p>In the <span style="color: #990000; font-weight: bold;">Terminal</span>, a message tells us that&nbsp;<code>autoreload</code>&nbsp;has been turned on (which means we can make live updates to our application):</p>
+<div class="page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="img/app_refresh.gif" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-30" title="Live updates to Shiny app"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/app_refresh.gif" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%" alt="Live updates to Shiny app"></a></p>
+</figure>
+</div>
+<figcaption>Live updates to Shiny app</figcaption>
+</figure>
+</div>
+</div>
+<p>We’re also told that the application runs with the ‘minified’ JavaScript file (<code>shiny.min.js</code>), which results in using&nbsp;<code>--devmode</code>. Both of these options are covered in the <a href="https://shiny.posit.co/r/reference/shiny/0.13.1/shiny-options.html">Shiny documentation</a>.</p>
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.20em;">Run Shiny App Terminal Commands</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>I’ve broken down the Shiny terminal commands below:</p>
+<p>The first commands specifies the <code>Rscript</code> interpreter, the scripting front-end for R. <code>Rscript</code> allows the execution of R scripts directly from the command line.</p>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Rscript interpreter </span></span>
+<span id="cb2-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">$/usr/local/bin/Rscript</span> </span></code></pre></div>
+<p>The next command is the path to an R script that comes with your Positron installation for running Shiny applications.</p>
+<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># runShinyApp.R Positron Shiny extension  </span></span>
+<span id="cb3-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">$/Users/username/.positron/extensions/posit.shiny-1.0.0-universal/rscripts/runShinyApp.R</span> </span></code></pre></div>
+<p>You can view the contents of <code>runShinyApp.R</code> by passing the path into another Terminal window preceded by <code>cat</code>.</p>
+<p>The final Terminal command is the path to the <code>moviesApp</code> Shiny application’s main <code>app.R</code> script (with two additional arguments):</p>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># moviesApp app.R file</span></span>
+<span id="cb4-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">/Users/username/projects/apps/R/moviesApp/app.R</span> 51146 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--devmode</span> </span></code></pre></div>
+<ul>
+<li><p><code>51146</code> specifies the port on which the Shiny application will run.</p></li>
+<li><p><code>--devmode</code> enables development mode for the Shiny application.<sup>11</sup></p></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="stopping-applications" class="level3">
+<h3 class="anchored" data-anchor-id="stopping-applications">Stopping Applications</h3>
+<p>We can stop the application like we would any other <span style="color: #990000; font-weight: bold;">Terminal</span> process:</p>
+<div class="columns">
+<div class="column" style="width:40%;">
+
+</div><div class="column" style="width:20%;">
+<p><span style="font-size: 1.20em; font-weight: bold;"><kbd>Ctrl</kbd> + <kbd>C</kbd></span></p>
+</div><div class="column" style="width:40%;">
+
+</div>
+</div>
+<p>After stopping the application, you can clear the <span style="color: #990000; font-weight: bold;">Viewer</span> by clicking on the&nbsp;<span style="color: #990000; font-weight: bold;">Clear the current URL</span>&nbsp;icon in the upper-right corner.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/clear_current_url.png" class="lightbox" data-gallery="quarto-lightbox-gallery-31" title="Clear viewer (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/clear_current_url.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Clear viewer (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Clear viewer (click to enlarge)</figcaption>
+</figure>
+</div>
+<p>These changes make application development much more seamless, and now the <code>app.R</code> file also includes icon for editing our Shiny UI with the <a href="https://rstudio.github.io/shinyuieditor/"><code>shinyuieditor</code> package</a> (provided it’s installed).</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/run_shiny_app_options.png" class="lightbox" data-gallery="quarto-lightbox-gallery-32" title="Run Shiny App Options"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/run_shiny_app_options.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%" alt="Run Shiny App Options"></a></p>
+</figure>
+</div>
+<figcaption>Run Shiny App Options</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="package-development" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="package-development">Package Development</h2>
+<p>Transitioning from developing R packages in RStudio to Positron has been pretty smooth. For example, I wanted to change the&nbsp;<a href="https://mjfrigaard.github.io/shiny-app-pkgs/launch.html#shiny.launch.browser"><code>display_type()</code></a>&nbsp;function to check if the application runs in RStudio before setting the&nbsp;<code>shiny.launch.browser</code>&nbsp;option.<sup>12</sup></p>
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.20em;">Positron tab-completion</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>Positron also comes with IntelliSense for R functions. Place your cursor inside the parentheses and use <kbd>^</kbd>+<kbd>SPACE</kbd> or <kbd>tab</kbd>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/fun_intel.gif" class="lightbox" data-gallery="quarto-lightbox-gallery-33" title="Positron function IntelliSense"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/fun_intel.gif" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Positron function IntelliSense"></a></p>
+</figure>
+</div>
+<figcaption>Positron function IntelliSense</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+<section id="loading-documenting" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="loading-documenting">Loading &amp; Documenting</h3>
+<p>After making changes to <code>R/display_type.R</code>, I can use the same keyboard shortcuts from <code>devtools</code> to load and document the package:</p>
+<p><br></p>
+<div class="columns">
+<div class="column" style="width:10%;">
+
+</div><div class="column" style="width:80%;">
+<p><span style="font-size: 1.05em; font-weight: bold;"><kbd>Cmd</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> = <code>devtools::load_all()</code></span></p>
+</div><div class="column" style="width:10%;">
+
+</div>
+</div>
+<div class="columns">
+<div class="column" style="width:10%;">
+
+</div><div class="column" style="width:80%;">
+<p><span style="font-size: 1.05em; font-weight: bold;"><kbd>Cmd</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd> = <code>devtools::document()</code></span></p>
+</div><div class="column" style="width:10%;">
+
+</div>
+</div>
+<p><br></p>
+<p>Under the hood, Positron calls <a href="https://r-pkgs.org/code.html#sec-code-load-all"><code>devtools::load_all()</code></a> and <a href="https://r-pkgs.org/man.html"><code>devtools::document()</code></a>, but instead of launching a <strong>Build</strong> pane, Positron displays the messages from in the <span style="color: #990000; font-weight: bold;">Console</span>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/devtools_document.png" class="lightbox" data-gallery="quarto-lightbox-gallery-34" title="Document R/display_type.R (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/devtools_document.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%" alt="Document R/display_type.R (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Document R/display_type.R (click to enlarge)</figcaption>
+</figure>
+</div>
+<p>The <span style="color: #990000; font-weight: bold;">display_type.Rd</span> in the <span style="color: #990000; font-weight: bold;">Console</span> is a hyperlink we can use to preview our updated help file.</p>
+<div class="page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><a href="img/preview_rd_file.gif" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-35" title="Preview help file for R/display_type.R (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/preview_rd_file.gif" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%" alt="Preview help file for R/display_type.R (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Preview help file for R/display_type.R (click to enlarge)</figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section id="installing" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="installing">Installing</h3>
+<p>Positron uses the same keyboard shortcut as RStudio for installing packages, but the underlying process differs slightly. Instead of calling <a href="https://devtools.r-lib.org/reference/install.html"><code>devtools::install()</code></a> in the <em>Build</em> pane, Positron launches the <span style="color: #990000; font-weight: bold;">Terminal</span> and runs <code>pak::local_install(upgrade = FALSE)</code>:</p>
+<p><br></p>
+<div class="columns">
+<div class="column" style="width:1%;">
+
+</div><div class="column" style="width:98%;">
+<p><span style="font-size: 1.05em; font-weight: bold;"><kbd>Cmd</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd> = <code>pak::local_install(upgrade = FALSE)</code></span></p>
+</div><div class="column" style="width:1%;">
+
+</div>
+</div>
+<p><br></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/terminal_install.png" class="lightbox" data-gallery="quarto-lightbox-gallery-36" title="The new package install Terminal commands are bookended with an asterick (*) and a message (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/terminal_install.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="The new package install Terminal commands are bookended with an asterick (*) and a message (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>The new package install Terminal commands are bookended with an asterick (<code>*</code>) and a message (click to enlarge)</figcaption>
+</figure>
+</div>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/install_r_pkg_task.png" class="lightbox" data-gallery="quarto-lightbox-gallery-37"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/install_r_pkg_task.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+<p>The <span style="color: #990000; font-weight: bold;">Terminal</span> pane displays a dedicated Install R package task when a package is installed.</p>
+</div></div><p><a href="https://pak.r-lib.org/reference/local_install.html"><code>local_install(upgrade = FALSE)</code></a> updates the package with the minimum work needed, upgrading dependencies only if the package or one of its dependencies requires a higher version. It prefers binary packages to source packages, even if the binaries are older.</p>
+<p><code>local_install()</code>&nbsp;also seems to takes a bit longer to run than&nbsp;<code>devtools::install()</code>, but the end result is the same (i.e., the package is installed, the R session restarts, and the package is loaded with&nbsp;<code>library()</code>&nbsp;in the&nbsp;<span style="color: #990000; font-weight: bold;">Console</span>).</p>
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.20em;">IntelliSense</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p><br></p>
+<p>In the <span style="color: #990000; font-weight: bold;">Console</span>, Positron’s tab completion and IntelliSense displays a large preview each function’s help file:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/launch_app_intel.gif" class="lightbox" data-gallery="quarto-lightbox-gallery-38" title="Preview of help file with IntelliSense"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/launch_app_intel.gif" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Preview of help file with IntelliSense"></a></p>
+</figure>
+</div>
+<figcaption>Preview of help file with IntelliSense</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="testing" class="level3">
+<h3 class="anchored" data-anchor-id="testing">Testing</h3>
+<p>Positron comes with a variety of options for testing code. We can use the standard keyboard shortcut to call&nbsp;<code>devtools::test()</code>. This will open a&nbsp;<span style="color: #990000; font-weight: bold;">Terminal</span>&nbsp;task with the test results:<sup>13</sup></p>
+<p><br></p>
+<div class="columns">
+<div class="column" style="width:10%;">
+
+</div><div class="column" style="width:80%;">
+<p><span style="font-size: 1.05em; font-weight: bold;"><kbd>Cmd</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> = <code>devtools::test()</code></span></p>
+</div><div class="column" style="width:10%;">
+
+</div>
+</div>
+<p><br></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/run_devtools_test.gif" class="lightbox" data-gallery="quarto-lightbox-gallery-39" title="Running devtools::test() (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/run_devtools_test.gif" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Running devtools::test() (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Running <code>devtools::test()</code> (click to enlarge)</figcaption>
+</figure>
+</div>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[8, 92]">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 8.0%;justify-content: center;">
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><a href="img/testing.png" class="lightbox" data-gallery="quarto-lightbox-gallery-40"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/testing.png" class="img-fluid quarto-figure quarto-figure-left figure-img"></a></p>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 92.0%;justify-content: flex-start;">
+<p>Positron also has a dedicated <span style="color: #990000; font-weight: bold;">testing</span> sidebar menu item that allows us to select or filter the test files in the&nbsp;<code>tests/testthat/</code>&nbsp;folder.</p>
+</div>
+</div>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/test_files.png" class="lightbox" data-gallery="quarto-lightbox-gallery-41" title="Test files in tests/testthat/ (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/test_files.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%" alt="Test files in tests/testthat/ (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Test files in <code>tests/testthat/</code> (click to enlarge)</figcaption>
+</figure>
+</div>
+<p>The <span style="color: #990000; font-weight: bold;">testing</span> sidebar menu also displays the contents of each test file. If you’re using <code>testthat</code>’s behavior-driven development functions (<code>describe</code> and <code>it</code>), the descriptions are organized hierarchically under <span style="color: #990000; font-weight: bold;">TESTING</span>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/bdd_funs_display.png" class="lightbox" data-gallery="quarto-lightbox-gallery-42" title="BDD test descriptions (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/bdd_funs_display.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="BDD test descriptions (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>BDD test descriptions (click to enlarge)</figcaption>
+</figure>
+</div>
+<p>If <code>test_that()</code> is used, the function being tested is displayed each time an <code>expect_*</code> function is called:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/test_that_funs_display.png" class="lightbox" data-gallery="quarto-lightbox-gallery-43" title="test_that() test descriptions (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/test_that_funs_display.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%" alt="test_that() test descriptions (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption><code>test_that()</code> test descriptions (click to enlarge)</figcaption>
+</figure>
+</div>
+</section>
+<section id="running-tests" class="level3">
+<h3 class="anchored" data-anchor-id="running-tests">Running tests</h3>
+<p>The <img src="https://mjfrigaard.github.io/posts/positron-v1/img/run_tests_icon.png" class="img-fluid" width="80"> icon under the <span style="color: #990000; font-weight: bold;">TESTING</span> sidebar menu item can also be used to run all the tests in the <code>testthat</code> folder.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/running_tests_icon.gif" class="lightbox" data-gallery="quarto-lightbox-gallery-44" title="Running tests with icon (click to enlarge)"><img src="https://mjfrigaard.github.io/posts/positron-v1/img/running_tests_icon.gif" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Running tests with icon (click to enlarge)"></a></p>
+</figure>
+</div>
+<figcaption>Running tests with icon (click to enlarge)</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.20em;">Package Development Keyboard Shortcuts</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>Two additional shortcuts I recommend adding are: <br><br> <kbd>Cmd</kbd> / <kbd>Ctrl</kbd> + <kbd>T</kbd> = <code>devtools::test_active_file()</code> <br><br> <kbd>Cmd</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> = <code>devtools::test_coverage_active_file()</code> <br><br></p>
+<p>Check out Andrew Heiss’ <a href="https://www.andrewheiss.com/blog/2024/07/08/fun-with-positron/">Positron post</a> for more information on changing keyboard shortcuts</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="recap" class="level2">
+<h2 class="anchored" data-anchor-id="recap">Recap</h2>
+<p>Positron brings a refined experience for RStudio users, blending powerful tools in a streamlined layout that promotes an efficient workflow. Here’s a recap of the features we’ve explored:</p>
+<ul>
+<li><p><strong>IDE Layout</strong>: Positron’s design ensures smooth navigation. It focuses on customizable panels that allow developers to arrange code editors, data viewers, and debugging consoles based on their workflow.</p></li>
+<li><p><strong>Support for R &amp; Python</strong>: The IDE accommodates multiple versions of R and Python, offering a consistent environment for both languages. Integrated version control helps manage and switch between environments seamlessly, making it ideal for teams working on cross-language projects.</p></li>
+<li><p><strong>Shiny App Development</strong>: Positron provides robust tools for developers to build, test, and deploy Shiny applications. The IDE simplifies UI-building with live previews and reactive programming support, enabling users to refine interactive components.</p></li>
+<li><p><strong>Package Development</strong>: Positron includes a comprehensive suite for R package development, with features that streamline code documentation, testing, and version management. These tools make it easier to follow best practices, ensuring well-organized, maintainable packages.</p></li>
+</ul>
+<p>Positron can enhance productivity for R and Python users, making it a strong choice for data science and development.</p>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>I’m using version <a href="https://github.com/posit-dev/positron/releases/tag/2024.07.0-107">2024.07.0-107</a>↩︎</p></li>
+<li id="fn2"><p>The <strong>Variables</strong> pane is similar to the <strong>Environments</strong> pane in RStudio.↩︎</p></li>
+<li id="fn3"><p>These packages are described in the <a href="https://positron.posit.co/start.html#r-prerequisites">R prerequisites section</a>.↩︎</p></li>
+<li id="fn4"><p><a href="https://github.com/mjfrigaard/sap"><code>sap</code></a> is the Shiny app-package I used to demonstrate development in my <a href="https://mjfrigaard.github.io/shiny-app-pkgs/">Shiny-App-Packages</a> book.↩︎</p></li>
+<li id="fn5"><p>I’m using a branch from <a href="https://github.com/mjfrigaard/sap/"><code>sap</code></a>, which is a collection of Shiny apps/R packages.↩︎</p></li>
+<li id="fn6"><p>Read more on <a href="https://www.garrickadenbuie.com/">Garrick’s blog</a>↩︎</p></li>
+<li id="fn7"><p>The Open VXS Registry is manages by the <a href="https://www.eclipse.org/">Eclipse Foundation</a>.↩︎</p></li>
+<li id="fn8"><p>Read more on <a href="https://www.andrewheiss.com/blog/">Andrew’s blog</a>↩︎</p></li>
+<li id="fn9"><p>Read more on <a href="https://hypebright.nl/index.php/home/blog/">Veerle’s blog</a>↩︎</p></li>
+<li id="fn10"><p>I’m demoing the <a href="https://github.com/mjfrigaard/moviesApp/tree/02.1_shiny-app"><code>02.1_shiny-app</code></a>, which is a boilerplate Shiny app project with the Old Faithful Geyser data.↩︎</p></li>
+<li id="fn11"><p>Read more about Shiny development mode <a href="https://shiny.posit.co/r/reference/shiny/latest/devmode.html">here.</a>↩︎</p></li>
+<li id="fn12"><p>This is covered in the <a href="https://github.com/mjfrigaard/sap/tree/08_launch-app"><code>08_launch-app</code></a> branch of <code>moviesApp</code>, which is covered in the <a href="https://mjfrigaard.github.io/shiny-app-pkgs/launch.html">Launch</a> chapter of Shiny-App-Packages.↩︎</p></li>
+<li id="fn13"><p>I’m demonstrating with the <a href="https://github.com/mjfrigaard/sap/tree/12.3_tests-snapshots"><code>12.3_tests-snapshots</code></a> branch of <code>sap</code>, which is covered in the <a href="https://mjfrigaard.github.io/shiny-app-pkgs/test_tools.html">Test Tools</a> chapter of Shiny-App-Packages.↩︎</p></li>
+</ol>
+</section></div> ]]></description>
+  <category>R</category>
+  <category>quarto</category>
+  <category>Shiny</category>
+  <guid>https://mjfrigaard.github.io/posts/positron-v1/</guid>
+  <pubDate>Mon, 14 Oct 2024 07:00:00 GMT</pubDate>
+  <media:content url="https://mjfrigaard.github.io/posts/positron-v1/img/image.png" medium="image" type="image/png" height="144" width="144"/>
+</item>
 </channel>
 </rss>

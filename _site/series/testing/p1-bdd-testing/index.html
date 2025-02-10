@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.28">
+<meta name="generator" content="quarto-1.6.37">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Martin Frigaard">
 <meta name="dcterms.date" content="2023-05-01">
 
-<title>@mjfrigaard – Behavior Driven Unit Tests</title>
+<title>Behavior Driven Unit Tests – @mjfrigaard</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -35,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -71,10 +71,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-29e2c20b02301cfff04dc8050bf30c7e.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-7246a90fd7fce57841499c4ef90837f1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -120,7 +123,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
@@ -132,6 +135,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li class="nav-item">
     <a class="nav-link" href="../../../series.html"> 
 <span class="menu-text">Series</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../books.html"> 
+<span class="menu-text">Books</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../articles.html"> 
+<span class="menu-text">Articles</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="../../../code.html"> 
@@ -302,7 +313,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="what-are-unit-tests">What are unit tests?</h2>
 
 <div class="no-row-height column-margin column-container"><div class="">
-<p><img src="testthat.png" class="img-fluid" style="width:40.0%"></p>
+<p><a href="testthat.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="testthat.png" class="img-fluid" style="width:40.0%"></a></p>
 </div></div><blockquote class="blockquote">
 <p>“<em>A unit test is a piece of code that invokes a unit of work and checks one specific end result of that unit of work. If the assumptions on the end result turn out to be wrong, the unit test has failed. A unit test’s scope can span as little as a method or as much as multiple classes.</em>” - <a href="https://www.manning.com/books/the-art-of-unit-testing-second-edition">The Art of Unit Testing, 2nd edition</a></p>
 </blockquote>
@@ -340,7 +351,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="testthat-test-file.png" class="img-fluid figure-img" style="width:50.0%"></p>
+<p><a href="testthat-test-file.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="testthat test file"><img src="testthat-test-file.png" class="img-fluid figure-img" style="width:50.0%" alt="testthat test file"></a></p>
 <figcaption>testthat test file</figcaption>
 </figure>
 </div>
@@ -351,10 +362,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="test-structure" class="level4">
 <h4 class="anchored" data-anchor-id="test-structure">Test structure</h4>
 <p><code>test_that()</code> sets the test “scope” or “execution environment”, and encapsulates the test code and expectations. Note the use of curly brackets after the <code>code</code> argument:</p>
-<div id="fig-tests" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-tests" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-tests-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="testthat-tests.png" class="img-fluid figure-img" style="width:90.0%">
+<a href="testthat-tests.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;1: testthat test"><img src="testthat-tests.png" class="img-fluid figure-img" style="width:90.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-tests-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;1: <code>testthat</code> test
@@ -373,7 +384,7 @@ Figure&nbsp;1: <code>testthat</code> test
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="testthat-test-expectations.png" class="img-fluid figure-img" style="width:90.0%"></p>
+<p><a href="testthat-test-expectations.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="expect_* functions"><img src="testthat-test-expectations.png" class="img-fluid figure-img" style="width:90.0%" alt="expect_* functions"></a></p>
 <figcaption><code>expect_*</code> functions</figcaption>
 </figure>
 </div>
@@ -381,7 +392,7 @@ Figure&nbsp;1: <code>testthat</code> test
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="testthat-expectation.png" style="width:50.0%;height:50.0%" class="figure-img"></p>
+<p><a href="testthat-expectation.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="expectations"><img src="testthat-expectation.png" style="width:50.0%;height:50.0%" alt="expectations" class="figure-img"></a></p>
 <figcaption>expectations</figcaption>
 </figure>
 </div>
@@ -867,13 +878,13 @@ Figure&nbsp;1: <code>testthat</code> test
 </details>
 </div>
 <p>Below is a summary of tips for adding data your tests.</p>
-<div id="fig-unit_test_dep_data" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-unit_test_dep_data" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-unit_test_dep_data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div id="fig-unit_test_dep_data" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-unit_test_dep_data" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-unit_test_dep_data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="unit_test_dep_data.png" class="img-fluid figure-img" style="width:90.0%" data-ref-parent="fig-unit_test_dep_data">
+<a href="unit_test_dep_data.png" class="lightbox" data-gallery="fig-unit_test_dep_data" title="Figure&nbsp;2&nbsp;(a): Unit test fixtures"><img src="unit_test_dep_data.png" class="img-fluid figure-img" style="width:90.0%" data-ref-parent="fig-unit_test_dep_data"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-unit_test_dep_data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) Unit test fixtures
@@ -969,13 +980,13 @@ Figure&nbsp;2: Unit test fixtures
 <span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  covr<span class="sc">::</span><span class="fu">report</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Below is the test coverage for <code>make_binary_vec()</code>–a smaller helper function for <code>pull_binary_cols()</code>–in the <strong>Viewer</strong> when <code>devtools::test_coverage_active_file()</code> is entered in the <strong>Console</strong>:</p>
-<div id="fig-make_binary_vec_coverage" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-make_binary_vec_coverage" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-make_binary_vec_coverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div id="fig-make_binary_vec_coverage" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-make_binary_vec_coverage" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-make_binary_vec_coverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="make_binary_vec_coverage.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%" data-ref-parent="fig-make_binary_vec_coverage">
+<a href="make_binary_vec_coverage.png" class="lightbox" data-gallery="fig-make_binary_vec_coverage" title="Figure&nbsp;3&nbsp;(a): Test coverage"><img src="make_binary_vec_coverage.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%" data-ref-parent="fig-make_binary_vec_coverage"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-make_binary_vec_coverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) Test coverage
@@ -989,13 +1000,13 @@ Figure&nbsp;3: Unit test coverage interactively
 </figure>
 </div>
 <p>We can see from the output we don’t have 100% test coverage for <code>make_binary_vec()</code>. When we click on the file path in the table we can se what execution paths aren’t being tested:</p>
-<div id="fig-make_binary_vec_coverage_source" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-make_binary_vec_coverage_source" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-make_binary_vec_coverage_source-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div id="fig-make_binary_vec_coverage_source" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-make_binary_vec_coverage_source" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-make_binary_vec_coverage_source-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="make_binary_vec_coverage_source.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%" data-ref-parent="fig-make_binary_vec_coverage_source">
+<a href="make_binary_vec_coverage_source.png" class="lightbox" data-gallery="fig-make_binary_vec_coverage_source" title="Figure&nbsp;4&nbsp;(a): Behavior not tested in make_binary_vec()"><img src="make_binary_vec_coverage_source.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%" data-ref-parent="fig-make_binary_vec_coverage_source"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-make_binary_vec_coverage_source-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) Behavior not tested in <code>make_binary_vec()</code>
@@ -1091,13 +1102,13 @@ Figure&nbsp;4: The area in red is the untested portion of <code>make_binary_vec(
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">test_coverage</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="sourceCode" id="cb41"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>ℹ Computing test coverage for utap</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div id="fig-utap_coverage" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-utap_coverage" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-utap_coverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div id="fig-utap_coverage" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-utap_coverage" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-utap_coverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="utap_coverage.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%" data-ref-parent="fig-utap_coverage">
+<a href="utap_coverage.png" class="lightbox" data-gallery="fig-utap_coverage" title="Figure&nbsp;5&nbsp;(a): test_coverage() for entire package"><img src="utap_coverage.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%" data-ref-parent="fig-utap_coverage"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-utap_coverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) <code>test_coverage()</code> for entire package
@@ -1111,13 +1122,13 @@ Figure&nbsp;5: <code>devtools::test_coverage()</code>
 </figure>
 </div>
 <p>Clicking on any of the <strong>Files</strong> will open the <strong>Source</strong> tab and give a summary like the one above from <code>test_coverage_active_file()</code>. I can also use <code>covr::package_coverage()</code> in the <strong>Console</strong> for simpler output:</p>
-<div id="fig-covr_package_coverage" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-covr_package_coverage" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-covr_package_coverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div id="fig-covr_package_coverage" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-covr_package_coverage" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-covr_package_coverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="covr_package_coverage.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:75.0%" data-ref-parent="fig-covr_package_coverage">
+<a href="covr_package_coverage.png" class="lightbox" data-gallery="fig-covr_package_coverage" title="Figure&nbsp;6&nbsp;(a): package_coverage() for entire package"><img src="covr_package_coverage.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:75.0%" data-ref-parent="fig-covr_package_coverage"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-covr_package_coverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) <code>package_coverage()</code> for entire package
@@ -1352,8 +1363,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   });
   clipboard.on('success', onCopySuccess);
   if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    // For code content inside modals, clipBoardJS needs to be initialized with a container option
-    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
     const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
       text: getTextToCopy,
       container: window.document.getElementById('quarto-embedded-source-code-modal')
@@ -1464,7 +1473,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {
@@ -1730,6 +1738,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

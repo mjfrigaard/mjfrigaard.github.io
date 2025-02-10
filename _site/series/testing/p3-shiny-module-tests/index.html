@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.28">
+<meta name="generator" content="quarto-1.6.37">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Martin Frigaard">
 <meta name="dcterms.date" content="2023-06-20">
 
-<title>@mjfrigaard – Testing Shiny modules</title>
+<title>Testing Shiny modules – @mjfrigaard</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -35,7 +35,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -71,10 +71,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-29e2c20b02301cfff04dc8050bf30c7e.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-7246a90fd7fce57841499c4ef90837f1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -117,7 +120,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
@@ -129,6 +132,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li class="nav-item">
     <a class="nav-link" href="../../../series.html"> 
 <span class="menu-text">Series</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../books.html"> 
+<span class="menu-text">Books</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../articles.html"> 
+<span class="menu-text">Articles</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="../../../code.html"> 
@@ -267,7 +278,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="testing-shiny-modules">Testing shiny modules</h2>
 
 <div class="no-row-height column-margin column-container"><div class="">
-<p><img src="shiny.png" class="img-fluid" style="width:40.0%"></p>
+<p><a href="shiny.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="shiny.png" class="img-fluid" style="width:40.0%"></a></p>
 </div></div><p>Shiny functions pose a couple of unique challenges for testing. First, we can’t execute shiny <code>server</code> functions in the console. Second, as Shiny apps become more complex, it’s <a href="https://engineering-shiny.org/structuring-project.html#using-shiny-modules">highly</a> <a href="https://mastering-shiny.org/scaling-modules.html#module-motivation">recommended</a> to break up the code base into <a href="https://shiny.posit.co/r/articles/improve/modules/index.html">modules</a>. Modules have additional challenges due to their reactivity being split between interconnected UI and server functions.</p>
 <p>The <code>shiny</code> package doesn’t provide a direct, built-in way to test modules, but the <a href="https://shiny.posit.co/r/articles/improve/server-function-testing/"><code>testServer()</code></a> function addresses these challenges by testing “<em>reactive interactions</em>” in module server functions. <code>testServer()</code> also works with <a href="https://testthat.r-lib.org/"><code>testthat</code></a>, which means we can structure these ‘reactive interaction’ tests just like other unit tests (for non-application functions).</p>
 </section>
@@ -442,7 +453,7 @@ Shiny module refresher
 <div class="quarto-layout-cell" style="flex-basis: 65.0%;justify-content: center;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="dataset.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></p>
+<p><a href="dataset.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="dataset.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></a></p>
 </figure>
 </div>
 </div>
@@ -482,7 +493,7 @@ Shiny module refresher
 <div class="quarto-layout-cell" style="flex-basis: 65.0%;justify-content: center;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="selectVar.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></p>
+<p><a href="selectVar.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="selectVar.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></a></p>
 </figure>
 </div>
 </div>
@@ -507,7 +518,7 @@ Shiny module refresher
 <p>When <code>data()</code> changes, the output from <code>find_vars()</code> updates the choices in the variable <code>selectInput()</code> (i.e., <code>input$var</code>). See below:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="selectVar_find_vars.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></p>
+<p><a href="selectVar_find_vars.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="selectVar_find_vars.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
 </figure>
 </div>
 <p><code>selectVarServer()</code> also returns the selected variable (<code>input$var</code>) as a reactive value (<code>var()</code>)</p>
@@ -522,7 +533,7 @@ Shiny module refresher
 <div class="quarto-layout-cell" style="flex-basis: 65.0%;justify-content: center;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="selectDataVar.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></p>
+<p><a href="selectDataVar.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="selectDataVar.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></a></p>
 </figure>
 </div>
 </div>
@@ -642,7 +653,7 @@ Naming modules
 <div class="quarto-layout-cell" style="flex-basis: 65.0%;justify-content: center;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="datasetApp.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></p>
+<p><a href="datasetApp.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="datasetApp.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></a></p>
 </figure>
 </div>
 </div>
@@ -652,10 +663,10 @@ Naming modules
 </div>
 </div>
 <p>When <code>datasetApp()</code> is run, the app displays the dataset object in the <code>tableOutput()</code>, and the <code>verbatimTextOutput()</code> renders the reactive values as a text:</p>
-<div id="fig-datasetApp_run" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center" width="100%">
+<div id="fig-datasetApp_run" class="quarto-float quarto-figure quarto-figure-center anchored" width="100%" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-datasetApp_run-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="datasetApp_run.png" id="fig-datasetApp_run" class="img-fluid quarto-figure quarto-figure-center anchored figure-img" style="width:100.0%">
+<a href="datasetApp_run.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;1: "><img src="datasetApp_run.png" id="fig-datasetApp_run" class="img-fluid quarto-figure quarto-figure-center anchored figure-img" style="width:100.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-datasetApp_run-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;1
@@ -678,7 +689,7 @@ Figure&nbsp;1
 <div class="quarto-layout-cell" style="flex-basis: 65.0%;justify-content: center;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="selectVarApp.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
+<p><a href="selectVarApp.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="selectVarApp.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></a></p>
 </figure>
 </div>
 </div>
@@ -695,14 +706,14 @@ Figure&nbsp;1
 <p>These namespaced IDs are rendered below with <code>reactiveValuesToList()</code>:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="selectVarApp_run.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></p>
+<p><a href="selectVarApp_run.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="selectVarApp_run.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
 </figure>
 </div>
 <p>There’s a lot happening in <code>selectVarApp()</code>, so I’ve created the figure below to display the code for the modules with their displayed outputs:</p>
 <div class="page-columns page-full">
 <div class="quarto-figure quarto-figure-center page-columns page-full">
 <figure class="figure page-columns page-full">
-<p class="page-columns page-full"><img src="selectVarApp_schema.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%"></p>
+<p class="page-columns page-full"><a href="selectVarApp_schema.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-10"><img src="selectVarApp_schema.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-inset-right" style="width:100.0%"></a></p>
 </figure>
 </div>
 </div>
@@ -718,7 +729,7 @@ Figure&nbsp;1
 <div class="quarto-layout-cell" style="flex-basis: 65.0%;justify-content: center;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="selectDataVarApp.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></p>
+<p><a href="selectDataVarApp.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="selectDataVarApp.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></a></p>
 </figure>
 </div>
 </div>
@@ -728,13 +739,13 @@ Figure&nbsp;1
 </div>
 </div>
 <p>The reactive values here show how the <a href="https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules">‘Modules inside of modules’</a> work–by adding the additional call to <code>NS()</code> in the <code>datasetInput()</code> and <code>selectVarInput()</code> functions <em>within</em> <code>selectDataVarUI()</code> and <code>selectDataVarServer()</code>, an additional namespace is appended to the reactive values (<code>input$dataset</code> and <code>input$var</code>):</p>
-<div id="fig-selectDataVarApp_run" class="quarto-figure quarto-figure-center quarto-float anchored">
+<div id="fig-selectDataVarApp_run" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-selectDataVarApp_run-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div id="fig-selectDataVarApp_run" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<div id="fig-selectDataVarApp_run" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-subfloat-fig figure">
 <div aria-describedby="fig-selectDataVarApp_run-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="selectDataVarApp_run.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" data-ref-parent="fig-selectDataVarApp_run">
+<a href="selectDataVarApp_run.png" class="lightbox" data-gallery="fig-selectDataVarApp_run" title="Figure&nbsp;2&nbsp;(a): selectDataVarApp with reactive values"><img src="selectDataVarApp_run.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" data-ref-parent="fig-selectDataVarApp_run"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-selectDataVarApp_run-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) <code>selectDataVarApp</code> with reactive values
@@ -749,13 +760,13 @@ Figure&nbsp;2: <code>selectDataVarApp</code> with <code>reactiveValuesToList()</
 </div>
 <p>Below is a figure that displays the contents of the <code>selectDataVar</code> modules (I’ve removed the <code>tagList()</code> and <code>moduleServer()</code> for simplicity), the <code>selectDataVarApp()</code>, and the rendered outputs:</p>
 <div class="page-columns page-full">
-<div id="fig-selectDataVarApp_schema" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<div id="fig-selectDataVarApp_schema" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <div aria-describedby="fig-selectDataVarApp_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<div id="fig-selectDataVarApp_schema" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<div id="fig-selectDataVarApp_schema" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center">
 <figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
 <div aria-describedby="fig-selectDataVarApp_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="selectDataVarApp_schema.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-right" style="width:100.0%" data-ref-parent="fig-selectDataVarApp_schema">
+<a href="selectDataVarApp_schema.png" class="lightbox page-columns page-full" data-gallery="fig-selectDataVarApp_schema" title="Figure&nbsp;3&nbsp;(a): selectDataVarApp schema"><img src="selectDataVarApp_schema.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-page-right" style="width:100.0%" data-ref-parent="fig-selectDataVarApp_schema"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-selectDataVarApp_schema-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) <code>selectDataVarApp</code> schema
@@ -924,13 +935,13 @@ Test comments with <code>testServer()</code>
 <li><p><code>filter</code> is the function passed to the <code>find_vars()</code> utility function</p></li>
 </ul>
 <div class="page-columns page-full">
-<div id="fig-dataset_selectVar" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
+<div id="fig-dataset_selectVar" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <div aria-describedby="fig-dataset_selectVar-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<div id="fig-dataset_selectVar" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-fig-align="center">
+<div id="fig-dataset_selectVar" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full" data-fig-align="center">
 <figure class="quarto-float quarto-subfloat-fig figure page-columns page-full">
 <div aria-describedby="fig-dataset_selectVar-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="dataset_selectVar.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" data-ref-parent="fig-dataset_selectVar">
+<a href="dataset_selectVar.png" class="lightbox page-columns page-full" data-gallery="fig-dataset_selectVar" title="Figure&nbsp;4&nbsp;(a): dataset() -> selectVar()"><img src="dataset_selectVar.png" class="img-fluid quarto-figure quarto-figure-center figure-img column-body-outset-right" style="width:100.0%" data-ref-parent="fig-dataset_selectVar"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-dataset_selectVar-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 (a) <code>dataset()</code> -&gt; <code>selectVar()</code>
@@ -1150,7 +1161,7 @@ Updating selectVarServer() and find_vars()
 <div class="quarto-layout-cell" style="flex-basis: 65.0%;justify-content: center;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="datasetApp.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
+<p><a href="datasetApp.png" class="lightbox" data-gallery="quarto-lightbox-gallery-15"><img src="datasetApp.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></a></p>
 </figure>
 </div>
 </div>
@@ -1173,7 +1184,7 @@ Updating selectVarServer() and find_vars()
 <div class="quarto-layout-cell" style="flex-basis: 65.0%;justify-content: center;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="datasetApp_reactives.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></p>
+<p><a href="datasetApp_reactives.png" class="lightbox" data-gallery="quarto-lightbox-gallery-16"><img src="datasetApp_reactives.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></a></p>
 </figure>
 </div>
 </div>
@@ -1286,7 +1297,7 @@ Updating selectVarServer() and find_vars()
 <p>We know <code>selectDataVarApp()</code> contains ‘modules inside other modules’, and these layers are reflected in the namespaces:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="selectDataVarApp_reactives.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></p>
+<p><a href="selectDataVarApp_reactives.png" class="lightbox" data-gallery="quarto-lightbox-gallery-17"><img src="selectDataVarApp_reactives.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
 </figure>
 </div>
 <p>To access the <code>inputId</code>s in the nested modules, we need to pass the full ‘appended’ namespace:</p>
@@ -1455,8 +1466,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   });
   clipboard.on('success', onCopySuccess);
   if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    // For code content inside modals, clipBoardJS needs to be initialized with a container option
-    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
     const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
       text: getTextToCopy,
       container: window.document.getElementById('quarto-embedded-source-code-modal')
@@ -1567,7 +1576,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {
@@ -1833,6 +1841,38 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 

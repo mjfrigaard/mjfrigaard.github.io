@@ -1,0 +1,40 @@
+### Rows 
+
+Note that by default, dashboards do not display the contents of code chunks (only their output). If we want to display the code, we'll need to set `echo` to `true`.
+
+:::{layout="[50,50]" layout-valign="top"}
+
+```yml
+format: 
+  dashboard:
+    embed-resources: true
+    orientation: rows
+```
+
+````{verbatim}
+
+## Row 
+
+```{r}
+#| echo: true
+install.packages('tidyverse')
+```
+
+## Row 
+
+```{r}
+#| echo: true
+library(tidyverse)
+```
+
+```{r}
+tidyverse_logo()
+```
+
+````
+
+:::
+
+Below is a screenshot to show the hierarchy of rows with multiple code chunks. 
+
+![Click to enlarge](img/basic_rows.png)
