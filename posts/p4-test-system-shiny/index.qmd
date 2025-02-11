@@ -40,7 +40,6 @@ library(stringr)
 # install.packages(c("NHANES", "palmerpenguins"))
 library(NHANES)
 library(palmerpenguins)
-library(mstsap)
 ```
 
 
@@ -66,21 +65,9 @@ In this post, we'll be covering testing Shiny applications using `testthat` and 
 ![](img/image.svg){width=70%}
 :::
 
-## App-Package Contents
+## App-Packages
 
-In the previous post, we stored the modules and applications from the [Shiny modules chapter](https://mastering-shiny.org/scaling-modules.html) of Mastering Shiny in the [`mstsap`](https://github.com/mjfrigaard/sapkgs/tree/mstsap) branch of `sapkgs`, which you can install using the code below: 
-
-```{r}
-#| code-fold: false
-#| eval: false
-install.packages("remotes")
-remotes::install_github(
-  "https://github.com/mjfrigaard/sapkgs",
-  ref = "mstsap"
-)
-```
-
-The [`msst2ap`](https://github.com/mjfrigaard/sapkgs/tree/msst2ap) branch of `sapkgs` contains `shinytest2` tests for the Shiny apps in `mstsap` (hence the name: **M**astering **S**hiny **s**hiny**t**est**2** **a**pp-**p**ackage).  
+In the previous post, we stored the modules and applications from the [Shiny modules chapter](https://mastering-shiny.org/scaling-modules.html) of Mastering Shiny in the [`mstsap`](https://mjfrigaard.github.io/mstsap/) package. The [`msst2ap`](https://mjfrigaard.github.io/msst2ap/) package contains `shinytest2` tests for the Shiny apps in Mastering Shiny (hence the name: **M**astering **S**hiny **s**hiny**t**est**2** **a**pp-**p**ackage).
 
 You can install `msst2ap` using the following:
 
@@ -89,95 +76,84 @@ You can install `msst2ap` using the following:
 #| eval: false
 install.packages("remotes")
 remotes::install_github(
-  "https://github.com/mjfrigaard/sapkgs",
-  ref = "msst2ap"
+  "https://github.com/mjfrigaard/msst2ap"
 )
 ```
 
-The beauty of R packages is that we can use the modules we developed in the previous `mstsap` branch as a dependency for `msst2ap` by adding this package to the `Depends` field of the `DESCRIPTION` file (this will automatically attach the `mstsap` to the search list when `msst2ap` is loaded). 
-
-```{r}
-#| code-fold: false
-#| eval: false
-devtools::load_all()
-```
-
-```{verbatim}
-#| code-fold: false
-#| eval: false
-ℹ Loading msst2ap
-Loading required package: mstsap
-```
-
-I've stored development versions of the applications in the [`inst/dev/` folder](https://github.com/mjfrigaard/sapkgs/tree/mstsap/inst/dev) of `mstsap`:
+I've stored development versions of the applications in the [`inst/dev/` folder](https://github.com/mjfrigaard/msst2ap/tree/main/inst/dev) of `msst2ap`:
 
 ```{verbatim}
 #| eval: false
 #| code-fold: false
-inst/
-  └── dev/
-      ├── datasetApp/
-      │   ├── DESCRIPTION
-      │   ├── app.R
-      │   └── modules.R
-      ├── selectDataVarApp/
-      │   ├── DESCRIPTION
-      │   ├── README.md
-      │   ├── app.R
-      │   └── modules.R
-      └── selectVarApp/
-          ├── DESCRIPTION
-          ├── README.md
-          ├── app.R
-          ├── modules.R
-          └── utils.R
+inst
+└── dev
+    ├── datasetApp
+    │   ├── DESCRIPTION
+    │   ├── R
+    │   │   └── modules.R
+    │   ├── README.md
+    │   └── app.R
+    ├── gghistApp
+    │   ├── DESCRIPTION
+    │   ├── R
+    │   │   └── modules.R
+    │   ├── README.md
+    │   └── app.R
+    ├── histogramApp
+    │   ├── DESCRIPTION
+    │   ├── R
+    │   │   └── modules.R
+    │   ├── README.md
+    │   └── app.R
+    ├── selectDataVarApp
+    │   ├── DESCRIPTION
+    │   ├── R
+    │   │   └── modules.R
+    │   ├── README.md
+    │   └── app.R
+    └── selectVarApp
+        ├── DESCRIPTION
+        ├── R
+        │   └── modules.R
+        ├── README.md
+        └── app.R
+
+12 directories, 20 files
 ```
 
 ### Using [`system.file()`]{style="font-size: 1.10em; font-weight: bold;"}
 
-The apps stored in the `inst/dev/` directory of `mstsap` can be passed to the `app_dir` argument of `AppDriver$new()` with `system.file()`:
+The apps stored in the `inst/dev/` directory of `msst2ap` can be passed to the `app_dir` argument of `AppDriver$new()` with `system.file()`:
 
 ```{r}
 #| eval: false
 #| code-fold: false
-test_that("mstsap::datasetApp", {
-  app_pth <- system.file("dev", "datasetApp", package = "mstsap")
-  app <- AppDriver$new(app_dir = app_pth, height = 600, width = 800)
+test_that("{shinytest2}: datasetApp", {
+  app <- AppDriver$new(app_dir = system.file("dev", "datasetApp",
+                                             package = "msst2ap"),
+                       height = 600,
+                       width = 800)
   app$view()
 })
 ```
 
 ![](img/app_view_datasetApp.png){width='100%'}
 
-The first things we'll check with our test is the window size we've provided and the `system.file()` path to the `datasetApp` in `mstsap`:
 
-```{r}
-#| eval: false
-#| code-fold: false
-test_that("mstsap::datasetApp", {
-  app_pth <- system.file("dev", "datasetApp", package = "mstsap")
-  app <- AppDriver$new(app_dir = app_pth, height = 600, width = 800)
-  expect_equal(
-    object = app$get_window_size(), 
-    expected = list(width = 800L, height = 600L))
-  expect_equal(
-    object = app$get_dir(),
-    expected = app_pth)
-})
-```
 
 ### Setting inputs 
 
-Next we'll change `dataset-dataset` input from `ability.cov` to `attitude` using `app$set_inputs()` (*Note that this uses the module notation above (i.e., `"id-inputId"`*):
+The first things we'll check is changing the `dataset-dataset` input from `ability.cov` to `attitude` using `app$set_inputs()` (*Note that this uses the module notation above (i.e., `"id-inputId"`*):
 
 ```{r}
 #| eval: false
 #| echo: true
 #| code-fold: false
 test_that("mstsap::datasetApp", {
-  app_pth <- system.file("dev", "datasetApp", package = "mstsap")
-  app <- AppDriver$new(app_dir = app_pth, height = 600, width = 800)
-  # previous tests omitted
+  app <- AppDriver$new(app_dir = system.file("dev", "datasetApp",
+                                             package = "msst2ap"),
+                       height = 600,
+                       width = 800)
   app$set_inputs(`dataset-dataset` = "attitude")
 })
 ```
@@ -197,16 +173,17 @@ Set application inputs with `app$set_inputs()`
 
 ### Checking inputs
 
-In the previous test, we used the `expect_values()` to capture a list of all the app values (`input`, `output`, `export`). We can also capture these values in a list *inside* the test by including a call to `app$get_values()` and assigning the output to `app_values`.
+We can capture values in a list *inside* the test by including a call to `app$get_values()` and assigning the output to `app_values`.
 
 ```{r}
 #| eval: false
 #| echo: true
 #| code-fold: false
-test_that("mstsap::datasetApp", {
-  app_pth <- system.file("dev", "datasetApp", package = "mstsap")
-  app <- AppDriver$new(app_dir = app_pth, height = 600, width = 800)
-  # previous tests omitted
+test_that("{shinytest2}: datasetApp", {
+  app <- AppDriver$new(app_dir = system.file("dev", "datasetApp",
+                                             package = "msst2ap"),
+                       height = 600,
+                       width = 800)
   app$set_inputs(`dataset-dataset` = "attitude")
   app_values <- app$get_values()
 })
@@ -259,16 +236,18 @@ waldo::compare(
 #| eval: false
 #| echo: true
 #| code-fold: false
-test_that("mstsap::datasetApp", {
-  app_pth <- system.file("dev", "datasetApp", package = "mstsap")
-  app <- AppDriver$new(app_dir = app_pth, height = 600, width = 800)
-  # previous tests omitted
+test_that("{shinytest2}: datasetApp", {
+  app <- AppDriver$new(app_dir = system.file("dev", "datasetApp",
+                                             package = "msst2ap"),
+                       height = 600,
+                       width = 800)
   app$set_inputs(`dataset-dataset` = "attitude")
   app_values <- app$get_values()
-  expect_equal(
+  waldo::compare(x = app_values$input$`dataset-dataset`,
+                 y = "attitude")
+  testthat::expect_equal(
     object = app_values$input$`dataset-dataset`,
-    expected = "attitude"
-  )
+    expected = "attitude")
 })
 ```
 
@@ -278,18 +257,16 @@ At the end of the test, I'll add a call [`app$stop()`](https://rstudio.github.io
 #| eval: false
 #| echo: true
 #| code-fold: false
-test_that("mstsap::datasetApp", {
-  app_pth <- system.file("dev", "datasetApp", package = "mstsap")
-  app <- AppDriver$new(app_dir = app_pth, height = 600, width = 800)
-  expect_equal(
-    object = app$get_window_size(), 
-    expected = list(width = 800L, height = 600L))
-  expect_equal(
-    object = app$get_dir(),
-    expected = app_pth)
+test_that("{shinytest2}: datasetApp", {
+  app <- AppDriver$new(app_dir = system.file("dev", "datasetApp",
+                                             package = "msst2ap"),
+                       height = 600,
+                       width = 800)
   app$set_inputs(`dataset-dataset` = "attitude")
   app_values <- app$get_values()
-  expect_equal(
+  waldo::compare(x = app_values$input$`dataset-dataset`,
+                 y = "attitude")
+  testthat::expect_equal(
     object = app_values$input$`dataset-dataset`,
     expected = "attitude")
   app$stop()
@@ -304,7 +281,7 @@ The `shinytest2` documentation repeatedly[^export-test-vals-rec-01] recommends[^
 
 [^export-test-vals-rec-02]: "*It cannot be recommended enough to use `exportTestValues()` to test your Shiny app’s reactive values.*" -  [`shinytest2` documentation](https://rstudio.github.io/shinytest2/articles/robust.html#exported-values)
 
-The application in the `inst/dev/selectVarApp/` folder of `mstsap` includes a call to `exportTestValues()` and the `test.mode` option set to `TRUE` in the call to `shinyApp()`.[^export-test-values]
+The application in the `inst/dev/selectVarApp/` folder of `msst2ap` includes a call to `exportTestValues()` and the `test.mode` option set to `TRUE` in the call to `shinyApp()`.[^export-test-values]
 
 [^export-test-values]: Read more about exporting test values [here](https://shiny.posit.co/r/reference/shiny/1.0.2/exporttestvalues).
 
@@ -339,9 +316,10 @@ The test for this application contains the same `system.file()` call to create t
 #| eval: false
 #| echo: true
 #| code-fold: false
-test_that("mstsap::selectVarApp", {
-  app_pth <- system.file("dev", "selectVarApp", package = "mstsap")
-  app <- AppDriver$new(app_pth, height = 1200, width = 1000)
+testthat::test_that("{shinytest2}: selectVarApp", {
+  app <- AppDriver$new(app_dir = system.file("dev", "selectVarApp",
+                                             package = "msst2ap"),
+                       height = 1200, width = 1000)
 })
 ```
 
@@ -374,9 +352,10 @@ In our test file, we'll use `app$set_values()` to change the ```` $`data-dataset
 #| eval: false
 #| echo: true
 #| code-fold: false
-test_that("mstsap::selectVarApp", {
-  app_pth <- system.file("dev", "selectVarApp", package = "mstsap")
-  app <- AppDriver$new(app_pth, height = 1200, width = 1000)
+testthat::test_that("{shinytest2}: selectVarApp", {
+  app <- AppDriver$new(app_dir = system.file("dev", "selectVarApp",
+                                             package = "msst2ap"),
+                       height = 1200, width = 1000)
   
   app$set_inputs(`data-dataset` = "mtcars") # <1>
 })
@@ -389,14 +368,11 @@ We'll also change the variable input from `mpg` to `wt` and verify the output in
 #| eval: false
 #| echo: true
 #| code-fold: false
-test_that("mstsap::selectVarApp", {
-  app <- AppDriver$new(
-    system.file("dev", "selectVarApp",
-      package = "mstsap"
-    ),
-    height = 1200,
-    width = 1000
-  )
+testthat::test_that("{shinytest2}: selectVarApp", {
+  app <- AppDriver$new(app_dir = system.file("dev", "selectVarApp",
+                                             package = "msst2ap"),
+                       height = 1200, width = 1000)
+  
   app$set_inputs(`data-dataset` = "mtcars") # <1>
   app$set_inputs(`var-var` = "wt") # <2>
 })
@@ -426,14 +402,10 @@ We'll use `app$get_values()` to store the exported `input`, `output`, and `expor
 #| eval: false
 #| echo: true
 #| code-fold: false
-test_that("mstsap::selectVarApp", {
-  app <- AppDriver$new(
-    system.file("dev", "selectVarApp",
-      package = "mstsap"
-    ),
-    height = 1200,
-    width = 1000
-  )
+testthat::test_that("{shinytest2}: selectVarApp", {
+  app <- AppDriver$new(app_dir = system.file("dev", "selectVarApp",
+                                             package = "msst2ap"),
+                       height = 1200, width = 1000)
 
   app$set_inputs(`data-dataset` = "mtcars") # <1>
   app$set_inputs(`var-var` = "wt") # <2>
@@ -476,45 +448,46 @@ testthat::expect_true(
 )
 ```
 
--   `var` should be a numeric vector:
+-   `var` should be have one column:
 
 ```{r}
 #| eval: false
 #| echo: true
 #| code-fold: false
-expect_true(
-  object = is.numeric(app_values$export$var)
-)
+testthat::expect_true(
+  object = ncol(app_values$export$var) == 1)
 ```
 
-Once again, we end the test with a call to `app$stop()`. 
+Once again, we end the test with a call to `app$stop()`. The completed test for `selectVarApp()` is below:
 
 ```{r}
 #| eval: false
 #| echo: true
 #| code-fold: true
 #| code-summary: 'show/hide mstsap::selectVarApp test'
-test_that("mstsap::selectVarApp", {
-  app_pth <- system.file("dev", "selectVarApp", package = "mstsap")
-  app <- AppDriver$new(app_pth, height = 1200, width = 1000)
-  # app$view()
-  expect_equal(app$get_window_size(), 
-                 list(width = 1000L, height = 1200L))
-  expect_equal(app$get_dir(), app_pth)
+testthat::test_that("{shinytest2}: selectVarApp", {
+  app <- AppDriver$new(app_dir = system.file("dev", "selectVarApp",
+                                             package = "msst2ap"),
+                       height = 1200, width = 1000)
+
   app$set_inputs(`data-dataset` = "mtcars")
   app$set_inputs(`var-var` = "wt")
+
   app_values <- app$get_values()
-  expect_true(
+
+  testthat::expect_true(
     object = is.data.frame(app_values$export$data))
-  expect_true(
-    object = is.numeric(app_values$export$var))
+
+  testthat::expect_true(
+    object = ncol(app_values$export$var) == 1)
+
   app$stop()
 })
 ```
 
 ## Testing complex outputs 
 
-The `msst2ap` branch has the [`histogramApp()` from Mastering Shiny](https://mastering-shiny.org/scaling-modules.html#case-study-histogram) in `inst/dev/histogramApp/`, and a `ggplot2` version of the `histogramApp()` in the `inst/dev/ggHistApp/` folder (view contents [here](https://github.com/mjfrigaard/sapkgs/tree/msst2ap/inst/dev/ggHistApp)):
+`msst2ap` has the [`histogramApp()` from Mastering Shiny](https://mastering-shiny.org/scaling-modules.html#case-study-histogram) in `inst/dev/histogramApp/`, and a `ggplot2` version of the `histogramApp()` in the `inst/dev/ggHistApp/` folder:
 
 ```{bash}
 #| eval: false
@@ -559,15 +532,20 @@ The module server functions in `histogramApp()` return two values: `data` and `x
 
 ```{r}
 #| eval: false
-#| code-fold: show
-#| code-summary: 'show/hide values in msst2ap::histogramApp() server'
+#| code-fold: false
 server <- function(input, output, session) {
+  
   data <- datasetServer("data")
   x <- selectVarServer("var", data)
+  
   histogramServer("hist", x)
 
-  # remaining code omitted
-  
+  output$vals <- shiny::renderPrint({
+    x <- shiny::reactiveValuesToList(input,
+                            all.names = TRUE)
+    print(x)
+  })
+
 }
 ```
 
@@ -598,12 +576,12 @@ In the test for `histogramApp()`, we'll create the app with `AppDriver$new()` an
 
 ```{r}
 #| eval: false
-#| code-fold: show
-#| code-summary: 'show/hide msst2ap::histogramApp() server'
-test_that("{shinytest2} recording: histogramApp", {
-  app_pth <- system.file("dev", "histogramApp",
-                                  package = "msst2ap")
-  app <- AppDriver$new(app_pth, height = 750, width = 1200)
+#| code-fold: false
+test_that("{shinytest2}: histogramApp", {
+  app <- AppDriver$new(system.file("dev", "histogramApp",
+                                  package = "msst2ap"),
+                       height = 750,
+                       width = 1200)
   app$set_inputs(`data-dataset` = "attitude")
   app$set_inputs(`var-var` = "privileges")
   app$set_inputs(`hist-bins` = 15)
@@ -620,17 +598,17 @@ We'll test is these are reactive functions by combining `rlang::is_function()` a
 
 ```{r}
 #| eval: false
-#| code-fold: show
-#| code-summary: 'show/hide msst2ap::histogramApp() values'
-test_that("{shinytest2} recording: histogramApp", {
-  app_pth <- system.file("dev", "histogramApp",
-                                  package = "msst2ap")
-  app <- AppDriver$new(app_pth, height = 750, width = 1200)
+#| code-fold: false
+test_that("{shinytest2}: histogramApp", {
+  app <- AppDriver$new(system.file("dev", "histogramApp",
+                                  package = "msst2ap"),
+                       height = 750,
+                       width = 1200)
   app$set_inputs(`data-dataset` = "attitude")
   app$set_inputs(`var-var` = "privileges")
   app$set_inputs(`hist-bins` = 15)
   app_values <- app$get_values()
-  # names(app_values)
+  names(app_values)
   expect_equal(
     rlang::is_function(app_values$export$data),
     shiny::is.reactive(app_values$export$data))
@@ -642,18 +620,56 @@ test_that("{shinytest2} recording: histogramApp", {
 
 ### Using app logs 
 
-`shinytest2` also has the handy `get_logs()` that allows us to check the logs for specific functionality. After changing the three inputs with `set_inputs()`, we can check the output to see these actions were included in the logs:
+`shinytest2` also has the handy `get_logs()` that allows us to check the logs for specific functionality. Below is the output from `get_logs()` from `histogramApp()`:
 
 ```{r}
 #| eval: false
-#| code-fold: show
-#| code-summary: 'show/hide msst2ap::histogramApp() logs'
-test_that("{shinytest2} recording: histogramApp", {
-  app_pth <- system.file("dev", "histogramApp",
-                                  package = "msst2ap")
-  app <- AppDriver$new(app_pth, height = 750, width = 1200)
+#| code-fold: false
+test_that("{shinytest2}: histogramApp", {
+  app <- AppDriver$new(system.file("dev", "histogramApp",
+                                  package = "msst2ap"),
+                       height = 750,
+                       width = 1200)
   app$set_inputs(`data-dataset` = "attitude")
   app$set_inputs(`var-var` = "privileges")
+  app$set_inputs(`hist-bins` = 15)
+  app_logs <- app$get_logs() # <1>
+  str(app_logs) # <2>
+})
+```
+1. Create app logs 
+2. View log structure
+
+```{verbatim}
+Classes ‘shinytest2_log’ and 'data.frame':	56 obs. of  5 variables:
+ $ workerid : chr  NA NA NA NA ...
+ $ timestamp: POSIXct, format: "2024-03-31 04:47:41" "2024-03-31 04:47:41" ...
+ $ location : chr  "shinytest2" "shinytest2" "shinytest2" "shinytest2" ...
+ $ level    : chr  "info" "info" "info" "info" ...
+ $ message  : chr  "Start AppDriver initialization" "Starting Shiny app" "Creating "..
+```
+
+After changing the three inputs with `set_inputs()`, we can check the output to see these actions were included in the logs:
+ 
+```{r}
+#| eval: false
+#| code-fold: false
+test_that("{shinytest2}: histogramApp", {
+  app <- AppDriver$new(system.file("dev", "histogramApp",
+                                  package = "msst2ap"),
+                       height = 750,
+                       width = 1200)
+  app$set_inputs(`data-dataset` = "attitude")
+  app$set_inputs(`var-var` = "privileges")
+  app$set_inputs(`hist-bins` = 15)
+  app_values <- app$get_values()
+  names(app_values)
+  expect_equal(
+    rlang::is_function(app_values$export$data),
+    shiny::is.reactive(app_values$export$data))
+  expect_equal(
+    rlang::is_function(app_values$export$x),
+    shiny::is.reactive(app_values$export$x))
   app$set_inputs(`hist-bins` = 15)
   app_logs <- app$get_logs() # <1>
   ds_msg <- subset(app_logs,  # <2>
@@ -667,7 +683,7 @@ test_that("{shinytest2} recording: histogramApp", {
   expect_equal(nrow(hist_msg), 1L) # <4>
 })
 ```
-1. Create app logs 
+1. Create app logs  
 2. Create and test dataset  
 3. Create and test variable  
 4. Create and test bins  
@@ -794,45 +810,113 @@ test_that("{shinytest2}: ggHistApp", {
 })
 ```
 
-The first expectations in the example test the default `input` values with **`app$get_value(input = )`**:
+View the application in the Chromium browser by running `app$view()` in the **Console**:
 
 ```{r}
 #| eval: false
 #| echo: true
 #| code-fold: false
-# initial values----
-# verify initial values 
-init_ds <- app$get_value(input = 'data-dataset')
-init_var <- app$get_value(input = 'var-var')
-# is the variable from the dataset?
-expect_true(
-  init_var %in% names(get(init_ds, "package:datasets"))
-)
-init_bins <- app$get_value(input = 'hist-bins')
-expect_true(is.numeric(init_bins))
+app$view()
 ```
+
+::::{.column-body-outset-right}
+
+::: {#fig-app_view_ggHistApp layout-ncol=1}
+
+![`app$view()`](img/app_view_ggHistApp.png){#fig-app_view_ggHistApp}
+
+View `ggHistApp()` application with `app$view()`
+:::
+
+::::
+
+The first expectations in the example test the default `input` values:
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: false
+testthat::test_that("{shinytest2}: gghistApp", {
+  testthat::skip_if_not_installed("vdiffr")
+
+  app <- AppDriver$new(app_dir = system.file("dev", "gghistApp",
+                                             package = "msst2ap"),
+                       height = 750, width = 1200)
+
+  app_init_data <- app$get_value(input = "data-dataset") # <1>
+  waldo::compare(app_init_data, "BOD")
+  expect_equal(
+    object = app_init_data,
+    expected = "BOD") # <1>
+
+  app_init_var <- app$get_value(input = "var-var") # <2>
+  waldo::compare(app_init_var, "Time")
+  expect_equal(
+    object = app_init_var,
+    expected = "Time") # <2>
+})
+```
+1. Verify initial data
+2. Verify initial variable
     
 ### Set and verify [`export`]{style="font-size: 1.10em; font-weight: bold;"}
     
-Next, we check chamging the input values with **`app$set_values(id-inputId)`**:
+Next, we check changing the input values with **`app$set_values(id-inputId)`**:
 
 ```{r}
 #| eval: false
 #| echo: true
 #| code-fold: false
-# set values ----
-# dataset
-app$set_inputs(`data-dataset` = 'mtcars')
-new_data <- app$get_value(input = "data-dataset")
-# Verify new data
-expect_equal(object = new_data,
-  expected = "mtcars")
-app$set_inputs(`var-var` = 'disp')
-new_var <- app$get_value(input = "var-var")
-# Verify new variable
-expect_equal(object = new_var,
-  expected = "disp")
+testthat::test_that("{shinytest2}: gghistApp", {
+  testthat::skip_if_not_installed("vdiffr")
+
+  app <- AppDriver$new(app_dir = system.file("dev", "gghistApp",
+                                             package = "msst2ap"),
+                       height = 750, width = 1200)
+
+  app_init_data <- app$get_value(input = "data-dataset") # <1>
+  waldo::compare(app_init_data, "BOD")
+  expect_equal(
+    object = app_init_data,
+    expected = "BOD") # <1>
+
+  app_init_var <- app$get_value(input = "var-var") # <2>
+  waldo::compare(app_init_var, "Time")
+  expect_equal(
+    object = app_init_var,
+    expected = "Time") # <2>
+  
+  app$set_inputs(`data-dataset` = "mtcars") # <3>
+  app_exp_x_01 <- app$get_value(export = "hist-x")
+  waldo::compare(
+    x = app_exp_x_01,
+    y = mtcars[1])
+  expect_equal(
+    object = app_exp_x_01,
+    expected = mtcars[1]) # <3>
+
+  app$set_inputs(`var-var` = "disp") # <4>
+  app_exp_plot_obj_01 <- app$get_value(export = "hist-plot_obj")
+  waldo::compare(
+    x = app_exp_plot_obj_01,
+    y = purrr::as_vector(mtcars['disp']))
+  expect_equal(
+    object = app_exp_plot_obj_01,
+    expected = purrr::as_vector(mtcars['disp'])) # <4>
+
+  app$set_inputs(`hist-bins` = 15) # <5>
+  app_set_bins_01 <- app$get_value(input = "hist-bins")
+  waldo::compare(app_set_bins_01, 15L)
+  expect_equal(
+    object = app_set_bins_01,
+    expected = 15) # <5>
+})
 ```
+1. Verify initial data
+2. Verify initial variable 
+3. Verify exported data 
+4. Verify exported var 
+5. Verify histogram changes 
 
 ### Verify [`export`]{style="font-size: 1.10em; font-weight: bold;"}s
 
@@ -842,20 +926,73 @@ Finally, we'll test the exported values by creating **`app$get_values()$export`*
 #| eval: false
 #| echo: true
 #| code-fold: false
-# Exported objects ----
-exp_values <- app$get_values()$export
-# check reactives/functions
-expect_true(shiny::is.reactive(exp_values$react_data))
-expect_true(shiny::is.reactive(exp_values$react_x))
-expect_true(rlang::is_function(exp_values$react_data))
-expect_true(rlang::is_function(exp_values$react_x))
-# check data 
-expect_true(is.data.frame(exp_values$data))
-expect_true(ncol(exp_values$x) == 1)
-expect_equal(exp_values$data, mtcars)
-expect_equal(exp_values$x, mtcars['disp'])
+testthat::test_that("{shinytest2}: gghistApp", {
+  testthat::skip_if_not_installed("vdiffr")
+
+  app <- AppDriver$new(app_dir = system.file("dev", "gghistApp",
+                                             package = "msst2ap"),
+                       height = 750, width = 1200)
+
+  app_init_data <- app$get_value(input = "data-dataset") # <1>
+  waldo::compare(app_init_data, "BOD")
+  expect_equal(
+    object = app_init_data,
+    expected = "BOD") # <1>
+
+  app_init_var <- app$get_value(input = "var-var") # <2>
+  waldo::compare(app_init_var, "Time")
+  expect_equal(
+    object = app_init_var,
+    expected = "Time") # <2>
+  
+  app$set_inputs(`data-dataset` = "mtcars") # <3>
+  app_exp_x_01 <- app$get_value(export = "hist-x")
+  waldo::compare(
+    x = app_exp_x_01,
+    y = mtcars[1])
+  expect_equal(
+    object = app_exp_x_01,
+    expected = mtcars[1]) # <3>
+
+  app$set_inputs(`var-var` = "disp") # <4>
+  app_exp_plot_obj_01 <- app$get_value(export = "hist-plot_obj")
+  waldo::compare(
+    x = app_exp_plot_obj_01,
+    y = purrr::as_vector(mtcars['disp']))
+  expect_equal(
+    object = app_exp_plot_obj_01,
+    expected = purrr::as_vector(mtcars['disp'])) # <4>
+
+  app$set_inputs(`hist-bins` = 15) # <5>
+  app_set_bins_01 <- app$get_value(input = "hist-bins")
+  waldo::compare(app_set_bins_01, 15L)
+  expect_equal(
+    object = app_set_bins_01,
+    expected = 15) # <5>
+
+  
+  exp_values <- app$get_values()$export # <6>
+
+  expect_true(is.data.frame(exp_values$`hist-x`)) # <7>
+  expect_equal(exp_values$`hist-x`, mtcars['disp']) # <8>
+
+  expect_true(is.numeric(exp_values$`hist-plot_obj`)) # <9>
+  expect_equal( # <10>
+    object = exp_values$`hist-plot_obj`,
+    expected = purrr::as_vector(mtcars['disp'])) # <10>
+})
 ```
-    
+1. Verify initial data
+2. Verify initial variable 
+3. Verify exported data 
+4. Verify exported var 
+5. Verify histogram changes
+6. Export expected values 
+7. Verify hist-x is data.frame 
+8. Verify hist-x is correct column 
+9. Verify hist-plot_obj is numeric 
+10. Verify hist-plot_obj is vector  
+
 ### Verify plot with [`vdiffr`]{style="font-size: 1.10em; font-weight: bold;"}
 
 Now we verify the plot with the exported `plot_obj` (in the `hist` module) with `expect_doppelganger()` from the `vdiffr` package. 
@@ -864,14 +1001,106 @@ Now we verify the plot with the exported `plot_obj` (in the `hist` module) with 
 #| eval: false
 #| echo: true
 #| code-fold: false
-# Verify plot ----
-gg2_plot <- app$get_value(output = "hist-hist") # <1>
-expect_equal(gg2_plot$alt, "Plot object") # <1>
-vdiffr::expect_doppelganger(  # <2>
-    title = "mtcars_disp_plot",
+gg2_plot <- app$get_value(output = "hist-hist")
+  expect_equal(gg2_plot$alt, "Plot object") # <1>
+  vdiffr::expect_doppelganger( # <2>
+      title = "mtcars_disp_plot",
+      fig = ggplot2::ggplot(data = exp_values$`hist-x`,
+              mapping =
+              ggplot2::aes(x = disp)
+          ) +
+            ggplot2::geom_histogram(bins = exp_values$`hist-bins`) +
+            ggplot2::labs(
+              title = paste0(exp_values$`hist-title`,
+                             " [bins = ",
+                             exp_values$`hist-bins`, "]"),
+              y = "Count",
+              x = names(exp_values$`hist-x`)
+            ) +
+            ggplot2::theme_minimal()
+      ) # <2>
+```
+1. Check the rendered plot object  
+2. `ggHistApp()` renders a `ggplot2` graph, which makes it easier to demonstrate [this example of checking a plot](https://rstudio.github.io/shinytest2/articles/robust.html#example) from the `shinytest2` package website. 
+    
+*I saved the test file and ran the test to confirm the snapshot file was created in `tests/testthat/_snaps/`*:
+    
+```{bash}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+── Warning (test-shinytest2-gghistApp.R:72:3): {shinytest2}: gghistApp ─────────
+Adding new file snapshot: 'tests/testthat/_snaps/mtcars-disp-plot.svg'
+```
+
+### Set, get, expect
+
+The process above is repeated with new values passed to **`app$set_inputs()`** and verified with **`app$get_values()`**:
+    
+-   The `data-dataset`, `var-var`, and `hist-bins` are updated again with new values.
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: false
+# verify usaarrests_plot ---- 
+app$set_inputs(`data-dataset` = "USArrests")
+app$set_inputs(`var-var` = 'UrbanPop')
+app$set_inputs(`hist-bins` = 15)
+```
+    
+-   The updated values are exported automatically with `exportTestValues()` and stored in `exp_values`:
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: false
+# export values 
+exp_values <- app$get_values()$export
+```
+
+-   The new plot is verified again with `expect_doppelganger()`:
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+vdiffr::expect_doppelganger(
+  title = "usaarrests_plot",
+  fig = ggplot2::ggplot(data = exp_values$`hist-x`,
+          mapping =
+          ggplot2::aes(x = UrbanPop)
+      ) + 
+        ggplot2::geom_histogram(bins = exp_values$`hist-bins`) +
+        ggplot2::labs(
+          title = paste0(exp_values$`hist-title`, 
+                         " [bins = ",
+                         exp_values$`hist-bins`, "]"),
+          y = "Count",
+          x = names(exp_values$`hist-x`)
+        ) +
+        ggplot2::theme_minimal()
+  )
+```
+
+Now that we have a template, we can set, get, and expect multiple plot snapshots:
+
+```{r}
+#| eval: false
+#| echo: true 
+#| code-fold: false
+  ## SET -----
+  app$set_inputs(`data-dataset` = "sleep")
+  app$set_inputs(`var-var` = 'extra')
+  app$set_inputs(`hist-bins` = 8)
+  # GET ----
+  exp_values <- app$get_values()$export
+  # EXPECT ----
+  vdiffr::expect_doppelganger(
+    title = "sleep_extra_plot",
     fig = ggplot2::ggplot(data = exp_values$data,
             mapping =
-            ggplot2::aes(x = disp)
+            ggplot2::aes(x = extra)
         ) + 
           ggplot2::geom_histogram(bins = exp_values$`hist-bins`) +
           ggplot2::labs(
@@ -882,56 +1111,19 @@ vdiffr::expect_doppelganger(  # <2>
             x = names(exp_values$x)
           ) +
           ggplot2::theme_minimal()
-    ) # <2>
-```
-1. Check the rendered plot object  
-2. `ggHistApp()` renders a `ggplot2` graph, which makes it easier to demonstrate [this example of checking a plot](https://rstudio.github.io/shinytest2/articles/robust.html#example) from the `shinytest2` package website. 
-
-### Set, get, expect
-
-The process above is repeated with new values passed to **`app$set_inputs()`** and verified with **`app$get_values()`**:
-    
-The `data-dataset`, `var-var`, and `hist-bins` are updated again with new values, exported with `exportTestValues()` and stored in `exp_values`. The new plot is then verified again with `expect_doppelganger()`:
-
-```{r}
-#| eval: false
-#| echo: true
-#| code-fold: false
-# SET ---- 
-app$set_inputs(`data-dataset` = "USArrests")
-app$set_inputs(`var-var` = 'UrbanPop')
-app$set_inputs(`hist-bins` = 15)
-# GET ----
-exp_values <- app$get_values()$export
-## EXPECT ---- 
-vdiffr::expect_doppelganger(
-  title = "usaarrests_plot",
-  fig = ggplot2::ggplot(data = exp_values$data,
-          mapping =
-          ggplot2::aes(x = UrbanPop)
-      ) + 
-        ggplot2::geom_histogram(bins = exp_values$`hist-bins`) +
-        ggplot2::labs(
-          title = paste0(exp_values$`hist-title`, 
-                         " [bins = ",
-                         exp_values$`hist-bins`, "]"),
-          y = "Count",
-          x = names(exp_values$x)
-        ) +
-        ggplot2::theme_minimal()
-  )
+    )
 ```
 
-The final snapshot files are stroed in `tests/testthat/_snaps/`:
+
+The initial run of this test will save the snapshot file to `tests/testthat/_snaps/`:
 
 ```{verbatim}
-tests/testthat/_snaps/
-  └── shinytest2-ggHistApp
-      ├── mtcars-disp-plot.svg
-      ├── sleep-extra-plot.svg
-      └── usaarrests-plot.svg
+tests/testthat/_snaps/shinytest2-gghistApp
+├── mtcars-disp-plot.svg
+├── sleep-extra-plot.svg
+└── usaarrests-plot.svg
 
-2 directories, 3 files
+1 directory, 3 files
 ```
     
 ### Results 
@@ -946,22 +1138,37 @@ devtools::test()
 ```
 
 ```{verbatim}
+==> devtools::test()
+
 ℹ Testing msst2ap
-Loading required package: shiny
 ✔ | F W  S  OK | Context
-✔ |          3 | shinytest2-datasetApp [3.7s]
-✔ |         16 | shinytest2-ggHistApp [11.4s]
-✔ |          5 | shinytest2-histogramApp [3.8s]
-✔ |          4 | shinytest2-selectVarApp [2.4s]
+✔ |          1 | shinytest2-datasetApp [4.8s]                                                   
+⠼ |          5 | shinytest2-gghistApp       
+⠋ |         11 | shinytest2-gghistApp                                   
+⠙ |         12 | shinytest2-gghistApp                       
+✔ |         13 | shinytest2-gghistApp [5.1s]                                
+✔ |          5 | shinytest2-histogramApp [3.6s]                                                 
+✔ |          2 | shinytest2-selectVarApp [2.2s]                                                 
+✔ |          1 | shinytest2 [4.2s]                                                              
 
-══ Results ═══════════════════
-Duration: 21.3 s
+══ Results ══════════════════════════════════════════════════════════════════
+Duration: 19.9 s
 
-[ FAIL 0 | WARN 0 | SKIP 0 | PASS 28 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 22 ]
 ```
 
 ## Recap
 
-This post has covered creating tests with `testthat` and `shinytest2` for an app-package containing a Shiny application. In general, `shinytest2` is designed for end-to-end testing of Shiny applications. System tests (or regression testing) can capture the state of a Shiny app (input, output, and exported values) during user interactions and compare them with a previous state (i.e., snapshots). As we can see, `shinytest2` makes it easier to test specific app behaviors and set expectations iteratively with the `AppDriver`. 
+This post has covered creating tests with `testthat` and `shinytest2` for an app-package containing a Shiny application. In general, `shinytest2` is designed for end-to-end testing of Shiny applications. System tests (or regression testing) can capture the state of a Shiny app (input, output, and exported values) during user interactions and compare them with a previous state (i.e., snapshots). As we can see, `shinytest2` makes it easier to test specific app behaviors and set expectations iteratively with the `AppDriver`.
 
 `shinytest2` tests can also simulate user interaction in a way that `testServer()` tests can't, such as waiting for reactive outputs to update after the input changes, clicking on action buttons, etc. `shinytest2` can also be resource-intensive, so it's recommended to write these tests after you've completed the standard `testthat` unit tests and `testServer()` tests.
+
+Other things to consider when writing `shinytest2` tests include: 
+
+1. **Define What to Test**: Since Shiny apps are interactive, so `shinytest2` tests should simulate user interaction as much as possible. The tests should focus on key user interactions and the output they should generate. `shinytest2` provides functions for simulating user clicks, inputs, and other interactions. Not every interaction needs to be tested, but crucial ones and those that handle complex logic should be.
+
+2. **Organize Your Tests & Use Descriptive Test Names**: Organize your tests into separate files based on the app or feature they test. Each test should have a descriptive name that clarifies what the test is for. Organizing your test files with unambiguous names will make it easier to manage multiple tests, and it will make it easier to understand what's going wrong when a test fails.
+
+3. **Create snapshots for expected outputs**: Use snapshot files to verify that an app's output matches the expected results. `AppDriver$expect_values()` generates `.json` and `.png` snapshot files for the application. The .json file contains `input`, `output`, and `export` values, and the .png file is a *debug* screenshot, which records how the app looked when the values where captured. These files can then be compared to a baseline snapshot.
+
+4. **Export app values**: While snapshot files are great for detecting changes, it's important to remember that "*differences in the captured screenshot will never cause test failures.*" Manually inspecting the snapshot .png files during test development can also be time-consuming and tedious. Wherever possible, export app values and compare them against expected reference values.
