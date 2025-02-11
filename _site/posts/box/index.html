@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Martin Frigaard">
-<meta name="dcterms.date" content="2023-04-21">
+<meta name="dcterms.date" content="2023-06-21">
 
 <title>Writing modular code with box – @mjfrigaard</title>
 <style>
@@ -130,20 +130,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="menu-text">Posts</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../series.html"> 
-<span class="menu-text">Series</span></a>
+    <a class="nav-link" href="../../books.html"> 
+<span class="menu-text">Books</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="../../talks.html"> 
 <span class="menu-text">Talks</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../books.html"> 
-<span class="menu-text">Books</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link" href="../../articles.html"> 
 <span class="menu-text">Articles</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../series.html"> 
+<span class="menu-text">Series</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="../../code.html"> 
@@ -178,8 +178,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div class="quarto-title column-body">
       <h1 class="title">Writing modular code with <code>box</code></h1>
                                 <div class="quarto-categories">
-                <div class="quarto-category">packages</div>
-                <div class="quarto-category">code</div>
+                <div class="quarto-category">Packages</div>
+                <div class="quarto-category">Box</div>
               </div>
                   </div>
   </div>
@@ -197,7 +197,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">April 21, 2023</p>
+        <p class="date">June 21, 2023</p>
       </div>
     </div>
     
@@ -297,9 +297,9 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <details open="" class="code-fold">
 <summary>show/hide</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"glue"</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="do">## The downloaded binary packages are in</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="do">##  /var/folders/0x/x5wkbhmx0k74tncn9swz7xpr0000gn/T//RtmpFOcxyI/downloaded_packages</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># The downloaded binary packages are in</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   /var/folders/0x/x5wkbhmx0k74tncn9swz7xpr0000gn/T//Rtmp2id54K/downloaded_packages</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div></li>
@@ -313,7 +313,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <summary>show/hide</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>name <span class="ot">&lt;-</span> <span class="st">"Fred"</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">glue</span>(<span class="st">'My name is {name}.'</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Error in glue("My name is {name}."): could not find function "glue"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Error in glue("My name is {name}."): could not find function "glue"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div></li>
@@ -325,7 +325,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <summary>show/hide</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>name <span class="ot">&lt;-</span> <span class="st">"Fred"</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">'My name is {name}.'</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="do">## My name is Fred.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># My name is Fred.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div></li>
@@ -335,9 +335,9 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <details open="" class="code-fold">
 <summary>show/hide</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>base<span class="sc">::</span><span class="fu">search</span>()</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] ".GlobalEnv"        "package:stats"     "package:graphics" </span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="do">## [4] "package:grDevices" "package:utils"     "package:datasets" </span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="do">## [7] "package:methods"   "Autoloads"         "package:base"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># [1] ".GlobalEnv"        "package:stats"     "package:graphics" </span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># [4] "package:grDevices" "package:utils"     "package:datasets" </span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># [7] "package:methods"   "Autoloads"         "package:base"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div></li>
@@ -348,10 +348,10 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <summary>show/hide</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glue)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>base<span class="sc">::</span><span class="fu">search</span>()</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] ".GlobalEnv"        "package:glue"      "package:stats"    </span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="do">##  [4] "package:graphics"  "package:grDevices" "package:utils"    </span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="do">##  [7] "package:datasets"  "package:methods"   "Autoloads"        </span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="do">## [10] "package:base"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#  [1] ".GlobalEnv"        "package:glue"      "package:stats"    </span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#  [4] "package:graphics"  "package:grDevices" "package:utils"    </span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#  [7] "package:datasets"  "package:methods"   "Autoloads"        </span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># [10] "package:base"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div></li>
@@ -379,7 +379,7 @@ https://mjfrigaard.github.io/posts/my-rhino-app/
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">'My name is {name}.'</span>)</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">my_name</span>(<span class="st">"Fred"</span>)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="do">## My name is Fred.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># My name is Fred.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </div></li>
@@ -990,7 +990,7 @@ Action
 box::use( pkg )
 </td>
 <td style="text-align:left;">
-imports ‘pkg’, does not attach any function names
+|imports ‘pkg’, does not attach any function names
 </td>
 </tr>
 <tr>
@@ -998,7 +998,7 @@ imports ‘pkg’, does not attach any function names
 box::use( p = pkg )
 </td>
 <td style="text-align:left;">
-imports ‘pkg’ with alias (‘p’), does not attach any function names
+|imports ‘pkg’ with alias (‘p’), does not attach any function names
 </td>
 </tr>
 <tr>
@@ -1006,15 +1006,15 @@ imports ‘pkg’ with alias (‘p’), does not attach any function names
 box::use( pkg = pkg[foo, bar] )
 </td>
 <td style="text-align:left;">
-imports ‘pkg’ and attaches the function names ‘pkg::foo()’ and ‘pkg::bar()’
+|imports ‘pkg’ and attaches the function names ‘pkg::foo()’ and ‘pkg::bar()’
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-box::use( pkg[my_foo = foo, …] )
+box::use( pkg[my_foo = foo, …]
 </td>
 <td style="text-align:left;">
-imports ‘pkg’ with alias for ‘foo’ (‘my_foo’) and attaches all exported function names
+|imports ‘pkg’ with alias for ‘foo’ (‘my_foo’) and attaches all exported function name
 </td>
 </tr>
 </tbody>
