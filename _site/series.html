@@ -260,9 +260,9 @@ Subtitle
 <span class="listing-subtitle">Part 3 (series): module server functions and <code>testServer()</code></span>
 </td>
 </tr>
-<tr data-index="3" data-categories="c2hpbnklMkN0ZXN0aW5n" data-listing-date-sort="1688454000000" data-listing-file-modified-sort="1712060619579" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="25" data-listing-word-count-sort="4951" data-listing-title-sort="Shiny system tests with `shinytest2`" data-listing-filename-sort="index.qmd">
+<tr data-index="3" data-categories="c2hpbnklMkN0ZXN0aW5n" data-listing-date-sort="1688454000000" data-listing-file-modified-sort="1739290500301" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="34" data-listing-word-count-sort="6786" data-listing-title-sort="Shiny System Tests With `shinytest2`" data-listing-filename-sort="index.qmd">
 <td>
-<a href="./series/testing/p4-system-shiny/index.html" class="title listing-title">Shiny system tests with <code>shinytest2</code></a>
+<a href="./series/testing/p4-system-shiny/index.html" class="title listing-title">Shiny System Tests With <code>shinytest2</code></a>
 </td>
 <td>
 <span class="listing-subtitle">Part 4 (series): writing efficient system tests</span>
@@ -294,24 +294,30 @@ Testing details
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div style="font-size: 1.02em">
+<div style="font-size: 1.05em">
+<section id="testthat" class="level4">
+<h4 class="anchored" data-anchor-id="testthat"><span style="font-size: 1.05em"><code>testthat</code></span></h4>
+<p><code>testthat</code> is a popular unit testing framework that allows R package developers to create tests scripts for functions and logic systematically. In a shiny app-package, it’s used for testing the non-reactive components (i.e., utility functions). This includes functions for data processing, plots, modeling, and other code that’s part of the package. However, it is not designed to work with shiny’s reactive model.</p>
 <ul>
-<li><span style="font-size: 1.20em"><strong><code>testthat</code></strong></span>: <code>testthat</code> is a popular unit testing framework that allows R package developers to create tests scripts for functions and logic systematically. In a shiny app-package, it’s used for testing the non-reactive components (i.e., utility functions). This includes functions for data processing, plots, modeling, and other code that’s part of the package. However, it is not designed to work with shiny’s reactive model.
+<li><p><strong>Post: Behavior Driven Unit Tests</strong>: This post covers unit testing a set of utility functions with testthat. You can also read the documentation from the <a href="https://testthat.r-lib.org/">package website</a>, in <a href="https://r-pkgs.org/testing-basics.html">R packages</a>, and in <a href="https://mastering-shiny.org/scaling-testing.html">Mastering Shiny</a>. The app-package for this post is stored in <a href="https://github.com/mjfrigaard/utap">this Github Repo</a>.</p></li>
+<li><p><strong>Post: Testing Non-Package Shiny Apps</strong>: Your shiny app <em>should</em> be developed as a package, but this isn’t always the case. If you’d like to test your application’s code <em>without</em> converting it to a package, check out the second post (and the <a href="https://github.com/mjfrigaard/noap">GitHub repo</a>).</p></li>
+</ul>
+</section>
+<section id="testserver" class="level4">
+<h4 class="anchored" data-anchor-id="testserver"><span style="font-size: 1.05em"><code>testServer()</code></span></h4>
+<p><code>testServer()</code> comes from the shiny package and is designed to test the <code>server</code>-side logic of your app. These tests can be used to simulate user inputs and verify the corresponding outputs. <code>testServer()</code> can also test the functionality of module <code>server</code> functions (reactivity, outputs, and any returned values) in isolation from their UI function counterparts. However, <code>testServer()</code> doesn’t capture how UI elements are rendered or simulate key user interactions (i.e., execution paths) through the application.</p>
 <ul>
-<li><strong>Post: Unit testing shiny utility functions</strong>: This post covers unit testing a set of utility functions with testthat. You can also read the documentation from the <a href="https://testthat.r-lib.org/">package website</a>, in <a href="https://r-pkgs.org/testing-basics.html">R packages</a>, and in <a href="https://mastering-shiny.org/scaling-testing.html">Mastering Shiny</a>. The app-package for this post is stored in <a href="https://github.com/mjfrigaard/utap">this Github Repo</a>.<br>
-</li>
-<li><strong>Post: Unit tests for (non-package) shiny apps</strong>: Your shiny app <em>should</em> be developed as a package, but this isn’t always the case. If you’d like to test your application’s code <em>without</em> converting it to a package, check out the second post (<a href="https://github.com/mjfrigaard/noap">GitHub repo</a> with the code).</li>
-</ul></li>
-<li><span style="font-size: 1.20em"><strong><code>testServer()</code></strong></span>: <code>testServer()</code> comes from the shiny package and is designed to test the <code>server</code>-side logic of your app. These tests can be used to simulate user inputs and verify the corresponding outputs. <code>testServer()</code> can also test the functionality of module <code>server</code> functions (reactivity, outputs, and any returned values) in isolation from their UI function counterparts. However, <code>testServer()</code> doesn’t capture how UI elements are rendered or simulate key user interactions (i.e., execution paths) through the application.
+<li><strong>Post: Testing Shiny Modules</strong>: If you’ve built your shiny application as a package and it contains modules, this post covers testing module server functions using the examples from the <a href="https://mastering-shiny.org/scaling-modules.html">‘Modules’ chapter of Mastering Shiny</a>. The code and examples are in <a href="https://github.com/mjfrigaard/mstsap">this GitHub repo</a></li>
+</ul>
+</section>
+<section id="shinytest2" class="level4">
+<h4 class="anchored" data-anchor-id="shinytest2"><span style="font-size: 1.05em"><code>shinytest2</code></span></h4>
+<p><code>shinytest2</code> is designed to perform end-to-end testing of shiny apps. These tests can capture a shiny app’s current state (i.e., a snapshot) and compare it with a previously saved (or expected) states. Snapshots are useful for end-to-end testing because they can simulate key user interaction in a way that unit tests and <code>testServer()</code> can’t (i.e., the delay between input changes and rendering updated outputs, specific sequences of selections on action buttons, radio buttons, etc.). <code>shinytest2</code> tests are resource-intensive, so it’s recommended to write these tests after writing <code>testthat</code> unit tests and <code>testServer()</code> tests.</p>
 <ul>
-<li><strong>Post: Testing shiny module server functions</strong>: If you’ve built your shiny application as a package and it contains modules, this post covers testing module server functions using the examples from the <a href="https://mastering-shiny.org/scaling-modules.html">‘Modules’ chapter of Mastering Shiny</a>. The code and examples are in <a href="https://github.com/mjfrigaard/mstsap">this GitHub repo</a></li>
-</ul></li>
-<li><span style="font-size: 1.20em"><strong><code>shinytest2()</code></strong></span>: <code>shinytest2</code> is designed to perform end-to-end testing of shiny apps. These tests can capture a shiny app’s current state (i.e., a snapshot) and compare it with a previously saved (or expected) states. Snapshots are useful for end-to-end testing because they can simulate key user interaction in a way that unit tests and <code>testServer()</code> can’t (i.e., the delay between input changes and rendering updated outputs, specific sequences of selections on action buttons, radio buttons, etc.). <code>shinytest2</code> tests are resource-intensive, so it’s recommended to write these tests after writing <code>testthat</code> unit tests and <code>testServer()</code> tests.
-<ul>
-<li><strong>Post: Testing shiny apps with <code>shinytest2</code></strong>: This post picks up where the previous post left off with the <a href="https://rstudio.github.io/shinytest2/index.html"><code>shinytest2</code> package</a>. The app-package used in the examples is stored in <a href="https://github.com/mjfrigaard/msst2ap">this GitHub repo</a>.</li>
-</ul></li>
+<li><strong>Post: Shiny system tests with <code>shinytest2</code></strong>: This post picks up where the previous post left off with the <a href="https://rstudio.github.io/shinytest2/index.html"><code>shinytest2</code> package</a>. The app-package used in the examples is stored in <a href="https://github.com/mjfrigaard/msst2ap">this GitHub repo</a>.</li>
 </ul>
 <p>In summary, use <code>testthat</code> for unit testing utility/helper functions, then <code>testServer()</code> for the server-side logic, and finish off with <code>shinytest2</code> tests for end-to-end functionality of your shiny app. These tools complement each other to provide a comprehensive testing framework.</p>
+</section>
 </div>
 </div>
 </div>
