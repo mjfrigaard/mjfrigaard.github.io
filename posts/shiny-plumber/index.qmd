@@ -1,0 +1,136 @@
+---
+title: "Using plumber APIs in a Shiny App-Package"
+subtitle: "plumb a package"
+author: "Martin Frigaard"
+date: "2025-02-23"
+categories: [APIs, Shiny, Packages]
+# image: "image.png"
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+# code-block-border-left: true
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+code-fold: show
+code-summary: 'show/hide'
+callout-icon: false
+
+draft: true
+
+freeze: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("../_common.R")
+options(scipen = 999)
+# remotes::install_github("mjfrigaard/tsap",
+#   force = TRUE, quiet = TRUE)
+library(plumber)
+```
+
+
+```{r}
+#| label: co_box_dev
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "r", 
+  header = "ALERT!", 
+  contents = "This post is currently under development--thank you for your patience.")
+```
+
+This post was prompted by [this `plumber` GitHub issue](https://github.com/rstudio/plumber/issues/32):
+
+> "*Is there a way to plumb an entire package? Basically creating the api in the package rather than an ad-hoc script `plumber <- plumb(pkgname)`*"
+
+The issue has been closed, but I thought the comments/discussion aligned with my own experiences and the resolution was so great it was worth documenting.
+
+BTW--I won't make you scroll to the end of the issue (the resolution is below):
+
+> "*We [the `plumber` developers] took the stance of allowing for many `plumber` apis to be deployed within a single package.*
+> 
+> "*As of `plumber` v1.0.0, you can call `plumb_api(PKG, NAME)` to `plumb()` the folder `./inst/plumber/NAME` in the installed package `PKG`*". - [Barret Schloerke](https://github.com/rstudio/plumber/issues/32#issuecomment-699152969)
+
+## What is an API?
+
+An API, or [Application Programming Interface](https://en.wikipedia.org/wiki/API), is like a shared language that lets different pieces of software talk to each other and exchange information or commands.
+
+Think of an API as a restaurant menu that lists available dishes (functions or resources) and how to order them (inputs or parameters). When we place an order, the kitchen (software service) prepares our request behind the scenes without revealing how it’s done.
+
+> "*I'll take a number two, mustard-grilled, with animal fries.*"
+
+An API provides a clear way for software programs to interact, allowing different apps and services to connect without needing to understand their internal workings.
+
+### APIs in R
+
+R has a rich ecosystem of packages that act as “wrappers” around external services’ APIs, making it easier for R users to authenticate, send requests, and process responses without having to manually craft HTTP calls.
+
+Some examples are:
+
+1. [googlesheets4](https://googlesheets4.tidyverse.org/): Enables programmatic interaction with Google Sheets via Google’s APIs for reading, writing, and modifying Google Sheets from within R.
+
+2. [`tidycensus`](https://walker-data.com/tidycensus/): Interface to the U.S. Census Bureau APIs for a straightforward way to download and wrangle demographic data.
+
+3. [`boxr`](https://r-box.github.io/boxr/index.html): Works with Box.com’s content API for uploading, downloading, and organizing files in Box from R.
+
+## Why use an API?
+
+These wrapper packages generally take care of details like authentication (OAuth tokens, API keys, etc.), creating the correct query parameters, and parsing the JSON/XML responses into data frames or lists, which means we can focus on the higher-level data tasks rather than on the low-level networking details.
+
+## APIs and Shiny
+
+I've created a [demo Shiny app-package](https://github.com/rstudio/shiny-examples/tree/main/051-movie-explorer) from [Shiny Examples repo](https://github.com/rstudio/shiny-examples). The original application uses `RSQLite` and `dplyr` to create `ggvis` data visualization. The `README.md` is below:
+
+> 
+> *This is the source code for a movie explorer app which runs on R and Shiny. The data is a subset of data from OMDb, which in turn is from IMDb and Rotten Tomatoes. The data is saved in a SQLite database.*
+> 
+> *To run it locally, you'll need to install the latest versions of `ggvis`, `Shiny`, and `dplyr`, as well as `RSQLite`.*
+> 
+> ```r
+> install.packages(c('shiny', 'ggvis', 'dplyr', 'RSQLite'))
+> ```
+> 
+> *You may need to restart R to make sure the newly-installed packages work properly.*
+> 
+> *After all these packages are installed, you can run this app by entering the directory, and then running the following in R:*
+> 
+> ```r
+> shiny::runApp()
+> ```
+>
+
+I've made some changes to the code in the original application: 
+
+```{verbatim}
+R
+├── app_server.R # <1>
+├── app_ui.R # <1>
+├── create_plotly_scatter.R # <2>
+├── db_con.R # <3>
+├── join_movies_tbls.R # <3>
+├── launch_app.R # <4>
+├── mod_filters.R # <5>
+├── mod_points_plotly.R # <5>
+├── mod_select_inputs.R # <5>
+├── mod_slider_inputs.R # <5>
+├── mod_text_inputs.R # <5>
+└── utils.R # <6>
+```
+1. App UI and server functions  
+2. Converted the `ggvis` visualization to a `plotly` graph (with an accompanying utility function)  
+3. Utility functions for establishing a connection to the SQLite database file    
+4. Standalone app function   
+5. Converted the inputs and outputs to modules   
+6. Various utility functions  
+
