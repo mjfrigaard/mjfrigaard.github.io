@@ -1,5 +1,5 @@
 ---
-title: "Using plumber APIs in a Shiny App-Package"
+title: "Using plumber APIs in a Shiny app-package"
 subtitle: "plumb a package"
 author: "Martin Frigaard"
 date: "2025-02-23"
@@ -50,19 +50,21 @@ co_box(color = "r",
   contents = "This post is currently under development--thank you for your patience.")
 ```
 
-This post was prompted by [this `plumber` GitHub issue](https://github.com/rstudio/plumber/issues/32):
+This post was prompted by an issue in the [`plumber` GitHub repository](https://github.com/rstudio/plumber/):
 
-> "*Is there a way to plumb an entire package? Basically creating the api in the package rather than an ad-hoc script `plumber <- plumb(pkgname)`*"
+> "*Is there a way to plumb an entire package? Basically creating the api in the package rather than an ad-hoc script `plumber <- plumb(pkgname)`*" - [`plumber` issue 32](https://github.com/rstudio/plumber/issues/32)
 
-The issue has been closed, but I thought the comments/discussion aligned with my own experiences and the resolution was so great it was worth documenting.
+The issue has been closed, but the comments and discussion aligned with my own experiences and the resolution was so great I felt it was worth documenting.
 
 BTW--I won't make you scroll to the end of the issue (the resolution is below):
 
-> "*We [the `plumber` developers] took the stance of allowing for many `plumber` apis to be deployed within a single package.*
-> 
 > "*As of `plumber` v1.0.0, you can call `plumb_api(PKG, NAME)` to `plumb()` the folder `./inst/plumber/NAME` in the installed package `PKG`*". - [Barret Schloerke](https://github.com/rstudio/plumber/issues/32#issuecomment-699152969)
 
-## What is an API?
+## Suggested reading
+
+If this is your first time encountering APIs, I suggest watching the [Expanding R horizons: Integrating R with Plumber APIs](https://posit.co/resources/videos/expanding-r-horizons-integrating-r-with-plumber-apis/) video and reading the [Creating APIs for data science with plumber](https://posit.co/blog/creating-apis-for-data-science-with-plumber/) and [RStudio and APIs](https://posit.co/blog/rstudio-and-apis/) blog posts. I'll do my best to summarize the information in these resources, but they are excellent references worth reading from the original authors. 
+
+### What is an API?
 
 An API, or [Application Programming Interface](https://en.wikipedia.org/wiki/API), is like a shared language that lets different pieces of software talk to each other and exchange information or commands.
 
@@ -70,11 +72,10 @@ Think of an API as a restaurant menu that lists available dishes (functions or r
 
 > "*I'll take a number two, mustard-grilled, with animal fries.*"
 
-An API provides a clear way for software programs to interact, allowing different apps and services to connect without needing to understand their internal workings.
 
-### APIs in R
+### APIs and R
 
-R has a rich ecosystem of packages that act as “wrappers” around external services’ APIs, making it easier for R users to authenticate, send requests, and process responses without having to manually craft HTTP calls.
+R has a rich ecosystem of packages that act as "wrappers" around external services’ APIs, making it easier for R users to authenticate, send requests, and process responses without having to manually craft HTTP calls.
 
 Some examples are:
 
@@ -84,11 +85,28 @@ Some examples are:
 
 3. [`boxr`](https://r-box.github.io/boxr/index.html): Works with Box.com’s content API for uploading, downloading, and organizing files in Box from R.
 
-## Why use an API?
+
+### Why use an API?
+
+An API provides a clear way for software programs to interact, allowing different apps and services to connect without needing to understand their internal workings.
 
 These wrapper packages generally take care of details like authentication (OAuth tokens, API keys, etc.), creating the correct query parameters, and parsing the JSON/XML responses into data frames or lists, which means we can focus on the higher-level data tasks rather than on the low-level networking details.
 
 ## APIs and Shiny
+
+<!--
+
+https://posit.co/blog/creating-apis-for-data-science-with-plumber/
+
+https://connect.posit.cloud/mjfrigaard
+
+https://docs.posit.co/connect-cloud/how-to/
+
+https://github.com/sol-eng/plumberExamples/tree/main
+
+https://posit.co/blog/rstudio-and-apis/
+
+--> 
 
 I've created a [demo Shiny app-package](https://github.com/rstudio/shiny-examples/tree/main/051-movie-explorer) from [Shiny Examples repo](https://github.com/rstudio/shiny-examples). The original application uses `RSQLite` and `dplyr` to create `ggvis` data visualization. The `README.md` is below:
 
