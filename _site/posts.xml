@@ -13,11 +13,996 @@
 <url>https://mjfrigaard.github.io/profile.png</url>
 <title>@mjfrigaard</title>
 <link>https://mjfrigaard.github.io/posts.html</link>
-<height>109</height>
-<width>144</width>
 </image>
 <generator>quarto-1.6.37</generator>
-<lastBuildDate>Mon, 14 Oct 2024 07:00:00 GMT</lastBuildDate>
+<lastBuildDate>Mon, 02 Jun 2025 07:00:00 GMT</lastBuildDate>
+<item>
+  <title>Shiny Reports</title>
+  <dc:creator>Martin Frigaard</dc:creator>
+  <link>https://mjfrigaard.github.io/posts/shiny-reports/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<div class="cell" data-layout-align="center">
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span style="font-weight: bold; font-size: 1.15em;">ALERT!</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>This post is currently under development–thank you for your patience.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>This post covers parameterized reports in Shiny applications (via R Markdown and/or Quarto). Downloadable reports are a great feature to include in your application, and I’ve put together some tips I’ve learned by adding this feature to multiple applications.</p>
+<section id="shrapports" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="shrapports">shrapports</h2>
+<p>To help demonstrate a variety of report options, I’ve written the <a href="https://github.com/mjfrigaard/shrapports"><code>shrapports</code> R package</a>, which contains a Shiny application with a variety of plot outputs.</p>
+<section id="package-structure" class="level3">
+<h3 class="anchored" data-anchor-id="package-structure">Package structure</h3>
+<p>I’ve displayed the R folder for <code>shrapports</code> below. The package includes three modules, UI and server functions, a handful of utility functions, and a standalone app function.</p>
+<div class="sourceCode" id="annotated-cell-1" style="background: #f1f3f5;"><pre class="sourceCode default code-annotation-code code-with-copy code-annotated"><code class="sourceCode default"><span id="annotated-cell-1-1">shrapports/</span>
+<span id="annotated-cell-1-2">R/</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="1">1</button><span id="annotated-cell-1-3" class="code-annotation-target">├── app_server.R</span>
+<span id="annotated-cell-1-4">├── app_ui.R</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="2">2</button><span id="annotated-cell-1-5" class="code-annotation-target">├── get_tt_data.R</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="3">3</button><span id="annotated-cell-1-6" class="code-annotation-target">├── inspect_plot.R</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="4">4</button><span id="annotated-cell-1-7" class="code-annotation-target">├── launch_app.R</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="5">5</button><span id="annotated-cell-1-8" class="code-annotation-target">├── logr_msg.R</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="6">6</button><span id="annotated-cell-1-9" class="code-annotation-target">├── mod_report.R</span>
+<span id="annotated-cell-1-10">├── mod_table.R</span>
+<span id="annotated-cell-1-11">├── mod_var_input.R</span>
+<span id="annotated-cell-1-12">└── mod_viz.R</span>
+<span id="annotated-cell-1-13"></span>
+<span id="annotated-cell-1-14">1 directory, 10 files</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div>
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-1" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="3,4" data-code-annotation="1">App functions</span>
+</dd>
+<dt data-target-cell="annotated-cell-1" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="5" data-code-annotation="2">Data utility function<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-1" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="6" data-code-annotation="3">Plot utility function<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-1" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="7" data-code-annotation="4">Standalone app function</span>
+</dd>
+<dt data-target-cell="annotated-cell-1" data-target-annotation="5">5</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="8" data-code-annotation="5">Logging function</span>
+</dd>
+<dt data-target-cell="annotated-cell-1" data-target-annotation="6">6</dt>
+<dd>
+<span data-code-cell="annotated-cell-1" data-code-lines="9,10,11,12" data-code-annotation="6">Shiny modules</span>
+</dd>
+</dl>
+<p>Below is an abstract syntax tree<sup>1</sup> of the application’s functions:</p>
+<div class="cell" data-layout-align="center">
+<pre><code>█─launch_app 
+├─█─app_ui 
+│ ├─█─mod_var_input_ui 
+│ ├─█─mod_viz_ui 
+│ └─█─mod_table_ui 
+└─█─app_server 
+  ├─█─mod_var_input_server 
+  │ └─█─get_tt_data 
+  ├─█─mod_viz_server 
+  │ └─█─inspect_plot 
+  └─█─mod_table_server </code></pre>
+</div>
+</section>
+<section id="tidytuesday-data" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="tidytuesday-data">TidyTuesday data</h3>
+<p>The <code>get_tt_data()</code> function can be used to access the data from teh <a href="https://github.com/rfordatascience/tidytuesday">TidyTuesday</a> project.<sup>2</sup></p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1">pkgs <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ttmeta"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tidytuesdayR"</span>)</span>
+<span id="cb2-2">pak<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">pkg_install</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">pkg =</span> pkgs)</span></code></pre></div>
+</div>
+<p>A demo of the <code>get_tt_data()</code> function is below:</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><em>The <code>ttd</code> lists are named according to the number of datasets they include.</em></p>
+</div></div><div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1">ttd <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">get_tt_data</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Netflix Titles"</span>)</span></code></pre></div>
+</div>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>show/hide ttd structure</summary>
+<div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">str</span>(ttd)</span>
+<span id="cb4-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># List of 1</span></span>
+<span id="cb4-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  $ netflix_titles.csv: spc_tbl_ [7,787 × 12] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb4-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ show_id     : chr [1:7787] "s1" "s2" "s3" "s4" ...</span></span>
+<span id="cb4-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ type        : chr [1:7787] "TV Show" "Movie" "Movie" "Movie" ...</span></span>
+<span id="cb4-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ title       : chr [1:7787] "3%" "7:19" "23:59" "9" ...</span></span>
+<span id="cb4-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ director    : chr [1:7787] NA "Jorge Michel Grau" "Gilbert Chan" "Shane Acker" ...</span></span>
+<span id="cb4-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ cast        : chr [1:7787] "João Miguel, Bianca Comparato, Michel Gomes, Rodolfo Valente, Vaneza Oliveira, Rafael Lozano, Viviane Porto, Me"| __truncated__ "Demián Bichir, Héctor Bonilla, Oscar Serrano, Azalia Ortiz, Octavio Michel, Carmen Beato" "Tedd Chan, Stella Chung, Henley Hii, Lawrence Koh, Tommy Kuan, Josh Lai, Mark Lee, Susan Leong, Benjamin Lim" "Elijah Wood, John C. Reilly, Jennifer Connelly, Christopher Plummer, Crispin Glover, Martin Landau, Fred Tatasc"| __truncated__ ...</span></span>
+<span id="cb4-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ country     : chr [1:7787] "Brazil" "Mexico" "Singapore" "United States" ...</span></span>
+<span id="cb4-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ date_added  : chr [1:7787] "August 14, 2020" "December 23, 2016" "December 20, 2018" "November 16, 2017" ...</span></span>
+<span id="cb4-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ release_year: num [1:7787] 2020 2016 2011 2009 2008 ...</span></span>
+<span id="cb4-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ rating      : chr [1:7787] "TV-MA" "TV-MA" "R" "PG-13" ...</span></span>
+<span id="cb4-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ duration    : chr [1:7787] "4 Seasons" "93 min" "78 min" "80 min" ...</span></span>
+<span id="cb4-14"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ listed_in   : chr [1:7787] "International TV Shows, TV Dramas, TV Sci-Fi &amp; Fantasy" "Dramas, International Movies" "Horror Movies, International Movies" "Action &amp; Adventure, Independent Movies, Sci-Fi &amp; Fantasy" ...</span></span>
+<span id="cb4-15"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ description : chr [1:7787] "In a future where the elite inhabit an island paradise far from the crowded slums, you get one chance to join t"| __truncated__ "After a devastating earthquake hits Mexico City, trapped survivors from all walks of life wait to be rescued wh"| __truncated__ "When an army recruit is found dead, his fellow soldiers are forced to confront a terrifying secret that's haunt"| __truncated__ "In a postapocalyptic world, rag-doll robots hide in fear from dangerous machines out to exterminate them, until"| __truncated__ ...</span></span>
+<span id="cb4-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..- attr(*, "spec")=</span></span>
+<span id="cb4-17"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. .. cols(</span></span>
+<span id="cb4-18"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   show_id = col_character(),</span></span>
+<span id="cb4-19"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   type = col_character(),</span></span>
+<span id="cb4-20"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   title = col_character(),</span></span>
+<span id="cb4-21"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   director = col_character(),</span></span>
+<span id="cb4-22"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   cast = col_character(),</span></span>
+<span id="cb4-23"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   country = col_character(),</span></span>
+<span id="cb4-24"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   date_added = col_character(),</span></span>
+<span id="cb4-25"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   release_year = col_double(),</span></span>
+<span id="cb4-26"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   rating = col_character(),</span></span>
+<span id="cb4-27"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   duration = col_character(),</span></span>
+<span id="cb4-28"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   listed_in = col_character(),</span></span>
+<span id="cb4-29"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   description = col_character()</span></span>
+<span id="cb4-30"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. .. )</span></span>
+<span id="cb4-31"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..- attr(*, "problems")=&lt;externalptr&gt; </span></span>
+<span id="cb4-32"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  - attr(*, "clean_title")= chr "netflix_titles"</span></span></code></pre></div>
+</details>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1">ttd2 <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">get_tt_data</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Space Launches"</span>)</span></code></pre></div>
+</div>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>show/hide ttd2 structure</summary>
+<div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">str</span>(ttd2)</span>
+<span id="cb6-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># List of 2</span></span>
+<span id="cb6-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  $ agencies.csv: spc_tbl_ [74 × 19] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb6-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ agency            : chr [1:74] "RVSN" "UNKS" "NASA" "USAF" ...</span></span>
+<span id="cb6-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ count             : num [1:74] 1528 904 469 388 258 ...</span></span>
+<span id="cb6-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ ucode             : chr [1:74] "RVSN" "GUKOS" "NASA" "USAF" ...</span></span>
+<span id="cb6-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ state_code        : chr [1:74] "SU" "SU" "US" "US" ...</span></span>
+<span id="cb6-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ type              : chr [1:74] "O/LA" "O/LA" "O/LA/LV/PL/S" "O/LA/S" ...</span></span>
+<span id="cb6-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ class             : chr [1:74] "D" "D" "C" "D" ...</span></span>
+<span id="cb6-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ tstart            : chr [1:74] "1960" "1986 Apr 24" "1958 Oct  1" "1947 Sep 18" ...</span></span>
+<span id="cb6-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ tstop             : chr [1:74] "1991 Dec" "1991" "-" "-" ...</span></span>
+<span id="cb6-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ short_name        : chr [1:74] "RVSN" "UNKS" "NASA" "USAF" ...</span></span>
+<span id="cb6-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ name              : chr [1:74] "Rakentiye Voiska Strategicheskogo Naznacheniye" "Upravleniye Nachalnika Kosmicheskikh Sredstv" "National Aeronautics and Space Administration" "United States Air Force" ...</span></span>
+<span id="cb6-14"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ location          : chr [1:74] "Mosvka?" "Moskva" "Washington, D.C." "Washington, DC-Pentagon" ...</span></span>
+<span id="cb6-15"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ longitude         : chr [1:74] "-" "-" "-" "-" ...</span></span>
+<span id="cb6-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ latitude          : chr [1:74] "-" "-" "-" "-" ...</span></span>
+<span id="cb6-17"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ error             : chr [1:74] "-" "-" "-" "-" ...</span></span>
+<span id="cb6-18"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ parent            : chr [1:74] "-" "MO" "-" "-" ...</span></span>
+<span id="cb6-19"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ short_english_name: chr [1:74] "-" "-" "-" "-" ...</span></span>
+<span id="cb6-20"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ english_name      : chr [1:74] "Strategic Rocket Forces" "-" "-" "-" ...</span></span>
+<span id="cb6-21"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ unicode_name      : chr [1:74] "Ракетные войска стратегического назначения" "Управление начальника космических средств МО СССР" "National Aeronautics and Space Administration" "United States Air Force" ...</span></span>
+<span id="cb6-22"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ agency_type       : chr [1:74] "state" "state" "state" "state" ...</span></span>
+<span id="cb6-23"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..- attr(*, "spec")=</span></span>
+<span id="cb6-24"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. .. cols(</span></span>
+<span id="cb6-25"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   agency = col_character(),</span></span>
+<span id="cb6-26"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   count = col_double(),</span></span>
+<span id="cb6-27"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   ucode = col_character(),</span></span>
+<span id="cb6-28"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   state_code = col_character(),</span></span>
+<span id="cb6-29"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   type = col_character(),</span></span>
+<span id="cb6-30"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   class = col_character(),</span></span>
+<span id="cb6-31"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   tstart = col_character(),</span></span>
+<span id="cb6-32"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   tstop = col_character(),</span></span>
+<span id="cb6-33"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   short_name = col_character(),</span></span>
+<span id="cb6-34"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   name = col_character(),</span></span>
+<span id="cb6-35"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   location = col_character(),</span></span>
+<span id="cb6-36"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   longitude = col_character(),</span></span>
+<span id="cb6-37"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   latitude = col_character(),</span></span>
+<span id="cb6-38"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   error = col_character(),</span></span>
+<span id="cb6-39"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   parent = col_character(),</span></span>
+<span id="cb6-40"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   short_english_name = col_character(),</span></span>
+<span id="cb6-41"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   english_name = col_character(),</span></span>
+<span id="cb6-42"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   unicode_name = col_character(),</span></span>
+<span id="cb6-43"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   agency_type = col_character()</span></span>
+<span id="cb6-44"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. .. )</span></span>
+<span id="cb6-45"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..- attr(*, "problems")=&lt;externalptr&gt; </span></span>
+<span id="cb6-46"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  $ launches.csv: spc_tbl_ [5,726 × 11] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb6-47"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ tag        : chr [1:5726] "1967-065" "1967-080" "1967-096" "1968-042" ...</span></span>
+<span id="cb6-48"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ JD         : num [1:5726] 2439671 2439726 2439775 2440000 2440153 ...</span></span>
+<span id="cb6-49"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ launch_date: Date[1:5726], format:  ...</span></span>
+<span id="cb6-50"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ launch_year: num [1:5726] 1967 1967 1967 1968 1968 ...</span></span>
+<span id="cb6-51"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ type       : chr [1:5726] "Thor Burner 2" "Thor Burner 2" "Thor Burner 2" "Thor Burner 2" ...</span></span>
+<span id="cb6-52"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ variant    : chr [1:5726] NA NA NA NA ...</span></span>
+<span id="cb6-53"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ mission    : chr [1:5726] "Secor Type II S/N 10" "DAPP 3419" "DAPP 4417" "DAPP 5420" ...</span></span>
+<span id="cb6-54"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ agency     : chr [1:5726] "US" "US" "US" "US" ...</span></span>
+<span id="cb6-55"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ state_code : chr [1:5726] "US" "US" "US" "US" ...</span></span>
+<span id="cb6-56"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ category   : chr [1:5726] "O" "O" "O" "O" ...</span></span>
+<span id="cb6-57"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ agency_type: chr [1:5726] "state" "state" "state" "state" ...</span></span>
+<span id="cb6-58"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..- attr(*, "spec")=</span></span>
+<span id="cb6-59"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. .. cols(</span></span>
+<span id="cb6-60"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   tag = col_character(),</span></span>
+<span id="cb6-61"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   JD = col_double(),</span></span>
+<span id="cb6-62"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   launch_date = col_date(format = ""),</span></span>
+<span id="cb6-63"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   launch_year = col_double(),</span></span>
+<span id="cb6-64"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   type = col_character(),</span></span>
+<span id="cb6-65"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   variant = col_character(),</span></span>
+<span id="cb6-66"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   mission = col_character(),</span></span>
+<span id="cb6-67"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   agency = col_character(),</span></span>
+<span id="cb6-68"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   state_code = col_character(),</span></span>
+<span id="cb6-69"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   category = col_character(),</span></span>
+<span id="cb6-70"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   agency_type = col_character()</span></span>
+<span id="cb6-71"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. .. )</span></span>
+<span id="cb6-72"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..- attr(*, "problems")=&lt;externalptr&gt; </span></span>
+<span id="cb6-73"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  - attr(*, "clean_title")= chr "space_launches"</span></span></code></pre></div>
+</details>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1">ttd3 <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">get_tt_data</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Moore’s Law"</span>)</span></code></pre></div>
+</div>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>show/hide ttd3 structure</summary>
+<div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">str</span>(ttd3)</span>
+<span id="cb8-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># List of 3</span></span>
+<span id="cb8-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  $ cpu.csv: spc_tbl_ [176 × 6] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb8-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ processor           : chr [1:176] "MP944 (20-bit, 6-chip)" "Intel 4004 (4-bit, 16-pin)" "Intel 8008 (8-bit, 18-pin)" "NEC μCOM-4 (4-bit)" ...</span></span>
+<span id="cb8-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ transistor_count    : num [1:176] NA 2250 3500 2500 2800 ...</span></span>
+<span id="cb8-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ date_of_introduction: num [1:176] 1970 1971 1972 1973 1973 ...</span></span>
+<span id="cb8-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ designer            : chr [1:176] "Garrett AiResearch" "Intel" "Intel" "NEC" ...</span></span>
+<span id="cb8-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ process             : num [1:176] NA 10000 10000 7500 6000 10000 6000 6000 8000 8000 ...</span></span>
+<span id="cb8-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ area                : num [1:176] NA 12 14 NA 32 12 16 20 11 21 ...</span></span>
+<span id="cb8-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..- attr(*, "spec")=</span></span>
+<span id="cb8-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. .. cols(</span></span>
+<span id="cb8-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   processor = col_character(),</span></span>
+<span id="cb8-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   transistor_count = col_double(),</span></span>
+<span id="cb8-14"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   date_of_introduction = col_double(),</span></span>
+<span id="cb8-15"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   designer = col_character(),</span></span>
+<span id="cb8-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   process = col_double(),</span></span>
+<span id="cb8-17"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   area = col_double()</span></span>
+<span id="cb8-18"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. .. )</span></span>
+<span id="cb8-19"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..- attr(*, "problems")=&lt;externalptr&gt; </span></span>
+<span id="cb8-20"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  $ gpu.csv: spc_tbl_ [112 × 8] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb8-21"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ processor           : chr [1:112] "µPD7220 GDC" "ARTC HD63484" "YM7101 VDP" "Tom &amp; Jerry" ...</span></span>
+<span id="cb8-22"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ transistor_count    : num [1:112] 40000 60000 100000 750000 1000000 1000000 1000000 2600000 1200000 1000000 ...</span></span>
+<span id="cb8-23"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ date_of_introduction: num [1:112] 1982 1984 1988 1993 1994 ...</span></span>
+<span id="cb8-24"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ designer_s          : chr [1:112] "NEC" "Hitachi" "Sega" "Flare" ...</span></span>
+<span id="cb8-25"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ manufacturer_s      : chr [1:112] "NEC" "Hitachi" "Yamaha" "IBM" ...</span></span>
+<span id="cb8-26"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ process             : num [1:112] 5000 NA NA NA 500 500 500 350 350 500 ...</span></span>
+<span id="cb8-27"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ area                : num [1:112] NA NA NA NA NA NA 90 81 NA NA ...</span></span>
+<span id="cb8-28"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ ref                 : chr [1:112] "[107]" "[108]" "[109]" "[109]" ...</span></span>
+<span id="cb8-29"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..- attr(*, "spec")=</span></span>
+<span id="cb8-30"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. .. cols(</span></span>
+<span id="cb8-31"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   processor = col_character(),</span></span>
+<span id="cb8-32"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   transistor_count = col_double(),</span></span>
+<span id="cb8-33"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   date_of_introduction = col_double(),</span></span>
+<span id="cb8-34"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   designer_s = col_character(),</span></span>
+<span id="cb8-35"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   manufacturer_s = col_character(),</span></span>
+<span id="cb8-36"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   process = col_double(),</span></span>
+<span id="cb8-37"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   area = col_double(),</span></span>
+<span id="cb8-38"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   ref = col_character()</span></span>
+<span id="cb8-39"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. .. )</span></span>
+<span id="cb8-40"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..- attr(*, "problems")=&lt;externalptr&gt; </span></span>
+<span id="cb8-41"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  $ ram.csv: spc_tbl_ [47 × 10] (S3: spec_tbl_df/tbl_df/tbl/data.frame)</span></span>
+<span id="cb8-42"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ chip_name           : chr [1:47] "N/A" "N/A" "?" "SP95" ...</span></span>
+<span id="cb8-43"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ capacity_bits       : num [1:47] 1 1 8 16 16 NA 256 64 144 256 ...</span></span>
+<span id="cb8-44"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ bit_units           : chr [1:47] "Bits" "Bits" "Bits" "Bits" ...</span></span>
+<span id="cb8-45"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ ram_type            : chr [1:47] "SRAM (cell)" "DRAM (cell)" "SRAM (bipolar)" "SRAM (bipolar)" ...</span></span>
+<span id="cb8-46"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ transistor_count    : num [1:47] 6 1 48 80 96 ...</span></span>
+<span id="cb8-47"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ date_of_introduction: num [1:47] 1963 1965 1965 1965 1966 ...</span></span>
+<span id="cb8-48"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ manufacturer_s      : chr [1:47] "Fairchild" "Toshiba" "SDS, Signetics" "IBM" ...</span></span>
+<span id="cb8-49"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ process             : num [1:47] NA NA NA NA NA NA NA NA NA 12000 ...</span></span>
+<span id="cb8-50"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ area                : num [1:47] NA NA NA NA NA NA NA NA NA NA ...</span></span>
+<span id="cb8-51"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..$ ref                 : chr [1:47] "[162]" "[163][164]" "[162]" "[165]" ...</span></span>
+<span id="cb8-52"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..- attr(*, "spec")=</span></span>
+<span id="cb8-53"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. .. cols(</span></span>
+<span id="cb8-54"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   chip_name = col_character(),</span></span>
+<span id="cb8-55"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   capacity_bits = col_double(),</span></span>
+<span id="cb8-56"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   bit_units = col_character(),</span></span>
+<span id="cb8-57"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   ram_type = col_character(),</span></span>
+<span id="cb8-58"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   transistor_count = col_double(),</span></span>
+<span id="cb8-59"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   date_of_introduction = col_double(),</span></span>
+<span id="cb8-60"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   manufacturer_s = col_character(),</span></span>
+<span id="cb8-61"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   process = col_double(),</span></span>
+<span id="cb8-62"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   area = col_double(),</span></span>
+<span id="cb8-63"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. ..   ref = col_character()</span></span>
+<span id="cb8-64"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   .. .. )</span></span>
+<span id="cb8-65"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   ..- attr(*, "problems")=&lt;externalptr&gt; </span></span>
+<span id="cb8-66"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  - attr(*, "clean_title")= chr "moores_law"</span></span></code></pre></div>
+</details>
+</div>
+</section>
+<section id="inspect-plots" class="level3">
+<h3 class="anchored" data-anchor-id="inspect-plots">Inspect plots</h3>
+<p>The <a href="https://github.com/alastairrushworth/inspectdf/tree/master"><code>inspectdf</code> package</a> provides “<em>collection of utilities for columnwise summary, comparison and visualisation of data frames.</em>” I’ve written a wrapper function (<code>inspect_plot()</code>) for handling the ttd lists.</p>
+<p><code>inspect_plot()</code> combines the <code>inspectdf::inspect_*()</code> + <code>inspectdf::show_plot()</code> functions and returns the corresponding plot.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">inspect_plot</span>(</span>
+<span id="cb9-2">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">ttd =</span> ttd, </span>
+<span id="cb9-3">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">plot =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"cat"</span></span>
+<span id="cb9-4">  )</span></code></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/inspect_plot_ttd_cat-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="https://mjfrigaard.github.io/posts/shiny-reports/index_files/figure-html/inspect_plot_ttd_cat-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Below is an example of the <code>inspect_imb()</code> + <code>show_plot()</code> functions on <code>ttd2</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">inspect_plot</span>(</span>
+<span id="cb10-2">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">ttd =</span> ttd2, </span>
+<span id="cb10-3">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">plot =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"imb"</span></span>
+<span id="cb10-4">  )</span></code></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/inspect_plot_ttd2_imb-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="https://mjfrigaard.github.io/posts/shiny-reports/index_files/figure-html/inspect_plot_ttd2_imb-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Below is an example of the <code>inspect_types()</code> + <code>show_plot()</code> functions on <code>ttd3</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">inspect_plot</span>(</span>
+<span id="cb11-2">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">ttd =</span> ttd3, </span>
+<span id="cb11-3">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">plot =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"types"</span></span>
+<span id="cb11-4">  )</span></code></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/inspect_plot_ttd3_types-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="https://mjfrigaard.github.io/posts/shiny-reports/index_files/figure-html/inspect_plot_ttd3_types-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%"></a></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/inspect_plot_ttd3_types-2.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="https://mjfrigaard.github.io/posts/shiny-reports/index_files/figure-html/inspect_plot_ttd3_types-2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%"></a></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/inspect_plot_ttd3_types-3.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="https://mjfrigaard.github.io/posts/shiny-reports/index_files/figure-html/inspect_plot_ttd3_types-3.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<p>If <code>inspect_plot()</code> is passed without any arguments, all plots are returned:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">inspect_plot</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">ttd =</span> ttd)</span></code></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/inspect_plot_ttd_all-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6"><img src="https://mjfrigaard.github.io/posts/shiny-reports/index_files/figure-html/inspect_plot_ttd_all-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%"></a></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/inspect_plot_ttd_all-2.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="https://mjfrigaard.github.io/posts/shiny-reports/index_files/figure-html/inspect_plot_ttd_all-2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%"></a></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/inspect_plot_ttd_all-3.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8"><img src="https://mjfrigaard.github.io/posts/shiny-reports/index_files/figure-html/inspect_plot_ttd_all-3.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%"></a></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/inspect_plot_ttd_all-4.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9"><img src="https://mjfrigaard.github.io/posts/shiny-reports/index_files/figure-html/inspect_plot_ttd_all-4.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%"></a></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/inspect_plot_ttd_all-5.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10"><img src="https://mjfrigaard.github.io/posts/shiny-reports/index_files/figure-html/inspect_plot_ttd_all-5.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%"></a></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/inspect_plot_ttd_all-6.png" class="lightbox" data-gallery="quarto-lightbox-gallery-11"><img src="https://mjfrigaard.github.io/posts/shiny-reports/index_files/figure-html/inspect_plot_ttd_all-6.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:85.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+<p>In the sections below, we’ll cover how to reliably pass the contents of each module into a downloadable report.</p>
+</section>
+<section id="modules" class="level3">
+<h3 class="anchored" data-anchor-id="modules">Modules</h3>
+<p>There are three modules in the application: mod_var_input collects the dataset title, mod_viz displays the graphs, mod_table displays a table of the data used in the graph(s).</p>
+</section>
+</section>
+<section id="report-templates" class="level2">
+<h2 class="anchored" data-anchor-id="report-templates">Report templates</h2>
+<p>We’ll store the report templates in the <code>inst/</code> folder. Anything in <code>inst/</code> automatically included and accessible from an installed application with <code>system.file()</code>, so it’s a great place for template files.</p>
+<section id="templates" class="level3">
+<h3 class="anchored" data-anchor-id="templates">Templates</h3>
+<p>The templates are accessed with the <code>get_template_path()</code> function.</p>
+<p>The <code>get_template_path()</code> function returns the installed location of our templates:</p>
+<div class="sourceCode" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb13-1">└── inst</span>
+<span id="cb13-2">    └── rmarkdown</span>
+<span id="cb13-3">        └── report_template.Rmd</span></code></pre></div>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">identical</span>(</span>
+<span id="cb14-2">  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># response from function</span></span>
+<span id="cb14-3">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">get_template_path</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'rmarkdown'</span>), </span>
+<span id="cb14-4">  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># response from system.file()</span></span>
+<span id="cb14-5">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">system.file</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"rmarkdown"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"report_template.Rmd"</span>, </span>
+<span id="cb14-6">                  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">package =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"shrapports"</span>))</span>
+<span id="cb14-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  [1] TRUE</span></span></code></pre></div>
+</div>
+<div class="sourceCode" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb15-1">└── inst</span>
+<span id="cb15-2">    └── quarto</span>
+<span id="cb15-3">        └── report_template.qmd</span></code></pre></div>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">identical</span>(</span>
+<span id="cb16-2">  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># response from function</span></span>
+<span id="cb16-3">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">get_template_path</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'quarto'</span>), </span>
+<span id="cb16-4">  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># response from system.file()</span></span>
+<span id="cb16-5">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">system.file</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"quarto"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"report_template.qmd"</span>, </span>
+<span id="cb16-6">                  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">package =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"shrapports"</span>))</span>
+<span id="cb16-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  [1] TRUE</span></span></code></pre></div>
+</div>
+</section>
+<section id="fallback-templates" class="level3">
+<h3 class="anchored" data-anchor-id="fallback-templates">Fallback templates</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1">rmd_temp <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">create_fallback_template</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">format =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"rmarkdown"</span>)</span>
+<span id="cb17-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">basename</span>(rmd_temp)</span>
+<span id="cb17-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  [1] "file4f125a69628c.Rmd"</span></span></code></pre></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1">qmd_temp <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">create_fallback_template</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">format =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"quarto"</span>)</span>
+<span id="cb18-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">basename</span>(qmd_temp)</span>
+<span id="cb18-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#  [1] "file4f1227ef5f57.qmd"</span></span></code></pre></div>
+</div>
+</section>
+</section>
+<section id="download-handler" class="level2">
+<h2 class="anchored" data-anchor-id="download-handler">Download handler</h2>
+<section id="filename" class="level3">
+<h3 class="anchored" data-anchor-id="filename">filename</h3>
+</section>
+<section id="content" class="level3">
+<h3 class="anchored" data-anchor-id="content">content</h3>
+</section>
+<section id="render_report" class="level3">
+<h3 class="anchored" data-anchor-id="render_report">render_report()</h3>
+<p>The <code>render_report()</code> utility function controls the template used when the download button is clicked:</p>
+<div class="cell" data-layout-align="center">
+<pre><code>█─mod_report_server 
+├─█─render_report 
+│ ├─█─get_template_path 
+│ ├─█─create_fallback_template 
+│ │ ├─█─create_fallback_rmd_template 
+│ │ └─█─create_fallback_qmd_template 
+│ ├─█─render_rmarkdown_report 
+│ └─█─render_quarto_report 
+└─█─create_error_report </code></pre>
+</div>
+</section>
+</section>
+<section id="reactives-and-params" class="level2">
+<h2 class="anchored" data-anchor-id="reactives-and-params">Reactives and params</h2>
+<section id="r-markdown-params" class="level3">
+<h3 class="anchored" data-anchor-id="r-markdown-params">R Markdown params</h3>
+</section>
+<section id="quarto-params" class="level3">
+<h3 class="anchored" data-anchor-id="quarto-params">Quarto params</h3>
+
+
+</section>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Compliments of the <a href="https://lobstr.r-lib.org/reference/ast.html"><code>lobstr::ast()</code></a> function.↩︎</p></li>
+<li id="fn2"><p><code>get_tt_data()</code> joins the metadata from <a href="https://r4ds.github.io/ttmeta/"><code>ttmeta</code></a> with functions from <a href="https://dslc-io.github.io/tidytuesdayR/"><code>tidytuesdayR</code></a>.↩︎</p></li>
+</ol>
+</section></div> ]]></description>
+  <category>Quarto</category>
+  <category>Shiny</category>
+  <category>RMarkdown</category>
+  <guid>https://mjfrigaard.github.io/posts/shiny-reports/</guid>
+  <pubDate>Mon, 02 Jun 2025 07:00:00 GMT</pubDate>
+</item>
 <item>
   <title>Positron</title>
   <dc:creator>Martin Frigaard</dc:creator>
