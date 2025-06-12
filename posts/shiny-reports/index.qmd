@@ -1,0 +1,382 @@
+---
+title: "Shiny Reports"
+subtitle: "A deep dive into downloadable reports"
+author: "Martin Frigaard"
+date: "2025-06-02"
+categories: [Quarto, Shiny, RMarkdown]
+# image: "image.png"
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+# code-block-border-left: true
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+code-fold: show
+code-summary: 'show/hide'
+callout-icon: false
+
+draft: false
+
+freeze: true
+
+knitr:
+  opts_chunk: 
+    fig-dpi: 320
+    fig-width: 6
+    out-width: '85%'
+    fig-format: png
+    fig-align: 'center'
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("../_common.R")
+options(scipen = 999)
+library(quarto)
+library(rmarkdown)
+library(shiny)
+library(lobstr)
+pak::pak('mjfrigaard/shrapports')
+library(shrapports)
+```
+
+```{r}
+#| label: co_box_dev
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "r", 
+  header = "ALERT!", 
+  contents = "This post is currently under development--thank you for your patience.")
+```
+
+This post covers parameterized reports in Shiny applications (via R Markdown and/or Quarto). Downloadable reports are a great feature to include in your application, and I've put together some tips I've learned by adding this feature to multiple applications. 
+
+## shrapports
+
+To help demonstrate a variety of report options, I've written the [`shrapports` R  package](https://github.com/mjfrigaard/shrapports), which contains a Shiny application with a variety of plot outputs.
+
+### Package structure
+
+I've displayed the R folder for `shrapports` below. The package includes three modules, UI and server functions, a handful of utility functions, and a standalone app function. 
+
+```{verbatim}
+shrapports/
+R/
+├── app_server.R #<1>
+├── app_ui.R #<1>
+├── get_tt_data.R #<2>
+├── inspect_plot.R #<3>
+├── launch_app.R #<4>
+├── logr_msg.R #<5>
+├── mod_report.R #<6>
+├── mod_table.R #<6>
+├── mod_var_input.R #<6>
+└── mod_viz.R #<6>
+
+1 directory, 10 files
+```
+1. App functions 
+2. Data utility function   
+3. Plot utility function   
+4. Standalone app function 
+5. Logging function 
+6. Shiny modules   
+
+Below is an abstract syntax tree[^ast] of the application's functions:
+
+```{r}
+#| eval: true 
+#| echo: false
+#| comment: ""
+ast(
+  launch_app(
+    app_ui(
+      mod_var_input_ui(),
+      mod_viz_ui(),
+      mod_table_ui()
+    ),
+    app_server(
+      mod_var_input_server(
+        get_tt_data()
+      ),
+      mod_viz_server(
+        inspect_plot()
+      ),
+      mod_table_server()
+    )
+  )
+)
+```
+
+[^ast]: Compliments of the [`lobstr::ast()`](https://lobstr.r-lib.org/reference/ast.html) function.
+
+### TidyTuesday data 
+
+The `get_tt_data()` function can be used to access the data from teh [TidyTuesday](https://github.com/rfordatascience/tidytuesday) project.[^tidytues]
+
+[^tidytues]: `get_tt_data()` joins the metadata from [`ttmeta`](https://r4ds.github.io/ttmeta/) with functions from [`tidytuesdayR`](https://dslc-io.github.io/tidytuesdayR/).
+
+```{r}
+#| eval: false 
+#| code-fold: false
+pkgs <- c("ttmeta", "tidytuesdayR")
+pak::pkg_install(pkg = pkgs)
+```
+
+A demo of the `get_tt_data()` function is below: 
+
+:::{.column-margin}
+
+*The `ttd` lists are named according to the number of datasets they include.*
+
+:::
+
+```{r}
+#| label: get_tt_data_ttd
+#| eval: true 
+#| message: false 
+#| warning: false
+#| echo: true 
+#| code-fold: false
+ttd <- get_tt_data("Netflix Titles")
+```
+
+```{r}
+#| label: str_ttd
+#| eval: true 
+#| message: false 
+#| warning: false
+#| echo: true 
+#| code-fold: true
+#| code-summary: 'show/hide ttd structure'
+str(ttd)
+```
+
+
+```{r}
+#| label: get_tt_data_ttd2
+#| eval: true 
+#| message: false 
+#| warning: false
+#| echo: true 
+#| code-fold: false
+ttd2 <- get_tt_data("Space Launches")
+```
+
+```{r}
+#| label: str_ttd2
+#| eval: true 
+#| message: false 
+#| warning: false
+#| echo: true 
+#| code-fold: true
+#| code-summary: 'show/hide ttd2 structure'
+str(ttd2)
+```
+
+```{r}
+#| label: get_tt_data_ttd3
+#| eval: true 
+#| message: false 
+#| warning: false
+#| echo: true 
+#| code-fold: false
+ttd3 <- get_tt_data("Moore’s Law")
+```
+
+```{r}
+#| label: str_ttd3
+#| eval: true 
+#| message: false 
+#| warning: false
+#| echo: true 
+#| code-fold: true
+#| code-summary: 'show/hide ttd3 structure'
+str(ttd3)
+```
+
+### Inspect plots
+
+The [`inspectdf` package](https://github.com/alastairrushworth/inspectdf/tree/master) provides "*collection of utilities for columnwise summary, comparison and visualisation of data frames.*" I've written a wrapper function (`inspect_plot()`) for handling the ttd lists. 
+
+`inspect_plot()` combines the `inspectdf::inspect_*()` + `inspectdf::show_plot()` functions and returns the corresponding plot.
+
+```{r}
+#| label: inspect_plot_ttd_cat
+#| code-fold: false
+#| eval: true 
+#| message: false 
+#| warning: false
+inspect_plot(
+  ttd = ttd, 
+  plot = "cat"
+  )
+```
+
+
+Below is an example of the `inspect_imb()` + `show_plot()` functions on `ttd2`:
+
+```{r}
+#| label: inspect_plot_ttd2_imb
+#| code-fold: false
+#| eval: true 
+#| message: false 
+#| warning: false
+inspect_plot(
+  ttd = ttd2, 
+  plot = "imb"
+  )
+```
+
+Below is an example of the `inspect_types()` + `show_plot()` functions on `ttd3`:
+
+```{r}
+#| label: inspect_plot_ttd3_types
+#| code-fold: false
+#| eval: true 
+#| message: false 
+#| warning: false
+inspect_plot(
+  ttd = ttd3, 
+  plot = "types"
+  )
+```
+
+If `inspect_plot()` is passed without any arguments, all plots are returned: 
+
+```{r}
+#| label: inspect_plot_ttd_all
+#| code-fold: false
+#| eval: true 
+#| message: false 
+#| warning: false
+inspect_plot(ttd = ttd)
+```
+
+
+In the sections below, we'll cover how to reliably pass the contents of each module into a downloadable report.
+
+### Modules 
+
+There are three modules in the application: mod_var_input collects the dataset title, mod_viz displays the graphs, mod_table displays a table of the data used in the graph(s).
+
+## Report templates 
+
+We'll store the report templates in the `inst/` folder. Anything in `inst/` automatically included and accessible from an installed application with `system.file()`, so it's a great place for template files. 
+
+### Templates 
+
+The templates are accessed with the `get_template_path()` function.
+
+The `get_template_path()` function returns the installed location of our templates: 
+
+```{verbatim}
+└── inst
+    └── rmarkdown
+        └── report_template.Rmd
+```
+
+```{r}
+#| label: get_template_path_rmd
+#| eval: false
+#| code-fold: false
+identical(
+  # response from function
+  x = get_template_path('rmarkdown'), 
+  # response from system.file()
+  y = system.file("rmarkdown", "report_template.Rmd", 
+                  package = "shrapports"))
+#  [1] TRUE
+```
+
+```{verbatim}
+└── inst
+    └── quarto
+        └── report_template.qmd
+```
+
+```{r}
+#| label: get_template_path_qmd
+#| eval: false
+#| code-fold: false
+identical(
+  # response from function
+  x = get_template_path('quarto'), 
+  # response from system.file()
+  y = system.file("quarto", "report_template.qmd", 
+                  package = "shrapports"))
+#  [1] TRUE
+```
+
+### Fallback templates 
+
+```{r}
+#| label: rmd_create_fallback_template
+#| eval: false
+#| code-fold: false
+rmd_temp <- create_fallback_template(format = "rmarkdown")
+basename(rmd_temp)
+#  [1] "file4f125a69628c.Rmd"
+```
+
+
+```{r}
+#| label: qmd_create_fallback_template
+#| eval: false
+#| code-fold: false
+qmd_temp <- create_fallback_template(format = "quarto")
+basename(qmd_temp)
+#  [1] "file4f1227ef5f57.qmd"
+```
+
+## Download handler
+
+### filename
+
+### content
+
+### render_report()
+
+The `render_report()` utility function controls the template used when the download button is clicked:
+
+```{r}
+#| eval: true 
+#| echo: false
+#| comment: ""
+ast(
+mod_report_server(
+  render_report(
+    get_template_path(),
+    create_fallback_template(
+      create_fallback_rmd_template(),
+      create_fallback_qmd_template()
+    ),
+    render_rmarkdown_report(),
+    render_quarto_report()
+    ),
+  create_error_report()
+  )
+)
+```
+
+## Reactives and params
+
+### R Markdown params
+
+### Quarto params
+
+
+
+
+
