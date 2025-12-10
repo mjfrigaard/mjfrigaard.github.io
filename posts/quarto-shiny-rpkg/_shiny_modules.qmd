@@ -1,0 +1,12 @@
+
+````{verbatim}
+```{r}
+#| panel: input
+mod_var_input_ui("vars")
+```
+
+```{r}
+#| panel: center
+mod_scatter_display_ui("plot")
+```
+````

@@ -2,7 +2,7 @@
 title: "Quarto Shiny Apps in R Packages" 
 subtitle: "Modules, launching and deployment"
 author: "Martin Frigaard"
-date: "2024-11-06"
+date: "2025-02-06"
 categories: [Quarto, Shiny, Packages]
 image: "img/quarto.png"
 toc: true
@@ -15,7 +15,7 @@ code-block-border-left: "#e8e8e8"
 code-fold: show
 code-summary: 'show/hide'
 callout-icon: false
-draft: true
+draft: false
 
 freeze: true
 
@@ -48,7 +48,7 @@ library(reticulate)
 #| label: co_box_dev
 #| results: asis 
 #| echo: false
-#| eval: true
+#| eval: false
 co_box(
   color = 'r',
   header = 'Important!',
@@ -60,31 +60,67 @@ co_box(
 )
 ```
 
-This post was prompted by a new chapter I've been working on for Shiny App-Packages. I've recently been building a Shiny application in a Quarto document[^quarto-interactivity], and noticed quite a few deviations from the standard app-package practices that deserve some attention. I'll cover how to include modules *inside* a Quarto document, creating a standalone function to launch your Quarto + Shiny app, and how to deploy a Quarto + Shiny dashboard from an app-package.
+This post was prompted by a new chapter I've been working on for Shiny App-Packages. I've recently been building a Shiny application in a Quarto document[^quarto-interactivity], and noticed quite a few deviations from the standard app-package practices that deserve some attention.
+
+I'll cover various dashboard/html layout options, including modules in a Quarto document, and how to create a standalone function to launch your Quarto + Shiny app from an app-package.
 
 [^quarto-interactivity]: Shiny is covered in the [Interactivity section](https://quarto.org/docs/interactive/shiny/) of the Quarto documentation. 
 
-## Reactivity 
+## Set up 
 
-Quarto documents can be converted into Shiny's apps using the `server` option in the YAML header:
+The Quarto document (`index.qmd`) is placed inside the `inst/` folder with a [`_quarto.yml` project file](https://quarto.org/docs/projects/quarto-projects.html#project-metadata): 
 
-{{< include _shiny_options.qmd >}}
+```{verbatim}
+└── inst
+     └── quarto
+          ├── _quarto.yml
+          └── index.qmd
+```
 
-### Modules 
+### [`_quarto.yml`]{style="font-size: 1.10em; font-weight: bold;"}
 
-If you're developing a Quarto + Shiny application using modules (and you should be[^shiny-mods-1] [^shiny-mods-2]), the module functions can be placed in the code blocks like regular Shiny code:
+`_quarto.yml` contains metadata on the format, style, and rendering options for the dashboard. 
 
+```yml
+title: "Quarto Movies App"
 
+format:
+  html:
+    embed-resources: true
+```
 
-[^shiny-mods-1]: See the [Modularizing Shiny app code](https://shiny.posit.co/r/articles/improve/modules/) in the Shiny documentation.
+This file includes options for the entire Quarto project (i.e., all `.qmd` files in the folder). In our case it's simply the dashboard file: `index.qmd`.
 
-[^shiny-mods-2]: See the [Shiny modules chapter](https://mastering-shiny.org/scaling-modules.html) of Mastering Shiny.
+### [`index.qmd`]{style="font-size: 1.10em; font-weight: bold;"}
 
+The `index.qmd` file contains the `title` of our application and the `format` of the document in the YAML frontmatter. 
 
+{{< include _index_title.qmd >}}
+
+### [`www/`]{style="font-size: 1.10em; font-weight: bold;"}
+
+To include resources (like images or stylesheets), we'll also  add a `www/` folder:
+
+```{verbatim}
+└── inst
+     └── quarto
+          ├── _quarto.yml
+          ├── index.qmd
+          └── www/
+              └── quarto.png
+```
+
+### [`context: setup`]{style="font-size: 1.10em; font-weight: bold;"}
+
+The first code chunk in `index.qmd` should include a `context: setup` option and  load the necessary packages. If we want the dashboard to have access to the resources in `www/`, we need to include the [`addResourcePath()` function](https://shiny.posit.co/r/reference/shiny/0.12.0/addresourcepath.html) and pass the path with the installed version of our application. 
+
+{{< include _add_resource_path.qmd >}}
 
 ## Dashboards
 
 Dashboard layouts are covered extensively in the Quarto documentation[^quarto-dashs] and elsewhere[^youtube], and I've included example layouts in the [code repo](https://github.com/mjfrigaard/quarto-dash-r). Key things to remember about Quarto dashboard layouts:
+
+### [`format: dashboard`]{style="font-size: 1.10em; font-weight: bold;"}
 
 1. Dashboard layouts are configured using a combination of YAML fields and markdown headings. By default, the `orientation` field is set to `rows`, but multiple code chunks will add new columns:
     
@@ -155,55 +191,147 @@ Below is an example dashboard layout with most of the features mentioned above. 
 
 ![Quarto layout options page 2 (click to enlarge)](img/layout_p2.png)
 
-View the code used for the layout above (and others[^layouts]) in the GitHub repository.
+View the code used for the layout above (and others) in the GitHub repository.[^layouts]
 
 [^layouts]: The [`.qmd` files ending in `layout`](https://github.com/search?q=repo%3Amjfrigaard%2Fquarto-dash-r+path%3A%22layout.qmd%22&type=code) are examples of various dashboard layouts.  
 
+## Reactivity 
+
+Quarto documents can be converted into Shiny's apps using the `server` option in the YAML header. In our `index.qmd` file, we'll set `server` to `shiny`:
+
+### [`server: shiny`]{style="font-size: 1.10em; font-weight: bold;"}
+
+{{< include _shiny_options.qmd >}}
+
+
+
+## Modules 
+
+If you're developing a Quarto + Shiny application using modules (and you should[^shiny-mods-1] be[^shiny-mods-2]), the module functions can be placed in the code blocks like regular Shiny code.
+
+The code below is used to implement the UI functions from the `mod_var_input.R` and `mod_scatter_display_ui.R` modules: 
+
+{{< include _shiny_modules.qmd >}}
+
+The `panel: input` creates a '*div with class `.panel-input`* and `panel: center` will '*leave some horizontal margin around its content*.'[^input-panel]
+
+[^input-panel]: Read more about [Input Panel layouts](https://quarto.org/docs/interactive/layout.html#input-panel)
+
+We can also include regular shiny code in code chunks: 
+
+{{< include _shiny_code.qmd >}}
+
+`panel: fill` will '*fill all available spac*e' in the dashboard.[^sidebar-layout]
+
+[^sidebar-layout]: Read more about [Sidebar Panel layouts](https://quarto.org/docs/interactive/layout.html#sidebar-panel).
+
+[^shiny-mods-1]: See the [Modularizing Shiny app code](https://shiny.posit.co/r/articles/improve/modules/) in the Shiny documentation.
+
+[^shiny-mods-2]: See the [Shiny modules chapter](https://mastering-shiny.org/scaling-modules.html) of Mastering Shiny.
+
+
+### [`context: server`]{style="font-size: 1.10em; font-weight: bold;"}
+
+The `server: shiny` in the YAML frontmatter ensures the document will render the UI inputs (i.e., the contents of `mod_var_input_ui()`). To differentiate the `server` (running on the back-end) code from user inputs and outputs, we need to add the module server functions in code blocks with the `context: server` option: 
+
+{{< include _shiny_module_server.qmd >}}
+
 ## Styling
 
-When building a Quarto dashboard, SCSS (Sassy CSS) can be a powerful tool for customizing its appearance. Unlike standard CSS, SCSS introduces features like variables, nesting, and mixins, which help keep the code organized and modular. These features can be particularly useful in a Quarto dashboards, where we might want complex styling requirements.
+[SASS (Syntactically Awesome Style Sheets)](https://en.wikipedia.org/wiki/Sass_(style_sheet_language)) or [CSS (Cascading Style Sheets)](https://en.wikipedia.org/wiki/CSS) can be powerful tools for customizing a Quarto dashboard's appearance. Unlike standard CSS, SCSS introduces features like variables, nesting, and mixins, which help keep the code organized and modular. 
 
-### SCSS
+### [`styles.scss`]{style="font-size: 1.10em; font-weight: bold;"}
 
-SCSS is a syntax of [SASS (Syntactically Awesome Style Sheets)](https://en.wikipedia.org/wiki/Sass_(style_sheet_language)), which extends [CSS (Cascading Style Sheets)](https://en.wikipedia.org/wiki/CSS).
+A dedicated `.scss` file keeps styles organized and separated from content, improving readability and maintainability. 
 
-#### Display options
+```{verbatim}
+└── inst
+     └── quarto
+          ├── _quarto.yml
+          ├── index.qmd
+          └── www
+              ├── quarto.png
+              └── styles.scss
+```
 
-We'll start by covering how to style our Quarto dashboard the HTML document/website layout options. Let's assume we want to change the width of our dashboard to be fixed (similar to Streamlit apps[^streamlit-width]). 
+We will set some colors defaults in `www/styles.scss`:
 
-We'll start with a 
+```scss
+/*-- scss:defaults --*/
 
-We can adjust column and row width *within* the dashboard, but I wanted the overall width to be fixed. 
+// colors
+$body-bg: #070d35;
+$body-color: #FFFFFF;
 
-[^streamlit-width]: The width of Streamlit apps can be adjusted with the [`st.set_page_config(layout="wide")` option](https://docs.streamlit.io/develop/quick-reference/cheat-sheet#placeholders-help-and-options). Read more [here.](https://discuss.streamlit.io/t/how-to-increase-the-width-of-web-page/7697/4)
+$link-color: #2ee3a4;
+$hover-color: lighten($link-color, 40%);
 
-#### External SCSS file
+$code-block-bg-alpha: -.8;
 
-with an external `.scss` file. Having a dedicated `.scss` file keeps styles organized and separated from content, improving readability and maintainability. 
+/*-- scss:rules --*/
 
+```
 
+### [`thematic`]{style="font-size: 1.10em; font-weight: bold;"}
 
-### Custom elements
+For a broader, simplified approach to styling, we can install/use the [`thematic`](https://rstudio.github.io/thematic/) package:
 
-```html
-<button style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px;">
-  Click Me
-</button>
+```{r}
+#| eval: false
+#| code-fold: false
+install.packages("thematic")
+```
+
+We can add `thematic_set_theme()` to the `context: setup` code chunk in `index.qmd`:
+
+```{r}
+#| eval: false
+#| code-fold: false
+thematic::thematic_set_theme(
+  theme = thematic::thematic_theme(
+    bg = "#070d35", 
+    fg = "#FFFFFF", 
+    accent = "#2ee3a4"))
+```
+
+This also requires the `shiny.useragg` [option](https://rstudio.github.io/thematic/articles/fonts.html?q=shinyuseragg#shiny-rmd):
+
+```{r}
+#| eval: false
+#| code-fold: false
+options(shiny.useragg = TRUE)
 ```
 
 
+## Launching
 
-## Deploying
+To launch our Quarto dashboard with a standalone app function, we can use `quarto_preview()` with `system.file()`:
 
-### Launching
+```{r}
+#| eval: false 
+#| code-fold: false
+launch_app <- function() {
+  quarto::quarto_preview(
+    system.file("quarto", "index.qmd", package = "sap" ), 
+    render = "all")
+}
+```
+
+```{r}
+#| eval: false 
+#| code-fold: false
+launch_app()
+```
+
+![Quarto App (click to enlarge)](img/quarto_app.png){width='100%' fig-align='center'}
+
 
 ## Recap
+
+If you're interested in learning more, check out the [Quarto apps section](https://mjfrigaard.github.io/shiny-app-pkgs/resources.html#sec-resources-inst-quarto) of Shiny App-Packages and the [Quarto documentation](). Albert Rapp has a great video on [building interactive apps with Quarto & Shiny](https://youtu.be/06H8k1nzZQ0?si=vGKuE6VX1LdfDMP7) and Isabella Velásquez also does a fantastic job covering [python Quarto dashboards](https://youtu.be/uLGe9zuuNl0?si=8bC7qG3AvFDcmj2x).
 
 [^quarto-dashs]: [Quarto dashboards.](https://quarto.org/docs/dashboards/)
 
 [^youtube]: Mine Çetinkaya-Rundel has an excellent three part tutorial on Posit's YouTube channel ([part 1](https://youtu.be/HW7QbqI4fH0?si=WuBui8y9uRjOVQzD), [part 2](https://www.youtube.com/watch?v=KdsQgwaY950), [part 3](https://www.youtube.com/watch?v=NigWSB-jG4Y&t=112s)).
 
 
-https://www.w3schools.com/sass/sass_intro.asp
-
-https://icons.getbootstrap.com/
