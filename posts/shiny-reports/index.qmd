@@ -1,10 +1,10 @@
 ---
-title: "Shiny Reports"
-subtitle: "A deep dive into downloadable reports"
+title: "Downloadable Reports"
+subtitle: "A deep dive into Shiny reports"
 author: "Martin Frigaard"
-date: "2025-06-02"
+date: "2025-08-02"
 categories: [Quarto, Shiny, RMarkdown]
-# image: "image.png"
+image: "img/image.png"
 toc: true
 toc-depth: 5
 toc-title: 'Contents'
@@ -16,7 +16,7 @@ code-fold: show
 code-summary: 'show/hide'
 callout-icon: false
 
-draft: false
+draft: true
 
 freeze: true
 
@@ -41,13 +41,18 @@ execute:
 #| echo: false 
 #| include: false
 source("../_common.R")
-options(scipen = 999)
+options(
+  scipen = 999,
+  repos = c(pm = "https://packagemanager.posit.co/cran/latest",
+            CRAN = "https://cloud.r-project.org")
+  )
 library(quarto)
 library(rmarkdown)
 library(shiny)
 library(lobstr)
-pak::pak('mjfrigaard/shrapports')
-library(shrapports)
+install.packages('remotes')
+remotes::install_github('mjfrigaard/ttdviewer', 
+  quiet = TRUE, force = TRUE)
 ```
 
 ```{r}
@@ -56,64 +61,82 @@ library(shrapports)
 #| results: asis
 #| eval: true
 co_box(color = "r", 
-  header = "ALERT!", 
+  header = "DRAFT!", 
   contents = "This post is currently under development--thank you for your patience.")
 ```
 
 This post covers parameterized reports in Shiny applications (via R Markdown and/or Quarto). Downloadable reports are a great feature to include in your application, and I've put together some tips I've learned by adding this feature to multiple applications. 
 
-## shrapports
+## ttdviewer
 
-To help demonstrate a variety of report options, I've written the [`shrapports` R  package](https://github.com/mjfrigaard/shrapports), which contains a Shiny application with a variety of plot outputs.
+To help demonstrate a variety of report options, I've written the [`ttdviewer` R  package](https://mjfrigaard.github.io/ttdviewer/index.html), which contains a Shiny application with a variety outputs to include downloadable reports.[^tidytues]
 
-### Package structure
+[^tidytues]: `load_tt_data()` joins the metadata from [`ttmeta`](https://r4ds.github.io/ttmeta/) and [`tidytuesdayR`](https://dslc-io.github.io/tidytuesdayR/).
 
-I've displayed the R folder for `shrapports` below. The package includes three modules, UI and server functions, a handful of utility functions, and a standalone app function. 
+```{r}
+#| eval: true 
+#| code-fold: false
+library(ttdviewer)
+```
+
+I've displayed the R folder for `ttdviewer` below. The package includes a 
+handful of modules and utility functions, UI and server functions, and a standalone app function. 
 
 ```{verbatim}
-shrapports/
 R/
 ├── app_server.R #<1>
 ├── app_ui.R #<1>
-├── get_tt_data.R #<2>
 ├── inspect_plot.R #<3>
-├── launch_app.R #<4>
+├── launch.R #<4>
+├── load_tt_data.R #<2>
 ├── logr_msg.R #<5>
-├── mod_report.R #<6>
+├── mod_list.R #<6>
+├── mod_report_desc.R #<6>
+├── mod_report_download.R #<6>
+├── mod_report_input.R #<6>
 ├── mod_table.R #<6>
-├── mod_var_input.R #<6>
-└── mod_viz.R #<6>
+├── mod_input.R #<6>
+├── mod_viz.R #<6>
+├── render_report.R # <7>
+└── testthat.R # <8>
 
-1 directory, 10 files
+1 directory, 15 files
 ```
 1. App functions 
 2. Data utility function   
 3. Plot utility function   
 4. Standalone app function 
 5. Logging function 
-6. Shiny modules   
+6. Shiny modules  
+7. Report utilities  
+8. Test utilities 
 
-Below is an abstract syntax tree[^ast] of the application's functions:
+Below is an abstract syntax tree[^ast] of the dataset and report format input modules, and the list, table, and graph output modules. 
 
 ```{r}
-#| eval: true 
+#| eval: false  
+#| include: false
 #| echo: false
 #| comment: ""
 ast(
   launch_app(
     app_ui(
-      mod_var_input_ui(),
-      mod_viz_ui(),
-      mod_table_ui()
+      mod_input_ui(),
+      mod_list_ui(),
+      mod_plot_ui(),
+      mod_table_ui(),
+      mod_report_input_ui(),
+      mod_report_desc_ui(),
+      mod_report_download_ui()
     ),
     app_server(
-      mod_var_input_server(
-        get_tt_data()
-      ),
-      mod_viz_server(
-        inspect_plot()
-      ),
-      mod_table_server()
+      mod_input_server(),
+      mod_list_server(),
+      mod_table_server(),
+      mod_plot_server(),
+      mod_report_input_server(),
+      mod_report_desc_server(),
+      mod_report_download_server()
     )
   )
 )
@@ -121,35 +144,126 @@ ast(
 
 [^ast]: Compliments of the [`lobstr::ast()`](https://lobstr.r-lib.org/reference/ast.html) function.
 
-### TidyTuesday data 
+In the sections below, we'll cover how to the inputs are passed between the modules before being rendered in the downloaded report.
 
-The `get_tt_data()` function can be used to access the data from teh [TidyTuesday](https://github.com/rfordatascience/tidytuesday) project.[^tidytues]
+## #TidyTuesday data
 
-[^tidytues]: `get_tt_data()` joins the metadata from [`ttmeta`](https://r4ds.github.io/ttmeta/) with functions from [`tidytuesdayR`](https://dslc-io.github.io/tidytuesdayR/).
+![Download progress for #tidytuesday data](img/mod_input.png){width='50%' fig-align='center'}
+
+The sidebar has a single input that allows users to select a dataset from the [#TidyTuesday project.](https://github.com/rfordatascience/tidytuesday) The dataset title (`input$ds_title`) is collected in `mod_input_ui()` and passed to `mod_input_server()`, where it's used to create and return the reactive input for the remaining modules in the application. 
+
 
 ```{r}
-#| eval: false 
+#| label: mod_input-ds_title-input
+#| eval: false
 #| code-fold: false
-pkgs <- c("ttmeta", "tidytuesdayR")
-pak::pkg_install(pkg = pkgs)
+choices <- unique(all_tt_combined$title) # <1> 
+selectInput( # <2>
+  inputId = ns("ds_title"),
+  label = strong("Choose Dataset Title:"),
+  choices = choices,
+  selected = "Space Launches"
+) # <2>
 ```
+1. Dataset titles from the internal `all_tt_combined` data    
+2. User input   
 
-A demo of the `get_tt_data()` function is below: 
+The title is used to create the reactive expression `data()`  with `load_tt_data()`. 
 
 :::{.column-margin}
 
-*The `ttd` lists are named according to the number of datasets they include.*
+[`logr_msg()`](https://github.com/mjfrigaard/ttdviewer/blob/main/R/logr_msg.R) is a custom logging function using the [`logger` package](https://daroczig.github.io/logger/). 
 
 :::
 
 ```{r}
-#| label: get_tt_data_ttd
+#| label: mod_input-ds_title-output
+#| eval: false
+#| code-fold: false
+data <- reactive({ 
+  req(input$ds_title)
+  logr_msg(
+    message = paste("User selected dataset:", input$ds_title),
+    level = "INFO"
+    )
+  tryCatch({
+      result <- load_tt_data(input$ds_title) # <1> 
+      if (length(result) == 0) {
+        logr_msg(
+          message = "Empty dataset returned",
+          level = "WARN")
+        showNotification("No data available for selected dataset", # <2> 
+          type = "warning", duration = 5
+        ) # <2> 
+      } else {
+        logr_msg(
+          message = "Dataset successfully loaded in reactive",
+          level = "SUCCESS"
+          )
+      }
+      return(result)
+    },
+    error = function(e) { # <3>
+      logr_msg(
+        message = paste("Error in data reactive:", e$message),
+        level = "ERROR"
+        )
+      showNotification(paste("Error loading data:", e$message),
+        type = "error", duration = 10
+      )
+      return(list())
+    }) # <3>
+}) |>
+  bindEvent(input$ds_title) 
+```
+1. Reactive `data()` list is created from [`load_tt_data()` function](https://github.com/mjfrigaard/ttdviewer/blob/main/R/load_tt_data.R).      
+2. Notification for unavailable data    
+3. Graceful error handling    
+
+The download progress is displayed with `details()` and `summary()` tags. 
+```{r}
+#| label: mod_input-vals-input
+#| eval: false
+#| code-fold: false
+tags$details(
+  tags$summary(
+    em("View download details:")
+  ),
+  verbatimTextOutput(ns("vals"))
+)
+```
+
+```{r}
+#| label: mod_input-vals-output
+#| eval: false
+#| code-fold: false
+output$vals <- renderPrint({ 
+  req(data())
+  ds_names <- names(data())
+  cat(
+    paste("Downloaded", ds_names, "data.",
+      collapse = "\n"
+    )
+  )
+}) 
+```
+
+The `load_tt_data()` function can be used to import the data into the app. A demo of this function is below:
+
+:::{.column-margin}
+
+*`ttd` is a named list with however many datasets the title refers to.*
+
+:::
+
+```{r}
+#| label: load_tt_data_ttd
 #| eval: true 
 #| message: false 
 #| warning: false
 #| echo: true 
 #| code-fold: false
-ttd <- get_tt_data("Netflix Titles")
+ttd <- load_tt_data("Space Launches")
 ```
 
 ```{r}
@@ -163,190 +277,464 @@ ttd <- get_tt_data("Netflix Titles")
 str(ttd)
 ```
 
+## List display
+
+![List view of selected #tidytuesday data](img/listviewerlite.png)
+
+On the first tab, the selected data is displayed using the  [`listviewerlite` package](https://long39ng.github.io/listviewerlite/) and the `mod_list` module. 
 
 ```{r}
-#| label: get_tt_data_ttd2
 #| eval: true 
-#| message: false 
-#| warning: false
-#| echo: true 
-#| code-fold: false
-ttd2 <- get_tt_data("Space Launches")
-```
-
-```{r}
-#| label: str_ttd2
-#| eval: true 
-#| message: false 
-#| warning: false
-#| echo: true 
-#| code-fold: true
-#| code-summary: 'show/hide ttd2 structure'
-str(ttd2)
-```
-
-```{r}
-#| label: get_tt_data_ttd3
-#| eval: true 
-#| message: false 
-#| warning: false
-#| echo: true 
-#| code-fold: false
-ttd3 <- get_tt_data("Moore’s Law")
-```
-
-```{r}
-#| label: str_ttd3
-#| eval: true 
-#| message: false 
-#| warning: false
-#| echo: true 
-#| code-fold: true
-#| code-summary: 'show/hide ttd3 structure'
-str(ttd3)
-```
-
-### Inspect plots
-
-The [`inspectdf` package](https://github.com/alastairrushworth/inspectdf/tree/master) provides "*collection of utilities for columnwise summary, comparison and visualisation of data frames.*" I've written a wrapper function (`inspect_plot()`) for handling the ttd lists. 
-
-`inspect_plot()` combines the `inspectdf::inspect_*()` + `inspectdf::show_plot()` functions and returns the corresponding plot.
-
-```{r}
-#| label: inspect_plot_ttd_cat
-#| code-fold: false
-#| eval: true 
-#| message: false 
-#| warning: false
-inspect_plot(
-  ttd = ttd, 
-  plot = "cat"
+#| echo: false
+#| comment: ""
+ast(
+  launch_app(
+    app_ui(
+      mod_input_ui(),
+      mod_list_ui()
+    ),
+    app_server(
+      mod_input_server(
+        load_tt_data()
+      ),
+      mod_list_server()
+    )
   )
+)
 ```
 
 
-Below is an example of the `inspect_imb()` + `show_plot()` functions on `ttd2`:
+The `mod_list` module includes help text and graceful error handling with a clear message if the UI fails:
 
 ```{r}
-#| label: inspect_plot_ttd2_imb
+#| label: mod_list-input
+#| eval: false
 #| code-fold: false
+  tryCatch({
+      bslib::card(
+        bslib::card_body(
+          markdown("Below is a preview of the [#TidyTuesday](https://github.com/rfordatascience/tidytuesday) 
+            dataset(s) provided by [`listviewerlite`](https://long39ng.github.io/listviewerlite/)"),
+          uiOutput(ns("list"))
+        )
+      )
+    },
+    error = function(e) {
+      logr_msg(
+        message = paste("Error creating list UI:", e$message),
+        level = "ERROR")
+      bslib::card(
+        bslib::card_header("List Error"),
+        bslib::card_body(
+          h4("Error loading list interface", class = "text-danger")
+        )
+      )
+    })
+```
+
+
+The output is rendered with a `renderUI()` and displays the reactive `data()` list:
+
+```{r}
+#| label: mod_list-output
+#| eval: false
+#| code-fold: false
+output$list <- renderUI({
+  req(data())
+  listviewerlite::listview(data())
+})
+```
+
+```{r}
+#| label: listviewerlite
 #| eval: true 
-#| message: false 
-#| warning: false
-inspect_plot(
-  ttd = ttd2, 
-  plot = "imb"
+#| code-fold: false
+listviewerlite::listview(ttd)
+```
+
+The `data` and reactive `ds_title` are returned from the server function. 
+
+```{r}
+#| label: mod_input-return
+#| eval: false
+#| code-fold: false
+    return( 
+        list(
+          data = data,
+          'ds_title' = reactive(input$ds_title)
+        )
+      ) 
+```
+
+## Table display
+
+![Table view of selected #tidytuesday data](img/mod_table.png)
+
+The second tab in the application contains a table display of the selected data from the sidebar. The input is collected from the `mod_input` (just like the list display above). By default, the tab loads with the first element in the list.
+
+```{r}
+#| eval: true 
+#| echo: false
+#| comment: ""
+ast(
+  launch_app(
+    app_ui(
+      mod_input_ui(),
+      mod_table_ui()
+    ),
+    app_server(
+      mod_input_server(
+        load_tt_data()
+      ),
+      mod_table_server()
+    )
   )
+)
 ```
 
-Below is an example of the `inspect_types()` + `show_plot()` functions on `ttd3`:
+The reactive list is returned from `mod_input_server()` as `selected_data` and passed to `mod_table_server()` in `app_server()`.
 
 ```{r}
-#| label: inspect_plot_ttd3_types
+#| label: app_server-table
+#| eval: false
+#| code-fold: false 
+# initialize modules
+title_input <- mod_input_server("input")
+# return the data and title
+selected_data <- title_input$data
+# reactive values for table
+mod_table_server(id = "table", data = selected_data)
+```
+
+Inside `mod_table_server()`, the reactive `data()` is renamed `ds_list` and the selected dataset (`input$ds_input`) is subsetted from the list:
+
+```{r}
+#| label: safe-table
+#| eval: false 
 #| code-fold: false
+tryCatch({
+    req(data())
+    if (length(data()) == 0) {
+      logr_msg(
+        message = "No data available for table rendering",
+        level = "WARN")
+      return(NULL)
+    }
+    ds_list <- data() #<1>
+
+    ds_selected <- as.character(input$ds_input) #<2>
+    display_ds <- ds_list[[ds_selected]]  #<3>
+}, error = function(e) {
+  logr_msg(
+    message = paste("Error rendering table:", e$message),
+    level = "ERROR")
+    # return empty reactable with error message
+    reactable::reactable(
+      data.frame(Error = paste("Failed to load data:", e$message)),
+      searchable = FALSE,
+      sortable = FALSE,
+      pagination = FALSE)
+})
+```
+1. Rename `data()` reactive     
+2. Selected dataset from UI input        
+3. Subset single dataset from list      
+
+The single dataset (`display_ds`) is passed through conditional logic to ensure large datasets aren't rendered in the application:
+
+```{r}
+#| label: table-large-data
+#| eval: false
+#| code-fold: false 
+# limit to first 1000 rows
+display_ds <- if (nrow(display_ds) > 1000) {
+  logr_msg(
+    message = "Large dataset detected - limiting to first 1000 rows",
+    level = "INFO")
+  head(display_ds, 1000)
+} else {
+  display_ds
+}
+```
+
+And the table is passed to the `renderReactable()` function with the following table settings: 
+
+```{r}
+#| label: render-reactable
 #| eval: true 
-#| message: false 
-#| warning: false
-inspect_plot(
-  ttd = ttd3, 
-  plot = "types"
+#| code-fold: show 
+#| code-summary: 'show/hide reactable code'
+reactable::reactable(
+            ttd[[1]], #<1>
+            searchable = TRUE,
+            sortable = TRUE,
+            pagination = TRUE,
+            defaultPageSize = 10,
+            showPageSizeOptions = TRUE,
+            pageSizeOptions = c(5, 10, 20, 50),
+            highlight = TRUE,
+            bordered = TRUE,
+            striped = TRUE,
+            resizable = TRUE,
+            wrap = FALSE,
+            defaultColDef = reactable::colDef(
+              minWidth = 100,
+              headerStyle = list(background = "#f7f7f8")
+            )
+          )
+```
+1. In the app, this is `display_ds`   
+
+
+## Graph display
+
+![Graphs of selected #tidytuesday dataset](img/mod_plot.png)
+
+The third tab display graphs for the selected [#TidyTuesday data](https://github.com/rfordatascience/tidytuesday) compliments of the 
+[`inspectdf` package](https://github.com/alastairrushworth/inspectdf/tree/master), which provides "*collection of utilities for columnwise summary, comparison and visualisation of data frames.*"
+
+The `mod_plot` module uses the same reactive input from `mod_input` as the `mod_list` and `mod_table`:
+
+```{r}
+#| eval: true 
+#| echo: false
+#| comment: ""
+ast(
+  launch_app(
+    app_ui(
+      mod_input_ui(),
+      mod_plot_ui()
+    ),
+    app_server(
+      mod_input_server(
+        load_tt_data()
+      ),
+      mod_plot_server(
+        inspect_plot()
+      )
+    )
   )
+)
 ```
 
-If `inspect_plot()` is passed without any arguments, all plots are returned: 
+The UI contains a dropdown input for choosing a `dataset` and checkboxes for selecting `plots`, which are rendered via `uiOutput()`:
 
 ```{r}
-#| label: inspect_plot_ttd_all
+#| label: mod_plot-inputs
+#| eval: false 
+#| code-fold: false 
+ns <- NS(id) #<1>
+tagList(
+  selectInput( #<2>
+    ns("dataset"),
+    "Choose dataset:",
+    choices = NULL,
+    selected = NULL
+  ), #<2>
+  checkboxGroupInput( #<3>
+    ns("plots"),
+    "Select plot type:",
+    choices = c(
+      "types"       = "types",
+      "memory"      = "mem",
+      "missing"     = "na",
+      "correlation" = "cor",
+      "imbalance"   = "imb",
+      "numeric"     = "num",
+      "categorical" = "cat"
+    ),
+    selected = c("types","mem","na")
+  ), #<3>
+  uiOutput(ns("plots_ui"))  #<4>
+)
+```
+1. Namespace (for connecting modules)    
+2. Dataset input (from selected #TidyTuesday data in sidebar)    
+3. Plots selected from [`inspectdf` package](https://alastairrushworth.com/inspectdf/)     
+4. Plot outputs    
+
+![Graph inputs](img/mod_plot_inputs.png){width='75%' fig-align='center'}
+
+Inside `mod_plot_server()`, I've written `inspect_plot()`, which combines the `inspect_*()` + `show_plot()` functions from `inspectdf` and returns the corresponding plot. 
+
+```{r}
+#| label: observe-inspect_plot
+#| eval: false 
+#| code-fold: false 
+observe({
+    tryCatch({
+      ds_list <- req(ttd_r())
+      sel_ds  <- input$dataset #<1>
+      req(sel_ds %in% names(ds_list))  
+      df <- ds_list[[sel_ds]] #<2>
+      logr_msg(
+        message = sprintf("Rendering plots for dataset '%s'", sel_ds),
+        level = "INFO")
+
+      purrr::walk(input$plots, function(plt) { #<3>
+        out_id <- paste0("plt_", plt)
+        output[[out_id]] <- renderPlot({
+          tryCatch({
+            inspect_plot(
+              ttd = setNames(list(df), sel_ds),
+              plots = plt
+            )
+          }, error = function(err2) {
+            logr_msg(
+              message = sprintf("Error plotting %s:%s — %s",
+                sel_ds, plt, err2$message),
+              level = "ERROR")
+            plot.new() #<4> 
+            text(0.5, 0.5, "Error generating plot", cex = 1.2, col = "red") #<4> 
+          })
+        })
+      }) #<3>
+    }, error = function(err) {
+      logr_msg(
+        message = sprintf("Error in plot observer: %s", err$message),
+        level = "ERROR")
+    })
+  }) |>
+  bindEvent(list(input$dataset, input$plots),
+            ignoreNULL = TRUE)
+```
+1. Selected dataset from UI   
+2. Extract dataset from list (`ds_list`)    
+3. Iterate over plot inputs (`input$plots`)  
+4. Display placeholder    
+
+`inspect_plot()` has to be called for each plot selected with `input$plots`, so `purrr::walk()` allows us to iterate through the plots selected via the `checkboxGroupInput()` in `mod_plot_ui()`:
+
+The output (`plots_ui`) is rendered with `renderUI()` and once again we use purrr::map() to iterate through the `input$plots` selections, create namespaces, and 
+
+```{r}
+#| label: render-plot-inspect_plot
+#| eval: false 
+#| code-fold: false 
+output$plots_ui <- renderUI({
+  tryCatch({
+    req(input$dataset, input$plots) #<1>
+    
+    logr_msg(message =
+        sprintf("Rendering UI for dataset '%s' and plots: %s",
+                 input$dataset,
+                 paste(input$plots, collapse = ", ")),
+             level = "DEBUG")
+
+    purrr::map(input$plots, function(plt) { #<2>
+      plot_id <- ns(paste0("plt_", plt))
+      tagList(
+        h4(plt),
+        plotOutput(plot_id, height = "300px")
+      )
+    }) #<2>
+    
+  }, error = function(err) { #<3>
+    logr_msg(
+      message = sprintf("Error in plots_ui renderUI: %s", err$message),
+      level = "ERROR")
+    tagList(
+      p(style = "color:red;", "Failed to generate plot UI.")
+    )
+  }) #<3>
+})
+```
+1. Require the `dataset` and `plots` inputs   
+2. Iterate through the selected plot types and create headers and outputs   
+3. Safely generate errors if plots fail     
+
+By default, the application creates plots for the variable types, memory, and missing: 
+
+```{r}
+#| label: inspect_plot_ttd
 #| code-fold: false
 #| eval: true 
-#| message: false 
-#| warning: false
-inspect_plot(ttd = ttd)
+#| message: true 
+#| warning: true
+inspect_plot(
+  ttd = list("agencies.csv" = ttd[[1]]), # <1>
+  plots = c("types", "mem", "na")
+)
+```
+1. The `ttd` argument is meant to contain a list object returned from the `load_tt_data()` function, so to plot the graphs for a single dataset we need to wrap it in a named list. 
+
+## Reports
+
+The downloadable reports need to contain everything the user can see in the application (the list display with `listviewerlite`, the `reactable` table, and the graphs generated with `inspectdf`). To accomplish this, we need to make sure each module returns the objects they render. 
+
+### Report modules
+
+There are three modules for handling the downloadable reports: `mod_report_input` collects the selected format, `mod_report_desc` displays a description of the selected format in the UI, and `mod_report_download` renders and downloads the report.
+
+```{r}
+#| eval: true 
+#| echo: false
+#| comment: ""
+ast(
+  launch_app(
+    app_ui(
+      mod_input_ui(),
+      mod_report_input_ui(),
+      mod_report_desc_ui(),
+      mod_report_download_ui()
+    ),
+    app_server(
+      mod_input_server(
+        load_tt_data()
+      ),
+      mod_report_input_server(),
+      mod_report_desc_server(),
+      mod_report_download_server()
+    )
+  )
+)
 ```
 
 
-In the sections below, we'll cover how to reliably pass the contents of each module into a downloadable report.
+#### Report input
 
-### Modules 
-
-There are three modules in the application: mod_var_input collects the dataset title, mod_viz displays the graphs, mod_table displays a table of the data used in the graph(s).
-
-## Report templates 
-
-We'll store the report templates in the `inst/` folder. Anything in `inst/` automatically included and accessible from an installed application with `system.file()`, so it's a great place for template files. 
-
-### Templates 
-
-The templates are accessed with the `get_template_path()` function.
-
-The `get_template_path()` function returns the installed location of our templates: 
-
-```{verbatim}
-└── inst
-    └── rmarkdown
-        └── report_template.Rmd
+```{r}
+#| label: mod_input_ui
+#| eval: false
 ```
 
 ```{r}
-#| label: get_template_path_rmd
+#| label: mod_input_server
 #| eval: false
-#| code-fold: false
-identical(
-  # response from function
-  x = get_template_path('rmarkdown'), 
-  # response from system.file()
-  y = system.file("rmarkdown", "report_template.Rmd", 
-                  package = "shrapports"))
-#  [1] TRUE
 ```
 
-```{verbatim}
-└── inst
-    └── quarto
-        └── report_template.qmd
+
+#### Report description 
+
+```{r}
+#| label: mod_report_desc_ui
+#| eval: false
 ```
 
 ```{r}
-#| label: get_template_path_qmd
+#| label: mod_report_desc_server
 #| eval: false
-#| code-fold: false
-identical(
-  # response from function
-  x = get_template_path('quarto'), 
-  # response from system.file()
-  y = system.file("quarto", "report_template.qmd", 
-                  package = "shrapports"))
-#  [1] TRUE
 ```
 
-### Fallback templates 
+#### Report download 
 
 ```{r}
-#| label: rmd_create_fallback_template
+#| label: mod_report_download_ui
 #| eval: false
-#| code-fold: false
-rmd_temp <- create_fallback_template(format = "rmarkdown")
-basename(rmd_temp)
-#  [1] "file4f125a69628c.Rmd"
 ```
-
 
 ```{r}
-#| label: qmd_create_fallback_template
+#| label: mod_report_download_server
 #| eval: false
-#| code-fold: false
-qmd_temp <- create_fallback_template(format = "quarto")
-basename(qmd_temp)
-#  [1] "file4f1227ef5f57.qmd"
 ```
 
-## Download handler
+#### Download handler
 
-### filename
+##### filename
 
-### content
+##### content
 
-### render_report()
+#### render_report()
 
 The `render_report()` utility function controls the template used when the download button is clicked:
 
@@ -370,7 +758,78 @@ mod_report_server(
 )
 ```
 
-## Reactives and params
+```{r}
+#| label: render_report
+#| eval: false
+```
+
+#### Templates 
+
+We'll store the report templates in the `inst/` folder. Anything in `inst/` automatically included and accessible from an installed application with `system.file()`, so it's a great place for template files. 
+
+The templates are accessed with the `get_template_path()` function. The `get_template_path()` function returns the installed location of our templates: 
+
+```{verbatim}
+└── inst
+    └── rmarkdown
+        └── report_template.Rmd
+```
+
+```{r}
+#| label: get_template_path_rmd
+#| eval: false
+#| code-fold: false
+identical(
+  # response from function
+  x = get_template_path('rmarkdown'), 
+  # response from system.file()
+  y = system.file("rmarkdown", "report_template.Rmd", 
+                  package = "ttdviewer"))
+#  [1] TRUE
+```
+
+```{verbatim}
+└── inst
+    └── quarto
+        └── report_template.qmd
+```
+
+```{r}
+#| label: get_template_path_qmd
+#| eval: false
+#| code-fold: false
+identical(
+  # response from function
+  x = get_template_path('quarto'), 
+  # response from system.file()
+  y = system.file("quarto", "report_template.qmd", 
+                  package = "ttdviewer"))
+#  [1] TRUE
+```
+
+#### Fallback templates 
+
+```{r}
+#| label: rmd_create_fallback_template
+#| eval: false
+#| code-fold: false
+rmd_temp <- create_fallback_template(format = "rmarkdown")
+basename(rmd_temp)
+#  [1] "file4f125a69628c.Rmd"
+```
+
+
+```{r}
+#| label: qmd_create_fallback_template
+#| eval: false
+#| code-fold: false
+qmd_temp <- create_fallback_template(format = "quarto")
+basename(qmd_temp)
+#  [1] "file4f1227ef5f57.qmd"
+```
+
+
+### Reactives and params
 
 ### R Markdown params
 

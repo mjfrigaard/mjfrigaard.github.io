@@ -1,0 +1,43 @@
+---
+title: "Shiny Assistant" 
+subtitle: "An excellent tool for Shiny app reprexes"
+author: "Martin Frigaard"
+date: "2025-12-09"
+categories: [LLM, Positron, Shiny]
+image: "img/image.png"
+draft: true
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+# code-block-border-left: true
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+code-fold: show
+code-summary: 'show/hide'
+callout-icon: false
+engine: knitr
+freeze: true
+callout-appearance: simple
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("../_common.R")
+options(scipen = 999)
+library(shiny)
+library(lobstr)
+library(crayon)
+library(stringr)
+# install.packages(c("NHANES", "palmerpenguins"))
+library(palmerpenguins)
+```

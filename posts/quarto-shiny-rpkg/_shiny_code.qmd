@@ -1,0 +1,23 @@
+
+````{verbatim}
+```{r}
+#| panel: fill
+tags$br()
+tags$em(
+  "Built using ",
+  tags$a(
+    img(
+      src = "www/quarto.png",
+      height = 25,
+      width = 90,
+      style = "margin:10px 10px"
+    ),
+    href = "https://quarto.org/docs/interactive/shiny/"
+  ),
+  "and data from the ",
+  tags$a("Building web applications with Shiny", 
+    href = "https://rstudio-education.github.io/shiny-course/"),
+  "tutorial."
+)
+```
+````

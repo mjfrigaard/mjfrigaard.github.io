@@ -1,0 +1,16 @@
+
+
+
+````{verbatim}
+```{r}
+#| context: setup
+# pkgs -------
+library(sap)
+library(thematic)
+library(ragg)
+# resources --------
+addResourcePath(
+    prefix = 'quarto',
+    directoryPath = system.file('www', package = 'sap'))
+```
+````
