@@ -1,5 +1,5 @@
 ---
-title: "Using plumber APIs with Shiny Apps"
+title: "Shiny (for R) & APIs"
 subtitle: "Using plumber, vetiver and Shiny"
 author: "Martin Frigaard"
 date: "2025-04-23"
@@ -509,7 +509,7 @@ sequenceDiagram
 
 When launched, the API lists the endpoints and documentation: 
 
-![](img/api.png){width='100%' fig-align='center'}
+![Click to enlarge](img/api.png){width='100%' fig-align='center'}
 
 The `shiny` app below will access two of these endpoints (`/health` and `/predict`).
 
@@ -527,6 +527,8 @@ R/
 ├── renv.lock
 └── shiny_app.log
 ```
+
+The UI is built using [`bslib`](https://rstudio.github.io/bslib/) and a few custom HTML functions with basic CSS styling. The application server is going to be making API calls, so we'll be using `httr2` to build the request and `logger` to monitor these requests. 
 
 ### Logging
 
@@ -556,13 +558,13 @@ We set the `api_url` to an internal location with port `8080` and the `/predict`
 api_url <- "http://127.0.0.1:8080/predict"
 ```
 
-### UI
-
-The UI is built using [`bslib`](https://rstudio.github.io/bslib/) and a few custom HTML functions with basic CSS styling.
-
-#### Session token 
+### Session token 
 
 We'll display the session token in the upper-right corner of the UI. This can be used for debugging (or to reference for testing).
+
+#### UI
+
+A `div()` is useful here because we want the token to be visible (but not distracting from the primary functions of the app).
 
 ```{r}
 #| eval: false 
@@ -576,118 +578,9 @@ We'll display the session token in the upper-right corner of the UI. This can be
   )
 ```
 
-#### Inputs 
+#### Server
 
-All model inputs are displayed in the sidebar:
-
-```{r}
-#| eval: false 
-#| code-fold: false
-#| echo: true
-  sidebar = sidebar(
-    sliderInput(
-      inputId = "bill_length", 
-      label = "Bill Length (mm)",
-      min = 30, 
-      max = 60, 
-      value = 45, 
-      step = 1
-    ),
-    selectInput(
-      inputId = "sex", 
-      label = "Sex", 
-      choices = c("Male", "Female"), 
-      selected = "Male"
-    ),
-    selectInput(
-      inputId = "species",
-      label = "Species",
-      choices = c("Adelie", "Chinstrap", "Gentoo"),
-      selected = "Adelie"
-    ),
-    actionButton(
-      inputId = "predict", 
-      label = "Predict", 
-      class = "btn-primary"
-    )
-  )
-```
-
-
-#### Predictions
-
-Prediction results are returned along with a display of the reactive values in the server. This gives us an idea of the data format in the application before it's sent off to the API. 
-
-```{r}
-#| eval: false 
-#| code-fold: false
-#| echo: true
-card(
-  card_header("Penguin Parameters"),
-  card_body(
-    verbatimTextOutput(outputId = "vals")
-  )
-)
-card(
-  card_header("Predicted Mass"),
-  card_body(
-    value_box(
-      showcase_layout = "left center",
-      title = "Grams",
-      value = textOutput(outputId = "pred"),
-      showcase = bs_icon("graph-up"),
-      max_height = "200px",
-      min_height = "200px"
-    )
-  )
-)
-```
-
-#### Logs 
-
-The **System Status** section includes three outputs: 
-
-1. The response from our API health check endpoint (`api_health`)   
-2. A reactive display of the log file (`recent_logs`)   
-3. A timestamp for the last time the application was run (`log_timestamp`)    
-
-```{r}
-#| eval: false 
-#| code-fold: false
-#| echo: true
-card(
-  card_header("System Status"),
-  card_body(
-    h5("API Status:"),
-    textOutput("api_health"),
-    h5("Recent Logs:"),
-    div(
-      style = "font-family: 'Ubuntu Mono', monospace; font-size: 12px; background-color: #f8f9fa; padding: 10px; border-radius: 5px;",
-      verbatimTextOutput(
-        "recent_logs", 
-        placeholder = TRUE
-        )
-    ),
-    h6(
-      "Last updated:", 
-      textOutput(
-        "log_timestamp", 
-        inline = TRUE
-        )
-    ),
-    style = "max-height: 350px; overflow-y: auto;"
-  )
-)
-```
-
-
-### Server
-
-The application server is going to be making API calls, so we'll be using `httr2` to build the request and `logger` to monitor these requests. 
-
-#### App startup
-
-We'll start with the application startup, which will log the session and user interactions:
+During startup, we will log the session and user interactions:
 
 1. The `priority` argument determines when an observer should be executed (higher values have higher priority).   
 2. `throttle` "*delays invalidation if the throttled reactive recently (within the time window) invalidated*."[^throttle]
@@ -729,10 +622,29 @@ INFO [2025-12-23 06:43:30] Shiny app started - Session: 8e0d4bd326098f9c2d2d01ae
 
 In the app, we see: 
 
-![](img/session_token.png){width='100%' fig-align='center'}
+![Click to enlarge](img/session_token.png){width='100%' fig-align='center'}
 
+### API health check
 
-#### API health check 
+When the application is launched, we want to perform a `GET` request to the `/health` endpoint to make sure the API is available to make predictions. 
+
+#### UI
+
+The response from the `/health` endpoint is displayed under a **System Status** section using a simple `textOutput()`:
+
+```{r}
+#| eval: false 
+#| code-fold: false
+#| echo: true
+card_header("System Status"),
+  card_body(
+    h5("API Status:"),
+    textOutput("api_health")
+    # ...
+  )
+```
+
+#### Server
 
 The initial ping (health check) is sent using a `httr2` pipeline: 
 
@@ -789,11 +701,87 @@ INFO [2025-12-23 06:43:30] API health check successful - Session: 8e0d4bd326098f
 
 In the UI, we see: 
 
-![](img/health_check.png){width='100%' fig-align='center'}
+![Click to enlarge](img/health_check.png){width='100%' fig-align='center'}
 
-#### Predictions 
+### Predictions
 
-The predictions include a display of the reactive values in the application. These are displayed to illustrate the structure of the inputs before they are sent to the API. 
+The API has multiple options for making predictions, but we're going to focus on the `/predict` endpoint because it's relatively straighforward to implement in our application. 
+
+#### UI
+
+The model inputs and display in the sidebar (using the values we know are in the subset of `penguins` data we used to build the model).
+
+```{r}
+#| eval: false 
+#| code-fold: false
+#| echo: true
+  sidebar = sidebar(
+    sliderInput(
+      inputId = "bill_length", 
+      label = "Bill Length (mm)",
+      min = 30, 
+      max = 60, 
+      value = 45, 
+      step = 1
+    ),
+    selectInput(
+      inputId = "sex", 
+      label = "Sex", 
+      choices = c("Male", "Female"), 
+      selected = "Male"
+    ),
+    selectInput(
+      inputId = "species",
+      label = "Species",
+      choices = c("Adelie", "Chinstrap", "Gentoo"),
+      selected = "Adelie"
+    ),
+    actionButton(
+      inputId = "predict", 
+      label = "Predict", 
+      class = "btn-primary"
+    )
+  )
+```
+
+The prediction results are returned along with a display of the reactive values in the server. This gives us an idea of the data format in the application before it's sent off to the API. 
+
+```{r}
+#| eval: false 
+#| code-fold: false
+#| echo: true
+card(
+  card_header("Penguin Parameters"),
+  card_body(
+    verbatimTextOutput(outputId = "vals")
+  )
+)
+```
+
+The predicted mass is displayed in a `value_box()` with a `textOutput()`:
+
+```{r}
+#| eval: false 
+#| code-fold: false
+#| echo: true
+card(
+  card_header("Predicted Mass"),
+  card_body(
+    value_box(
+      showcase_layout = "left center",
+      title = "Grams",
+      value = textOutput(outputId = "pred"),
+      showcase = bs_icon("graph-up"),
+      max_height = "200px",
+      min_height = "200px"
+    )
+  )
+)
+```
+
+#### Server
+
+In the `server`, the reactive value are collected, converted to a `data.frame`, and displayed in a plain-text format.
 
 ```{r}
 #| eval: false 
@@ -850,7 +838,7 @@ vals <- reactive({ #<1>
 
 In the UI, we can see the default values displayed as a `data.frame`:
 
-![](img/vals.png){width='100%' fig-align='center'}
+![Click to enlarge](img/vals.png){width='100%' fig-align='center'}
 
 If a user changes the inputs, the reactive values will also update. To make a prediction, we click the **Predict** button with the selected inputs. 
 
@@ -1001,9 +989,30 @@ INFO [2025-12-23 08:32:56] Displaying prediction to user - Session: 8e0d4bd32609
 
 In the UI, we see the following:
 
-![](img/predictions.png){width='100%' fig-align='center'}
+![Click to enlarge](img/predictions.png){width='100%' fig-align='center'}
 
-#### Logs
+### Logs 
+
+The **System Status** section includes a reactive display of the log file (`recent_logs`) and a timestamp for the last time the application was run (`log_timestamp`). 
+
+#### UI
+
+```{r}
+#| eval: false 
+#| code-fold: false
+#| echo: true
+h5("Recent Logs:"),
+  div(
+    style = "font-family: 'Ubuntu Mono', monospace; font-size: 12px; background-color: #f8f9fa; padding: 10px; border-radius: 5px;",
+    verbatimTextOutput("recent_logs", placeholder = TRUE)
+  ),
+h6("Last updated:", 
+    textOutput("log_timestamp", inline = TRUE)
+  )
+```
+
+
+#### Server
 
 The logs are created using [`reactiveFileReader()`](https://shiny.posit.co/r/reference/shiny/1.7.0/reactivefilereader.html) and the log file (`shiny_app.log`) to update the display in the UI. This is a handy way of viewing the log outputs in the UI (without having to open the log file). 
 
@@ -1072,7 +1081,7 @@ log_file_content <- reactiveFileReader( #<1>
 
 In the UI, we see the top 5 lines of the `shiny_app.log` file and the timestamp.
 
-![](img/logs.png){width='100%' fig-align='center'}
+![Click to enlarge](img/logs.png){width='100%' fig-align='center'}
 
 The app includes a log for the session ending, too: 
 
@@ -1084,6 +1093,6 @@ INFO [2025-12-23 08:53:16] User session ended - Session: 5f61a8ce042d21d5e6a6702
 
 We've covered how to create a [`vetiver`](https://rstudio.github.io/vetiver-r/) model (with [`duckdb`](https://duckdb.org/docs/stable/clients/r)) with [`plumber`](https://www.rplumber.io/) and access this API using a [`shiny`](https://shiny.posit.co/r/reference/shiny/) app. The [`httr2` package](https://httr2.r-lib.org/) is used to make API requests and [`logger`](https://daroczig.github.io/logger/) is used throughout the application to log behaviors and actions. 
 
-![](img/app.png){width='100%' fig-align='center'}
+![Click to enlarge](img/app.png){width='100%' fig-align='center'}
 
 Access the code for the API and app in my [DO4DS: Lab Solutions](https://mjfrigaard.github.io/do4ds-labs/).
