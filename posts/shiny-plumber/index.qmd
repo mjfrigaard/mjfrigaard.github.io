@@ -168,21 +168,19 @@ api/
 
 The `model.R` file creates our model (found in the `models` folder). After loading the necessary packages, we establish a connection to the `duckdb` database (`con`) and register the `penguins` dataset.
 
+We use SQL to create a persistent table in the database and extract a subset of columns and rows for the model (`df`).
+
+Finally, we disconnect from the database.
+
 ```{r}
 #| eval: false 
-#| code-fold: false
+#| code-fold: show
+#| code-summary: 'show/hide database creation'
 #| echo: true
 con <- DBI::dbConnect(duckdb::duckdb(), "my-db.duckdb")
 
 duckdb::duckdb_register(con, "penguins_raw", palmerpenguins::penguins)
-```
 
-We use SQL to create a persistent table in the database and extract a subset of columns and rows for the model (`df`).
-
-```{r}
-#| eval: false 
-#| code-fold: false
-#| echo: true
 DBI::dbExecute(
   con,
   "CREATE OR REPLACE TABLE penguins AS SELECT * FROM penguins_raw"
@@ -196,55 +194,36 @@ df <- DBI::dbGetQuery(
    AND sex IS NOT NULL
    AND species IS NOT NULL"
 )
-```
 
-Finally, we disconnect from the database.
-
-```{r}
-#| eval: false 
-#| code-fold: false
-#| echo: true
 DBI::dbDisconnect(con)
 ```
 
-For modelling, we start by using the `stats::lm()` function to predict body mass using bill length, species, and sex.
+For the model: 
+
+- Start by using the `stats::lm()` function to predict body mass using bill length, species, and sex. 
+
+- We then pass the model object to the `vetiver_model()` and provide a `model_name` and `description`
+
+- `vetiver_pin_write()` 'pins' a trained model, an input prototype for new data, and and other model metadata to a model board
+
+- The `board_folder()` from the `pins` package allows us write model to a board inside a folder (for sharing on network drives like Dropbox)
 
 ```{r}
 #| eval: false 
-#| code-fold: false
+#| code-fold: show
+#| code-summary: 'show/hide vetiver model creation'
 #| echo: true
 model <- lm(body_mass_g ~ bill_length_mm + species + sex, data = df)
-```
 
-We then pass the model object to the `vetiver_model()` and provide a `model_name` and `description`.
-
-```{r}
-#| eval: false 
-#| code-fold: false
-#| echo: true
 v <- vetiver::vetiver_model(
   model,
   model_name = "penguin_model",
   description = "Linear model predicting penguin body mass from bill length, species, and sex",
   save_prototype = TRUE  
 )
-```
 
-`vetiver_pin_write()` 'pins' a trained model, an input prototype for new data, and and other model metadata to a model board.
-
-```{r}
-#| eval: false 
-#| code-fold: false
-#| echo: true
 model_board <- pins::board_folder("models/")
-```
 
-The `board_folder()` from the `pins` package allows us write model to a board inside a folder (for sharing on network drives like Dropbox).
-
-```{r}
-#| eval: false 
-#| code-fold: false
-#| echo: true
 vetiver::vetiver_pin_write(model_board, v)
 ```
 
@@ -252,21 +231,13 @@ Now we've creates a vetiver model and stored it in the `board_folder` named `mod
 
 ### **`plumber.R`**
 
-In `plumber.R`, we read the model into our environment using `board_folder()` to connect to the `pins` board:
+In `plumber.R`, we read the model into our environment using `board_folder()` to connect to the `pins` board, and `vetiver_pin_read()` will return the `vetiver` model object ready for deployment:
 
 ```{r}
 #| eval: false 
 #| code-fold: false
 #| echo: true
 model_board <- pins::board_folder("models/")
-```
-
-And `vetiver_pin_read()` will return the `vetiver` model object ready for deployment:
-
-```{r}
-#| eval: false 
-#| code-fold: false
-#| echo: true
 v <- vetiver::vetiver_pin_read(model_board, "penguin_model")
 ```
 
@@ -274,7 +245,8 @@ With the model in our environment, we'll print some  attributes to the console w
 
 ```{r}
 #| eval: false
-#| code-fold: false
+#| code-fold: true 
+#| code-summary: 'show/hide model attributes'
 #| echo: true
 cat("\n=== Model Loaded Successfully ===\n")
 cat("Model name:", v$model_name, "\n")
@@ -306,7 +278,7 @@ sex: female, male
 
 #### Helper functions
 
-Most of the challenges I encountered with the Shiny/API lab were due to data formatting. APIs love JSON, and I'm used to working in `data.frame`s/`tibble`s, specifically with factors. I wrote a helper function for converting incoming JSON data (strings) to the proper R types (factors) that our model expects:
+Most of the challenges I encountered with the Shiny/API lab were due to data formatting. APIs love JSON, and I'm used to working with rectangular data (i.e., a `data.frame` or `tibble`), specifically with factors. I wrote a helper function for converting incoming JSON data (strings) to the proper R types (factors) that our model expects:
 
 ```{r}
 #| eval: false 
@@ -945,14 +917,14 @@ vals <- reactive({ #<1>
       sex = tolower(sex)
     ) #<4>
     
-    logger::log_debug(
+    logger::log_debug( #<5>
       "Input data prepared - Session: {session$token} - data: {jsonlite::toJSON(data, auto_unbox = TRUE)}"
-    )
+    ) #<5>
     
     return(data)
   }) #<1>
 # display
-  output$vals <- renderPrint({ #<5>
+  output$vals <- renderPrint({ #<6>
     data <- vals()
     if (!is.null(data)) {
       logger::log_debug("Displaying input values to user - Session: {session$token}")
@@ -960,13 +932,14 @@ vals <- reactive({ #<1>
     } else {
       return("Invalid inputs")
     }
-  }) #<5>
+  }) #<6>
 ```
 1. Reactive values from inputs    
 2. Inputs (bill_length, species, and sex) 
 3. Input validation   
 4. Prepare data   
-5. Display structure of inputs 
+5. Log prepared data (for debugging)    
+6. Display structure of inputs 
 
 
 In the UI, we can see the default values displayed as a `data.frame`:
