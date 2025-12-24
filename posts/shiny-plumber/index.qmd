@@ -48,7 +48,9 @@ co_box(color = "r",
   contents = "This post is currently under development--thank you for your patience.")
 ```
 
-I've been working my way through [DevOps for Data Science](https://do4ds.com/) by Alex K Gold (highly recommended) and the [chapter on APIs](https://do4ds.com/chapters/sec1/1-3-data-access.html#lab-use-a-database-and-an-api) includes an exercise using `duckdb`, `vetiver`, `pins`, `plumber`, and `shiny`. These packages work so well together I thought I'd write a blog post on the solution I developed.
+I've been working my way through [DevOps for Data Science](https://do4ds.com/) by Alex K Gold (highly recommended) and the [chapter on APIs](https://do4ds.com/chapters/sec1/1-3-data-access.html#lab-use-a-database-and-an-api) includes exercises for using apps to communicate with APIs. The examples provided are for accomplishing this in both Python and R. 
+
+This post covers the R solution I came up with using `shiny`, `duckdb`, `vetiver`, `pins`, `logger` and `plumber`.
 
 ## Suggested reading
 
@@ -72,7 +74,65 @@ An API, or [Application Programming Interface](https://en.wikipedia.org/wiki/API
 
 APIs provide a clear way for software programs to interact, allowing different apps and services to connect without needing to understand their internal workings.
 
+```{=html}
+
+<style>
+
+.codeStyle span:not(.nodeLabel) {
+  font-family: monospace;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #9753b8 !important;
+  background-color: #f6f6f6;
+  padding: 0.2em;
+}
+
+</style>
+```
+
+```{mermaid}
+%%| fig-align: center
+%%| echo: false
+%%| fig-cap: 'APIs'
+%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+
+graph LR
+    AppA["App A"] -->|Request| API["<strong>API<br/>(<em>Shared Language</em>)</strong>"]
+    API -->|Translated<br>Request| AppB["App B"]
+    AppB -->|Response| API
+    API -->|Translated<br>Response| AppA
+    
+    style API fill:#4CAF50,stroke:#2E7D32,color:#fff
+    style AppA color:#000
+    style AppB color:#000
+    
+```
+
+
 In R, package APIs handle things like authentication (OAuth tokens, API keys, etc.), creating the correct query parameters, and parsing the JSON/XML responses into data frames or lists, which means we can focus on the higher-level data tasks rather than on the low-level networking details.
+
+```{mermaid}
+%%| fig-align: center
+%%| echo: false
+%%| fig-cap: 'Concrete Example - GitHub API Package'
+%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+
+sequenceDiagram
+    participant User as R User
+    participant Pkg as gh Package
+    participant Auth as Auth Handler
+    participant API as GitHub API
+    
+    User->>Pkg: gh("GET /repos/tidyverse/dplyr")
+    Pkg->>Auth: Retrieve PAT token
+    Auth-->>Pkg: GITHUB_PAT
+    Pkg->>API: GET request + token + headers
+    API-->>Pkg: JSON response
+    Pkg->>Pkg: Parse JSON to list
+    Pkg-->>User: R list with repo info
+    
+    Note over User,Pkg: User never sees tokens,<br/>URLs, or raw JSON
+```
 
 The lab exercise for this chapter involves 1) putting the `palmerpenguins` in a `duckdb` database,[^1] 2) pointing a `vetiver` model to the database and converting it into an API,[^2] and 3) building a Shiny app that calls the model API to display predictions:[^3]
 
@@ -190,7 +250,7 @@ vetiver::vetiver_pin_write(model_board, v)
 
 Now we've creates a vetiver model and stored it in the `board_folder` named `models/penguin_model`. The `model.R` file only needs to run once to build the model.
 
-### `plumber` API
+### **`plumber.R`**
 
 In `plumber.R`, we read the model into our environment using `board_folder()` to connect to the `pins` board:
 
@@ -231,7 +291,6 @@ cat("=================================\n\n")
 === Model Loaded Successfully ===
 
 Model name: penguin_model 
-
 Model class: butchered_lm lm 
 
 Prototype (expected input):
@@ -239,9 +298,7 @@ Prototype (expected input):
 # ℹ 3 variables: bill_length_mm <dbl>, species <fct>, sex <fct>
 
 Factor levels:
-
 species: Adelie, Chinstrap, Gentoo 
-
 sex: female, male 
 
 =================================
@@ -249,7 +306,7 @@ sex: female, male
 
 #### Helper functions
 
-Most of the challenges I encountered with the Shiny/API lab was due to data formatting. APIs love JSON, and I'm used to working in `data.frame`s/`tibble`s, specifically factors. So I wrote a a helper function for converting incoming JSON data (strings) to the proper R types (factors) that our model expects:
+Most of the challenges I encountered with the Shiny/API lab were due to data formatting. APIs love JSON, and I'm used to working in `data.frame`s/`tibble`s, specifically with factors. I wrote a helper function for converting incoming JSON data (strings) to the proper R types (factors) that our model expects:
 
 ```{r}
 #| eval: false 
@@ -293,9 +350,46 @@ prep_pred_data(
 
 #### Handlers
 
-`plumber` allows us to create RESTful APIs[^restful-apis] in R by decorating regular R functions with special comments (`#*`) that define API endpoints and their HTTP methods (also called verbs). These methods are listed below:
+The `plumber` package allows us to create RESTful APIs[^restful-apis] in R by decorating regular R functions with special comments (`#*`) that define API endpoints and their HTTP methods (also called verbs). 
+
+```{mermaid}
+%%| fig-align: center
+%%| echo: false
+%%| fig-cap: 'Plumber Transforms R Functions into API Endpoints'
+%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"15px"}}}%%
+
+graph TB
+	WriteFun("<em>Write R function</em>")
+    RFunc[/"<br><code>add <- function(a, b) {<br>  a + b<br>}</code>"/]
+    WriteCom("<em>Add special comments</em>")
+    Decor[/"<code>#* @get /add<br/>#* @param a:int<br/>#* @param b:int</code><br/>"/]
+    Plumber("<em><strong>plumber</strong> package<br/>reads decorations</em>")
+    
+    API["<strong>RESTful API Endpoint<br/><code>GET /add?a=5&b=3</code></strong>"]
+    Response["<strong>JSON Response<br/><code>{result: 8}</code></strong>"]
+    
+    WriteFun --> RFunc
+    RFunc --> WriteCom
+    WriteCom --> Decor
+    Decor --> Plumber
+    Plumber --> API
+    API --> Response
+    
+    style WriteFun fill:#fff,stroke:#fff,color:#000
+    style WriteCom  fill:#fff,stroke:#fff,color:#000
+    style Plumber  fill:#fff,stroke:#fff,color:#000
+    
+    style RFunc text-align:left,fill:#2196F3,stroke:#2196F3,color:#fff
+    style Decor text-align:left,fill:#2196F3,stroke:#2196F3,color:#fff
+    
+    style API  fill:#fff,stroke:#4051B5,color:#4051B5
+    style Response  fill:#fff,stroke:#4CAF50,color:#4051B5
+    
+```
 
 [^restful-apis]: What is a RESTful API? Appsilon has a [great tutorial](https://www.appsilon.com/post/r-rest-api#introduction) on using `plumber`. [This](https://ploomber.io/blog/restapi-plumber/) is also a great tutorial (but is uses `caret` for modeling).
+
+These methods are listed below:
 
 | HTTP verb | plumber tag | Description |
 |----|----|----|
@@ -331,22 +425,6 @@ handle_ping <- function() {
 ```
 
 `handle_ping()` creates a simple endpoint to verify our API is running without performing any complex operations or database queries. Below is an illustration of how a Client or (Shiny app) would communicate with the API using this endpoint:
-
-```{=html}
-
-<style>
-
-.codeStyle span:not(.nodeLabel) {
-  font-family: monospace;
-  font-size: 1.5em;
-  font-weight: bold;
-  color: #9753b8 !important;
-  background-color: #f6f6f6;
-  padding: 0.2em;
-}
-
-</style>
-```
 
 ```{mermaid}
 %%| fig-align: center
@@ -516,7 +594,7 @@ The `shiny` app below will access two of these endpoints (`/health` and `/predic
 
 ## The Shiny App
 
-This lab also includes a Shiny app, but we will use the application from the following [chapter](https://github.com/mjfrigaard/do4ds-labs/tree/main/_labs//lab4/R) (because it also includes logs and monitoring):
+The Shiny app we'll use is one I developed for the following [chapter](https://do4ds.com/chapters/sec1/1-4-monitor-log.html) on logging and monitoring.[^lab4-app-code] 
 
 ```{verbatim}
 R/
@@ -528,7 +606,14 @@ R/
 └── shiny_app.log
 ```
 
-The UI is built using [`bslib`](https://rstudio.github.io/bslib/) and a few custom HTML functions with basic CSS styling. The application server is going to be making API calls, so we'll be using `httr2` to build the request and `logger` to monitor these requests. 
+[^lab4-app-code]: Access the code [here](https://github.com/mjfrigaard/do4ds-labs/tree/main/_labs/lab4/R/app).
+
+
+The UI is built using [`bslib`](https://rstudio.github.io/bslib/) and a few custom HTML functions with basic CSS styling. 
+
+![Click to enlarge](img/ui.png){width='100%' fig-align='center'}
+
+The application server is going to be making API calls, so we'll be using `httr2` to make requests and `logger` to monitor the application behaviors and API requests.
 
 ### Logging
 
@@ -558,9 +643,45 @@ We set the `api_url` to an internal location with port `8080` and the `/predict`
 api_url <- "http://127.0.0.1:8080/predict"
 ```
 
+### App start up
+
+In the server, the `session$token` and `session$clientData$url_hostname` values are included in the log using the `priority` argument in `observe()` (higher values have higher priority).  
+```{r}
+#| eval: false 
+#| code-fold: false
+#| echo: true
+observe({ # <1>
+    logger::log_info(
+      "Shiny app started - Session: {session$token} - Host: {session$clientData$url_hostname}"
+    )
+  }, priority = 1000) # <1>
+```
+1. log app startup is set to a high priority        
+
+### User interactions 
+
+The user inputs are also included in the logs using `throttle`, which "*delays invalidation if the throttled reactive recently (within the time window) invalidated*."[^throttle]
+
+[^throttle]: Read more in the Shiny documentation on [debounce/throttle](https://shiny.posit.co/r/reference/shiny/latest/debounce.html).
+
+```{r}
+#| eval: false 
+#| code-fold: false
+#| echo: true
+  observe({ #<1>
+    logger::log_debug(
+      "User input changed - Session: {session$token} - bill_length: {input$bill_length} - species: {input$species} - sex: {input$sex}"
+    )
+  }) |> 
+    throttle(2000) #<1>
+```
+1. User interactions are throttled    
+
 ### Session token 
 
 We'll display the session token in the upper-right corner of the UI. This can be used for debugging (or to reference for testing).
+
+![Click to enlarge](img/session.png){width='100%' fig-align='center'}
 
 #### UI
 
@@ -580,47 +701,29 @@ A `div()` is useful here because we want the token to be visible (but not distra
 
 #### Server
 
-During startup, we will log the session and user interactions:
-
-1. The `priority` argument determines when an observer should be executed (higher values have higher priority).   
-2. `throttle` "*delays invalidation if the throttled reactive recently (within the time window) invalidated*."[^throttle]
-
-[^throttle]: Read more in the Shiny documentation on [debounce/throttle](https://shiny.posit.co/r/reference/shiny/latest/debounce.html).
+The output for the session token is rendered using a subset of `session$token` and `renderText()`:
 
 ```{r}
 #| eval: false 
 #| code-fold: false
 #| echo: true
-observe({ # <1>
-    logger::log_info(
-      "Shiny app started - Session: {session$token} - Host: {session$clientData$url_hostname}"
-    )
-  }, priority = 1000) # <1>
-
-  observe({ #<2>
-    logger::log_debug(
-      "User input changed - Session: {session$token} - bill_length: {input$bill_length} - species: {input$species} - sex: {input$sex}"
-    )
-  }) |> 
-    throttle(2000) #<2>
-
-  output$log_status <- renderText({ #<3>
+  output$log_status <- renderText({ #<1>
     paste("Token:", substr(session$token, 1, 8))
-  }) #<3>
+  }) #<1>
   
 ```
-1. log app startup is set to a high priority        
-2. User interactions are throttled    
-3. Token display    
+1. Token display    
 
-In the **Console**, we see: 
+In the **Console**, we see the entire `session$token`: 
 
 ```{verbatim}
-INFO [2025-12-23 06:43:29] Shiny application initialized - timestamp: 2025-12-23 06:43:29.75396 - r_version: R version 4.5.2 (2025-10-31)
-INFO [2025-12-23 06:43:30] Shiny app started - Session: 8e0d4bd326098f9c2d2d01aeaab6b1db - Host: 127.0.0.1
+INFO [2025-12-23 23:59:52] Shiny application initialized - timestamp: 2025-12-23
+23:59:52.776227 - r_version: R version 4.5.2 (2025-10-31)
+INFO [2025-12-23 23:59:54] Shiny app started - 
+Session: 936742bee2eded243ac80768f4953359 - Host: localhost
 ```
 
-In the app, we see: 
+In the UI, we see: 
 
 ![Click to enlarge](img/session_token.png){width='100%' fig-align='center'}
 
@@ -636,13 +739,14 @@ The response from the `/health` endpoint is displayed under a **System Status** 
 #| eval: false 
 #| code-fold: false
 #| echo: true
-card_header("System Status"),
-  card_body(
+card_body(
     h5("API Status:"),
     textOutput("api_health")
     # ...
   )
 ```
+
+![](img/api_status_ui.png){width='100%' fig-align='center'}
 
 #### Server
 
@@ -665,47 +769,74 @@ The initial ping (health check) is sent using a `httr2` pipeline:
         httr2::req_timeout(5) |> #<3>
         httr2::req_perform() #<4>
       
-      if (httr2::resp_status(response) == 200) {
+      if (httr2::resp_status(response) == 200) { #<5>
         logger::log_info("API health check successful - Session: {session$token}")
         return("✅ API Online")
-      } else {
-        logger::log_warn(
+      } else { #<5>
+        logger::log_warn( #<6>
           "API health check returned non-200 status - Session: {session$token} - status: {httr2::resp_status(response)}"
         )
-        return("⚠️ API Issues")
+        return("⚠️ API Issues") #<6>
       } #<1>
-    }, error = function(e) { #<5>
+    }, error = function(e) { #<7>
       logger::log_error(
         "API health check failed - Session: {session$token} - error: {conditionMessage(e)}"
       )
       return("❌ API Offline")
     })
-  }) #<5>
+  }) #<7>
 # display
-  output$api_health <- renderText({ #<6>
+  output$api_health <- renderText({ #<8>
     api_health()
-  }) #<6>
+  }) #<8>
 ```
 1. Perform request safely     
 2. Include the `base_url` to create the `httr2` request object  
-3. Set time limit (before error is returned)    
+3. Set time limit (before error is returned)   
 4. Perform the request    
-5. Fall back safely to error messages 
-6. Display API health check response  
+5. Check request for `200` with `response` 
+6. Warn if non-`200` is returned with `response`   
+7. Fall back safely to error messages   
+8. Display API health check response    
 
-The **Console** displays the successful (or failed) health check status:
+The **Console** displays the successful health check status:
 
 ```{verbatim}
-INFO [2025-12-23 06:43:30] API health check successful - Session: 8e0d4bd326098f9c2d2d01aeaab6b1db
+INFO [2025-12-23 06:43:30] API health check successful - 
+Session: 8e0d4bd326098f9c2d2d01aeaab6b1db
 ```
 
-In the UI, we see: 
+Or failed health check status:
+
+```{verbatim}
+ERROR [2025-12-24 00:33:30] API health check failed - 
+Session: da3df1b7975e953612eb6f2d552f1c06 - error: Failed to perform HTTP 
+request.
+Caused by error in `curl::curl_fetch_memory()`:
+! Could not connect to server [127.0.0.1]:
+Failed to connect to 127.0.0.1 port 8080 after 3 ms: Could not connect to 
+server
+```
+
+:::{layout="[35,65]" layout-valign="top"}
+
+If the API is offline:
+
+![Click to enlarge](img/api_health_check_offline.png){width='100%' fig-align='center'}
+
+:::
+
+:::{layout="[35,65]" layout-valign="top"}
+
+If the API is online:
 
 ![Click to enlarge](img/health_check.png){width='100%' fig-align='center'}
 
+:::
+
 ### Predictions
 
-The API has multiple options for making predictions, but we're going to focus on the `/predict` endpoint because it's relatively straighforward to implement in our application. 
+The API has multiple options for making predictions, but we're going to focus on the `/predict` endpoint because it's relatively straightforward to implement in our application. 
 
 #### UI
 
@@ -778,6 +909,8 @@ card(
   )
 )
 ```
+
+![](img/inputs.png){width='100%' fig-align='center'}
 
 #### Server
 
@@ -858,133 +991,147 @@ If a user changes the inputs, the reactive values will also update. To make a pr
       return("❌ Invalid inputs")
     } #<4>
     
-    logger::log_info(
+    logger::log_info( #<5>
       "Starting prediction request - Session: {session$token} - request_data: {jsonlite::toJSON(request_data, auto_unbox = TRUE)}"
-    )
+    ) #<5>
     
-    tryCatch({ #<5>
-      showNotification( #<6>
+    tryCatch({ #<6>
+      showNotification( #<7>
         "Predicting penguin mass...", 
         type = "default", 
         duration = 3
-      ) #<6>
+      ) #<7>
       
-      response <- httr2::request(api_url) |> #<7>
+      response <- httr2::request(api_url) |> #<8>
         httr2::req_method("POST") |>
         httr2::req_body_json(request_data, auto_unbox = FALSE) |>
         httr2::req_timeout(30) |>
-        httr2::req_perform() #<7>
+        httr2::req_perform() #<8>
       
-      response_time <- as.numeric( #<8>
+      response_time <- as.numeric( #<9>
         difftime(Sys.time(), request_start, units = "secs")
-      ) #<8>
-      response_data <- httr2::resp_body_json(response) #<9>
+      ) #<9>
+      response_data <- httr2::resp_body_json(response) #<10>
       
       
-      prediction_value <- if (is.list(response_data$.pred)) { #<10>
-        # If .pred is a list, get first element
+      prediction_value <- if (is.list(response_data$.pred)) { #<11>
         as.numeric(response_data$.pred[[1]])
       } else {
-        # If .pred is already numeric
         as.numeric(response_data$.pred[1])
-      } #<10>
+      } #<11>
       
-      logger::log_info(
+      logger::log_info( #<12>
         "Prediction successful - Session: {session$token} - response_time_sec: {round(response_time, 3)} - prediction: {prediction_value}"
-      )
+      ) #<12>
       
-      if (response_time > 5) { #<11>
+      if (response_time > 5) { #<13>
         logger::log_warn(
           "Slow API response - Session: {session$token} - response_time_sec: {response_time}"
         )
-      } #<11>
+      } #<13>
       
-      showNotification( #<12>
+      showNotification( #<14>
         "✅ Prediction successful!", 
         type = "message", 
         duration = 3
-      ) #<12>
+      ) #<14>
       
-      return(prediction_value)
+      return(prediction_value) #<15>
       
-    }, error = function(e) { #<5>
+    }, error = function(e) { #<6>
       
-      error_msg <- conditionMessage(e) #<13>
-      response_time <- as.numeric(
+      error_msg <- conditionMessage(e) #<16>
+      
+      response_time <- as.numeric( #<17>
         difftime(Sys.time(), request_start, units = "secs")
-      )
+      ) #<17>
       
-      logger::log_error(
+      logger::log_error( #<18>
         "Prediction request failed - Session: {session$token} - error: {error_msg} - response_time_sec: {round(response_time, 3)}"
-      ) #<13>
+      ) #<18>
       
-      if (grepl("Connection refused|couldn't connect", error_msg, ignore.case = TRUE)) { #<14>
-        user_msg <- "API not available - is the server running on port 8080?"
-        logger::log_error("API connection refused - Session: {session$token}")
-      } else if (grepl("timeout|timed out", error_msg, ignore.case = TRUE)) {
+      if (grepl("Connection refused|couldn't connect", error_msg, ignore.case = TRUE)) { #<19>
+        user_msg <- "API not available - is the server running on port 8080?" 
+        logger::log_error("API connection refused - Session: {session$token}") #<19>
+      } else if (grepl("timeout|timed out", error_msg, ignore.case = TRUE)) { #<20>
         user_msg <- "Request timed out - API may be overloaded"
-        logger::log_warn("API timeout occurred - Session: {session$token}")
-      } else {
-        user_msg <- paste("API Error:", substr(error_msg, 1, 50))
+        logger::log_warn("API timeout occurred - Session: {session$token}") #<20>
+      } else { #<21>
+        user_msg <- paste("API Error:", substr(error_msg, 1, 50)) 
         logger::log_error(
           "Unknown API error - Session: {session$token} - error: {error_msg}"
-        )
-      } #<14>
+        ) #<21>
+      } 
       
-      showNotification( #<15>
+      showNotification( #<22>
         paste("❌", user_msg), 
         type = "error", 
         duration = 5
-      ) #<15>
+      ) #<22>
       
-      return(paste("❌", user_msg)) #<16>
+      return(paste("❌", user_msg)) #<23>
     })
   }) |> 
-    bindEvent(input$predict, ignoreInit = TRUE)
+    bindEvent(input$predict, ignoreInit = TRUE) #<24>
   
   # outputs ----
   output$pred <- renderText({
-    prediction <- pred() #<17>
+    prediction <- pred() #<25>
     
-    if (is.numeric(prediction)) { #<18>
+    if (is.numeric(prediction)) { #<26>
       result <- paste(round(prediction, 1), "grams") 
       logger::log_info(
         "Displaying prediction to user - Session: {session$token} - display_value: {result}"
       )
-      return(result)
-    } else {
+      return(result) #<26>
+    } else { #<27>
       logger::log_debug(
         "Displaying error message to user - Session: {session$token} - message: {prediction}"
       )
       return(as.character(prediction))
-    } #<18>
+    } #<27>
   })
 ```
 1. Create reactive for predictions  
 2. Request start time   
 3. Request data converted to `request_data`        
-4. Input validation     
-5. Safely perform request   
-6. Notification for starting prediction   
-7. Perform `POST` request using `request_data`    
-8. Create response time   
-9. Convert data to JSON   
-10. Extract prediction - handle different response formats    
-11. Performance monitoring    
-12. Notification for successful prediction    
-13. Construct and display error message   
-14. Classify error types by API response    
-15. Notification for failed prediction    
-16. Error for failed prediction    
-17. Create prediction from reactive `pred()`  
-18. Format prediction for display   
+4. Log error for invalid inputs     
+5. Log prediction being sent to API   
+6. Safely perform request   
+7. Notification for starting prediction   
+8. Perform `POST` request using `request_data`    
+9. Create response time   
+10. Convert data to JSON   
+11. Extract prediction - handle different response formats    
+12. Log successful prediction   
+13. Performance monitoring   
+14. Notification for successful prediction  
+15. Return predicted value  
+16. Construct and display error message   
+17. Construct API response time  
+18. Log prediction request error    
+19. Log connection refused error    
+20. Log timeout error   
+21. Log unknown API error
+22. Notification for failed prediction    
+23. Error for failed prediction    
+24. Bind to `actionButton()` input
+25. Create prediction from reactive `pred()`  
+26. Format successful prediction for display    
+27. Log unsuccessful prediction   
 
 In the **Console**, we see the following: 
 
 ```{verbatim}
-INFO [2025-12-23 08:32:56] Starting prediction request - Session: 8e0d4bd326098f9c2d2d01aeaab6b1db - request_data: [{"bill_length_mm":51,"species":"Gentoo","sex":"female"}]
-INFO [2025-12-23 08:32:56] Prediction successful - Session: 8e0d4bd326098f9c2d2d01aeaab6b1db - response_time_sec: 0.293 - prediction: 4923.5183
-INFO [2025-12-23 08:32:56] Displaying prediction to user - Session: 8e0d4bd326098f9c2d2d01aeaab6b1db - display_value: 4923.5 grams
+INFO [2025-12-23 08:32:56] Starting prediction request - 
+  Session: 8e0d4bd326098f9c2d2d01aeaab6b1db - 
+  request_data: [{"bill_length_mm":51,"species":"Gentoo","sex":"female"}]
+INFO [2025-12-23 08:32:56] Prediction successful - 
+  Session: 8e0d4bd326098f9c2d2d01aeaab6b1db - 
+  response_time_sec: 0.293 - prediction: 4923.5183
+INFO [2025-12-23 08:32:56] Displaying prediction to user - 
+  Session: 8e0d4bd326098f9c2d2d01aeaab6b1db - 
+  display_value: 4923.5 grams
 ```
 
 In the UI, we see the following:
