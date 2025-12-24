@@ -111,6 +111,7 @@ graph LR
 </div>
 </div>
 <p>In R, package APIs handle things like authentication (OAuth tokens, API keys, etc.), creating the correct query parameters, and parsing the JSON/XML responses into data frames or lists, which means we can focus on the higher-level data tasks rather than on the low-level networking details.</p>
+<p>Consider the <a href="https://gh.r-lib.org/"><code>gh</code> package</a> sequence diagram below:</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div>
@@ -565,47 +566,7 @@ font-style: inherit;">"male"</span> )</span>
 <section id="handlers" class="level4">
 <h4 class="anchored" data-anchor-id="handlers">Handlers</h4>
 <p>The <code>plumber</code> package allows us to create RESTful APIs<sup>5</sup> in R by decorating regular R functions with special comments (<code>#*</code>) that define API endpoints and their HTTP methods (also called verbs).</p>
-<div class="cell" data-layout-align="center">
-<div class="cell-output-display">
-<div>
-<p></p><figure class="figure"><p></p>
-<div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"15px"}}}%%
-
-graph TB
-    WriteFun("&lt;em&gt;Write R function&lt;/em&gt;")
-    RFunc[/"&lt;br&gt;&lt;code&gt;add &lt;- function(a, b) {&lt;br&gt;  a + b&lt;br&gt;}&lt;/code&gt;"/]
-    WriteCom("&lt;em&gt;Add special comments&lt;/em&gt;")
-    Decor[/"&lt;code&gt;#* @get /add&lt;br/&gt;#* @param a:int&lt;br/&gt;#* @param b:int&lt;/code&gt;&lt;br/&gt;"/]
-    Plumber("&lt;em&gt;&lt;strong&gt;plumber&lt;/strong&gt; package&lt;br/&gt;reads decorations&lt;/em&gt;")
-    
-    API["&lt;strong&gt;RESTful API Endpoint&lt;br/&gt;&lt;code&gt;GET /add?a=5&amp;b=3&lt;/code&gt;&lt;/strong&gt;"]
-    Response["&lt;strong&gt;JSON Response&lt;br/&gt;&lt;code&gt;{result: 8}&lt;/code&gt;&lt;/strong&gt;"]
-    
-    WriteFun --&gt; RFunc
-    RFunc --&gt; WriteCom
-    WriteCom --&gt; Decor
-    Decor --&gt; Plumber
-    Plumber --&gt; API
-    API --&gt; Response
-    
-    style WriteFun fill:#fff,stroke:#fff,color:#000
-    style WriteCom  fill:#fff,stroke:#fff,color:#000
-    style Plumber  fill:#fff,stroke:#fff,color:#000
-    
-    style RFunc text-align:left,fill:#2196F3,stroke:#2196F3,color:#fff
-    style Decor text-align:left,fill:#2196F3,stroke:#2196F3,color:#fff
-    
-    style API  fill:#fff,stroke:#4051B5,color:#4051B5
-    style Response  fill:#fff,stroke:#4CAF50,color:#4051B5
-    
-</pre>
-</div>
-<p></p><figcaption> Plumber Transforms R Functions into API Endpoints</figcaption> </figure><p></p>
-</div>
-</div>
-</div>
-<p>These methods are listed below:</p>
+<p>The HTTP methods and their corresponding <code>plumber</code> tags are listed below:</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -647,6 +608,46 @@ graph TB
 </tr>
 </tbody>
 </table>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"15px"}}}%%
+
+graph TB
+    WriteFun("&lt;em&gt;Write R function&lt;/em&gt;")
+    RFunc("&lt;code&gt;add &lt;- function(a, b) {&lt;br&gt;  a + b&lt;br&gt;}&lt;/code&gt;")
+    WriteCom("&lt;em&gt;Add special comments&lt;/em&gt;")
+    Decor("&lt;code&gt;#* @get /add&lt;br/&gt;#* @param a:int&lt;br/&gt;#* @param b:int&lt;/code&gt;")
+    Plumber("&lt;em&gt;&lt;strong&gt;plumber&lt;/strong&gt; package&lt;br/&gt;reads decorations&lt;/em&gt;")
+    
+    API["&lt;strong&gt;RESTful API Endpoint&lt;br/&gt;&lt;code&gt;GET /add?a=5&amp;b=3&lt;/code&gt;&lt;/strong&gt;"]
+    Response["&lt;strong&gt;JSON Response&lt;br/&gt;&lt;code&gt;{result: 8}&lt;/code&gt;&lt;/strong&gt;"]
+    
+    WriteFun --&gt; RFunc
+    RFunc --&gt; WriteCom
+    WriteCom --&gt; Decor
+    Decor --&gt; Plumber
+    Plumber --&gt; API
+    API --&gt; Response
+    
+    style WriteFun fill:#fff,stroke:#fff,color:#000
+    style WriteCom  fill:#fff,stroke:#fff,color:#000
+    style Plumber  fill:#fff,stroke:#fff,color:#000
+    
+    style RFunc text-align:left,fill:#2196F3,stroke:#2196F3,color:#fff
+    style Decor text-align:left,fill:#2196F3,stroke:#2196F3,color:#fff
+    
+    style API  fill:#fff,stroke:#4051B5,color:#4051B5
+    style Response  fill:#fff,stroke:#4CAF50,color:#4051B5
+    
+</pre>
+</div>
+<p></p><figcaption> Example: plumber transforms R function into API endpoint</figcaption> </figure><p></p>
+</div>
+</div>
+</div>
 <section id="health-check" class="level5">
 <h5 class="anchored" data-anchor-id="health-check">Health Check</h5>
 <p>The first plumber handler function is a standard health check (or <code>ping</code>). This is a <code>GET</code>/<code>@get</code> endpoint, since it’s only returning requested information (without altering anything).</p>
@@ -11882,7 +11883,7 @@ font-style: inherit;">print</span>(x)</span>
 </div>
 </div>
 <p>When <code>datasetApp()</code> is run, the app displays the dataset object in the <code>tableOutput()</code>, and the <code>verbatimTextOutput()</code> renders the reactive values as a text:</p>
-<div id="fig-datasetApp_run" class="quarto-float quarto-figure quarto-figure-center anchored" width="100%" data-fig-align="center">
+<div id="fig-datasetApp_run" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center" width="100%">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-datasetApp_run-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <a href="datasetApp_run.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;1: "><img src="https://mjfrigaard.github.io/posts/p3-test-shiny-module-tests/datasetApp_run.png" id="fig-datasetApp_run" class="img-fluid quarto-figure quarto-figure-center anchored figure-img" style="width:100.0%"></a>
