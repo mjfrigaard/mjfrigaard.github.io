@@ -111,6 +111,8 @@ graph LR
 
 In R, package APIs handle things like authentication (OAuth tokens, API keys, etc.), creating the correct query parameters, and parsing the JSON/XML responses into data frames or lists, which means we can focus on the higher-level data tasks rather than on the low-level networking details.
 
+Consider the [`gh` package](https://gh.r-lib.org/) sequence diagram below:
+
 ```{mermaid}
 %%| fig-align: center
 %%| echo: false
@@ -324,17 +326,27 @@ prep_pred_data(
 
 The `plumber` package allows us to create RESTful APIs[^restful-apis] in R by decorating regular R functions with special comments (`#*`) that define API endpoints and their HTTP methods (also called verbs). 
 
+The HTTP methods and their corresponding `plumber` tags are listed below:
+
+| HTTP verb | plumber tag | Description |
+|----|----|----|
+| GET | `@get` | Request data from a server without modifying anything |
+| POST | `@post` | Send data to the server to create a new resource |
+| PUT | `@put` | Replace an entire resource with new data |
+| DELETE | `@delete` | Delete a specified resource from the server |
+| HEAD | `@head` | Same as GET but returns only headers (no body content) |
+
 ```{mermaid}
 %%| fig-align: center
 %%| echo: false
-%%| fig-cap: 'Plumber Transforms R Functions into API Endpoints'
+%%| fig-cap: 'Example: plumber transforms R function into API endpoint'
 %%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"15px"}}}%%
 
 graph TB
 	WriteFun("<em>Write R function</em>")
-    RFunc[/"<br><code>add <- function(a, b) {<br>  a + b<br>}</code>"/]
+    RFunc("<code>add <- function(a, b) {<br>  a + b<br>}</code>")
     WriteCom("<em>Add special comments</em>")
-    Decor[/"<code>#* @get /add<br/>#* @param a:int<br/>#* @param b:int</code><br/>"/]
+    Decor("<code>#* @get /add<br/>#* @param a:int<br/>#* @param b:int</code>")
     Plumber("<em><strong>plumber</strong> package<br/>reads decorations</em>")
     
     API["<strong>RESTful API Endpoint<br/><code>GET /add?a=5&b=3</code></strong>"]
@@ -360,16 +372,6 @@ graph TB
 ```
 
 [^restful-apis]: What is a RESTful API? Appsilon has a [great tutorial](https://www.appsilon.com/post/r-rest-api#introduction) on using `plumber`. [This](https://ploomber.io/blog/restapi-plumber/) is also a great tutorial (but is uses `caret` for modeling).
-
-These methods are listed below:
-
-| HTTP verb | plumber tag | Description |
-|----|----|----|
-| GET | `@get` | Request data from a server without modifying anything |
-| POST | `@post` | Send data to the server to create a new resource |
-| PUT | `@put` | Replace an entire resource with new data |
-| DELETE | `@delete` | Delete a specified resource from the server |
-| HEAD | `@head` | Same as GET but returns only headers (no body content) |
 
 ##### Health Check
 

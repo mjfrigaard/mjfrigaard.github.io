@@ -2,7 +2,7 @@
 title: "Shiny (for Python) & APIs" 
 subtitle: "Using Vetiver, FastAPI and Shiny"
 author: "Martin Frigaard"
-date: "2025-06-21"
+date: "2025-07-21"
 categories: [APIs, Python, Shiny]
 # image: "img/image.png"
 draft: true
@@ -21,10 +21,10 @@ freeze: true
 callout-appearance: simple
 
 execute:
-  echo: true
+  echo: false
   message: false
   warning: false
-  eval: false
+  eval: true
 ---
 
 ```{r}
@@ -41,3 +41,189 @@ library(stringr)
 # install.packages(c("NHANES", "palmerpenguins"))
 library(palmerpenguins)
 ```
+
+In this post, we'll explore a production-ready architecture for deploying `scikit-learn` models as RESTful APIs and building interactive interfaces to consume them. 
+
+We'll examine the coding patterns, architecture decisions, and compare this Python implementation to equivalent R workflows using `plumber`, `logger`, and `shiny`.
+
+## Architecture
+
+```{=html}
+
+<style>
+
+.codeStyle span:not(.nodeLabel) {
+  font-family: monospace;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #9753b8 !important;
+  background-color: #f6f6f6;
+  padding: 0.2em;
+}
+
+</style>
+```
+
+```{mermaid}
+%%| fig-align: center
+%%| echo: false
+%%| fig-cap: 'Python APIs & Shiny Apps'
+%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+
+graph TB
+    subgraph Storage["<strong>Model Storage</strong>"]
+        Board("<code>pins</code> Board:<br/>File System Storage")
+        Model("Trained sklearn Model:<br/><code>penguin_model</code>")
+    end
+    
+    style Board fill:#fff,color:#000,stroke:#FF9800,stroke-width:3px
+    style Model fill:#fff,color:#000,stroke:#FF9800,stroke-width:3px
+
+    subgraph API["<strong>API Layer</strong>"]
+        Vetiver["<code>VetiverModel</code><br/>Model Wrapper"]
+        FastAPI["<code>FastAPI</code> Server<br/>Port 8080"]
+        Endpoints["<code>/predict</code><br/><code>/ping</code><br/><code>/metadata</code>"]
+    end
+    
+    style Vetiver fill:#fff,color:#000,stroke:#4CAF50,stroke-width:3px
+    style FastAPI fill:#fff,color:#000,stroke:#4CAF50,stroke-width:3px
+    style Endpoints fill:#fff,color:#000,stroke:#4CAF50,stroke-width:3px
+    
+    subgraph Client["<strong>Client Layer</strong>"]
+        UI[Shiny UI<br/>Input Controls]
+        Server[Shiny Server<br/>Request Logic]
+        Logging[Logging System<br/>File + Console]
+    end
+    
+    style UI fill:#fff,color:#000,stroke:#2196F3,stroke-width:3px
+    style Server fill:#fff,color:#000,stroke:#2196F3,stroke-width:3px
+    style Logging fill:#fff,color:#000,stroke:#2196F3,stroke-width:3px
+    
+    subgraph User["<strong>End Users</strong>"]
+        Browser[Web Browser]
+    end
+    
+    style User color:#000
+    style Browser fill:#fff,color:#000,stroke:#fff,stroke-width:3px
+    
+    Board --> Model
+    Model --> Vetiver
+    Vetiver --> FastAPI
+    FastAPI --> Endpoints
+    
+    Browser --> UI
+    UI --> Server
+    Server -->|HTTP POST| Endpoints
+    Endpoints -->|JSON Response| Server
+    Server --> Logging
+    Logging --> UI
+    
+    style API fill:#4CAF50,stroke:#2E7D32,color:#fff
+    style Client fill:#2196F3,stroke:#1565C0,color:#fff
+    style Storage fill:#FF9800,stroke:#E65100,color:#fff
+    
+```
+
+## API
+
+```{verbatim}
+_labs/lab4/Python/api/
+                    ├── api.Rproj
+                    ├── mod-api.py
+                    ├── README.md
+                    └── requirements.txt
+```
+
+### Model
+
+The first critical pattern is defensive model loading with feature validation. Always validate that your model has the expected feature schema. This prevents runtime errors when the model structure doesn't match your expectations.
+
+```{python}
+#| eval: false 
+#| echo: true 
+#| code-fold: false
+# connect to model board
+model_board = pins.board_folder("../../../lab2/model-vetiver/models/")
+
+# read pinned model
+sklearn_model = model_board.pin_read("penguin_model")
+
+# validate expected features
+if hasattr(sklearn_model, 'feature_names_in_'):
+    feature_names = sklearn_model.feature_names_in_
+    print(f"Model expects features: {list(feature_names)}")
+```
+
+
+### Prototype Data 
+
+One of Vetiver's most important features is **prototype data**, which is like a contract between the client and the API --it defines the expected input schema:
+
+```{python}
+#| eval: false 
+#| echo: true 
+#| code-fold: false
+def get_prototype_value(column_name):
+    """Get appropriate default value for each column type"""
+    if 'bill_length' in column_name:
+        return 45.0  # Realistic penguin bill length
+    elif 'species_Gentoo' in column_name:
+        return 1     # Default to Gentoo species
+    elif 'sex_male' in column_name:
+        return 1     # Default to male
+    else:
+        return 0     # Default for other dummy variables
+
+# create prototype data directly
+prototype_data = pd.DataFrame({
+    name: [get_prototype_value(name)] for name in feature_names
+})
+```
+
+The prototype serves as an executable contract. Vetiver uses it to:
+- Validate incoming requests
+- Generate API documentation
+- Provide clear error messages when data doesn't match expectations
+
+### Wrapping and Serving
+
+```{python}
+#| eval: false 
+#| echo: true 
+#| code-fold: false
+# wrap as VetiverModel
+v = vetiver.VetiverModel(
+    model=sklearn_model, 
+    model_name="penguin_model",
+    prototype_data=prototype_data
+)
+
+# create VetiverAPI and extract FastAPI app
+vetiver_api = vetiver.VetiverAPI(v, check_prototype=True)
+app = vetiver_api.app
+```
+
+**Architecture Decision**: Vetiver creates a FastAPI application under the hood, giving you:    
+- Automatic endpoint generation (`/predict`, `/ping`, `/metadata`)    
+- Interactive API documentation at `/docs`    
+- Request validation based on prototype data    
+- JSON serialization of predictions   
+    
+
+## App
+
+```{verbatim}
+_labs/lab4/Python/app/
+                    ├── app.py
+                    ├── app.Rproj
+                    ├── logs
+                    │   └── shiny_app.log
+                    ├── README.md
+                    └── requirements.txt
+```
+
+### Health check 
+
+### Predictions 
+
+### Logging
