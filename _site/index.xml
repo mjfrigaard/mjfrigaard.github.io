@@ -13,9 +13,3177 @@
 <url>https://mjfrigaard.github.io/profile.png</url>
 <title>@mjfrigaard</title>
 <link>https://mjfrigaard.github.io/</link>
+<height>109</height>
+<width>144</width>
 </image>
 <generator>quarto-1.8.26</generator>
-<lastBuildDate>Wed, 23 Apr 2025 07:00:00 GMT</lastBuildDate>
+<lastBuildDate>Mon, 21 Jul 2025 07:00:00 GMT</lastBuildDate>
+<item>
+  <title>Shiny (for Python) &amp; APIs</title>
+  <dc:creator>Martin Frigaard</dc:creator>
+  <link>https://mjfrigaard.github.io/posts/py-api/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<p>This is the second post demonstrating how to use Shiny apps with a database and an API (see previous post <a href="https://mjfrigaard.github.io/posts/shiny-plumber/">here</a>). Both of these solutions are inspired by the exercises in the <a href="https://do4ds.com/chapters/sec1/1-3-data-access.html#lab-use-a-database-and-an-api">Databases and APIs chapter</a> of <a href="https://do4ds.com/">DevOps for Data Science</a>.</p>
+<p>In this post, I’ll create a simple <code>sklearn</code> model as a RESTful API with <code>VetiverModel</code> and <code>FastAPI</code>, then use a Shiny for Python app for making requests. This production-ready architecture gives users an interactive interface to the model for making predictions.</p>
+<p>I’ll touch on coding patterns, architecture decisions, and compare my Python solution to my previous implementation using R (with <code>plumber</code>, <code>logger</code>, and <code>shiny</code>).</p>
+<section id="architecture" class="level2">
+<h2 class="anchored" data-anchor-id="architecture">Architecture</h2>
+
+<style>
+
+.codeStyle span:not(.nodeLabel) {
+  font-family: monospace;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #9753b8 !important;
+  background-color: #f6f6f6;
+  padding: 0.2em;
+}
+
+</style>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+
+graph TB
+    subgraph Storage["&lt;strong&gt;Model&lt;/strong&gt;"]
+      subgraph Board["&lt;strong&gt;models&lt;/strong&gt;"]
+        Model("&lt;strong&gt;penguin_model&lt;/strong&gt;")
+      end
+    end
+    
+    style Storage fill:#fff,stroke:#E65100,color:#FF9800,stroke-width:3px
+    style Board fill:#FF9800,color:#000,stroke:#FF9800,stroke-width:1px
+    style Model text-align:left,fill:#FF9800,color:#000,stroke:#FF9800,stroke-width:1px
+
+    subgraph API["&lt;strong&gt;Vetiver API&lt;/strong&gt;"]
+        Vetiver("&lt;strong&gt;&lt;code&gt;VetiverModel&lt;/code&gt;&lt;/strong&gt;")
+        FastAPI("&lt;strong&gt;&lt;code&gt;FastAPI&lt;/code&gt; server&lt;/strong&gt;")
+        Endpoints("&lt;code&gt;/predict&lt;/code&gt;&lt;br/&gt;&lt;code&gt;/ping&lt;/code&gt;&lt;br/&gt;&lt;code&gt;/metadata&lt;/code&gt;")
+    end
+    
+    style API fill:#fff,stroke:#2E7D32,color:#4CAF50
+    style Vetiver text-align:right,fill:#4CAF50,color:#000,stroke:#4CAF50,stroke-width:3px
+    style FastAPI text-align:right,fill:#4CAF50,color:#000,stroke:#4CAF50,stroke-width:3px
+    style Endpoints text-align:left,fill:#4CAF50,color:#000,stroke:#4CAF50,stroke-width:3px
+    
+    subgraph App["&lt;strong&gt;Shiny App&lt;/strong&gt;"]
+        UI("&lt;strong&gt;Shiny UI Inputs&lt;/strong&gt;")
+        Server("&lt;strong&gt;App Server&lt;/strong&gt;")
+        Logging("&lt;strong&gt;Logging&lt;br&gt;(file &amp; console)&lt;/strong&gt;")
+    end
+    
+    style App fill:#fff,stroke:#1565C0,color:#2196F3
+    style UI fill:#2196F3,color:#000,stroke:#2196F3,stroke-width:3px
+    style Server fill:#2196F3,color:#000,stroke:#2196F3,stroke-width:3px
+    style Logging fill:#2196F3,color:#000,stroke:#2196F3,stroke-width:3px
+    
+    subgraph User["&lt;strong&gt;End Users&lt;/strong&gt;"]
+        Browser("&lt;strong&gt;Web Browser&lt;/strong&gt;")
+    end
+    
+    style User color:#000
+    style Browser fill:#fff,color:#000,stroke:#000,stroke-width:3px
+    
+    Model --&gt;|&lt;code&gt;pins&lt;/code&gt; board with &lt;code&gt;sklearn&lt;/code&gt; model| Vetiver
+    Vetiver --&gt;|Model wrapper| FastAPI
+    FastAPI --&gt; |Port 8080|Endpoints
+    
+    Browser --&gt; UI
+    UI --&gt; Server
+    Server --&gt;|HTTP POST| Endpoints
+    Endpoints --&gt;|JSON Response| Server
+    Server --&gt; Logging
+    Logging --&gt; UI
+    
+</pre>
+</div>
+<p></p><figcaption> Python APIs &amp; Shiny Apps</figcaption> </figure><p></p>
+</div>
+</div>
+</div>
+</section>
+<section id="model" class="level2">
+<h2 class="anchored" data-anchor-id="model">Model</h2>
+<p>The files in the API folder are below:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb1-1">_labs/lab4/Python/api/</span>
+<span id="cb1-2">                  ├── api.Rproj</span>
+<span id="cb1-3">                  ├── mod-api.py</span>
+<span id="cb1-4">                  ├── model.py</span>
+<span id="cb1-5">                  ├── models/</span>
+<span id="cb1-6">                  │   └── penguin_model/</span>
+<span id="cb1-7">                  ├── my-db.duckdb</span>
+<span id="cb1-8">                  ├── README.md</span>
+<span id="cb1-9">                  └── requirements.txt</span></code></pre></div></div>
+<p>We’ll first cover creating the model in <code>model.py</code>, then the API in <code>mod-api.py</code>.<sup>1</sup></p>
+<section id="dependencies" class="level3">
+<h3 class="anchored" data-anchor-id="dependencies">Dependencies</h3>
+<p>I’ll start by importing the packages. In Python (and Positron), we want to manage our Python dependencies using <a href="https://docs.python.org/3/tutorial/venv.html"><code>venv</code></a>.<sup>2</sup> We can accomplish this by creating the <code>.venv/</code> (virtual environment) and reading the requirements from <code>requirements.txt</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb2-1"># check  Python version</span>
+<span id="cb2-2">which python3</span>
+<span id="cb2-3">python3 --version</span>
+<span id="cb2-4"></span>
+<span id="cb2-5">/usr/bin/python3 -m venv .venv </span>
+<span id="cb2-6">source .venv/bin/activate </span>
+<span id="cb2-7"></span>
+<span id="cb2-8">pip install -r requirements.txt</span></code></pre></div></div>
+<p>At the top of <code>model.R</code>, we will load the necessary packages:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> palmerpenguins <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> load_penguins</span>
+<span id="cb3-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> pandas <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> get_dummies</span>
+<span id="cb3-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> numpy <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> np</span>
+<span id="cb3-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.linear_model <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> LinearRegression</span>
+<span id="cb3-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> preprocessing</span>
+<span id="cb3-6"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> duckdb</span></code></pre></div></div>
+</div>
+<p>Python dependencies tend to more explicit than R dependencies, specifically the “import only specific things” style (i.e., <code>from pandas import get_dummies</code>). I’m still figuring out how to use the aliases, but I’ve found that this level of precision helps me plan better (and not import something I won’t use).</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span><span style="font-weight: bold; font-size: 1.20em;">Python vs.&nbsp;R: Dependencies</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>Below is a collection of terms and concepts related to dependencies in Python and R:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Concept</th>
+<th>Python</th>
+<th>R</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Package</td>
+<td>Package</td>
+<td>Package</td>
+<td>Same word, different tooling. In Python its <code>pip</code>or<code>conda</code> and in R we use <code>install.packages()</code> or <code>pak</code>.</td>
+</tr>
+<tr class="even">
+<td>Module</td>
+<td>module</td>
+<td>namespace</td>
+<td>Python modules are files; R namespaces are package-scoped environments.</td>
+</tr>
+<tr class="odd">
+<td>Import</td>
+<td><code>import</code> or <code>from x import y</code></td>
+<td><code>library()</code>,<code>require()</code>, <code>pkg::fun()</code></td>
+<td>Python encourages explicit imports while R encourages <code>pkg::fun()</code> for explicit usage</td>
+</tr>
+<tr class="even">
+<td>Attach</td>
+<td>imported into namespace</td>
+<td>attached to search path</td>
+<td><code>library()</code> <em>attaches</em>; <code>pkg::fun()</code> doesn’t</td>
+</tr>
+<tr class="odd">
+<td>Alias</td>
+<td><code>import numpy as np</code></td>
+<td></td>
+<td>R doesn’t use aliases for packages; explicit qualification is preferred.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="data" class="level3">
+<h3 class="anchored" data-anchor-id="data">Data</h3>
+<p>The data are imported from the <a href="https://pypi.org/project/palmerpenguins/">Python <code>palmerpenguins</code> package</a> and used to create an embedded database connection (<code>con</code>). We then create a table from the <a href="https://pandas.pydata.org/"><code>pandas</code> DataFrame</a>, query and clean the data (drop missing), view the top three rows, and close the connection.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1">penguins_data <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> load_penguins()</span>
+<span id="cb4-2">con <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> duckdb.<span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">connect</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'my-db.duckdb'</span>)</span>
+<span id="cb4-3">con.execute(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"CREATE OR REPLACE TABLE penguins AS SELECT * FROM penguins_data"</span>)</span>
+<span id="cb4-4">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> con.execute(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"SELECT * FROM penguins"</span>).fetchdf().dropna()</span>
+<span id="cb4-5"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(df.head(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>))</span>
+<span id="cb4-6">con.close()</span></code></pre></div></div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb5-1">  species     island  bill_length_mm  bill_depth_mm  flipper_length_mm  body_mass_g     sex  year</span>
+<span id="cb5-2">0  Adelie  Torgersen            39.1           18.7              181.0       3750.0    male  2007</span>
+<span id="cb5-3">1  Adelie  Torgersen            39.5           17.4              186.0       3800.0  female  2007</span>
+<span id="cb5-4">2  Adelie  Torgersen            40.3           18.0              195.0       3250.0  female  2007</span></code></pre></div></div>
+</section>
+<section id="linear-regression" class="level3">
+<h3 class="anchored" data-anchor-id="linear-regression">Linear regression</h3>
+<p>The linear regression model uses one-hot encoding with <code>get_dummies()</code> by dropping the first category of each factor.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1">X <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> get_dummies(df[[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'bill_length_mm'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'species'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'sex'</span>]], drop_first <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb6-2">y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'body_mass_g'</span>]</span>
+<span id="cb6-3">model <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> LinearRegression().fit(X, y)</span></code></pre></div></div>
+</div>
+<p>What <code>get_dummies()</code> does is create a series of binary indicators for the categorical factors (dropped category becomes the <em>reference level</em>):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 40%">
+<col style="width: 59%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Original Data</th>
+<th>After <code>get_dummies(drop_first=True)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>bill_length_mm</code>: 39.1<br><code>species</code>: Adelie<br><code>sex</code>: male</td>
+<td><code>bill_length_mm</code>: 39.1<br><code>species_Chinstrap</code>: 0<br><code>species_Gentoo</code>: 0<br><code>sex_male</code>: 1</td>
+</tr>
+<tr class="even">
+<td><code>bill_length_mm</code>: 46.5<br><code>species</code>: Gentoo<br><code>sex</code>: female</td>
+<td><code>bill_length_mm</code>: 46.5<br><code>species_Chinstrap</code>: 0<br><code>species_Gentoo</code>: 1<br><code>sex_male</code>: 0</td>
+</tr>
+</tbody>
+</table>
+<p><em>If <code>species_Chinstrap=0</code> and <code>species_Gentoo=0</code>, the penguin is <code>Adelie</code></em></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span><span style="font-weight: bold; font-size: 1.20em;">Python vs.&nbsp;R: Dummy encoding</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>In Python, we have to explicitly call <code>get_dummies(..., drop_first = TRUE)</code> to perform one-hot encode the categorical variables. This drops the first level to avoid multicollinearity.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1">X <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> get_dummies(df[[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'bill_length_mm'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'species'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'sex'</span>]], drop_first <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb7-2">y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'body_mass_g'</span>]</span>
+<span id="cb7-3">model <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> LinearRegression().fit(X, y)</span></code></pre></div></div>
+<p>In R, <code>lm()</code> will automatically convert factors to dummy variables by dropping one level per factor (also called treatment contrasts).</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1">model <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">lm</span>(</span>
+<span id="cb8-2">  body_mass_g <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">~</span> bill_length_mm <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> species <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> sex,</span>
+<span id="cb8-3">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data =</span> df</span>
+<span id="cb8-4">)</span></code></pre></div></div>
+</div>
+</div>
+</div>
+</div>
+<p>For the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html"><code>LinearRegression</code> model</a>, the <code>.fit()</code> method trains the model in-place and returns <code>self</code>, enabling method chaining. We can print out the model attributes (R^2, intercept, coefficients, etc.) to confirm it’s working:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-7" style="background: #f1f3f5;"><pre class="sourceCode python code-annotation-code code-with-copy code-annotated"><code class="sourceCode python"><span id="annotated-cell-7-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># model attributes</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="1">1</button><span id="annotated-cell-7-2" class="code-annotation-target"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"R^2 </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>model<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>score(X,y)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="2">2</button><span id="annotated-cell-7-3" class="code-annotation-target"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Intercept </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>model<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>intercept_<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="3">3</button><span id="annotated-cell-7-4" class="code-annotation-target"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Coefficients </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>model<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>coef_<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-7" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="2" data-code-annotation="1">The <code>.score()</code> method computes R^2 (coefficient of determination) on the training data<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-7" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="3" data-code-annotation="2">The <code>model</code> intercept<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-7" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="4" data-code-annotation="3">The <code>model</code> coefficients</span>
+</dd>
+</dl>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span><span style="font-weight: bold; font-size: 1.20em;">Python vs.&nbsp;R: F strings</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>Python uses F-strings (any string prefixed with <code>f</code> or <code>F</code>) are formatted string literals:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"R^2 </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>model<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>score(X,y)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="cb9-2"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Intercept </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>model<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>intercept_<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="cb9-3"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Coefficients </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>model<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>coef_<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div></div>
+<p>We can put <em>any</em> valid Python expression inside the braces (<code>{``}</code>) and these are evaluated at runtime. The results are automatically converted to strings.</p>
+<p>In R, we can do this using base R functions:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">cat</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"R^2"</span>, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">summary</span>(model)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>r.squared, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="cb10-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">cat</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Intercept"</span>, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">coef</span>(model)[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>], <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="cb10-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">cat</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Coefficients"</span>, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">coef</span>(model)[<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>], <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div></div>
+<p>Or the <code>tidyverse</code>-friendly output and string interpolation, <code>glue</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">glue</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"R^2 {summary(model)$r.squared}"</span>)</span>
+<span id="cb11-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">glue</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Intercept {coef(model)[1]}"</span>)</span>
+<span id="cb11-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">glue</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Coefficients {toString(coef(model)[-1])}"</span>)</span></code></pre></div></div>
+</div>
+</div>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb12-1">R^2 0.8555368759537614</span>
+<span id="cb12-2">Intercept 2169.2697209393973</span>
+<span id="cb12-3">Coefficients [  32.53688677 -298.76553447 1094.86739145  547.36692408]</span></code></pre></div></div>
+<p>The prototype data shows the transformation from <code>get_dummies()</code>:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"prototype_data </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>X<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div></div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb14-1">prototype_data      bill_length_mm  species_Chinstrap  species_Gentoo  sex_male</span>
+<span id="cb14-2">0              39.1              False           False      True</span>
+<span id="cb14-3">1              39.5              False           False     False</span>
+<span id="cb14-4">2              40.3              False           False     False</span>
+<span id="cb14-5">4              36.7              False           False     False</span>
+<span id="cb14-6">5              39.3              False           False      True</span>
+<span id="cb14-7">..              ...                ...             ...       ...</span>
+<span id="cb14-8">339            55.8               True           False      True</span>
+<span id="cb14-9">340            43.5               True           False     False</span>
+<span id="cb14-10">341            49.6               True           False      True</span>
+<span id="cb14-11">342            50.8               True           False      True</span>
+<span id="cb14-12">343            50.2               True           False     False</span>
+<span id="cb14-13"></span>
+<span id="cb14-14">[333 rows x 4 columns]</span></code></pre></div></div>
+<p>The columns in <code>X</code> also let us know what kind of data this model will be expecting.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Columns </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>X<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>columns<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div></div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb16-1">Columns Index(['bill_length_mm', 'species_Chinstrap', 'species_Gentoo', 'sex_male'], dtype='object')</span></code></pre></div></div>
+</section>
+<section id="vetivermodel" class="level3">
+<h3 class="anchored" data-anchor-id="vetivermodel">VetiverModel</h3>
+<p>Now we can wrap the trained <code>sklearn.linear_model</code> with metadata as a <code>VetiverModel</code> and store it as <code>v</code>:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> vetiver <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> VetiverModel</span>
+<span id="cb17-2">v <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> VetiverModel(model, model_name<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'penguin_model'</span>, prototype_data<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>X)</span></code></pre></div></div>
+</div>
+<p>The <code>prototype_data</code> is set to <code>X</code> (which we created above).</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span><span style="font-weight: bold; font-size: 1.20em;">Python vs.&nbsp;R: vetiver</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>The <code>VetiverModel</code> Wrapper is essentially the same in Python and R: both end up with a Vetiver object that can make predictions and has some kind of prototype input structure:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1">v <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> VetiverModel(model, model_name<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'penguin_model'</span>, prototype_data<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>X)</span></code></pre></div></div>
+<p>The <code>prototype_data=X</code> will explicitly provide the pre-dummified data.</p>
+<p>In R, <code>save_prototype=TRUE</code>, the prototype is based on the model terms/data structure and includes the raw columns (which is we’d want for an API expecting <code>species</code> and <code>sex</code> as inputs (not pre-dummified columns). The <code>description</code> has extra metadata for documentation).</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1">v <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> vetiver<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">vetiver_model</span>(</span>
+<span id="cb19-2">  model,</span>
+<span id="cb19-3">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">model_name =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'penguin_model'</span>,</span>
+<span id="cb19-4">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">description =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Linear model predicting penguin body mass from bill length, species, and sex'</span>,</span>
+<span id="cb19-5">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">save_prototype =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span></span>
+<span id="cb19-6">)</span></code></pre></div></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="pins-board" class="level3">
+<h3 class="anchored" data-anchor-id="pins-board"><code>pins</code> board</h3>
+<p>We’ll use <code>pins</code> to create a <code>model/</code> board (i.e., the storage directory) and save our <code>vetiver</code> versioned model.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> os</span>
+<span id="cb20-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> pins <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> board_folder</span>
+<span id="cb20-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> vetiver <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> vetiver_pin_write</span>
+<span id="cb20-4"></span>
+<span id="cb20-5">model_board <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> board_folder(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"./models"</span>, allow_pickle_read<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb20-6">vetiver_pin_write(model_board, v)</span></code></pre></div></div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span><span style="font-weight: bold; font-size: 1.20em;">Python vs.&nbsp;R: pins</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>The <code>pins</code> board is also nearly identical, with the exception of deserializing Python-specific pickled objects (<code>allow_pickle_read=True</code>):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1">model_board <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> board_folder(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'./models'</span>, allow_pickle_read<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb21-2">vetiver_pin_write(model_board, v)</span></code></pre></div></div>
+<p>In R, serialization is via RDS/qs/etc., depending on implementation and <code>pins</code> board behavior:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1">model_board <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> pins<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">board_folder</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'models/'</span>)</span>
+<span id="cb22-2">vetiver<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">vetiver_pin_write</span>(model_board, v)</span></code></pre></div></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+
+graph LR
+    subgraph Board["&lt;strong&gt;./models/&lt;/strong&gt;"]
+        ModelDir["&lt;strong&gt;penguin_model/&lt;strong&gt;"]
+        Version["&lt;strong&gt;20251224T142035Z-c115b/&lt;/strong&gt;"]
+        DataTxt["&lt;code&gt;data.txt&lt;/code&gt;"]
+        ModelFile["&lt;code&gt;penguin_model.joblib&lt;/code&gt;"]
+    end
+    
+    ModelDir --&gt;|&lt;em&gt;timestamp with hash&lt;/em&gt;|Version
+    Version --&gt; |&lt;em&gt;pin metadata&lt;/em&gt;|DataTxt
+    Version --&gt; |&lt;em&gt;serialized model&lt;/em&gt;|ModelFile
+    
+    style Board fill:#E8F5E9,stroke:#2E7D32
+    style Version fill:#BBDEFB,stroke:#1565C0
+    style ModelFile fill:#FF9800,stroke:#E65100,color:#fff
+</pre>
+</div>
+<p></p><figcaption> vetiver_pin_write()</figcaption> </figure><p></p>
+</div>
+</div>
+</div>
+<p>The <code>models/</code> folder contains the following:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="annotated-cell-15" style="background: #f1f3f5;"><pre class="sourceCode default code-annotation-code code-with-copy code-annotated"><code class="sourceCode default"><span id="annotated-cell-15-1">models/</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-15" data-target-annotation="1">1</button><span id="annotated-cell-15-2" class="code-annotation-target">└── penguin_model</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-15" data-target-annotation="2">2</button><span id="annotated-cell-15-3" class="code-annotation-target">    └── 20251224T142035Z-c115b</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-15" data-target-annotation="3">3</button><span id="annotated-cell-15-4" class="code-annotation-target">        ├── data.txt</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-15" data-target-annotation="4">4</button><span id="annotated-cell-15-5" class="code-annotation-target">        └── penguin_model.joblib</span>
+<span id="annotated-cell-15-6"></span>
+<span id="annotated-cell-15-7">3 directories, 2 files</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-15" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-15" data-code-lines="2" data-code-annotation="1">Model name<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-15" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-15" data-code-lines="3" data-code-annotation="2">Version timestamp + hash<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-15" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-15" data-code-lines="4" data-code-annotation="3">Pin metadata (JSON format)<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-15" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-15" data-code-lines="5" data-code-annotation="4">Serialized sklearn model (joblib format)</span>
+</dd>
+</dl>
+</section>
+</section>
+<section id="api" class="level2">
+<h2 class="anchored" data-anchor-id="api">API</h2>
+<p>Now that we have a <code>Vetiver</code> model, we can build an API. At the top of the <code>mod-api.py</code> file, <code>warnings</code> and <code>os</code> are imported because we’re going to ignore the OpenSSL warning and set the <code>PINS_ALLOW_PICKLE_READ</code> environment variable (because we know the files come from a trusted source lab):<sup>3</sup></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># pkgs</span></span>
+<span id="cb23-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> warnings</span>
+<span id="cb23-3">warnings.filterwarnings(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ignore"</span>, message<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">".*urllib3 v2 only supports OpenSSL.*"</span>)</span>
+<span id="cb23-4"></span>
+<span id="cb23-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> os</span>
+<span id="cb23-6">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'PINS_ALLOW_PICKLE_READ'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'1'</span></span></code></pre></div></div>
+</div>
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span><span style="font-weight: bold; font-size: 1.20em;">PICKLE!</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p><strong><em>We previously set the <code>allow_pickle_read</code> to <code>True</code> when we created the <code>model_board</code>, and now we’re specifying an environment variable. Why?</em></strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1">model_board <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> board_folder(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'./models'</span>, allow_pickle_read<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span></code></pre></div></div>
+<p><a href="https://docs.python.org/3/library/pickle.html">Pickle</a> is Python’s way of saving complex objects to files (it can save almost ANY Python object - functions, classes, even entire programs). But this also means <code>pickle</code> can save malicious code.</p>
+<p>Because of this, the Python <code>pins</code> package blocks <code>pickle</code> files. However, the R <code>vetiver</code> package saves files in the <code>pickle</code>/<code>joblib</code> format (for cross-language compatibility).</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1">os.environ[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'PINS_ALLOW_PICKLE_READ'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'1'</span></span></code></pre></div></div>
+</div>
+</div>
+</div>
+</div>
+<p>After importing the libraries, we connect to the model board (that was created in <code>model.py</code>) and read the pinned model.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># dependencies </span></span>
+<span id="cb26-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> vetiver</span>
+<span id="cb26-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pins</span>
+<span id="cb26-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> uvicorn</span>
+<span id="cb26-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pd</span>
+<span id="cb26-6"></span>
+<span id="cb26-7">model_board <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pins.board_folder(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"models/"</span>)</span>
+<span id="cb26-8"></span>
+<span id="cb26-9">sklearn_model <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model_board.pin_read(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"penguin_model"</span>)</span></code></pre></div></div>
+</div>
+<p>To ensure the <code>sklearn_model</code> model has the correct input data, we validate the expected features by checking the <code>feature_names_in_</code> attribute:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># features </span></span>
+<span id="cb27-2"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">hasattr</span>(sklearn_model, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'feature_names_in_'</span>):</span>
+<span id="cb27-3">    feature_names <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> sklearn_model.feature_names_in_</span>
+<span id="cb27-4">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Model expects features: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">list</span>(feature_names)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div></div>
+</div>
+<p>This attribute are the, “<em>Names of features seen during <a href="https://scikit-learn.org/stable/glossary.html#term-fit"><code>fit</code></a>. Defined only when X has feature names that are all strings.</em>”</p>
+<section id="prototype-data" class="level3">
+<h3 class="anchored" data-anchor-id="prototype-data">Prototype Data</h3>
+<p>The model prototype data–which is like a contract between the client and the API–defines the expected input schema. We define the prototype data using a <code>get_prototype_value()</code> function, which checks the column names and has some sensible validation rules (provided the model has the expected features (i.e., from <code>feature_names_in_</code> and <code>feature_names</code>)):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-19" style="background: #f1f3f5;"><pre class="sourceCode python code-annotation-code code-with-copy code-annotated"><code class="sourceCode python"><span id="annotated-cell-19-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> get_prototype_value(column_name):</span>
+<span id="annotated-cell-19-2">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""Get appropriate default value for each column type"""</span></span>
+<span id="annotated-cell-19-3">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'bill_length'</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> column_name:</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-19" data-target-annotation="1">1</button><span id="annotated-cell-19-4" class="code-annotation-target">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">45.0</span></span>
+<span id="annotated-cell-19-5">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">elif</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'species_Gentoo'</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> column_name:</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-19" data-target-annotation="2">2</button><span id="annotated-cell-19-6" class="code-annotation-target">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="annotated-cell-19-7">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">elif</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'sex_male'</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> column_name:</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-19" data-target-annotation="3">3</button><span id="annotated-cell-19-8" class="code-annotation-target">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="annotated-cell-19-9">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">else</span>:</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-19" data-target-annotation="4">4</button><span id="annotated-cell-19-10" class="code-annotation-target">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span></span>
+<span id="annotated-cell-19-11"></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-19" data-target-annotation="5">5</button><span id="annotated-cell-19-12" class="code-annotation-target">prototype_data <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.DataFrame({</span>
+<span id="annotated-cell-19-13">    name: [get_prototype_value(name)] <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> name <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> feature_names</span>
+<span id="annotated-cell-19-14">})</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-19" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-19" data-code-lines="4" data-code-annotation="1">Realistic penguin bill length<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-19" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-19" data-code-lines="6" data-code-annotation="2">Default to Gentoo species<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-19" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-19" data-code-lines="8" data-code-annotation="3">Default to male<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-19" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-19" data-code-lines="10" data-code-annotation="4">Default for other dummy variables<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-19" data-target-annotation="5">5</dt>
+<dd>
+<span data-code-cell="annotated-cell-19" data-code-lines="12,14" data-code-annotation="5">Create prototype data using the raw input column names the estimator saw at fit time</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>If the <code>sklearn_model</code> <em>doesn’t contain or expose the <code>feature_names_in_</code> attribute</em>, we manually create <code>prototype_data</code> as a <code>pandas.DataFrame</code> with hard-coded columns:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">else</span>:</span>
+<span id="cb28-2">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Model doesn't have feature_names_in_, using estimated prototype"</span>)</span>
+<span id="cb28-3">    prototype_data <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.DataFrame({</span>
+<span id="cb28-4">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bill_length_mm"</span>: [<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">45.0</span>],</span>
+<span id="cb28-5">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"species_Chinstrap"</span>: [<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>],</span>
+<span id="cb28-6">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"species_Gentoo"</span>: [<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>], </span>
+<span id="cb28-7">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"sex_male"</span>: [<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>]</span>
+<span id="cb28-8">    })</span></code></pre></div></div>
+</div>
+<p>This method prevents runtime errors when the model structure doesn’t match expectations.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span><span style="font-weight: bold; font-size: 1.20em;">Python vs.&nbsp;R: Functions, conditions, and docstrings</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<section id="functions" class="level4">
+<h4 class="anchored" data-anchor-id="functions">Functions</h4>
+<p>In Python, <code>def</code> is used to define the function, <code>get_prototype_value</code>. :</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> get_prototype_value(column_name):</span>
+<span id="cb29-2">    ...</span></code></pre></div></div>
+<p>In R, functions are defined with <code>function()</code> (and include curly brackets if they extend past a single line):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1">get_prototype_value <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>(column_name) {</span>
+<span id="cb30-2">  ...</span>
+<span id="cb30-3">}</span></code></pre></div></div>
+</section>
+<section id="conditions" class="level4">
+<h4 class="anchored" data-anchor-id="conditions">Conditions</h4>
+<p>In Python, the <code>elif</code> means ‘else if’ and is evaluated only if the previous <code>if</code> condition was <code>FALSE</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> cond1:</span>
+<span id="cb31-2">    ...</span>
+<span id="cb31-3"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">elif</span> cond2:</span>
+<span id="cb31-4">    ...</span>
+<span id="cb31-5"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">else</span>:</span>
+<span id="cb31-6">    ...</span></code></pre></div></div>
+<p>In R, <code>else if</code> is explicit and typically accompanied with curly brackets (like multi-line functions).</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (cond1) {</span>
+<span id="cb32-2">  ...</span>
+<span id="cb32-3">} <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">else</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (cond2) {</span>
+<span id="cb32-4">  ...</span>
+<span id="cb32-5">} <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">else</span> {</span>
+<span id="cb32-6">  ...</span>
+<span id="cb32-7">}</span></code></pre></div></div>
+</section>
+<section id="docstrings" class="level4">
+<h4 class="anchored" data-anchor-id="docstrings">Docstrings</h4>
+<p>Python also uses <a href="https://www.geeksforgeeks.org/python/python-docstrings/">docstrings</a> in their help tools (like IDEs, and documentation generators).</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""Get appropriate default value for each column type"""</span></span></code></pre></div></div>
+<p>In R, <code>roxygen2</code> is used to create documentation from special comment characters:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#' Get appropriate default value for each column type</span></span></code></pre></div></div>
+</section>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="wrapping-and-serving" class="level3">
+<h3 class="anchored" data-anchor-id="wrapping-and-serving">Wrapping and Serving</h3>
+<p>After reading <code>sklearn_model</code> from the <code>pins</code> board, we still need to convert it to <code>VetiverModel</code>:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-21" style="background: #f1f3f5;"><pre class="sourceCode python code-annotation-code code-with-copy code-annotated"><code class="sourceCode python"><span id="annotated-cell-21-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># model</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-21" data-target-annotation="1">1</button><span id="annotated-cell-21-2" class="code-annotation-target">v <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> vetiver.VetiverModel(</span>
+<span id="annotated-cell-21-3">    model<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>sklearn_model, </span>
+<span id="annotated-cell-21-4">    model_name<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"penguin_model"</span>,</span>
+<span id="annotated-cell-21-5">    prototype_data<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>prototype_data</span>
+<span id="annotated-cell-21-6">)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-21" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-21" data-code-lines="2,6" data-code-annotation="1">Wrap as <code>VetiverModel</code> and specify our <code>prototype_data</code>.</span>
+</dd>
+</dl>
+</div>
+</div>
+<p><code>VetiverAPI</code> uses the Vetiver model (<code>v</code>) to create the API (<code>vetiver_api</code>).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># API</span></span>
+<span id="cb35-2">vetiver_api <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> vetiver.VetiverAPI(v, check_prototype<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>) </span></code></pre></div></div>
+</div>
+<p>The <code>check_prototype</code> is set to <code>True</code> because this ensures the prototype will be enforced. To view the API, we can use <code>vetiver_api.run()</code> to open the <code>VetiverAPI</code> in the browser.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># View</span></span>
+<span id="cb36-2">vetiver_api.run(port <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8080</span>) </span></code></pre></div></div>
+</div>
+<p>We can also extract <code>app</code> from <code>vetiver_api</code>, which is the <em>actual</em> app (i.e., <code>&lt;class 'fastapi.applications.FastAPI'&gt;</code>). To run <code>app</code>, we’ll use <code>uvicorn.run()</code> (and include some finishing checks):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-24" style="background: #f1f3f5;"><pre class="sourceCode python code-annotation-code code-with-copy code-annotated"><code class="sourceCode python"><span id="annotated-cell-24-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># extract</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-24" data-target-annotation="1">1</button><span id="annotated-cell-24-2" class="code-annotation-target">app <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> vetiver_api.app</span>
+<span id="annotated-cell-24-3"></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-24" data-target-annotation="2">2</button><span id="annotated-cell-24-4" class="code-annotation-target"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">__name__</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"__main__"</span>:</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-24" data-target-annotation="3">3</button><span id="annotated-cell-24-5" class="code-annotation-target">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">":-] Starting Penguin Model API..."</span>)</span>
+<span id="annotated-cell-24-6">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">":-] API Documentation: http://127.0.0.1:8080/docs"</span>) </span>
+<span id="annotated-cell-24-7">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">":-] Health Check: http://127.0.0.1:8080/ping"</span>) </span>
+<span id="annotated-cell-24-8">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">":-] Model Info: http://127.0.0.1:8080/metadata"</span>)</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-24" data-target-annotation="4">4</button><span id="annotated-cell-24-9" class="code-annotation-target">    uvicorn.run(app, host<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"127.0.0.1"</span>, port<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8080</span>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-24" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-24" data-code-lines="2" data-code-annotation="1">Extract <code>FastAPI</code> API object</span>
+</dd>
+<dt data-target-cell="annotated-cell-24" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-24" data-code-lines="4" data-code-annotation="2">This ensures that server-starting code only runs when the file is executed directly<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-24" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-24" data-code-lines="5,8" data-code-annotation="3">Documentation and API URLs<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-24" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-24" data-code-lines="9" data-code-annotation="4">Run the API</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>When <code>mod-api.py</code> is run directly, Python automatically sets a special variable called <code>__name__</code> (and it’s value is <code>"__main__"</code>). This ensures the api only starts when we explicitly run the script.</p>
+<section id="console-output" class="level4">
+<h4 class="anchored" data-anchor-id="console-output">Console output</h4>
+<p>To run the API, we enter the following in the Terminal:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb37-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">python3</span> mod-api.py</span></code></pre></div></div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb38-1">:-] Starting Penguin Model API...</span>
+<span id="cb38-2">:-] API Documentation: http://127.0.0.1:8080/docs</span>
+<span id="cb38-3">:-] Health Check: http://127.0.0.1:8080/ping</span>
+<span id="cb38-4">:-] Model Info: http://127.0.0.1:8080/metadata</span>
+<span id="cb38-5">INFO:     Started server process [8825]</span>
+<span id="cb38-6">INFO:     Waiting for application startup.</span>
+<span id="cb38-7">INFO:     VetiverAPI starting...</span>
+<span id="cb38-8">INFO:     Application startup complete.</span>
+<span id="cb38-9">INFO:     Uvicorn running on http://127.0.0.1:8080 (Press CTRL+C to quit)</span></code></pre></div></div>
+<p>Clicking on <code>http://127.0.0.1:8080</code> will open the <code>Vetiver</code> interface,</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/vetiver_url.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Click to enlarge"><img src="https://mjfrigaard.github.io/posts/py-api/img/vetiver_url.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Click to enlarge"></a></p>
+</figure>
+</div>
+<figcaption>Click to enlarge</figcaption>
+</figure>
+</div>
+<p>Going to <code>http://127.0.0.1:8080/docs</code> will open the <code>FastAPI</code> interface:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/fastapi_url.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Click to enlarge"><img src="https://mjfrigaard.github.io/posts/py-api/img/fastapi_url.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Click to enlarge"></a></p>
+</figure>
+</div>
+<figcaption>Click to enlarge</figcaption>
+</figure>
+</div>
+</section>
+</section>
+</section>
+<section id="app" class="level2">
+<h2 class="anchored" data-anchor-id="app">App</h2>
+<p>The Shiny for Python app I created is in a separate <a href="https://github.com/mjfrigaard/do4ds-labs/tree/main/_labs/lab4/Python/app"><code>app/</code> folder</a>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb39-1">_labs/lab4/Python/app/</span>
+<span id="cb39-2">                    ├── app.py</span>
+<span id="cb39-3">                    ├── app.Rproj</span>
+<span id="cb39-4">                    ├── logs</span>
+<span id="cb39-5">                    │   └── shiny_app.log</span>
+<span id="cb39-6">                    ├── README.md</span>
+<span id="cb39-7">                    └── requirements.txt</span></code></pre></div></div>
+<section id="dependencies-1" class="level3">
+<h3 class="anchored" data-anchor-id="dependencies-1">Dependencies</h3>
+<p>The <code>requirements.txt</code> is used to manage the <code>pip</code> dependencies (along with a virtual environment). The application modules are imported and loaded in the top of the <code>app.py</code> file:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> shiny <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> App, render, ui, reactive</span>
+<span id="cb40-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> requests</span>
+<span id="cb40-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> json</span>
+<span id="cb40-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> logging</span>
+<span id="cb40-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> time</span>
+<span id="cb40-6"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> os</span>
+<span id="cb40-7"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> datetime <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> datetime</span>
+<span id="cb40-8"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> pathlib <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Path</span></code></pre></div></div>
+</div>
+</section>
+<section id="logging" class="level3">
+<h3 class="anchored" data-anchor-id="logging">Logging</h3>
+<p>Logging is done using the <a href="https://docs.python.org/3/library/logging.html"><code>logging</code> module</a>:<sup>4</sup></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-29" style="background: #f1f3f5;"><pre class="sourceCode python code-annotation-code code-with-copy code-annotated"><code class="sourceCode python"><span id="annotated-cell-29-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># config</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-29" data-target-annotation="1">1</button><span id="annotated-cell-29-2" class="code-annotation-target"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> setup_logging():</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-29" data-target-annotation="2">2</button><span id="annotated-cell-29-3" class="code-annotation-target">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""Configure logging with file and console output"""</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-29" data-target-annotation="3">3</button><span id="annotated-cell-29-4" class="code-annotation-target">    log_dir <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Path(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"logs"</span>)</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-29" data-target-annotation="4">4</button><span id="annotated-cell-29-5" class="code-annotation-target">    log_dir.mkdir(exist_ok<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="annotated-cell-29-6">    </span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-29" data-target-annotation="5">5</button><span id="annotated-cell-29-7" class="code-annotation-target">    log_file <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> log_dir <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"shiny_app.log"</span></span>
+<span id="annotated-cell-29-8">    </span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-29" data-target-annotation="6">6</button><span id="annotated-cell-29-9" class="code-annotation-target">    logging.basicConfig(</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-29" data-target-annotation="7">7</button><span id="annotated-cell-29-10" class="code-annotation-target">        level<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>logging.INFO,</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-29" data-target-annotation="8">8</button><span id="annotated-cell-29-11" class="code-annotation-target">        <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">format</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%(asctime)s</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> - </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%(levelname)s</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> - </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%(message)s</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span>,</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-29" data-target-annotation="9">9</button><span id="annotated-cell-29-12" class="code-annotation-target">        handlers<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-29" data-target-annotation="10">10</button><span id="annotated-cell-29-13" class="code-annotation-target">            logging.FileHandler(log_file, mode<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'a'</span>),</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-29" data-target-annotation="11">11</button><span id="annotated-cell-29-14" class="code-annotation-target">            logging.StreamHandler()</span>
+<span id="annotated-cell-29-15">        ]</span>
+<span id="annotated-cell-29-16">    )</span>
+<span id="annotated-cell-29-17">    </span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-29" data-target-annotation="12">12</button><span id="annotated-cell-29-18" class="code-annotation-target">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>(log_file)</span>
+<span id="annotated-cell-29-19"></span>
+<span id="annotated-cell-29-20"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># init</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-29" data-target-annotation="13">13</button><span id="annotated-cell-29-21" class="code-annotation-target">log_file_path <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> setup_logging()</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-29" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-29" data-code-lines="2" data-code-annotation="1">Function definition for <code>setup_logging()</code><br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-29" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-29" data-code-lines="3" data-code-annotation="2">Docstring<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-29" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-29" data-code-lines="4" data-code-annotation="3">Location of log files (<code>logs/</code>)<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-29" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-29" data-code-lines="5" data-code-annotation="4">Create the directory<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-29" data-target-annotation="5">5</dt>
+<dd>
+<span data-code-cell="annotated-cell-29" data-code-lines="7" data-code-annotation="5">Full path to the log file (<code>logs/shiny_app.log</code>)<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-29" data-target-annotation="6">6</dt>
+<dd>
+<span data-code-cell="annotated-cell-29" data-code-lines="9,16" data-code-annotation="6">Configuration of the root logging system<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-29" data-target-annotation="7">7</dt>
+<dd>
+<span data-code-cell="annotated-cell-29" data-code-lines="10" data-code-annotation="7">The log <code>level</code> of the root logger<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-29" data-target-annotation="8">8</dt>
+<dd>
+<span data-code-cell="annotated-cell-29" data-code-lines="11" data-code-annotation="8">The <code>format</code> of the root logger<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-29" data-target-annotation="9">9</dt>
+<dd>
+<span data-code-cell="annotated-cell-29" data-code-lines="12,15" data-code-annotation="9">The <code>handlers</code> are added to the root logger (should include a <code>FileHandler</code> and <code>StreamHandler</code>)<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-29" data-target-annotation="10">10</dt>
+<dd>
+<span data-code-cell="annotated-cell-29" data-code-lines="13" data-code-annotation="10">Sends logging output to a file<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-29" data-target-annotation="11">11</dt>
+<dd>
+<span data-code-cell="annotated-cell-29" data-code-lines="14" data-code-annotation="11">Sends logging output to console<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-29" data-target-annotation="12">12</dt>
+<dd>
+<span data-code-cell="annotated-cell-29" data-code-lines="18" data-code-annotation="12">Return log file</span>
+</dd>
+<dt data-target-cell="annotated-cell-29" data-target-annotation="13">13</dt>
+<dd>
+<span data-code-cell="annotated-cell-29" data-code-lines="21" data-code-annotation="13">Run <code>setup_logging()</code> function to create <code>log_file_path</code></span>
+</dd>
+</dl>
+</div>
+</div>
+<p>The trickiest part of the <code>logging</code> configuration was making sure the logs were sent to the console <em>and</em> the <code>log_file</code>,<sup>5</sup> but after reading through the tutorial (and doing some troubleshooting) I was able to get both handlers set up.<sup>6</sup></p>
+<p>The initial contents of the <code>logs/shiny_app.log</code> file are the first and last logs in the app:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb41-1">2026-01-02 14:23:53,666 - INFO - Shiny for Python application initialized</span>
+<span id="cb41-2">2026-01-02 14:23:53,733 - INFO - Shiny for Python application created successfully</span></code></pre></div></div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-31" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><button class="code-annotation-anchor" data-target-cell="annotated-cell-31" data-target-annotation="1">1</button><span id="annotated-cell-31-1" class="code-annotation-target"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">logging.info</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Shiny for Python application initialized"</span>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-31" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-31" data-code-lines="1" data-code-annotation="1">Generate first log</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>The second line in the log file is created at the bottom of the <code>app.py</code> file and lets us know the application launched.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1">logging.info(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Shiny for Python application created successfully"</span>)</span></code></pre></div></div>
+</div>
+</section>
+<section id="urls" class="level3">
+<h3 class="anchored" data-anchor-id="urls">URLS</h3>
+<p>The URLS for the API are defined as <code>api_url</code> (for making predictions) and <code>ping_url</code> (for health checks).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1">api_url <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'http://127.0.0.1:8080/predict'</span></span>
+<span id="cb43-2">ping_url <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'http://127.0.0.1:8080/ping'</span></span></code></pre></div></div>
+</div>
+</section>
+<section id="sessions" class="level3">
+<h3 class="anchored" data-anchor-id="sessions">Sessions</h3>
+<p>The UI displays the session ID in a <code>div()</code>:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-34" style="background: #f1f3f5;"><pre class="sourceCode python code-annotation-code code-with-copy code-annotated"><code class="sourceCode python"><span id="annotated-cell-34-1">  ui.div(</span>
+<span id="annotated-cell-34-2">    ui.strong(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Session: "</span>),</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-34" data-target-annotation="1">1</button><span id="annotated-cell-34-3" class="code-annotation-target">    ui.output_text(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">id</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"session_display"</span>),</span>
+<span id="annotated-cell-34-4">    style<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"position: fixed; top: 10px; right: 10px; z-index: 1000; color: #333; background: #fff; padding: 5px; border-radius: 3px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"</span></span>
+<span id="annotated-cell-34-5">    )</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-34" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-34" data-code-lines="3" data-code-annotation="1">The <code>id</code> in the <code>ui.output_text()</code> linked to the <code>@render.text</code> in the <code>server</code></span>
+</dd>
+</dl>
+</div>
+</div>
+<p>In the <code>server</code>, we generate a session ID and log the session start:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-35" style="background: #f1f3f5;"><pre class="sourceCode python code-annotation-code code-with-copy code-annotated"><code class="sourceCode python"><span id="annotated-cell-35-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> server(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">input</span>, output, session):</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-35" data-target-annotation="1">1</button><span id="annotated-cell-35-2" class="code-annotation-target">    session_id <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"py_</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">int</span>(time.time() <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100000</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-35" data-target-annotation="2">2</button><span id="annotated-cell-35-3" class="code-annotation-target">    logging.info(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"New session started - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-35" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-35" data-code-lines="2" data-code-annotation="1">The <code>session_id</code> is a unique number based on <code>time.time()</code><br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-35" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-35" data-code-lines="3" data-code-annotation="2">This new session is logged in the log file.</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>In the log file, we can see the <code>INFO</code> level log with the <code>session_id</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb44-1">2026-01-02 14:24:03,831 - INFO - New session started - Session: py_43831</span></code></pre></div></div>
+<p>The output in the application is created using a the <code>@render</code> decorator and by defining a function (matching the <code>id</code> from the UI):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-37" style="background: #f1f3f5;"><pre class="sourceCode python code-annotation-code code-with-copy code-annotated"><code class="sourceCode python"><button class="code-annotation-anchor" data-target-cell="annotated-cell-37" data-target-annotation="1">1</button><span id="annotated-cell-37-1" class="code-annotation-target">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@render.text</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-37" data-target-annotation="2">2</button><span id="annotated-cell-37-2" class="code-annotation-target">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> session_display():</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-37" data-target-annotation="3">3</button><span id="annotated-cell-37-3" class="code-annotation-target">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> session_id[:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8</span>]</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-37" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-37" data-code-lines="1" data-code-annotation="1">Decorator for the text output<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-37" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-37" data-code-lines="2" data-code-annotation="2">Function definition for output (matching <code>session_display</code> input <code>id</code>)<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-37" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-37" data-code-lines="3" data-code-annotation="3">Return first 8 numbers of <code>session_id</code></span>
+</dd>
+</dl>
+</div>
+</div>
+<p>The result is a new session id in the upper right corner of the app:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/session_id.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Click to enlarge"><img src="https://mjfrigaard.github.io/posts/py-api/img/session_id.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Click to enlarge"></a></p>
+</figure>
+</div>
+<figcaption>Click to enlarge</figcaption>
+</figure>
+</div>
+</section>
+<section id="health-check" class="level3">
+<h3 class="anchored" data-anchor-id="health-check">Health check</h3>
+<p>The health check is performed using the same UI and server pattern as the session id, but it also includes the creation of a reactive (<code>@reactive.calc</code>).</p>
+<p>First we place the <code>output_</code> component in the UI:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1">ui.output_text(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">id</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"api_status"</span>)</span></code></pre></div></div>
+</div>
+<p>In the server, we use a <code>@reactive.calc</code> decorator and define the <code>api_health_check()</code> function and implement <strong>exception handling</strong> for the health check:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>show/hide health check</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-39" style="background: #f1f3f5;"><pre class="sourceCode python code-annotation-code code-with-copy code-annotated"><code class="sourceCode python"><span id="annotated-cell-39-1">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@reactive.calc</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-39" data-target-annotation="1">1</button><span id="annotated-cell-39-2" class="code-annotation-target">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> api_health_check():</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-39" data-target-annotation="2">2</button><span id="annotated-cell-39-3" class="code-annotation-target">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""Enhanced API health check with logging"""</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-39" data-target-annotation="3">3</button><span id="annotated-cell-39-4" class="code-annotation-target">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">try</span>:</span>
+<span id="annotated-cell-39-5">            logging.debug(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Checking API health - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-39-6">            start_time <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> time.time()</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-39" data-target-annotation="4">4</button><span id="annotated-cell-39-7" class="code-annotation-target">            r <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> requests.get(ping_url, timeout<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>)</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-39" data-target-annotation="5">5</button><span id="annotated-cell-39-8" class="code-annotation-target">            response_time <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> time.time() <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> start_time</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-39" data-target-annotation="6">6</button><span id="annotated-cell-39-9" class="code-annotation-target">            <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> r.status_code <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">200</span>:</span>
+<span id="annotated-cell-39-10">                logging.info(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"API health check successful - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> - response_time: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>response_time<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:.3f}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">s"</span>)</span>
+<span id="annotated-cell-39-11">                <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"✅ API is running (ping: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>r<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>json()<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">) - </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>response_time<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:.2f}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">s"</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-39" data-target-annotation="7">7</button><span id="annotated-cell-39-12" class="code-annotation-target">              <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">else</span>:</span>
+<span id="annotated-cell-39-13">                logging.warning(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"API ping failed - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> - status: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>r<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>status_code<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-39-14">                <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"⚠️ API ping failed: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>r<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>status_code<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span></span>
+<span id="annotated-cell-39-15"></span>
+<span id="annotated-cell-39-16">              </span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-39" data-target-annotation="8">8</button><span id="annotated-cell-39-17" class="code-annotation-target">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">except</span> requests.exceptions.<span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">ConnectionError</span> <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> e:</span>
+<span id="annotated-cell-39-18">            logging.error(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"API connection refused - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> - error: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>(e)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-39-19">            <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"❌ Cannot connect to API - is it running on port 8080?"</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-39" data-target-annotation="9">9</button><span id="annotated-cell-39-20" class="code-annotation-target">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">except</span> requests.exceptions.Timeout:</span>
+<span id="annotated-cell-39-21">            logging.warning(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"API health check timeout - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-39-22">            <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"⚠️ API health check timeout"</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-39" data-target-annotation="10">10</button><span id="annotated-cell-39-23" class="code-annotation-target">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">except</span> <span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">Exception</span> <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> e:</span>
+<span id="annotated-cell-39-24">            logging.error(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"API health check failed - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> - error: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>(e)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-39-25">            <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"❌ API health check failed: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>(e)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span></span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+</details>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-39" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-39" data-code-lines="2" data-code-annotation="1">Function definition for reactive value<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-39" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-39" data-code-lines="3" data-code-annotation="2">Docstring</span>
+</dd>
+<dt data-target-cell="annotated-cell-39" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-39" data-code-lines="4,15" data-code-annotation="3">The <code>try: ...</code> and <code>except ...</code> structure provide the exception handling<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-39" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-39" data-code-lines="7" data-code-annotation="4">Request using <code>ping_url</code><br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-39" data-target-annotation="5">5</dt>
+<dd>
+<span data-code-cell="annotated-cell-39" data-code-lines="8" data-code-annotation="5">Calculated response time<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-39" data-target-annotation="6">6</dt>
+<dd>
+<span data-code-cell="annotated-cell-39" data-code-lines="9,10,11" data-code-annotation="6">Successful health check<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-39" data-target-annotation="7">7</dt>
+<dd>
+<span data-code-cell="annotated-cell-39" data-code-lines="12,14" data-code-annotation="7">Failed health check<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-39" data-target-annotation="8">8</dt>
+<dd>
+<span data-code-cell="annotated-cell-39" data-code-lines="17,19" data-code-annotation="8">Handles “cannot connect” (API down, wrong port/host, connection refused)<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-39" data-target-annotation="9">9</dt>
+<dd>
+<span data-code-cell="annotated-cell-39" data-code-lines="20,22" data-code-annotation="9">Handles request timeout specifically<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-39" data-target-annotation="10">10</dt>
+<dd>
+<span data-code-cell="annotated-cell-39" data-code-lines="23,25" data-code-annotation="10">Catch-all for anything else (JSON parsing errors, unexpected runtime issues, etc.)</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>The diagram below illustrates how the <code>@reactive.calc</code>, <code>logging</code>, <code>time</code> and <code>requests</code> are used to send a <code>ping</code> to the API, get a response (<code>r</code>), calculate the response time (<code>response_time</code>), return the status code (<code>r.status_code</code>), and classify the response:</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+
+sequenceDiagram
+    participant Reactive as reactive.calc
+    participant Logger as logging
+    participant Timer as time
+    participant Client as requests
+    participant API as Vetiver API
+
+    Reactive-&gt;&gt;Logger: debug("Checking API health (session_id)")
+    Reactive-&gt;&gt;Timer: start_time = time.time()
+
+    Reactive-&gt;&gt;Client: GET ping_url (timeout=5)
+    Client-&gt;&gt;API: HTTP GET /ping
+    API--&gt;&gt;Client: HTTP response
+    Client--&gt;&gt;Reactive: response r
+
+    Reactive-&gt;&gt;Timer: response_time = time.time() - start_time
+
+    alt status_code == 200
+        Reactive-&gt;&gt;Logger: info("Health check successful + response_time")
+        Reactive--&gt;&gt;Reactive: return "✅ API is running"
+    else status_code != 200
+        Reactive-&gt;&gt;Logger: warning("API ping failed (status_code)")
+        Reactive--&gt;&gt;Reactive: return "⚠️ API ping failed"
+    end
+    
+</pre>
+</div>
+<p></p><figcaption> Health check with logging</figcaption> </figure><p></p>
+</div>
+</div>
+</div>
+<p><strong>Exception handling</strong> is created with <code>try</code> and <code>except</code>: the <code>request,get()</code> in <code>try</code> runs normally, but if an error or exception occurs, the code will jump to the first matching <code>except</code> block:</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+
+sequenceDiagram
+    participant Reactive as reactive.calc
+    participant Logger as logging
+    participant Client as requests
+    participant API as Vetiver API
+
+    Reactive-&gt;&gt;Logger: debug("Checking API health (session_id)")
+    Reactive-&gt;&gt;Client: GET ping_url (timeout=5)
+
+    alt Normal execution
+        Client-&gt;&gt;API: HTTP GET /ping
+        API--&gt;&gt;Client: HTTP response
+        Client--&gt;&gt;Reactive: response r
+        Reactive--&gt;&gt;Reactive: continue normal flow
+    else ConnectionError
+        Client--x Reactive: Connection refused
+        Reactive-&gt;&gt;Logger: error("Connection refused")
+        Reactive--&gt;&gt;Reactive: return "❌ Cannot connect to API"
+    else Timeout
+        Client--x Reactive: Request timeout
+        Reactive-&gt;&gt;Logger: warning("Health check timeout")
+        Reactive--&gt;&gt;Reactive: return "⚠️ API health check timeout"
+    else Unexpected exception
+        Reactive--x Reactive: Runtime exception
+        Reactive-&gt;&gt;Logger: error("Unexpected error")
+        Reactive--&gt;&gt;Reactive: return "❌ API health check failed"
+    end
+
+</pre>
+</div>
+<p></p><figcaption> Health check with exception handling</figcaption> </figure><p></p>
+</div>
+</div>
+</div>
+<p>These exceptions are <em>typed</em> (e.g., <code>equests.exceptions.ConnectionError</code>, <code>requests.exceptions.Timeout</code>, etc.), which means we can match them precisely in separate <code>except</code> clauses.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span><span style="font-weight: bold; font-size: 1.20em;">Python vs.&nbsp;R: Exception handling</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>In R, exception handling can be performed using <code>tryCatch()</code>, and the errors are <em>conditions</em> (not types). We catch them with handlers (i.e., <code>error = function(e) ...</code> or <code>warning = ...</code>, <code>message = ...</code>, etc.).</p>
+<p>Below is the same example using <code>logger</code> and <code>httr2</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1">api_health_check <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">reactive</span>({</span>
+<span id="cb46-2">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tryCatch</span>({</span>
+<span id="cb46-3">        <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">log_debug</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Checking API health"</span>)</span>
+<span id="cb46-4">        start_time <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">Sys.time</span>()</span>
+<span id="cb46-5"></span>
+<span id="cb46-6">        resp <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">request</span>(ping_url) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb46-7">          <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">req_timeout</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb46-8">          <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">req_perform</span>()</span>
+<span id="cb46-9"></span>
+<span id="cb46-10">        response_time <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">as.numeric</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">difftime</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">Sys.time</span>(), start_time, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">units =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"secs"</span>))</span>
+<span id="cb46-11">        status <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">resp_status</span>(resp)</span>
+<span id="cb46-12"></span>
+<span id="cb46-13">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (status <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">200</span>) {</span>
+<span id="cb46-14">          <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">log_info</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"API OK - {sprintf('%.3f', response_time)}s"</span>)</span>
+<span id="cb46-15">          <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sprintf</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"✅ API is running - %.2fs"</span>, response_time)</span>
+<span id="cb46-16">        } <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">else</span> {</span>
+<span id="cb46-17">          <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">log_warn</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"API ping failed - status={status}"</span>)</span>
+<span id="cb46-18">          <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sprintf</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"⚠️ API ping failed: %s"</span>, status)</span>
+<span id="cb46-19">        }</span>
+<span id="cb46-20">      },</span>
+<span id="cb46-21">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">error =</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>(e) {</span>
+<span id="cb46-22">        msg <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">conditionMessage</span>(e)</span>
+<span id="cb46-23"></span>
+<span id="cb46-24">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">grepl</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"timed out|timeout"</span>, msg, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">ignore.case =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>)) {</span>
+<span id="cb46-25">          <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">log_warn</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"API timeout"</span>)</span>
+<span id="cb46-26">          <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">return</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"⚠️ API timeout"</span>)</span>
+<span id="cb46-27">        }</span>
+<span id="cb46-28"></span>
+<span id="cb46-29">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">grepl</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Couldn't connect|Connection refused|Failed to connect"</span>, msg, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">ignore.case =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>)) {</span>
+<span id="cb46-30">          <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">log_error</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"API connection error: {msg}"</span>)</span>
+<span id="cb46-31">          <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">return</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"❌ Cannot connect to API"</span>)</span>
+<span id="cb46-32">        }</span>
+<span id="cb46-33"></span>
+<span id="cb46-34">        <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">log_error</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Unexpected error: {msg}"</span>)</span>
+<span id="cb46-35">        <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sprintf</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"❌ Unexpected error: %s"</span>, msg)</span>
+<span id="cb46-36">      }</span>
+<span id="cb46-37">    )</span>
+<span id="cb46-38">  })</span></code></pre></div></div>
+</div>
+</div>
+</div>
+</div>
+<p>Back in the API, we see the health check was sent from the Shiny app:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb47-1">INFO:     127.0.0.1:63543 - "GET /ping HTTP/1.1" 200 OK</span></code></pre></div></div>
+<p>The output is rendered in the app with the <code>@render.text</code> decorator (after defining a function the matches in input <code>id</code>).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@render.text</span></span>
+<span id="cb48-2">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> api_status():</span>
+<span id="cb48-3">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> api_health_check()</span></code></pre></div></div>
+</div>
+<p>In the <strong>System Status</strong> section, we see the results of the <code>ping</code>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/health_check.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Click to enlarge"><img src="https://mjfrigaard.github.io/posts/py-api/img/health_check.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%" alt="Click to enlarge"></a></p>
+</figure>
+</div>
+<figcaption>Click to enlarge</figcaption>
+</figure>
+</div>
+</section>
+<section id="predictions" class="level3">
+<h3 class="anchored" data-anchor-id="predictions">Predictions</h3>
+<p>In the UI, the predictions get their own <code>div()</code> with some CSS styling:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1">ui.div(</span>
+<span id="cb49-2">    ui.output_text(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"pred_out"</span>),</span>
+<span id="cb49-3">    style<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"font-size: 24px; font-weight: bold; text-align: center; padding: 15px; color: #0066cc;"</span></span>
+<span id="cb49-4">)</span></code></pre></div></div>
+</div>
+<p>In the server, the <code>@reactive.calc</code> for the prediction is tied to the action button input with <code>@reactive.event()</code>:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>show/hide predictions</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-43" style="background: #f1f3f5;"><pre class="sourceCode python code-annotation-code code-with-copy code-annotated"><code class="sourceCode python"><span id="annotated-cell-43-1"><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@reactive.calc</span></span>
+<span id="annotated-cell-43-2">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@reactive.event</span>(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">input</span>.predict)</span>
+<span id="annotated-cell-43-3">    <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> pred():</span>
+<span id="annotated-cell-43-4">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""Prediction with logging"""</span></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="1">1</button><span id="annotated-cell-43-5" class="code-annotation-target">        request_start <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> time.time()</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="2">2</button><span id="annotated-cell-43-6" class="code-annotation-target">        data_to_send <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> vals()</span>
+<span id="annotated-cell-43-7">        </span>
+<span id="annotated-cell-43-8">        logging.info(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Starting prediction request - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> - request_data: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>json<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>dumps(data_to_send)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-43-9">        </span>
+<span id="annotated-cell-43-10">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">try</span>:</span>
+<span id="annotated-cell-43-11">            <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">=== PREDICTION REQUEST ==="</span>)</span>
+<span id="annotated-cell-43-12">            <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Sending data to API: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>data_to_send<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-43-13">            </span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="3">3</button><span id="annotated-cell-43-14" class="code-annotation-target">            r <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> requests.post(api_url, json<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>data_to_send, timeout<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">30</span>)</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="4">4</button><span id="annotated-cell-43-15" class="code-annotation-target">            response_time <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> time.time() <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> request_start</span>
+<span id="annotated-cell-43-16">            </span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="5">5</button><span id="annotated-cell-43-17" class="code-annotation-target">            current_times <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> request_times()</span>
+<span id="annotated-cell-43-18">            current_times.append(response_time)</span>
+<span id="annotated-cell-43-19">            <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">len</span>(current_times) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>:</span>
+<span id="annotated-cell-43-20">                current_times <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> current_times[<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>:]</span>
+<span id="annotated-cell-43-21">            request_times.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">set</span>(current_times)</span>
+<span id="annotated-cell-43-22">            </span>
+<span id="annotated-cell-43-23">            <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"HTTP Status Code: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>r<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>status_code<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-43-24">            <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Raw response text: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>r<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>text<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-43-25">            </span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="6">6</button><span id="annotated-cell-43-26" class="code-annotation-target">            <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> r.status_code <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">200</span>:</span>
+<span id="annotated-cell-43-27">                result <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> r.json()</span>
+<span id="annotated-cell-43-28">                <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"✅ Success! Parsed response: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>result<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-43-29">                </span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="7">7</button><span id="annotated-cell-43-30" class="code-annotation-target">                <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'.pred'</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> result:</span>
+<span id="annotated-cell-43-31">                    prediction <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> result[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'.pred'</span>][<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>]</span>
+<span id="annotated-cell-43-32">                <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">elif</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'predict'</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> result:</span>
+<span id="annotated-cell-43-33">                    prediction <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> result[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'predict'</span>][<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>]</span>
+<span id="annotated-cell-43-34">                <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">else</span>:</span>
+<span id="annotated-cell-43-35">                    logging.warning(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Unexpected response format - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> - response: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>result<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-43-36">                    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Unexpected response format: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>result<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span></span>
+<span id="annotated-cell-43-37">                </span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="8">8</button><span id="annotated-cell-43-38" class="code-annotation-target">                logging.info(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Prediction successful - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> - response_time: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>response_time<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:.3f}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">s - prediction: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>prediction<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-43-39">                </span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="9">9</button><span id="annotated-cell-43-40" class="code-annotation-target">                <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> response_time <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>:</span>
+<span id="annotated-cell-43-41">                    logging.warning(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Slow API response - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> - response_time: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>response_time<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:.3f}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">s"</span>)</span>
+<span id="annotated-cell-43-42">                </span>
+<span id="annotated-cell-43-43">                <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> prediction</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="10">10</button><span id="annotated-cell-43-44" class="code-annotation-target">            <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">else</span>:</span>
+<span id="annotated-cell-43-45">                error_msg <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"API Error </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>r<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>status_code<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>r<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>text<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span></span>
+<span id="annotated-cell-43-46">                logging.error(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Prediction request failed - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> - status: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>r<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>status_code<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> - response: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>r<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>text[:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">200</span>]<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-43-47">                error_count.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">set</span>(error_count() <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="annotated-cell-43-48">                <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> error_msg</span>
+<span id="annotated-cell-43-49">                </span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="11">11</button><span id="annotated-cell-43-50" class="code-annotation-target">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">except</span> requests.exceptions.<span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">ConnectionError</span> <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> e:</span>
+<span id="annotated-cell-43-51">            error_msg <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Connection Error: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>(e)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span></span>
+<span id="annotated-cell-43-52">            logging.error(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"API connection refused during prediction - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> - error: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>(e)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-43-53">            connection_errors.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">set</span>(connection_errors() <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="annotated-cell-43-54">            error_count.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">set</span>(error_count() <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="annotated-cell-43-55">            <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"❌ Connection Error: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>e<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-43-56">            <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> error_msg</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="12">12</button><span id="annotated-cell-43-57" class="code-annotation-target">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">except</span> requests.exceptions.Timeout:</span>
+<span id="annotated-cell-43-58">            error_msg <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Request timed out - API may be overloaded"</span></span>
+<span id="annotated-cell-43-59">            logging.warning(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"API timeout during prediction - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-43-60">            timeout_errors.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">set</span>(timeout_errors() <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="annotated-cell-43-61">            error_count.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">set</span>(error_count() <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="annotated-cell-43-62">            <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> error_msg</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-43" data-target-annotation="13">13</button><span id="annotated-cell-43-63" class="code-annotation-target">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">except</span> <span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">Exception</span> <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> e:</span>
+<span id="annotated-cell-43-64">            error_msg <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Error: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>(e)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span></span>
+<span id="annotated-cell-43-65">            logging.error(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Unknown prediction error - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> - error: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>(e)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-43-66">            error_count.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">set</span>(error_count() <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="annotated-cell-43-67">            <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"❌ Error: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>e<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="annotated-cell-43-68">            <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> error_msg</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+</details>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-43" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-43" data-code-lines="5" data-code-annotation="1">Post start time<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-43" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-43" data-code-lines="6" data-code-annotation="2">Prediction data<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-43" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-43" data-code-lines="14" data-code-annotation="3">Make a request<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-43" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-43" data-code-lines="15" data-code-annotation="4">Response time<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-43" data-target-annotation="5">5</dt>
+<dd>
+<span data-code-cell="annotated-cell-43" data-code-lines="17,21,23,24" data-code-annotation="5">Update performance metrics<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-43" data-target-annotation="6">6</dt>
+<dd>
+<span data-code-cell="annotated-cell-43" data-code-lines="26,28" data-code-annotation="6">Successful request<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-43" data-target-annotation="7">7</dt>
+<dd>
+<span data-code-cell="annotated-cell-43" data-code-lines="30,36" data-code-annotation="7">Handle different possible response formats<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-43" data-target-annotation="8">8</dt>
+<dd>
+<span data-code-cell="annotated-cell-43" data-code-lines="38" data-code-annotation="8">Log successful request<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-43" data-target-annotation="9">9</dt>
+<dd>
+<span data-code-cell="annotated-cell-43" data-code-lines="40,43" data-code-annotation="9">Performance warning<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-43" data-target-annotation="10">10</dt>
+<dd>
+<span data-code-cell="annotated-cell-43" data-code-lines="44,48" data-code-annotation="10">Failed request<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-43" data-target-annotation="11">11</dt>
+<dd>
+<span data-code-cell="annotated-cell-43" data-code-lines="50,56" data-code-annotation="11">Connection error<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-43" data-target-annotation="12">12</dt>
+<dd>
+<span data-code-cell="annotated-cell-43" data-code-lines="57,62" data-code-annotation="12">Timeout during request<br>
+</span>
+</dd>
+<dt data-target-cell="annotated-cell-43" data-target-annotation="13">13</dt>
+<dd>
+<span data-code-cell="annotated-cell-43" data-code-lines="63,68" data-code-annotation="13">Unknown error</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>The <code>pred()</code> function includes the same error handling pattern as the health check, but includes defensive HTTP handling for the <code>POST</code> request:</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+
+graph TD
+    Request["&lt;strong&gt;HTTP&lt;br&gt;Request&lt;/strong"]
+    Success{"Status&lt;br&gt;200?"}
+    Format{"Valid&lt;br&gt;Format?"}
+    Parse("&lt;strong&gt;Parse&lt;br&gt;Prediction&lt;/strong&gt;")
+    ConnErr{"Connection&lt;br&gt;Error?"}
+    TimeErr{"Timeout&lt;br&gt;Error?"}
+    OtherErr["Other&lt;br&gt;Error"]
+    
+    Request --&gt; Success
+    Success --&gt;|Yes| Format
+    Success --&gt;|No| LogHTTPErr("&lt;strong&gt;Log HTTP&lt;br&gt;Error&lt;/strong&gt;&lt;br&gt;(return&lt;br&gt;message)")
+    
+    Format --&gt;|Yes| Parse
+    Format --&gt;|No| LogFormatErr["Log&lt;br&gt;Format&lt;br&gt;Warning&lt;br&gt;(return&lt;br&gt;message)"]
+    
+    Parse --&gt; CheckPerf{Response &gt; 5s?}
+    CheckPerf --&gt;|Yes| LogSlow["Log&lt;br&gt;Performance&lt;br&gt;Warning"]
+    CheckPerf --&gt;|No| Return["Return&lt;br&gt;Prediction"]
+    LogSlow --&gt; Return
+    
+    Success --&gt;|Error| ConnErr
+    ConnErr --&gt;|Yes| LogConn("&lt;strong&gt;Log&lt;br&gt;Connection&lt;br&gt;Error&lt;/strong&gt;&lt;br&gt;(increment&lt;br&gt;counter)")
+    ConnErr --&gt;|No| TimeErr
+    TimeErr --&gt;|Yes| LogTimeout("&lt;strong&gt;Log&lt;br&gt;Timeout&lt;/strong&gt;&lt;br&gt;(increment&lt;br&gt;counter)")
+    TimeErr --&gt;|No| OtherErr
+    OtherErr --&gt; LogOther["Log&lt;br&gt;Unknown&lt;br&gt;Error"]
+    
+    style Request fill:#2986cc,stroke:#2E7D32,color:#fff
+    style Parse fill:#4CAF50,stroke:#2E7D32,color:#fff
+    style LogHTTPErr fill:#f44336,stroke:#c62828,color:#fff
+    style LogConn fill:#f44336,stroke:#c62828,color:#fff
+    style LogTimeout fill:#FF9800,stroke:#E65100,color:#fff
+    
+</pre>
+</div>
+<p></p><figcaption> Python APIs &amp; Shiny Apps</figcaption> </figure><p></p>
+</div>
+</div>
+</div>
+<p><strong>In the console running the app</strong>, we see the logs with the prediction request (including the data that matches the reactive values in the UI):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb50-1">2026-01-05 14:01:01,661 - INFO - Starting prediction request - Session: py_48954 </span>
+<span id="cb50-2">- request_data: [{"bill_length_mm": 45.0, "species_Chinstrap": 0, </span>
+<span id="cb50-3">  "species_Gentoo": 0, "sex_male": 1}]</span>
+<span id="cb50-4">=== PREDICTION REQUEST ===</span>
+<span id="cb50-5">Sending data to API: [{'bill_length_mm': 45.0, 'species_Chinstrap': 0, </span>
+<span id="cb50-6">  'species_Gentoo': 0, 'sex_male': 1}]</span></code></pre></div></div>
+<p>The successful request and prediction value is returned:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb51-1">HTTP Status Code: 200</span>
+<span id="cb51-2">Raw response text: {"predict":[4180.796549720755]}</span>
+<span id="cb51-3">✅ Success! Parsed response: {'predict': [4180.796549720755]}</span></code></pre></div></div>
+<p><strong>In the console running the API</strong>, we can see the <code>POST</code> request hit <code>/predict</code> endpoint:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb52-1">INFO:     127.0.0.1:64436 - "POST /predict HTTP/1.1" 200 OK</span></code></pre></div></div>
+<p>Back in the server, the output is rendered using <code>@render.text</code> and some checks to ensure the returned prediction is in the proper format:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">@render.text</span></span>
+<span id="cb53-2"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> pred_out():</span>
+<span id="cb53-3">    result <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pred()</span>
+<span id="cb53-4">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">isinstance</span>(result, (<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">int</span>, <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">float</span>)):</span>
+<span id="cb53-5">        display_value <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">round</span>(result, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> grams"</span></span>
+<span id="cb53-6">        logging.info(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Displaying prediction to user - Session: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>session_id<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> - display_value: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>display_value<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="cb53-7">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> display_value</span>
+<span id="cb53-8">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">else</span>:</span>
+<span id="cb53-9">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">str</span>(result)</span></code></pre></div></div>
+</div>
+<p><strong>In the console running the app</strong>, the successful prediction is returned and we get a preview of the predicted value to be displayed:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb54" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb54-1">2026-01-05 14:01:02,049 - INFO - Prediction successful - Session: py_48954 </span>
+<span id="cb54-2">  - response_time: 0.388s - prediction: 4180.796549720755</span>
+<span id="cb54-3">2026-01-05 14:01:02,049 - INFO - Displaying prediction to user - Session: py_48954 </span>
+<span id="cb54-4">  - display_value: 4180.8 grams</span></code></pre></div></div>
+<p>We see the predicted value in the UI in the <strong>Predicted Mass</strong> section:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/predictions_app_ui.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Click to enlarge"><img src="https://mjfrigaard.github.io/posts/py-api/img/predictions_app_ui.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Click to enlarge"></a></p>
+</figure>
+</div>
+<figcaption>Click to enlarge</figcaption>
+</figure>
+</div>
+<p>All of the logs are captured in the <code>logs/shiny_app.log</code> file (and displayed in the app):</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/recent_logs.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Click to enlarge"><img src="https://mjfrigaard.github.io/posts/py-api/img/recent_logs.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Click to enlarge"></a></p>
+</figure>
+</div>
+<figcaption>Click to enlarge</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="recap" class="level2">
+<h2 class="anchored" data-anchor-id="recap">Recap</h2>
+<p>As we’ve seen with this post (and the <a href="https://mjfrigaard.github.io/posts/shiny-plumber/">previous post</a>), Python and R offer equivalent capabilities, but with different syntactic approaches for modeling, logging, and Shiny app development:</p>
+<p>We can convert a trained <code>sklearn</code> model to Vetiver, and wrap it in a <code>REST</code> API (with validated model inputs and prototype data). We can also add health checks and documentation endpoints for monitoring and features, and model APIs also immplement request timeouts to prevent hanging.</p>
+<p>Python’s <code>logging</code> module makes it easy to configure structured logs with consistent formats and multiple destinations (file + console). Displaying the recent logs in the UI allow us to monitor logs in real-time. The Shiny for Python app is set up to log all user interactions (via session tracking), and it can handle all HTTP error cases (with user-friendly error messages). The UI also displays the API health and POST request data before being sent to the API.</p>
+<p>The tables below compare Python and R methods for creating models, APIs, and shiny apps.</p>
+<section id="model-as-service" class="level3">
+<h3 class="anchored" data-anchor-id="model-as-service">Model as Service</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 45%">
+<col style="width: 37%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Python (Vetiver + pins)</th>
+<th>R (Vetiver + pins)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Import Packages</strong></td>
+<td><code>from vetiver import VetiverModel</code>, <code>from pins import board_folder</code></td>
+<td><code>library(vetiver)</code>, <code>library(pins)</code></td>
+</tr>
+<tr class="even">
+<td><strong>Create Board</strong></td>
+<td><code>board_folder("./models", allow_pickle_read=True)</code></td>
+<td><code>board_folder("./models")</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Wrap Model</strong></td>
+<td><code>v = VetiverModel(model, model_name="name", prototype_data=X)</code></td>
+<td><code>v &lt;- vetiver_model(model, model_name="name")</code></td>
+</tr>
+<tr class="even">
+<td><strong>Prototype Data</strong></td>
+<td>Explicitly passed: <code>prototype_data=X</code></td>
+<td>Auto-extracted from workflows/recipes</td>
+</tr>
+<tr class="odd">
+<td><strong>Write Model</strong></td>
+<td><code>vetiver_pin_write(board, v)</code></td>
+<td><code>vetiver_pin_write(board, v)</code></td>
+</tr>
+<tr class="even">
+<td><strong>Read Model</strong></td>
+<td><code>v = board.pin_read("name")</code></td>
+<td><code>v &lt;- vetiver_pin_read(board, "name")</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="logging-1" class="level3">
+<h3 class="anchored" data-anchor-id="logging-1">Logging</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 47%">
+<col style="width: 35%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Python (<code>logging</code> module)</th>
+<th>R (<code>logger</code> package)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Setup</strong></td>
+<td><code>logging.basicConfig()</code></td>
+<td><code>log_threshold()</code></td>
+</tr>
+<tr class="even">
+<td><strong>File Output</strong></td>
+<td><code>logging.FileHandler('app.log')</code></td>
+<td><code>log_appender(appender_file('app.log'))</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Console + File</strong></td>
+<td><code>handlers=[FileHandler()</code>, <code>StreamHandler()]</code></td>
+<td><code>log_appender(appender_tee('app.log'))</code></td>
+</tr>
+<tr class="even">
+<td><strong>Log Levels</strong></td>
+<td><code>logging.DEBUG</code>, <code>logging.INFO</code>, <code>logging.WARNING</code>, <code>logging.ERROR</code></td>
+<td><code>TRACE</code>, <code>DEBUG</code>, <code>INFO</code>, <code>WARN</code>, <code>ERROR</code>, <code>FATAL</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Basic Logging</strong></td>
+<td><code>logging.info("Message")</code></td>
+<td><code>log_info("Message")</code></td>
+</tr>
+<tr class="even">
+<td><strong>String Interpolation</strong></td>
+<td><code>logging.info(f"Value: {x}")</code></td>
+<td><code>log_info("Value: {x}")</code> (glue syntax)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="shiny" class="level3">
+<h3 class="anchored" data-anchor-id="shiny">Shiny</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Python Shiny</th>
+<th>R Shiny</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Reactivity</strong></td>
+<td><code>@reactive.calc</code></td>
+<td><code>reactive()</code></td>
+</tr>
+<tr class="even">
+<td><strong>Rendering</strong></td>
+<td><code>@render.text</code></td>
+<td><code>renderText()</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Events</strong></td>
+<td><code>@reactive.event()</code></td>
+<td><code>bindEvent()</code></td>
+</tr>
+<tr class="even">
+<td><strong>UI</strong></td>
+<td><code>ui.input_slider()</code></td>
+<td><code>sliderInput()</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Layout</strong></td>
+<td><code>ui.page_fluid()</code></td>
+<td><code>page_fluid()</code> (bslib)</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>The code below has been adapted from the <a href="https://vetiver.posit.co/get-started/#train-a-model">modeling section</a> of the <strong>ML Ops with vetiver</strong> example.↩︎</p></li>
+<li id="fn2"><p>Similar to the <a href="https://rstudio.github.io/renv/"><code>renv</code> package in R</a>.↩︎</p></li>
+<li id="fn3"><p>The code below is adapted from the <a href="https://vetiver.posit.co/get-started/deploy.html">Deploy section</a> of the <strong>ML Ops with vetiver</strong> example.↩︎</p></li>
+<li id="fn4"><p>In comparison to the <code>logger</code> package in the <a href="https://mjfrigaard.github.io/posts/shiny-plumber/">previous post.</a>↩︎</p></li>
+<li id="fn5"><p>Read more about ‘logging to multiple destinations’ in <a href="https://docs.python.org/3/howto/logging-cookbook.html#logging-to-multiple-destinations">Logging cookbook</a>↩︎</p></li>
+<li id="fn6"><p>Logging <a href="https://docs.python.org/3/howto/logging.html#handlers">handlers</a> “<em>are responsible for dispatching the appropriate log messages (based on the log messages’ severity) to the handler’s specified destination.</em>”↩︎</p></li>
+</ol>
+</section></div> ]]></description>
+  <category>APIs</category>
+  <category>Python</category>
+  <category>Shiny</category>
+  <guid>https://mjfrigaard.github.io/posts/py-api/</guid>
+  <pubDate>Mon, 21 Jul 2025 07:00:00 GMT</pubDate>
+</item>
 <item>
   <title>Shiny (for R) &amp; APIs</title>
   <dc:creator>Martin Frigaard</dc:creator>
@@ -11881,7 +15049,7 @@ font-style: inherit;">print</span>(x)</span>
 </div>
 </div>
 <p>When <code>datasetApp()</code> is run, the app displays the dataset object in the <code>tableOutput()</code>, and the <code>verbatimTextOutput()</code> renders the reactive values as a text:</p>
-<div id="fig-datasetApp_run" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center" width="100%">
+<div id="fig-datasetApp_run" class="quarto-float quarto-figure quarto-figure-center anchored" width="100%" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-datasetApp_run-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <a href="datasetApp_run.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;1: "><img src="https://mjfrigaard.github.io/posts/p3-test-shiny-module-tests/datasetApp_run.png" id="fig-datasetApp_run" class="img-fluid quarto-figure quarto-figure-center anchored figure-img" style="width:100.0%"></a>
