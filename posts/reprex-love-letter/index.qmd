@@ -1,0 +1,138 @@
+---
+title: "Reproducible examples: a love letter"
+subtitle: "The best way to answer your own questions"
+author: "Martin Frigaard"
+date: "2026-02-21"
+categories: [R, Python, Markdown]
+# image: "img/image.png"
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+# code-block-border-left: true
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+code-fold: show
+code-summary: 'show/hide'
+callout-icon: false
+
+draft: false
+
+freeze: true
+
+knitr:
+  opts_chunk: 
+    fig-dpi: 320
+    fig-width: 6
+    out-width: '85%'
+    fig-format: png
+    fig-align: 'center'
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+---
+
+```{r}
+#| label: setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("../_common.R")
+options(
+  scipen = 999,
+  repos = c(pm = "https://packagemanager.posit.co/cran/latest",
+            CRAN = "https://cloud.r-project.org")
+  )
+library(quarto)
+library(rmarkdown)
+library(shiny)
+library(lobstr)
+```
+
+```{r}
+#| label: co_box_dev
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "r", 
+  header = "DRAFT!", 
+  contents = "This post is currently under development--thank you for your patience.")
+```
+
+With developers using LLMs for coding questions, are reproducible examples (reprexes) still relevant? It might seem easier to just ask an AI, but I believe reprexes remain valuable—and we should keep finding ways to make them better.
+
+```{r}
+#| label: co_box_reprex
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "g", 
+  header = "Packages for reproducible examples", 
+  contents = "
+
+-   The [`reprex` package](https://reprex.tidyverse.org/) is designed to '*to encourage the sharing of small, reproducible, and runnable examples on code-oriented websites*.' 
+
+-   The [`reprexpy` package](https://reprexpy.readthedocs.io/en/latest/) is a similar package for Python.")
+```
+
+I’ll be focusing on the following example:
+
+1.  Write code    
+2.  Execute code    
+3.  Error returned  
+
+Sometimes code runs but gives the wrong result instead of an error. These cases are harder to catch—they might go unnoticed until you check the output or something fails. It's *worse* when code seems to work, but no one knows what it's actually doing or how to check if it's right.
+
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%{init: {'theme': 'neutral', 'themeVariables': { 'fontFamily': 'monospace', 'fontSize':'18px'}}}%%
+
+graph TD
+    WriteCode(["Write Code"])
+    ExecCode(["Execute Code"])
+    
+    WriteCode --> ExecCode
+    
+    ExecCode --> ErrPath{"<strong>Error<br>Returned?</strong>"}
+    
+    ErrPath -.->|"Yes"| Reprex(["<strong>Reproducible<br>Example</strong>"])
+    ErrPath -->|"No"| ResultCheck{"<strong>Expected<br>Result?</strong>"}
+    
+    ResultCheck -->|"Yes"| AllGood(["<strong>Expected<br>Output</strong>"])
+    ResultCheck -->|"No"| SilentFail["<strong>Silent Failure</strong><br/><i>Wrong result,<br> no error</i>"]
+    ResultCheck -->|"Unknown"| NobodyKnows["<strong>Unverifiable</strong><br/><i>No one knows what<br/>it should produce</i>"]
+    
+    %% ErrPath -.-> Reprex(["<strong>Reproducible Example</strong>"])
+
+    style NobodyKnows fill:#D32F2F,color:#fff
+    style SilentFail fill:#ffa500,color:#fff
+    style AllGood fill:#388E3C,color:#fff
+    style Reprex fill:#4051B5,color:#fff
+    
+```
+
+## Embracing minimalism
+
+The real art in creating a good reprex is identifying the code that isn't needed to reproduce the error (including packages, function calls, objects, etc). Deleting code can be painful, especially if you've already made multiple attempts to address the error. But winnowing down code gives us an opportunity to think clearly and deeply about the problem we've encountered.
+
+```{r}
+#| label: co_box_revisions
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "g", 
+  header = "Revision = thinking", 
+  contents = "
+> '*More particularly, rewriting is the key to improved thinking. It demands a real open-mindedness and objectivity.*'
+>
+> '*It demands a willingness to cull verbiage so that ideas stand out clearly. And it demands a willingness to meet logical contradictions head on and trace them to the premises that have created them.*'
+>
+> '*In short, it forces a writer to get up his courage and expose his thinking process to his own intelligence.*' - Marvin H. Swift, [Clear Writing Means Clear Thinking Means…](https://hbr.org/1973/01/clear-writing-means-clear-thinking-means)
+  ")
+```
+
+
