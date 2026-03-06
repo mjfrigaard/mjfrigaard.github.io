@@ -13,10 +13,144 @@
 <url>https://mjfrigaard.github.io/profile.png</url>
 <title>@mjfrigaard</title>
 <link>https://mjfrigaard.github.io/#category=R</link>
-<height>109</height>
-<width>144</width>
 </image>
 <generator>quarto-1.8.26</generator>
-<lastBuildDate>Tue, 06 Jan 2026 15:03:13 GMT</lastBuildDate>
+<lastBuildDate>Sat, 21 Feb 2026 07:00:00 GMT</lastBuildDate>
+<item>
+  <title>Reproducible examples: a love letter</title>
+  <dc:creator>Martin Frigaard</dc:creator>
+  <link>https://mjfrigaard.github.io/posts/reprex-love-letter/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<div class="cell" data-layout-align="center">
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span><span style="font-weight: bold; font-size: 1.15em;">DRAFT!</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>This post is currently under development–thank you for your patience.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>With developers using LLMs for coding questions, are reproducible examples (reprexes) still relevant? It might seem easier to just ask an AI, but I believe reprexes remain valuable—and we should keep finding ways to make them better.</p>
+<div class="cell" data-layout-align="center">
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span><span style="font-weight: bold; font-size: 1.15em;">Packages for reproducible examples</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<ul>
+<li><p>The <a href="https://reprex.tidyverse.org/"><code>reprex</code> package</a> is designed to ‘<em>to encourage the sharing of small, reproducible, and runnable examples on code-oriented websites</em>.’</p></li>
+<li><p>The <a href="https://reprexpy.readthedocs.io/en/latest/"><code>reprexpy</code> package</a> is a similar package for Python.</p></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>I’ll be focusing on the following example:</p>
+<ol type="1">
+<li>Write code<br>
+</li>
+<li>Execute code<br>
+</li>
+<li>Error returned</li>
+</ol>
+<p>Sometimes code runs but gives the wrong result instead of an error. These cases are harder to catch—they might go unnoticed until you check the output or something fails. It’s <em>worse</em> when code seems to work, but no one knows what it’s actually doing or how to check if it’s right.</p>
+<div class="cell" data-eval="true" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'themeVariables': { 'fontFamily': 'monospace', 'fontSize':'18px'}}}%%
+
+graph TD
+    WriteCode(["Write Code"])
+    ExecCode(["Execute Code"])
+    
+    WriteCode --&gt; ExecCode
+    
+    ExecCode --&gt; ErrPath{"&lt;strong&gt;Error&lt;br&gt;Returned?&lt;/strong&gt;"}
+    
+    ErrPath -.-&gt;|"Yes"| Reprex(["&lt;strong&gt;Reproducible&lt;br&gt;Example&lt;/strong&gt;"])
+    ErrPath --&gt;|"No"| ResultCheck{"&lt;strong&gt;Expected&lt;br&gt;Result?&lt;/strong&gt;"}
+    
+    ResultCheck --&gt;|"Yes"| AllGood(["&lt;strong&gt;Expected&lt;br&gt;Output&lt;/strong&gt;"])
+    ResultCheck --&gt;|"No"| SilentFail["&lt;strong&gt;Silent Failure&lt;/strong&gt;&lt;br/&gt;&lt;i&gt;Wrong result,&lt;br&gt; no error&lt;/i&gt;"]
+    ResultCheck --&gt;|"Unknown"| NobodyKnows["&lt;strong&gt;Unverifiable&lt;/strong&gt;&lt;br/&gt;&lt;i&gt;No one knows what&lt;br/&gt;it should produce&lt;/i&gt;"]
+    
+    %% ErrPath -.-&gt; Reprex(["&lt;strong&gt;Reproducible Example&lt;/strong&gt;"])
+
+    style NobodyKnows fill:#D32F2F,color:#fff
+    style SilentFail fill:#ffa500,color:#fff
+    style AllGood fill:#388E3C,color:#fff
+    style Reprex fill:#4051B5,color:#fff
+    
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<section id="embracing-minimalism" class="level2">
+<h2 class="anchored" data-anchor-id="embracing-minimalism">Embracing minimalism</h2>
+<p>The real art in creating a good reprex is identifying the code that isn’t needed to reproduce the error (including packages, function calls, objects, etc). Deleting code can be painful, especially if you’ve already made multiple attempts to address the error. But winnowing down code gives us an opportunity to think clearly and deeply about the problem we’ve encountered.</p>
+<div class="cell" data-layout-align="center">
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span><span style="font-weight: bold; font-size: 1.15em;">Revision = thinking</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<blockquote class="blockquote">
+<p>‘<em>More particularly, rewriting is the key to improved thinking. It demands a real open-mindedness and objectivity.</em>’</p>
+<p>‘<em>It demands a willingness to cull verbiage so that ideas stand out clearly. And it demands a willingness to meet logical contradictions head on and trace them to the premises that have created them.</em>’</p>
+<p>‘<em>In short, it forces a writer to get up his courage and expose his thinking process to his own intelligence.</em>’ - Marvin H. Swift, <a href="https://hbr.org/1973/01/clear-writing-means-clear-thinking-means">Clear Writing Means Clear Thinking Means…</a></p>
+</blockquote>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+
+ ]]></description>
+  <category>R</category>
+  <category>Python</category>
+  <category>Markdown</category>
+  <guid>https://mjfrigaard.github.io/posts/reprex-love-letter/</guid>
+  <pubDate>Sat, 21 Feb 2026 07:00:00 GMT</pubDate>
+</item>
 </channel>
 </rss>

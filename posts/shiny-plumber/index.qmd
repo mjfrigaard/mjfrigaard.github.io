@@ -94,7 +94,7 @@ APIs provide a clear way for software programs to interact, allowing different a
 %%| fig-align: center
 %%| echo: false
 %%| fig-cap: 'APIs'
-%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+%%{init: {'theme': 'neutral', 'look': 'neo', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
 
 graph LR
     AppA["App A"] -->|Request| API["<strong>API<br/>(<em>Shared Language</em>)</strong>"]
@@ -117,7 +117,7 @@ Consider the [`gh` package](https://gh.r-lib.org/) sequence diagram below:
 %%| fig-align: center
 %%| echo: false
 %%| fig-cap: 'Concrete Example - GitHub API Package'
-%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+%%{init: {'theme': 'neutral', 'look': 'neo', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
 
 sequenceDiagram
     participant User as R User
@@ -340,7 +340,7 @@ The HTTP methods and their corresponding `plumber` tags are listed below:
 %%| fig-align: center
 %%| echo: false
 %%| fig-cap: 'Example: plumber transforms R function into API endpoint'
-%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"15px"}}}%%
+%%{init: {'theme': 'neutral', 'look': 'neo', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"15px"}}}%%
 
 graph TB
 	WriteFun("<em>Write R function</em>")
@@ -404,7 +404,7 @@ handle_ping <- function() {
 %%| fig-align: center
 %%| echo: false
 %%| fig-cap: 'health check'
-%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+%%{init: {'theme': 'neutral', 'look': 'neo', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
   
 sequenceDiagram
     participant Client
@@ -517,7 +517,7 @@ The diagram below outlines the sequence from the Client request to the `plumber`
 %%| fig-align: center
 %%| echo: false
 %%| fig-cap: 'Predictions'
-%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+%%{init: {'theme': 'neutral', 'look': 'neo', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
 
 sequenceDiagram
     

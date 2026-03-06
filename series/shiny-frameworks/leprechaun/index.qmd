@@ -132,10 +132,10 @@ co_box(color = "b", header = "**What does _'leaner and smaller'_ mean?**", conte
 
 ::: {style="font-size: 0.80em;"}
 ```{r}
-#| label: create_package-myLeprechaunApp
+#| label: create_package-lap
 #| code-fold: false
 #| eval: false
-usethis::create_package("myLeprechaunApp")
+usethis::create_package("lap")
 ```
 :::
 
@@ -145,13 +145,13 @@ usethis::create_package("myLeprechaunApp")
 
 ::: {style="font-size: 0.80em;"}
 ```{bash}
-#| label: create_package-myLeprechaunApp-output
+#| label: create_package-lap-output
 #| code-fold: true
-✔ Creating '../projects/myLeprechaunApp/'
-✔ Setting active project to '/Users/mjfrigaard/projects/myLeprechaunApp'
+✔ Creating '../projects/lap/'
+✔ Setting active project to '/Users/mjfrigaard/projects/lap'
 ✔ Creating 'R/'
 ✔ Writing 'DESCRIPTION'
-Package: myLeprechaunApp
+Package: lap
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R (parsed):
@@ -163,11 +163,11 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 ✔ Writing 'NAMESPACE'
-✔ Writing 'myLeprechaunApp.Rproj'
-✔ Adding '^myLeprechaunApp\\.Rproj$' to '.Rbuildignore'
+✔ Writing 'lap.Rproj'
+✔ Adding '^lap\\.Rproj$' to '.Rbuildignore'
 ✔ Adding '.Rproj.user' to '.gitignore'
 ✔ Adding '^\\.Rproj\\.user$' to '.Rbuildignore'
-✔ Opening '/Users/mjfrigaard/projects/myLeprechaunApp/' in new RStudio session
+✔ Opening '/Users/mjfrigaard/projects/lap/' in new RStudio session
 ✔ Setting active project to '<no active project>'
 ```
 :::
@@ -177,7 +177,7 @@ When creating a new `leprechaun` package in the IDE, it's identical to the R pac
 ::: {#fig-leprechaun-setup .column}
 ![](leprechaun-setup.png){height="100%" width="100%" fig-align="center"}
 
-`myLeprechaunApp`
+`lap`
 :::
 
 After the new project opens, install and load the `leprechaun` package, then run `leprechaun::scaffold()`:
@@ -242,7 +242,7 @@ This results in the following folder tree:
 ```{bash}
 #| label: scaffold-leprechaun
 #| code-fold: false
-myLeprechaunApp/
+lap/
         ├── DESCRIPTION
         ├── NAMESPACE
         ├── R/
@@ -260,13 +260,13 @@ myLeprechaunApp/
         │   ├── img/
         │   └── run/
         │       └── app.R
-        └── myLeprechaunApp.Rproj
+        └── lap.Rproj
 
 7 directories, 12 files
 ```
 :::
 
-This structure should look familiar if you've been following along with this series. The standard R package files and folders (`DESCRIPTION`, `NAMESPACE`, `R/`, and `myLeprechaunApp.Rproj`) are accompanied by multiple sub-folders in `inst/` (recall that `inst/` contents are available in the package when the package is installed).
+This structure should look familiar if you've been following along with this series. The standard R package files and folders (`DESCRIPTION`, `NAMESPACE`, `R/`, and `lap.Rproj`) are accompanied by multiple sub-folders in `inst/` (recall that `inst/` contents are available in the package when the package is installed).
 
 ### Setup
 
@@ -321,7 +321,7 @@ In this section I'll cover the initial files in the new `leprechaun` application
     serveAssets <- function(modules = NULL) {
       # JavaScript files
       javascript <- list.files(
-        system.file(package = "myLeprechaunApp"),
+        system.file(package = "lap"),
         recursive = TRUE,
         pattern = ".js$"
       )
@@ -331,7 +331,7 @@ In this section I'll cover the initial files in the new `leprechaun` application
 
       # CSS files
       css <- list.files(
-        system.file(package = "myLeprechaunApp"),
+        system.file(package = "lap"),
         recursive = TRUE,
         pattern = ".css$"
       )
@@ -344,9 +344,9 @@ In this section I'll cover the initial files in the new `leprechaun` application
       dependencies <- list()
 
       standard <- htmlDependency(
-        "myLeprechaunApp",
-        version = utils::packageVersion("myLeprechaunApp"),
-        package = "myLeprechaunApp",
+        "lap",
+        version = utils::packageVersion("lap"),
+        package = "lap",
         src = ".",
         script = javascript,
         stylesheet = css
@@ -355,9 +355,9 @@ In this section I'll cover the initial files in the new `leprechaun` application
 
       if (!is.null(modules)) {
         modules <- htmlDependency(
-          "myLeprechaunApp-modules",
-          version = utils::packageVersion("myLeprechaunApp"),
-          package = "myLeprechaunApp",
+          "lap-modules",
+          version = utils::packageVersion("lap"),
+          package = "lap",
           src = ".",
           script = modules,
           meta = list(type = "module")
@@ -431,7 +431,7 @@ In this section I'll cover the initial files in the new `leprechaun` application
     #| code-fold: show
     [[1]]
     List of 10
-     $ name      : chr "myLeprechaunApp"
+     $ name      : chr "lap"
      $ version   : chr "0.0.0.9000"
      $ src       :List of 1
       ..$ file: chr "."
@@ -442,7 +442,7 @@ In this section I'll cover the initial files in the new `leprechaun` application
       ..- attr(*, "names")= chr(0) 
      $ head      : NULL
      $ attachment: NULL
-     $ package   : chr "myLeprechaunApp"
+     $ package   : chr "lap"
      $ all_files : logi TRUE
      - attr(*, "class")= chr "html_dependency"
     ```
@@ -487,13 +487,13 @@ In this section I'll cover the initial files in the new `leprechaun` application
     
     .onAttach <- function(...) {
     	shiny::registerInputHandler(
-    		"myLeprechaunApp.list", 
+    		"lap.list", 
     		leprechaun_handler_list, 
     		force = TRUE
     	)
     
     	shiny::registerInputHandler(
-    		"myLeprechaunApp.df", 
+    		"lap.df", 
     		leprechaun_handler_df, 
     		force = TRUE
     	)
@@ -601,7 +601,7 @@ In this section I'll cover the initial files in the new `leprechaun` application
     #' 
     #' @keywords internal
     run_dev <- function(){
-    	file <- system.file("run/app.R", package = "myLeprechaunApp")
+    	file <- system.file("run/app.R", package = "lap")
     	shiny::shinyAppFile(file)
     }
     ```
@@ -658,7 +658,7 @@ In this section I'll cover the initial files in the new `leprechaun` application
     	fluidPage(
     		theme = bs_theme(version = 5),
     		assets(),
-    		h1("myLeprechaunApp")
+    		h1("lap")
     	)
     }
     ```
@@ -709,7 +709,7 @@ In this section I'll cover the initial files in the new `leprechaun` application
     .onLoad <- function(...){
     	shiny::addResourcePath(
     		"img",
-    		system.file("img", package = "myLeprechaunApp")
+    		system.file("img", package = "lap")
     	)
     }
     ```
@@ -1075,7 +1075,7 @@ The code for the `var_input` and `plot_display` modules are below.
     				send_message <- make_send_message(session)
     
     				# your code here
-        movies <- myLeprechaunApp::movies
+        movies <- lap::movies
     
         inputs <- shiny::reactive({
           plot_title <- tools::toTitleCase(var_inputs$plot_title())
@@ -1149,7 +1149,7 @@ After creating the modules, adding them to the UI (`R/ui.R`) and server (`R/serv
       fluidPage(
         theme = bs_theme(version = 5),
         assets(),
-        h1("myLeprechaunApp"),
+        h1("lap"),
         # Begin new code -->
         shiny::sidebarLayout(
           shiny::sidebarPanel(
@@ -1203,7 +1203,7 @@ After creating the modules, adding them to the UI (`R/ui.R`) and server (`R/serv
 
 
 
-The other components of `myLeprechaunApp` were created using the standard `usethis` package development functions.
+The other components of `lap` were created using the standard `usethis` package development functions.
 
 #### `use_data_raw()`
 
@@ -1222,7 +1222,7 @@ co_box(color = "b",
   
 \`\`\` r
 ## code to prepare `movies` dataset goes here
-pth <- system.file('extdata/movies.RData', package = 'myLeprechaunApp')
+pth <- system.file('extdata/movies.RData', package = 'lap')
 load(pth)
 usethis::use_data(movies, overwrite = TRUE)
 \`\`\`")
@@ -1262,7 +1262,7 @@ usethis::use_data(movies, overwrite = TRUE)
     #' \donttest{
     #' load(
     #'   list.files(
-    #'     system.file("extdata", package = "myLeprechaunApp"),
+    #'     system.file("extdata", package = "lap"),
     #'    pattern = "movies",
     #'    full.names = TRUE)
     #'    )
@@ -1289,7 +1289,7 @@ Now I can run `devtools::load_all()`, `devtools::document()`, restart and load t
 ::: {#fig-full-run .column}
 ![](myLeprechaun-run.png){height="100%" width="100%" fig-align="center"}
 
-run `myLeprechaunApp`
+run `lap`
 :::
 
 
@@ -1336,7 +1336,7 @@ To demonstrate how the `make_send_message()` function works, I'll walk through t
     
     ── Adding files to .gitignore and .Rbuildignore ──
     
-    ✔ Setting active project to '/Users/mjfrigaard/projects/myLeprechaunApp'
+    ✔ Setting active project to '/Users/mjfrigaard/projects/lap'
     ✔ Adding '^srcjs$' to '.Rbuildignore'
     ✔ Adding '^node_modules$' to '.Rbuildignore'
     ✔ Adding '^package\\.json$' to '.Rbuildignore'
@@ -1557,7 +1557,7 @@ I'll demonstrate how to use the `inst/` folder by adding an image to the applica
       fluidPage(
         theme = bs_theme(version = 5),
         assets(),
-        h1("myLeprechaunApp"),
+        h1("lap"),
         shiny::sidebarLayout(
           shiny::sidebarPanel(
             var_inputUI("vars")
@@ -1732,7 +1732,7 @@ Once again, I run `devtools::load_all()`, `devtools::document()`, install and re
 ::: {#fig-leprechaun-run .column}
 ![](sass-leprechaun.png){height="100%" width="100%" fig-align="center"}
 
-run `myLeprechaunApp` with new Sass
+run `lap` with new Sass
 :::
 
 ::: {style="font-size: 0.80em;"}
@@ -1792,7 +1792,7 @@ serveAssets()
 ```{bash}
 [[1]]
 List of 10
- $ name      : chr "myLeprechaunApp"
+ $ name      : chr "lap"
  $ version   : chr "0.0.0.9000"
  $ src       :List of 1
   ..$ file: chr "."
@@ -1803,7 +1803,7 @@ List of 10
   ..- attr(*, "names")= chr [1:2] "file" "file"
  $ head      : NULL
  $ attachment: NULL
- $ package   : chr "myLeprechaunApp"
+ $ package   : chr "lap"
  $ all_files : logi TRUE
  - attr(*, "class")= chr "html_dependency"
 ```
@@ -1832,7 +1832,7 @@ When I initially create a new `leprechaun` package with `leprechaun::scaffold()`
 devtools::load_all()
 devtools::document()
 # install and restart
-library(myLeprechaunApp)
+library(lap)
 run()
 ```
 :::
@@ -1840,9 +1840,9 @@ run()
 
 
 ::: {#fig-initial-leprechaun .column}
-![](initial-myLeprechaunApp.png){height="100%" width="100%" fig-align="center"}
+![](initial-lap.png){height="100%" width="100%" fig-align="center"}
 
-run `myLeprechaunApp`
+run `lap`
 :::
 
 ```{r}
@@ -1852,20 +1852,20 @@ run `myLeprechaunApp`
 #| echo: false
 co_box(color = "b",
   header = "App package scripts",
-  contents = "The output above shows that--unlike `golem` apps--`leprechaun` includes the functions in the `R/` folder as part of the `myLeprechaunApp` package.")
+  contents = "The output above shows that--unlike `golem` apps--`leprechaun` includes the functions in the `R/` folder as part of the `lap` package.")
 ```
 
 
 
 **App files:**
 
--   `R/`: After the initial setup, the [`R/` folder](https://github.com/mjfrigaard/shiny-app-setups/tree/main/myLeprechaunApp/R) of a leprechaun app contains standard `ui.R`, `server.R` files, as well as the `run.R` function for running the app.
+-   `R/`: After the initial setup, the [`R/` folder](https://github.com/mjfrigaard/shiny-app-setups/tree/main/lap/R) of a leprechaun app contains standard `ui.R`, `server.R` files, as well as the `run.R` function for running the app.
 
     ::: {style="font-size: 0.80em;"}
     ```{bash}
     #| label: r-leprechaun
     #| code-fold: false
-    myLeprechaunApp/
+    lap/
           └── R/
               ├── _disable_autoload.R
               ├── assets.R
@@ -1907,13 +1907,13 @@ co_box(color = "b",
 
 **Workflow:**
 
--   The [`inst/` folder](https://github.com/mjfrigaard/shiny-app-setups/tree/main/myLeprechaunApp/inst) contains various sub-folders for including external app resources (images, SASS, CSS, JavaScript, etc.).
+-   The [`inst/` folder](https://github.com/mjfrigaard/shiny-app-setups/tree/main/lap/inst) contains various sub-folders for including external app resources (images, SASS, CSS, JavaScript, etc.).
 
     ::: {style="font-size: 0.80em;"}
     ```{bash}
     #| label: inst-leprechaun
     #| code-fold: false
-    myLeprechaunApp/
+    lap/
         └── inst/
               ├── assets/
               ├── dev/
@@ -1927,7 +1927,7 @@ co_box(color = "b",
 
 -   `leprechaun` apps are packages, so the `inst/` folders are available to the application at runtime (which I can find using `system.file()`).
     
-    -   Below I've passed the output from `system.file(".", package = "myLeprechaunApp")` to `fs::dir_tree()` to view it's contents:  
+    -   Below I've passed the output from `system.file(".", package = "lap")` to `fs::dir_tree()` to view it's contents:  
     
     ::: {style="font-size: 0.80em;"}
     ```{bash}
@@ -1945,9 +1945,9 @@ co_box(color = "b",
     │   └── package.rds
     ├── NAMESPACE
     ├── R/
-    │   ├── myLeprechaunApp
-    │   ├── myLeprechaunApp.rdb
-    │   └── myLeprechaunApp.rdx
+    │   ├── lap
+    │   ├── lap.rdb
+    │   └── lap.rdx
     ├── assets/
     │   ├── index.js
     │   └── style.min.css
@@ -1963,8 +1963,8 @@ co_box(color = "b",
     ├── help/
     │   ├── AnIndex
     │   ├── aliases.rds
-    │   ├── myLeprechaunApp.rdb
-    │   ├── myLeprechaunApp.rdx
+    │   ├── lap.rdb
+    │   ├── lap.rdx
     │   └── paths.rds
     ├── html/
     │   ├── 00Index.html
@@ -1976,7 +1976,7 @@ co_box(color = "b",
     ```
     :::
 
-    -   I can see the `inst/` folders and files I've created are available to `myLeprechaunApp` at runtime: 
+    -   I can see the `inst/` folders and files I've created are available to `lap` at runtime: 
     
     ::: {style="font-size: 0.80em;"}
     ```{bash}

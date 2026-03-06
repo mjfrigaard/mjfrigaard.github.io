@@ -80,7 +80,7 @@ I'll touch on coding patterns, architecture decisions, and compare my Python sol
 %%| fig-align: center
 %%| echo: false
 %%| fig-cap: 'Python APIs & Shiny Apps'
-%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+%%{init: {'theme': 'neutral', 'look': 'neo', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
 
 graph TB
     subgraph Storage["<strong>Model</strong>"]
@@ -490,7 +490,7 @@ vetiver::vetiver_pin_write(model_board, v)
 %%| fig-align: center
 %%| echo: false
 %%| fig-cap: 'vetiver_pin_write()'
-%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+%%{init: {'theme': 'neutral', 'look': 'neo', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
 
 graph LR
     subgraph Board["<strong>./models/</strong>"]
@@ -1061,7 +1061,7 @@ The diagram below illustrates how the `@reactive.calc`, `logging`, `time` and `r
 %%| fig-align: center
 %%| echo: false
 %%| fig-cap: 'Health check with logging'
-%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+%%{init: {'theme': 'neutral', 'look': 'neo', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
 
 sequenceDiagram
     participant Reactive as reactive.calc
@@ -1096,7 +1096,7 @@ sequenceDiagram
 %%| fig-align: center
 %%| echo: false
 %%| fig-cap: 'Health check with exception handling'
-%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+%%{init: {'theme': 'neutral', 'look': 'neo', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
 
 sequenceDiagram
     participant Reactive as reactive.calc
@@ -1323,7 +1323,7 @@ The `pred()` function includes the same error handling pattern as the health che
 %%| fig-align: center
 %%| echo: false
 %%| fig-cap: 'Python APIs & Shiny Apps'
-%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+%%{init: {'theme': 'neutral', 'look': 'neo', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
 
 graph TD
     Request["<strong>HTTP<br>Request</strong"]
