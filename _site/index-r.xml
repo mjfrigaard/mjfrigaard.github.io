@@ -15,7 +15,7 @@
 <link>https://mjfrigaard.github.io/#category=R</link>
 </image>
 <generator>quarto-1.8.26</generator>
-<lastBuildDate>Sat, 21 Feb 2026 07:00:00 GMT</lastBuildDate>
+<lastBuildDate>Thu, 05 Mar 2026 07:00:00 GMT</lastBuildDate>
 <item>
   <title>Reproducible examples: a love letter</title>
   <dc:creator>Martin Frigaard</dc:creator>
@@ -46,7 +46,9 @@
 </div>
 </div>
 </div>
-<p>With developers using LLMs for coding questions, are reproducible examples (reprexes) still relevant? It might seem easier to just ask an AI, but I believe reprexes remain valuable—and we should keep finding ways to make them better.</p>
+<p>With developers using LLMs for coding questions, are reproducible examples (reprexes) still relevant? It might seem easier just to ask an AI, but I believe reprexes remain valuable—and we should keep finding ways to make them better.</p>
+<p>Most people write a reprex to ask about a problem. Sometimes it’s an error or warning, but often the code just gives the wrong result. With LLMs generating code, these mistakes are even easier to miss—they may not show up until you test the output or something else fails.</p>
+<p>Problems without errors or warnings are worse—they look like they work, but no one knows what the code does or if it’s correct.</p>
 <div class="cell" data-layout-align="center">
 <div class="callout callout-style-default callout-tip no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
@@ -70,15 +72,8 @@
 </div>
 </div>
 </div>
-<p>I’ll be focusing on the following example:</p>
-<ol type="1">
-<li>Write code<br>
-</li>
-<li>Execute code<br>
-</li>
-<li>Error returned</li>
-</ol>
-<p>Sometimes code runs but gives the wrong result instead of an error. These cases are harder to catch—they might go unnoticed until you check the output or something fails. It’s <em>worse</em> when code seems to work, but no one knows what it’s actually doing or how to check if it’s right.</p>
+<p>Let’s consider the following example:</p>
+<p><em>We wrote code, executed it, and an error was returned</em></p>
 <div class="cell" data-eval="true" data-layout-align="default">
 <div class="cell-output-display">
 <div>
@@ -124,7 +119,7 @@ graph TD
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span><span style="font-weight: bold; font-size: 1.15em;">Revision = thinking</span>
+<span class="screen-reader-only">Tip</span><span style="font-weight: bold; font-size: 1.15em;">Revision = open-mindedness</span>
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
@@ -132,8 +127,50 @@ graph TD
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em; color: #282b2d;">
 <blockquote class="blockquote">
-<p>‘<em>More particularly, rewriting is the key to improved thinking. It demands a real open-mindedness and objectivity.</em>’</p>
-<p>‘<em>It demands a willingness to cull verbiage so that ideas stand out clearly. And it demands a willingness to meet logical contradictions head on and trace them to the premises that have created them.</em>’</p>
+<p>‘<em>rewriting is the key to improved thinking. It demands a real open-mindedness and objectivity.</em>’</p>
+</blockquote>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span><span style="font-weight: bold; font-size: 1.15em;">Revision = clarity</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<blockquote class="blockquote">
+<p>‘<em>[revision] demands a willingness to cull verbiage so that ideas stand out clearly. And it demands a willingness to meet logical contradictions head on and trace them to the premises that have created them.</em>’</p>
+</blockquote>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span><span style="font-weight: bold; font-size: 1.15em;">Revision = courage</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<blockquote class="blockquote">
 <p>‘<em>In short, it forces a writer to get up his courage and expose his thinking process to his own intelligence.</em>’ - Marvin H. Swift, <a href="https://hbr.org/1973/01/clear-writing-means-clear-thinking-means">Clear Writing Means Clear Thinking Means…</a></p>
 </blockquote>
 </div>
@@ -150,7 +187,7 @@ graph TD
   <category>Python</category>
   <category>Markdown</category>
   <guid>https://mjfrigaard.github.io/posts/reprex-love-letter/</guid>
-  <pubDate>Sat, 21 Feb 2026 07:00:00 GMT</pubDate>
+  <pubDate>Thu, 05 Mar 2026 07:00:00 GMT</pubDate>
 </item>
 </channel>
 </rss>
