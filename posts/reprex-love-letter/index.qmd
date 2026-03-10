@@ -2,7 +2,7 @@
 title: "Reproducible examples: a love letter"
 subtitle: "The best way to answer your own questions"
 author: "Martin Frigaard"
-date: "2026-02-21"
+date: "2026-03-05"
 categories: [R, Python, Markdown]
 # image: "img/image.png"
 toc: true
@@ -62,7 +62,11 @@ co_box(color = "r",
   contents = "This post is currently under development--thank you for your patience.")
 ```
 
-With developers using LLMs for coding questions, are reproducible examples (reprexes) still relevant? It might seem easier to just ask an AI, but I believe reprexes remain valuable—and we should keep finding ways to make them better.
+With developers using LLMs for coding questions, are reproducible examples (reprexes) still relevant? It might seem easier just to ask an AI, but I believe reprexes remain valuable—and we should keep finding ways to make them better.
+
+Most people write a reprex to ask about a problem. Sometimes it's an error or warning, but often the code just gives the wrong result. With LLMs generating code, these mistakes are even easier to miss—they may not show up until you test the output or something else fails.
+
+Problems without errors or warnings are worse—they look like they work, but no one knows what the code does or if it’s correct.
 
 ```{r}
 #| label: co_box_reprex
@@ -78,13 +82,9 @@ co_box(color = "g",
 -   The [`reprexpy` package](https://reprexpy.readthedocs.io/en/latest/) is a similar package for Python.")
 ```
 
-I’ll be focusing on the following example:
+Let's consider the following example:
 
-1.  Write code    
-2.  Execute code    
-3.  Error returned  
-
-Sometimes code runs but gives the wrong result instead of an error. These cases are harder to catch—they might go unnoticed until you check the output or something fails. It's *worse* when code seems to work, but no one knows what it's actually doing or how to check if it's right.
+*We wrote code, executed it, and an error was returned*
 
 ```{mermaid}
 %%| eval: true
@@ -120,19 +120,40 @@ graph TD
 The real art in creating a good reprex is identifying the code that isn't needed to reproduce the error (including packages, function calls, objects, etc). Deleting code can be painful, especially if you've already made multiple attempts to address the error. But winnowing down code gives us an opportunity to think clearly and deeply about the problem we've encountered.
 
 ```{r}
-#| label: co_box_revisions
+#| label: co_box_rewriting
 #| echo: false
 #| results: asis
 #| eval: true
 co_box(color = "g", 
-  header = "Revision = thinking", 
+  header = "Revision = open-mindedness", 
   contents = "
-> '*More particularly, rewriting is the key to improved thinking. It demands a real open-mindedness and objectivity.*'
->
-> '*It demands a willingness to cull verbiage so that ideas stand out clearly. And it demands a willingness to meet logical contradictions head on and trace them to the premises that have created them.*'
->
-> '*In short, it forces a writer to get up his courage and expose his thinking process to his own intelligence.*' - Marvin H. Swift, [Clear Writing Means Clear Thinking Means…](https://hbr.org/1973/01/clear-writing-means-clear-thinking-means)
-  ")
+> '*rewriting is the key to improved thinking. It demands a real open-mindedness and objectivity.*'")
 ```
 
 
+
+
+```{r}
+#| label: co_box_verbiage
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "g", 
+  header = "Revision = clarity", 
+  contents = "
+> '*[revision] demands a willingness to cull verbiage so that ideas stand out clearly. And it demands a willingness to meet logical contradictions head on and trace them to the premises that have created them.*'")
+```
+
+
+
+```{r}
+#| label: co_box_courage
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "g", 
+  header = "Revision = courage", 
+  contents = "
+> '*In short, it forces a writer to get up his courage and expose his thinking process to his own intelligence.*' - Marvin H. Swift, [Clear Writing Means Clear Thinking Means…](https://hbr.org/1973/01/clear-writing-means-clear-thinking-means)
+  ")
+```
