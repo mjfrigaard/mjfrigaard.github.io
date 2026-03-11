@@ -16,8 +16,2162 @@
 <height>109</height>
 <width>144</width>
 </image>
-<generator>quarto-1.8.26</generator>
-<lastBuildDate>Mon, 21 Jul 2025 07:00:00 GMT</lastBuildDate>
+<generator>quarto-1.9.30</generator>
+<lastBuildDate>Sun, 08 Mar 2026 07:00:00 GMT</lastBuildDate>
+<item>
+  <title>Posit on Pop!_OS</title>
+  <dc:creator>Martin Frigaard</dc:creator>
+  <link>https://mjfrigaard.github.io/posts/sys76-setup/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<p>I recently purchased a <a href="https://system76.com/">System76</a> laptop, which comes with their own Linux operating system: <a href="https://system76.com/pop/">Pop!_OS</a>. This post covers installing R, Python, and Quarto and setting up RStudio and Positron.</p>
+<section id="the-cosmic-desktop-environment" class="level2">
+<h2 class="anchored" data-anchor-id="the-cosmic-desktop-environment">The COSMIC Desktop Environment</h2>
+<p><a href="https://github.com/pop-os/cosmic-epoch">Pop!_OS</a> features the COSMIC (it previous used GNOME), a fully custom Rust-based desktop environment. COSMIC is built on Ubuntu, meaning it uses the same package ecosystem (<code>.deb</code> packages and <code>apt</code> package manager). Read more about the OS on the <a href="https://system76.com/pop/">System76 website.</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/cosmic-de.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="https://mjfrigaard.github.io/posts/sys76-setup/img/cosmic-de.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+<section id="the-cosmic-terminal" class="level3">
+<h3 class="anchored" data-anchor-id="the-cosmic-terminal">The COSMIC Terminal</h3>
+<p><a href="https://github.com/pop-os/cosmic-epoch">Pop!_OS</a> ships with the <a href="https://github.com/pop-os/cosmic-term">COSMIC Terminal</a>, which is also written entirely in Rust.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/cosmic-term.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="https://mjfrigaard.github.io/posts/sys76-setup/img/cosmic-term.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+<p>Using any flavor of Ubuntu typically means getting comfortable using the Terminal, and we can start by confirming the <code>$XDG_CURRENT_DESKTOP</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">echo</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">$XDG_CURRENT_DESKTOP</span></span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">COSMIC</span></span></code></pre></div></div>
+</div>
+<p><a href="https://github.com/pop-os/cosmic-epoch">Pop!_OS</a> uses Ubuntu 24, which you can discover using:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">cat</span> /etc/os-release</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">NAME</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Pop!_OS"</span></span>
+<span id="cb4-2"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">VERSION</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"24.04 LTS"</span></span>
+<span id="cb4-3"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">ID</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>pop</span>
+<span id="cb4-4"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">ID_LIKE</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ubuntu debian"</span></span>
+<span id="cb4-5"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">PRETTY_NAME</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Pop!_OS 24.04 LTS"</span></span>
+<span id="cb4-6"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">VERSION_ID</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"24.04"</span></span>
+<span id="cb4-7"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">HOME_URL</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://pop.system76.com"</span></span>
+<span id="cb4-8"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">SUPPORT_URL</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://support.system76.com"</span></span>
+<span id="cb4-9"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">BUG_REPORT_URL</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://github.com/pop-os/pop/issues"</span></span>
+<span id="cb4-10"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">PRIVACY_POLICY_URL</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://system76.com/privacy"</span></span>
+<span id="cb4-11"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">VERSION_CODENAME</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>noble</span>
+<span id="cb4-12"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">UBUNTU_CODENAME</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>noble</span>
+<span id="cb4-13"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">LOGO</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>distributor-logo-pop-os</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span><span style="font-weight: bold; font-size: 1.15em;">Checking the hardware platform</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>The <code>uname</code> command returns information on the hardware platform and architecture:</p>
+<ul>
+<li><p><code>uname</code> alone returns just the kernel name (e.g., <code>Linux</code>)</p></li>
+<li><p><code>uname -i</code> returns the <strong>hardware platform</strong> (e.g., <code>x86_64</code>), indicating the CPU architecture</p></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p><br></p>
+<p>The COSMIC Desktop Environment is still in active development, but we can check the current installed version with:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">cosmic-term</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--version</span></span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">cosmic-term</span> 1.0.8</span></code></pre></div></div>
+</div>
+<p>Below I’ll cover installing and configuring R, Python, and Quarto. Most of these instructions can be found from Posit,<sup>1</sup> but I’ve included additional details here (and any deviations from the official documentation).</p>
+</section>
+</section>
+<section id="r" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="r">R</h2>
+<p>I installed R following the Ubuntu instructions from <a href="https://cloud.r-project.org/bin/linux/ubuntu/#cb2-3">CRAN</a>.</p>
+<p>First we refresh the list of available packages from all <code>apt</code> configured repos:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">apt</span> update <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-qq</span></span></code></pre></div></div>
+</div>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p>The <code>-qq</code> (“quiet” mode) flag suppresses most of the output.</p>
+</div></div><div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">3</span> packages can be upgraded. Run <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'apt list --upgradable'</span> to see them.</span></code></pre></div></div>
+</div>
+<p>Next we install prerequisite tools:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">apt</span> install <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--no-install-recommends</span> software-properties-common dirmngr</span></code></pre></div></div>
+</div>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<ul>
+<li><p><code>--no-install-recommends</code> only installs the required dependencies.</p></li>
+<li><p><code>dirmngr</code> handles secure key management for verifying package signatures in the following step.</p></li>
+</ul>
+</div></div><div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Reading</span> package lists... Done</span>
+<span id="cb10-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Building</span> dependency tree... Done</span>
+<span id="cb10-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Reading</span> state information... Done</span>
+<span id="cb10-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">software-properties-common</span> is already the newest version <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">0.99.49.4</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">.</span></span>
+<span id="cb10-5"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">dirmngr</span> is already the newest version <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">2.4.4-2ubuntu17.4</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">.</span></span>
+<span id="cb10-6"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">The</span> following packages were automatically installed and are no longer required:</span>
+<span id="cb10-7">  <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">libframe6</span> libgeis1 libgrail6 libllvm19 libqt5x11extras5 libqt5xml5t64 touchegg</span>
+<span id="cb10-8"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Use</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'sudo apt autoremove'</span> to remove them.</span>
+<span id="cb10-9"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">0</span> upgraded, 0 newly installed, 0 to remove and 3 not upgraded.</span></code></pre></div></div>
+</div>
+<p>The commands below will download and store CRAN’s cryptographic public key (<em>the comments give instructions for verification</em>).</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># add the signing key (by Michael Rutter) for these repos</span></span>
+<span id="cb11-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># To verify key, run gpg --show-keys /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc </span></span>
+<span id="cb11-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Fingerprint: E298A3A825C0D65DFD57CBB651716619E084DAB9</span></span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">wget</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-qO-</span> https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">|</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tee</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-a</span> /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc</span></code></pre></div></div>
+</div>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p>The signing key allows <code>apt</code> to verify R packages we download from CRAN are authentic.</p>
+</div></div><p>You’ll see the PGP key in the Terminal:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">-----BEGIN</span> PGP PUBLIC KEY BLOCK-----</span>
+<span id="cb13-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">...</span> key ...</span>
+<span id="cb13-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">-----END</span> PGP PUBLIC KEY BLOCK-----</span></code></pre></div></div>
+</div>
+<p>Next we add CRAN’s R 4.0+ repo to the system’s package sources with <code>add-apt-repository</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">add-apt-repository</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"deb https://cloud.r-project.org/bin/linux/ubuntu </span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">$(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">lsb_release</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-cs</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">)</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">-cran40/"</span></span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span><span style="font-weight: bold; font-size: 1.15em;">What is my Ubuntu codename?</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>Including <code>$(lsb_release -cs)</code> dynamically inserts our Ubuntu codename:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">echo</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">$(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">lsb_release</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-cs</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">)</span></span></code></pre></div></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">noble</span></span></code></pre></div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p><br></p>
+<p>Finally, we install R from the CRAN repo we added in the step above.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> apt install <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--no-install-recommends</span> r-base</span></code></pre></div></div>
+</div>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p>We use the <code>--no-install-recommends</code> flag again to keep the dependencies lean</p>
+</div></div><p>Check R version</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">R</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--version</span></span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">R</span> version 4.5.2 <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">2025-10-31</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">--</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"[Not] Part in a Rumble"</span></span>
+<span id="cb19-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Copyright</span> <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">C</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">2025</span> The R Foundation for Statistical Computing</span>
+<span id="cb19-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Platform:</span> x86_64-pc-linux-gnu</span>
+<span id="cb19-4"></span>
+<span id="cb19-5"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">R</span> is free software and comes with ABSOLUTELY NO WARRANTY.</span>
+<span id="cb19-6"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">You</span> are welcome to redistribute it under the terms of the</span>
+<span id="cb19-7"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">GNU</span> General Public License versions 2 or 3.</span>
+<span id="cb19-8"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">For</span> more information about these matters see</span>
+<span id="cb19-9"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">https://www.gnu.org/licenses/.</span></span></code></pre></div></div>
+</div>
+</section>
+<section id="python" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="python">Python</h2>
+<p>Below is an adaptation of the installation instructions from <a href="https://docs.posit.co/resources/install-python-uv.html">Posit</a> (using <code>uv</code>). <a href="https://github.com/pop-os/cosmic-epoch">Pop!_OS</a> comes with Python installed at the system level, and we’ll want this sepatated from the <code>uv</code> installations (more about this below).</p>
+<p>Start by installing the <code>uv</code> installer scrip.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">curl</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-LsSf</span> https://astral.sh/uv/install.sh <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">|</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sh</span>   </span></code></pre></div></div>
+</div>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<ul>
+<li>The four <code>curl</code> flags are used to:
+<ul>
+<li><code>-L</code>: follow redirect</li>
+<li><code>-s</code>: silent mode</li>
+<li><code>-S</code>: show error (if they occur)</li>
+<li><code>-f</code>: fail on server errors</li>
+</ul></li>
+</ul>
+</div></div><p>The output is below:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">downloading</span> uv 0.10.8 x86_64-unknown-linux-gnu</span>
+<span id="cb21-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">no</span> checksums to verify</span>
+<span id="cb21-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">installing</span> to /root/.local/bin</span>
+<span id="cb21-4">  <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">uv</span></span>
+<span id="cb21-5">  <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">uvx</span></span>
+<span id="cb21-6"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">everything</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'s installed!</span></span>
+<span id="cb21-7"></span>
+<span id="cb21-8"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">To add $HOME/.local/bin to your PATH, either restart your shell or run:</span></span>
+<span id="cb21-9"></span>
+<span id="cb21-10"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    source $HOME/.local/bin/env (sh, bash, zsh)</span></span>
+<span id="cb21-11"><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">    source $HOME/.local/bin/env.fish (fish)</span></span></code></pre></div></div>
+</div>
+<p>The output confirms <code>uv</code> and <code>uvx</code> (a tool runner) are installed to <code>/root/.local/bin</code>.</p>
+<p>The commands below will reload the shell configuration, which adds the installed location of <code>uv</code> (<code>/root/.local/bin</code>) to our <code>PATH</code>, making it accessible as a command.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">source</span> ~/.bashrc  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># or ~/.zshrc if using zsh   </span></span></code></pre></div></div>
+</div>
+<p>We can confirm it with:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb23-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">uv</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--version</span>   </span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">uv</span> 0.10.8</span></code></pre></div></div>
+</div>
+<p>Now we can use <code>uv</code> to install Python 3.12.4, which manages its own Python installations independently of the system Python.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">uv</span> python install 3.12.4</span></code></pre></div></div>
+</div>
+<p>List the installed Python versions:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb26-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">uv</span> python list <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--only-installed</span></span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb27-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">cpython-3.12.4-linux-x86_64-gnu</span>    /root/.local/bin/python3.12 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> /root/.local/share/uv/python/cpython-3.12.4-linux-x86_64-gnu/bin/python3.12</span>
+<span id="cb27-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">cpython-3.12.4-linux-x86_64-gnu</span>    /root/.local/share/uv/python/cpython-3.12-linux-x86_64-gnu/bin/python3.12</span>
+<span id="cb27-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">cpython-3.12.3-linux-x86_64-gnu</span>    /usr/bin/python3.12</span>
+<span id="cb27-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">cpython-3.12.3-linux-x86_64-gnu</span>    /usr/bin/python3 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> python3.12</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span><span style="font-weight: bold; font-size: 1.15em;">Installed Python version and locations</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>The following Python versions are installed:</p>
+<ol type="1">
+<li><p><strong><code>/usr/bin/python3</code></strong> = System Python (version 3.12.3), managed by <code>apt</code></p></li>
+<li><p><strong><code>/root/.local/share/uv/python/</code></strong> = <code>uv</code> Python (3.12.4), is managed by <code>uv</code></p></li>
+</ol>
+<p>These installations are kept <strong>completely separate</strong>, a benefit and key safety feature of <code>uv</code></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p><br></p>
+<p>Locate where the Python 3.12.4 binary (in case we need to explicitly point tools or virtual environments to a specific Python version).</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb28-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">uv</span> python find 3.12.4</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb29-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">/root/.local/share/uv/python/cpython-3.12.4-linux-x86_64-gnu/bin/python3.12</span></span></code></pre></div></div>
+</div>
+</section>
+<section id="quarto" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
+<p>I used the following steps to install Quarto. Consult the <a href="https://quarto.org/docs/get-started/">documentation</a> for more information.</p>
+<p>Start by downloading the latest Quarto <code>.deb</code> package from the <a href="https://github.com/quarto-dev/quarto-cli/releases">Quarto releases page</a>.</p>
+<p>Install it with:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb30-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># change to Downloads folder with</span></span>
+<span id="cb30-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># cd Downloads</span></span>
+<span id="cb30-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sudo</span> dpkg <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-i</span> quarto-<span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">*</span>.deb</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb31-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Selecting</span> previously unselected package quarto.</span>
+<span id="cb31-2"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Reading</span> database ... 263906 files and directories currently installed.<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb31-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Preparing</span> to unpack quarto-1.9.30-linux-amd64.deb ...</span>
+<span id="cb31-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Unpacking</span> quarto <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">1.9.30</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">...</span></span>
+<span id="cb31-5"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Setting</span> up quarto <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">1.9.30</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">...</span></span></code></pre></div></div>
+</div>
+<section id="initial-check" class="level3">
+<h3 class="anchored" data-anchor-id="initial-check">Initial check</h3>
+<p>Check the <code>quarto</code> installation and dependencies with:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb32-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">quarto</span> check</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>show/hide initial check</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb33-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Quarto</span> 1.9.30</span>
+<span id="cb33-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking environment information...</span>
+<span id="cb33-3">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Quarto</span> cache location: /root/.cache/quarto</span>
+<span id="cb33-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking versions of quarto binary dependencies...</span>
+<span id="cb33-5">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Pandoc</span> version 3.8.3: OK</span>
+<span id="cb33-6">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Dart</span> Sass version 1.87.0: OK</span>
+<span id="cb33-7">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Deno</span> version 2.4.5: OK</span>
+<span id="cb33-8">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Typst</span> version 0.14.2: OK</span>
+<span id="cb33-9"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking versions of quarto dependencies......OK</span>
+<span id="cb33-10"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Quarto installation......OK</span>
+<span id="cb33-11">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Version:</span> 1.9.30</span>
+<span id="cb33-12">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Path:</span> /opt/quarto/bin</span>
+<span id="cb33-13"></span>
+<span id="cb33-14"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking tools....................OK</span>
+<span id="cb33-15">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">TinyTeX:</span> <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">not</span> installed<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb33-16">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Chromium:</span> <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">not</span> installed<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb33-17">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Chrome</span> Headless Shell: <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">not</span> installed<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb33-18">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">VeraPDF:</span> <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">not</span> installed<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb33-19"></span>
+<span id="cb33-20"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking LaTeX....................OK</span>
+<span id="cb33-21">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Tex:</span>  <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">not</span> detected<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb33-22"></span>
+<span id="cb33-23"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Chrome Headless....................OK</span>
+<span id="cb33-24">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Chrome:</span>  <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">not</span> detected<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb33-25"></span>
+<span id="cb33-26"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking basic markdown render....OK</span>
+<span id="cb33-27"></span>
+<span id="cb33-28"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking R installation...........OK</span>
+<span id="cb33-29">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Version:</span> 4.5.2</span>
+<span id="cb33-30">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Path:</span> /usr/lib/R</span>
+<span id="cb33-31">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">LibPaths:</span></span>
+<span id="cb33-32">        <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">-</span> /usr/local/lib/R/site-library</span>
+<span id="cb33-33">        <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">-</span> /usr/lib/R/site-library</span>
+<span id="cb33-34">        <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">-</span> /usr/lib/R/library</span>
+<span id="cb33-35">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">knitr:</span> <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">None</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb33-36">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">rmarkdown:</span> <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">None</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb33-37"></span>
+<span id="cb33-38">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">The</span> knitr package is not available in this R installation.</span>
+<span id="cb33-39">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Install</span> with install.packages<span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"knitr"</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb33-40">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">The</span> rmarkdown package is not available in this R installation.</span>
+<span id="cb33-41">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Install</span> with install.packages<span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"rmarkdown"</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb33-42"></span>
+<span id="cb33-43"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Python 3 installation....OK</span>
+<span id="cb33-44">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Version:</span> 3.12.3</span>
+<span id="cb33-45">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Path:</span> /usr/bin/python3</span>
+<span id="cb33-46">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Jupyter:</span> <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">None</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb33-47"></span>
+<span id="cb33-48">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Jupyter</span> is not available in this Python installation.</span>
+<span id="cb33-49">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Install</span> with python3 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-m</span> pip install jupyter</span>
+<span id="cb33-50"></span>
+<span id="cb33-51"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Julia installation...</span></code></pre></div></div>
+</details>
+</div>
+<p>We can see there are a few items to address. Fortunately Quarto also has commands for installing these directly:</p>
+</section>
+<section id="tinytex" class="level3">
+<h3 class="anchored" data-anchor-id="tinytex">TinyTex</h3>
+<p>The <code>tools</code> section lists four missing dependencies:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb34-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">TinyTeX:</span> <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">not</span> installed<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb34-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Chromium:</span> <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">not</span> installed<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb34-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Chrome</span> Headless Shell: <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">not</span> installed<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb34-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">VeraPDF:</span> <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">not</span> installed<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span></code></pre></div></div>
+</div>
+<p>We will address the TinyTex installation first with <code>quarto</code></p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb35-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">quarto</span> install tinytex</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb36-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Installing</span> tinytex</span>
+<span id="cb36-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Downloading TinyTex v2026.03.02</span>
+<span id="cb36-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Unzipping TinyTeX-v2026.03.02.tar.gz</span>
+<span id="cb36-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Moving files</span>
+<span id="cb36-5"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Verifying tlgpg support</span>
+<span id="cb36-6"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Configuring font paths</span>
+<span id="cb36-7"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Default Repository: https://mirrors.ibiblio.org/pub/mirrors/CTAN/systems/texlive/tlnet/</span>
+<span id="cb36-8"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Installation</span> successful</span></code></pre></div></div>
+</div>
+</section>
+<section id="chromium" class="level3">
+<h3 class="anchored" data-anchor-id="chromium">Chromium</h3>
+<p><code>Chrome:  (not detected)</code>: we can fix this by installing chromium with <code>quarto</code></p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb37-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">quarto</span> install chromium</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb38-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Installing</span> chromium</span>
+<span id="cb38-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Downloading Chromium 869685</span>
+<span id="cb38-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Installing Chromium 869685</span>
+<span id="cb38-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Installation</span> successful</span></code></pre></div></div>
+</div>
+</section>
+<section id="knitr-and-rmarkdown" class="level3">
+<h3 class="anchored" data-anchor-id="knitr-and-rmarkdown">knitr and rmarkdown</h3>
+<p>The R installation lists the knitr and rmarkdown packages as missing:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb39-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">knitr:</span> <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">None</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb39-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">rmarkdown:</span> <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">None</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span></code></pre></div></div>
+</div>
+<p>We can install these from the COSMIC Terminal by launching R:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb40-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">R</span></span></code></pre></div></div>
+</div>
+<p>Install the packages as you would in RStudio or Positron:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">install.packages</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"knitr"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"rmarkdown"</span>))</span></code></pre></div></div>
+</div>
+<p>Exit R:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">quit</span>()</span></code></pre></div></div>
+</div>
+<p>These are now installed at the system-level.</p>
+</section>
+<section id="python-3-installation" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="python-3-installation">Python 3 installation</h3>
+<p>The Python 3 installation is fine, but Quarto is currently detecting the <strong>system Python</strong> (<code>/usr/bin/python3</code>). We want to create a dedicated virtual environment for Quarto’s Jupyter dependency.</p>
+<p>Use <code>uv</code> to create a dedicated virtual environment for Quarto:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb43-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">uv</span> venv ~/.quarto-venv <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--python</span> 3.12.4</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb44-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Using</span> CPython 3.12.4</span>
+<span id="cb44-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Creating</span> virtual environment at: /root/.quarto-venv</span>
+<span id="cb44-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Activate</span> with: source /root/.quarto-venv/bin/activate</span></code></pre></div></div>
+</div>
+<p>Activate the virtual environment:</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><em>This changes the Terminal from…</em></p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb45-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">root@pop-os:/#</span></span></code></pre></div></div>
+</div>
+<p><em>to…</em></p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb46-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">.quarto-venv</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">root@pop-os:/#</span></span></code></pre></div></div>
+</div>
+</div></div><div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb47-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">source</span> ~/.quarto-venv/bin/activate</span></code></pre></div></div>
+</div>
+<p>Install Jupyter into the virtual environment using <code>uv</code> and <code>pip</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb48-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">uv</span> pip install jupyter</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>show/hide jupyter installation</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb49-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Using</span> Python 3.12.4 environment at: /root/.quarto-venv</span>
+<span id="cb49-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Resolved</span> 97 packages in 587ms</span>
+<span id="cb49-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Prepared</span> 97 packages in 767ms</span>
+<span id="cb49-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Installed</span> 97 packages in 45ms</span>
+<span id="cb49-5"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> anyio==4.12.1</span>
+<span id="cb49-6"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> argon2-cffi==25.1.0</span>
+<span id="cb49-7"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> argon2-cffi-bindings==25.1.0</span>
+<span id="cb49-8"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> arrow==1.4.0</span>
+<span id="cb49-9"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> asttokens==3.0.1</span>
+<span id="cb49-10"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> async-lru==2.2.0</span>
+<span id="cb49-11"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> attrs==25.4.0</span>
+<span id="cb49-12"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> babel==2.18.0</span>
+<span id="cb49-13"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> beautifulsoup4==4.14.3</span>
+<span id="cb49-14"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> bleach==6.3.0</span>
+<span id="cb49-15"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> certifi==2026.2.25</span>
+<span id="cb49-16"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> cffi==2.0.0</span>
+<span id="cb49-17"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> charset-normalizer==3.4.5</span>
+<span id="cb49-18"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> comm==0.2.3</span>
+<span id="cb49-19"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> debugpy==1.8.20</span>
+<span id="cb49-20"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> decorator==5.2.1</span>
+<span id="cb49-21"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> defusedxml==0.7.1</span>
+<span id="cb49-22"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> executing==2.2.1</span>
+<span id="cb49-23"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> fastjsonschema==2.21.2</span>
+<span id="cb49-24"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> fqdn==1.5.1</span>
+<span id="cb49-25"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> h11==0.16.0</span>
+<span id="cb49-26"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> httpcore==1.0.9</span>
+<span id="cb49-27"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> httpx==0.28.1</span>
+<span id="cb49-28"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> idna==3.11</span>
+<span id="cb49-29"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> ipykernel==7.2.0</span>
+<span id="cb49-30"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> ipython==9.11.0</span>
+<span id="cb49-31"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> ipython-pygments-lexers==1.1.1</span>
+<span id="cb49-32"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> ipywidgets==8.1.8</span>
+<span id="cb49-33"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> isoduration==20.11.0</span>
+<span id="cb49-34"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jedi==0.19.2</span>
+<span id="cb49-35"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jinja2==3.1.6</span>
+<span id="cb49-36"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> json5==0.13.0</span>
+<span id="cb49-37"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jsonpointer==3.0.0</span>
+<span id="cb49-38"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jsonschema==4.26.0</span>
+<span id="cb49-39"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jsonschema-specifications==2025.9.1</span>
+<span id="cb49-40"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jupyter==1.1.1</span>
+<span id="cb49-41"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jupyter-client==8.8.0</span>
+<span id="cb49-42"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jupyter-console==6.6.3</span>
+<span id="cb49-43"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jupyter-core==5.9.1</span>
+<span id="cb49-44"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jupyter-events==0.12.0</span>
+<span id="cb49-45"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jupyter-lsp==2.3.0</span>
+<span id="cb49-46"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jupyter-server==2.17.0</span>
+<span id="cb49-47"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jupyter-server-terminals==0.5.4</span>
+<span id="cb49-48"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jupyterlab==4.5.5</span>
+<span id="cb49-49"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jupyterlab-pygments==0.3.0</span>
+<span id="cb49-50"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jupyterlab-server==2.28.0</span>
+<span id="cb49-51"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> jupyterlab-widgets==3.0.16</span>
+<span id="cb49-52"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> lark==1.3.1</span>
+<span id="cb49-53"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> markupsafe==3.0.3</span>
+<span id="cb49-54"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> matplotlib-inline==0.2.1</span>
+<span id="cb49-55"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> mistune==3.2.0</span>
+<span id="cb49-56"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> nbclient==0.10.4</span>
+<span id="cb49-57"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> nbconvert==7.17.0</span>
+<span id="cb49-58"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> nbformat==5.10.4</span>
+<span id="cb49-59"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> nest-asyncio==1.6.0</span>
+<span id="cb49-60"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> notebook==7.5.4</span>
+<span id="cb49-61"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> notebook-shim==0.2.4</span>
+<span id="cb49-62"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> packaging==26.0</span>
+<span id="cb49-63"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> pandocfilters==1.5.1</span>
+<span id="cb49-64"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> parso==0.8.6</span>
+<span id="cb49-65"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> pexpect==4.9.0</span>
+<span id="cb49-66"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> platformdirs==4.9.4</span>
+<span id="cb49-67"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> prometheus-client==0.24.1</span>
+<span id="cb49-68"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> prompt-toolkit==3.0.52</span>
+<span id="cb49-69"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> psutil==7.2.2</span>
+<span id="cb49-70"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> ptyprocess==0.7.0</span>
+<span id="cb49-71"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> pure-eval==0.2.3</span>
+<span id="cb49-72"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> pycparser==3.0</span>
+<span id="cb49-73"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> pygments==2.19.2</span>
+<span id="cb49-74"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> python-dateutil==2.9.0.post0</span>
+<span id="cb49-75"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> python-json-logger==4.0.0</span>
+<span id="cb49-76"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> pyyaml==6.0.3</span>
+<span id="cb49-77"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> pyzmq==27.1.0</span>
+<span id="cb49-78"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> referencing==0.37.0</span>
+<span id="cb49-79"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> requests==2.32.5</span>
+<span id="cb49-80"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> rfc3339-validator==0.1.4</span>
+<span id="cb49-81"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> rfc3986-validator==0.1.1</span>
+<span id="cb49-82"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> rfc3987-syntax==1.1.0</span>
+<span id="cb49-83"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> rpds-py==0.30.0</span>
+<span id="cb49-84"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> send2trash==2.1.0</span>
+<span id="cb49-85"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> setuptools==82.0.0</span>
+<span id="cb49-86"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> six==1.17.0</span>
+<span id="cb49-87"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> soupsieve==2.8.3</span>
+<span id="cb49-88"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> stack-data==0.6.3</span>
+<span id="cb49-89"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> terminado==0.18.1</span>
+<span id="cb49-90"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> tinycss2==1.4.0</span>
+<span id="cb49-91"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> tornado==6.5.4</span>
+<span id="cb49-92"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> traitlets==5.14.3</span>
+<span id="cb49-93"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> typing-extensions==4.15.0</span>
+<span id="cb49-94"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> tzdata==2025.3</span>
+<span id="cb49-95"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> uri-template==1.3.0</span>
+<span id="cb49-96"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> urllib3==2.6.3</span>
+<span id="cb49-97"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> wcwidth==0.6.0</span>
+<span id="cb49-98"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> webcolors==25.10.0</span>
+<span id="cb49-99"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> webencodings==0.5.1</span>
+<span id="cb49-100"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> websocket-client==1.9.0</span>
+<span id="cb49-101"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">+</span> widgetsnbextension==4.0.15</span></code></pre></div></div>
+</details>
+</div>
+<p>Finally, we need to tell Quarto to use the virtual environment’s Python, which can so by setting the <code>QUARTO_PYTHON</code> environment variable to point to the <code>uv</code>-managed environment’s Python:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb50-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">echo</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'export QUARTO_PYTHON=~/.quarto-venv/bin/python'</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;&gt;</span> ~/.bashrc</span></code></pre></div></div>
+</div>
+<p>Reload the shell configuration:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb51-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">source</span> ~/.bashrc</span></code></pre></div></div>
+</div>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><em>This will change the Terminal back to…</em></p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb52-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">root@pop-os:/#</span></span></code></pre></div></div>
+</div>
+</div></div></section>
+<section id="re-check" class="level3">
+<h3 class="anchored" data-anchor-id="re-check">Re-check</h3>
+<p>We will re-check the Quarto dependencies:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb53-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">quarto</span> check</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>show/hide quarto re-check</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb54-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Quarto</span> 1.9.30</span>
+<span id="cb54-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking environment information...</span>
+<span id="cb54-3">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Quarto</span> cache location: /root/.cache/quarto</span>
+<span id="cb54-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking versions of quarto binary dependencies...</span>
+<span id="cb54-5">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Pandoc</span> version 3.8.3: OK</span>
+<span id="cb54-6">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Dart</span> Sass version 1.87.0: OK</span>
+<span id="cb54-7">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Deno</span> version 2.4.5: OK</span>
+<span id="cb54-8">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Typst</span> version 0.14.2: OK</span>
+<span id="cb54-9"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking versions of quarto dependencies......OK</span>
+<span id="cb54-10"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Quarto installation......OK</span>
+<span id="cb54-11">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Version:</span> 1.9.30</span>
+<span id="cb54-12">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Path:</span> /opt/quarto/bin</span>
+<span id="cb54-13"></span>
+<span id="cb54-14"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking tools....................OK</span>
+<span id="cb54-15">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">TinyTeX:</span> v2026.03.02</span>
+<span id="cb54-16">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Chromium:</span> 869685</span>
+<span id="cb54-17">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Chrome</span> Headless Shell: <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">not</span> installed<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb54-18">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">VeraPDF:</span> <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">not</span> installed<span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span></span>
+<span id="cb54-19"></span>
+<span id="cb54-20"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking LaTeX....................OK</span>
+<span id="cb54-21">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Using:</span> TinyTex</span>
+<span id="cb54-22">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Path:</span> /root/.TinyTeX/bin/x86_64-linux</span>
+<span id="cb54-23">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Version:</span> 2026</span>
+<span id="cb54-24"></span>
+<span id="cb54-25"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Chrome Headless....................OK</span>
+<span id="cb54-26">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Using:</span> Chromium installed by Quarto</span>
+<span id="cb54-27">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Version:</span> 869685</span>
+<span id="cb54-28"></span>
+<span id="cb54-29"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking basic markdown render....OK</span>
+<span id="cb54-30"></span>
+<span id="cb54-31"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking R installation...........OK</span>
+<span id="cb54-32">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Version:</span> 4.5.2</span>
+<span id="cb54-33">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Path:</span> /usr/lib/R</span>
+<span id="cb54-34">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">LibPaths:</span></span>
+<span id="cb54-35">        <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">-</span> /usr/local/lib/R/site-library</span>
+<span id="cb54-36">        <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">-</span> /usr/lib/R/site-library</span>
+<span id="cb54-37">        <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">-</span> /usr/lib/R/library</span>
+<span id="cb54-38">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">knitr:</span> 1.51</span>
+<span id="cb54-39">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">rmarkdown:</span> 2.30</span>
+<span id="cb54-40"></span>
+<span id="cb54-41"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Knitr engine render......OK</span>
+<span id="cb54-42"></span>
+<span id="cb54-43"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Python 3 installation....OK</span>
+<span id="cb54-44">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Version:</span> 3.12.4</span>
+<span id="cb54-45">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Path:</span> /root/.quarto-venv/bin/python</span>
+<span id="cb54-46">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Jupyter:</span> 5.9.1</span>
+<span id="cb54-47">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Kernels:</span> python3</span>
+<span id="cb54-48"></span>
+<span id="cb54-49"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Jupyter engine render....OK</span>
+<span id="cb54-50"></span>
+<span id="cb54-51"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Julia installation...</span></code></pre></div></div>
+</details>
+</div>
+<ol type="1">
+<li><p>The <code>Checking Chrome Headless</code> output confirms that Quarto was successfully installed using Chromium (<code>Using: Chromium installed by Quarto</code>), but the <code>(not installed)</code> line for the <code>Chrome Headless Shell</code> section refers to a separate standalone Chrome Headless Shell binary.</p></li>
+<li><p>The <code>VeraPDF</code> check looks for the PDF/A validation tool used for accessibility compliance checking.</p></li>
+</ol>
+<p>Both of these can be installed with the <code>quarto install</code> utility as of <a href="https://github.com/quarto-dev/quarto-cli/blob/v1.9.30/news/changelog-1.9.md#install">version 1.9.30</a></p>
+</section>
+<section id="chrome-headless-shell" class="level3">
+<h3 class="anchored" data-anchor-id="chrome-headless-shell">Chrome headless shell</h3>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb55-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">quarto</span> install chrome-headless-shell</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb56-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Installing</span> chrome-headless-shell</span>
+<span id="cb56-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Downloading Chrome Headless Shell</span>
+<span id="cb56-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Installation</span> successful</span></code></pre></div></div>
+</div>
+</section>
+<section id="verapdf" class="level3">
+<h3 class="anchored" data-anchor-id="verapdf">VeraPDF</h3>
+<p>The VeraPDF installation requires Java:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb57-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">quarto</span> install verapdf</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb58-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Installing</span> verapdf</span>
+<span id="cb58-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Java</span> is not installed. veraPDF requires Java 8 or later.</span></code></pre></div></div>
+</div>
+<p>We can install Java Runtime Environment (<code>default-jre</code>) to run Java applications like VeraPDF. On Ubuntu/Pop!_OS 24.04, this will install OpenJDK 21, which exceeds VeraPDF’s minimum requirement of Java 8.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb59-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">apt</span> install default-jre</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span><span style="font-weight: bold; font-size: 1.15em;">JRE vs.&nbsp;JDK</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>The Java Runtime Environment (JRE) is distinct from the Java Development Kit (JDK), which includes additional tools for developing Java applications. Since we only need to run VeraPDF, the Runtime Environment is sufficient.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p><br></p>
+<p>Now re-install <code>verapdf</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb60-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">quarto</span> install verapdf</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb61-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Installing</span> verapdf</span>
+<span id="cb61-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Downloading VeraPDF 1.28.2</span>
+<span id="cb61-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Extracting verapdf-greenfield-1.28.2-installer.zip</span>
+<span id="cb61-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Installing veraPDF</span>
+<span id="cb61-5"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Installation</span> successful</span></code></pre></div></div>
+</div>
+</section>
+<section id="final-check" class="level3">
+<h3 class="anchored" data-anchor-id="final-check">Final check</h3>
+<p>We’ll perform a final check:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb62-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">quarto</span> check</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>show/hide quarto final check</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb63-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Quarto</span> 1.9.30</span>
+<span id="cb63-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking environment information...</span>
+<span id="cb63-3">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Quarto</span> cache location: /root/.cache/quarto</span>
+<span id="cb63-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking versions of quarto binary dependencies...</span>
+<span id="cb63-5">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Pandoc</span> version 3.8.3: OK</span>
+<span id="cb63-6">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Dart</span> Sass version 1.87.0: OK</span>
+<span id="cb63-7">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Deno</span> version 2.4.5: OK</span>
+<span id="cb63-8">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Typst</span> version 0.14.2: OK</span>
+<span id="cb63-9"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking versions of quarto dependencies......OK</span>
+<span id="cb63-10"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Quarto installation......OK</span>
+<span id="cb63-11">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Version:</span> 1.9.30</span>
+<span id="cb63-12">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Path:</span> /opt/quarto/bin</span>
+<span id="cb63-13"></span>
+<span id="cb63-14"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking tools....................OK</span>
+<span id="cb63-15">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">TinyTeX:</span> v2026.03.02</span>
+<span id="cb63-16">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Chromium:</span> 869685</span>
+<span id="cb63-17">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Chrome</span> Headless Shell: 146.0.7680.66</span>
+<span id="cb63-18">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">VeraPDF:</span> 1.28.2</span>
+<span id="cb63-19"></span>
+<span id="cb63-20"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking LaTeX....................OK</span>
+<span id="cb63-21">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Using:</span> TinyTex</span>
+<span id="cb63-22">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Path:</span> /root/.TinyTeX/bin/x86_64-linux</span>
+<span id="cb63-23">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Version:</span> 2026</span>
+<span id="cb63-24"></span>
+<span id="cb63-25"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Chrome Headless....................OK</span>
+<span id="cb63-26">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Using:</span> Chrome Headless Shell installed by Quarto</span>
+<span id="cb63-27">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Path:</span> /root/.local/share/quarto/chrome-headless-shell/chrome-headless-shell-linux64/chrome-headless-shell</span>
+<span id="cb63-28">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Version:</span> 146.0.7680.66</span>
+<span id="cb63-29"></span>
+<span id="cb63-30"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking basic markdown render....OK</span>
+<span id="cb63-31"></span>
+<span id="cb63-32"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking R installation...........OK</span>
+<span id="cb63-33">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Version:</span> 4.5.2</span>
+<span id="cb63-34">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Path:</span> /usr/lib/R</span>
+<span id="cb63-35">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">LibPaths:</span></span>
+<span id="cb63-36">        <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">-</span> /usr/local/lib/R/site-library</span>
+<span id="cb63-37">        <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">-</span> /usr/lib/R/site-library</span>
+<span id="cb63-38">        <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">-</span> /usr/lib/R/library</span>
+<span id="cb63-39">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">knitr:</span> 1.51</span>
+<span id="cb63-40">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">rmarkdown:</span> 2.30</span>
+<span id="cb63-41"></span>
+<span id="cb63-42"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Knitr engine render......OK</span>
+<span id="cb63-43"></span>
+<span id="cb63-44"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Python 3 installation....OK</span>
+<span id="cb63-45">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Version:</span> 3.12.4</span>
+<span id="cb63-46">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Path:</span> /root/.quarto-venv/bin/python</span>
+<span id="cb63-47">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Jupyter:</span> 5.9.1</span>
+<span id="cb63-48">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Kernels:</span> python3</span>
+<span id="cb63-49"></span>
+<span id="cb63-50"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Jupyter engine render....OK</span>
+<span id="cb63-51"></span>
+<span id="cb63-52"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">[✓]</span> Checking Julia installation...</span></code></pre></div></div>
+</details>
+</div>
+</section>
+</section>
+<section id="rstudio" class="level2">
+<h2 class="anchored" data-anchor-id="rstudio">RStudio</h2>
+<p>On the <a href="https://posit.co/download/rstudio-desktop/">Posit website</a>, we can download RStudio for Ubuntu 22 or 24. Or if we want to live dangerously (which I do), we can download the RStudio daily release from the <a href="https://dailies.rstudio.com/">dailies page</a>.</p>
+<p>Download the <strong>RStudio Desktop for Ubuntu 24 (x86_64)</strong><code>.deb</code> file and double-click on it to install RStudio.</p>
+<p>Confirm the version by clicking on <strong>Help</strong> &gt; <strong>About RStudio</strong>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/rstudio.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="https://mjfrigaard.github.io/posts/sys76-setup/img/rstudio.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</section>
+<section id="git" class="level2">
+<h2 class="anchored" data-anchor-id="git">Git</h2>
+<p>Git should already be installed, but if not, we can install it with <code>apt</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb64-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">apt</span> install git</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb65-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Reading</span> package lists... Done</span>
+<span id="cb65-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Building</span> dependency tree... Done</span>
+<span id="cb65-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Reading</span> state information... Done</span>
+<span id="cb65-4"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> is already the newest version <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">1:2.43.0-1ubuntu7.3</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">.</span></span>
+<span id="cb65-5"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> set to manually installed.</span></code></pre></div></div>
+</div>
+<p>Configure our <code>user.name</code> and <code>user.email</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb66-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> config <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--global</span> user.name <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Your Name"</span></span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb67" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb67-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> config <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--global</span> user.email <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"your.email@example.com"</span></span></code></pre></div></div>
+</div>
+<p>Set default initial branch name to <code>main</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb68" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb68-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> config <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--global</span> init.defaultBranch main</span></code></pre></div></div>
+</div>
+<p>Confirm <code>--global</code> configurations:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb69" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb69-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> config <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--global</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--list</span></span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb70" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb70-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">credential.helper=cache</span></span>
+<span id="cb70-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">user.name=Your</span> Name</span>
+<span id="cb70-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">user.email=your.email@example.com</span></span>
+<span id="cb70-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">init.defaultbranch=main</span></span></code></pre></div></div>
+</div>
+<section id="git-integration-in-rstudio" class="level3">
+<h3 class="anchored" data-anchor-id="git-integration-in-rstudio">Git Integration in RStudio</h3>
+<p>We can also configure Git in RStudio and the <a href="https://usethis.r-lib.org/"><code>usethis</code> package</a>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb71" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">install.packages</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"usethis"</span>)</span></code></pre></div></div>
+</div>
+<p>Set <code>user.name</code> and <code>user.email</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb72" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1">usethis<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">use_git_config</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">user.name =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Your Name"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">user.email =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"your.email@example.com"</span>)</span></code></pre></div></div>
+</div>
+<p>I also recommend using <a href="https://usethis.r-lib.org/reference/git_vaccinate.html"><code>usethis::git_vaccinate()</code></a>:</p>
+<blockquote class="blockquote">
+<p><em>Adds <code>.Rproj.user</code>, <code>.Rhistory</code>, <code>.Rdata</code>, <code>.httr-oauth</code>, <code>.DS_Store</code>, and <code>.quarto</code> to your global (a.k.a. user-level) <code>.gitignore</code>.</em></p>
+</blockquote>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb73" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1">usethis<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git_vaccinate</span>()</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb74" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb74-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">✔</span> Configuring core.excludesFile: ~/.gitignore </span>
+<span id="cb74-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">✔</span> Creating the global <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">user-level</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">gitignore:</span> ~/.gitignore </span>
+<span id="cb74-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">✔</span> Adding <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">".Rproj.user"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">".Rhistory"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">".RData"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">".httr-oauth"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">".DS_Store"</span>, and <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">".quarto"</span> to /home/mjfrigaard/.gitignore.</span></code></pre></div></div>
+</div>
+<p>Check configurations with:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb75" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1">usethis<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git_sitrep</span>()</span></code></pre></div></div>
+</div>
+<p>You should see something like this:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb76" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb76-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">──</span> Git global <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">user</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span> </span>
+<span id="cb76-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">•</span> Name: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Your Name"</span> </span>
+<span id="cb76-3"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">•</span> Email: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"your.email@example.com"</span> </span>
+<span id="cb76-4"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">•</span> Global <span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">user-level</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">gitignore</span> file: ~/.gitignore </span>
+<span id="cb76-5"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">•</span> Vaccinated: TRUE </span>
+<span id="cb76-6"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">•</span> Default Git protocol: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https"</span> </span>
+<span id="cb76-7"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">•</span> Default initial branch name: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"main"</span> </span>
+<span id="cb76-8"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">──</span> GitHub user </span>
+<span id="cb76-9"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">•</span> Default GitHub host: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://github.com"</span> </span>
+<span id="cb76-10"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">•</span> Personal access token for <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://github.com"</span>: <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;</span>unset<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> </span>
+<span id="cb76-11"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">☐</span> To create a personal access token, call usethis::create_github_token<span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">.</span> </span>
+<span id="cb76-12"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">☐</span> To store a token for current and future use, call gitcreds::gitcreds_set<span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">.</span></span>
+<span id="cb76-13"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ℹ</span> Read more in the Managing Git<span class="er" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">(</span><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Hub</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">)</span> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">Credentials</span> article. </span>
+<span id="cb76-14"> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ℹ</span> No active usethis project.</span></code></pre></div></div>
+</div>
+</section>
+</section>
+<section id="positron" class="level2">
+<h2 class="anchored" data-anchor-id="positron">Positron</h2>
+<p>You can download Positron from the <a href="https://positron.posit.co/download.html">website</a> (or download the <a href="https://cdn.posit.co/positron/releases/deb/x86_64/Positron-2026.03.0-212-x64.deb">Preview version</a>). Once again, we can double-click on the <code>Positron-2026.03.0-212-x64.deb</code> file to install Positron:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/positron.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Positron installation"><img src="https://mjfrigaard.github.io/posts/sys76-setup/img/positron.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Positron installation"></a></p>
+</figure>
+</div>
+<figcaption>Positron installation</figcaption>
+</figure>
+</div>
+<section id="git-integration-in-positron" class="level3">
+<h3 class="anchored" data-anchor-id="git-integration-in-positron">Git Integration in Positron</h3>
+<p>Positron has built-in Git support via its <strong>Source Control</strong> panel (inherited from VS Code). After completing the Git setup steps above, we can click on the red notification to sign into GitHub:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/positron-github.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Positron &amp; GitHub"><img src="https://mjfrigaard.github.io/posts/sys76-setup/img/positron-github.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Positron &amp; GitHub"></a></p>
+</figure>
+</div>
+<figcaption>Positron &amp; GitHub</figcaption>
+</figure>
+</div>
+<p>Verify Git is detected by Positron:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb77" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb77-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--version</span></span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb78" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb78-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> version 2.43.0</span></code></pre></div></div>
+</div>
+</section>
+<section id="positron-extensions" class="level3">
+<h3 class="anchored" data-anchor-id="positron-extensions">Positron extensions</h3>
+<p>I’ve installed the following Positron extensions from the Positron extensions marketplace.<sup>2</sup> None of these are required, but I’ve found them useful during R package/Shiny app development.</p>
+<ol type="1">
+<li><p>The <a href="https://open-vsx.org/extension/eamodio/gitlens">GitLens extension</a> provides enhanced Git capabilities (inline blame annotations, commit history, and repository insights directly in the editor).</p></li>
+<li></li>
+</ol>
+
+
+</section>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Posit has documentation for installing <a href="https://docs.posit.co/resources/install-r.html">R</a>, <a href="https://docs.posit.co/resources/install-python-uv.html">Python</a>, and <a href="https://docs.posit.co/resources/install-quarto.html">Quarto</a> on most operating systems.↩︎</p></li>
+<li id="fn2"><p>Positron uses the open-source <a href="https://positron.posit.co/extensions.html#open-vsx">Open VSX marketplace</a> for extensions.↩︎</p></li>
+</ol>
+</section></div> ]]></description>
+  <category>Linux</category>
+  <category>RStudio</category>
+  <category>Positron</category>
+  <guid>https://mjfrigaard.github.io/posts/sys76-setup/</guid>
+  <pubDate>Sun, 08 Mar 2026 07:00:00 GMT</pubDate>
+  <media:content url="https://mjfrigaard.github.io/posts/sys76-setup/img/image.png" medium="image" type="image/png" height="58" width="144"/>
+</item>
 <item>
   <title>Shiny (for Python) &amp; APIs</title>
   <dc:creator>Martin Frigaard</dc:creator>
@@ -51,7 +2205,7 @@
 <div>
 <p></p><figure class="figure"><p></p>
 <div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'neo', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
 
 graph TB
     subgraph Storage["&lt;strong&gt;Model&lt;/strong&gt;"]
@@ -759,7 +2913,7 @@ font-style: inherit;">vetiver_pin_write</span>(model_board, v)</span></code></pr
 <div>
 <p></p><figure class="figure"><p></p>
 <div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'neo', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
 
 graph LR
     subgraph Board["&lt;strong&gt;./models/&lt;/strong&gt;"]
@@ -1991,7 +4145,7 @@ font-style: inherit;">"</span></span><div class="code-annotation-gutter-bg"></di
 <div>
 <p></p><figure class="figure"><p></p>
 <div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'neo', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
 
 sequenceDiagram
     participant Reactive as reactive.calc
@@ -2030,7 +4184,7 @@ sequenceDiagram
 <div>
 <p></p><figure class="figure"><p></p>
 <div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'neo', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
 
 sequenceDiagram
     participant Reactive as reactive.calc
@@ -2868,7 +5022,7 @@ font-style: inherit;">return</span> error_msg</span><div class="code-annotation-
 <div>
 <p></p><figure class="figure"><p></p>
 <div>
-<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'handDrawn', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'look': 'neo', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"18px"}}}%%
 
 graph TD
     Request["&lt;strong&gt;HTTP&lt;br&gt;Request&lt;/strong"]
