@@ -231,14 +231,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#tinytex" id="toc-tinytex" class="nav-link" data-scroll-target="#tinytex">TinyTex</a></li>
   <li><a href="#chromium" id="toc-chromium" class="nav-link" data-scroll-target="#chromium">Chromium</a></li>
   <li><a href="#knitr-and-rmarkdown" id="toc-knitr-and-rmarkdown" class="nav-link" data-scroll-target="#knitr-and-rmarkdown">knitr and rmarkdown</a></li>
-  <li><a href="#python-3-installation" id="toc-python-3-installation" class="nav-link" data-scroll-target="#python-3-installation">Python 3 installation</a></li>
+  <li><a href="#python-3" id="toc-python-3" class="nav-link" data-scroll-target="#python-3">Python 3</a></li>
   <li><a href="#re-check" id="toc-re-check" class="nav-link" data-scroll-target="#re-check">Re-check</a></li>
   <li><a href="#chrome-headless-shell" id="toc-chrome-headless-shell" class="nav-link" data-scroll-target="#chrome-headless-shell">Chrome headless shell</a></li>
   <li><a href="#verapdf" id="toc-verapdf" class="nav-link" data-scroll-target="#verapdf">VeraPDF</a></li>
   <li><a href="#final-check" id="toc-final-check" class="nav-link" data-scroll-target="#final-check">Final check</a></li>
   </ul></li>
-  <li><a href="#rstudio" id="toc-rstudio" class="nav-link" data-scroll-target="#rstudio">RStudio</a></li>
-  <li><a href="#git" id="toc-git" class="nav-link" data-scroll-target="#git">Git</a>
+  <li><a href="#git" id="toc-git" class="nav-link" data-scroll-target="#git">Git</a></li>
+  <li><a href="#rstudio" id="toc-rstudio" class="nav-link" data-scroll-target="#rstudio">RStudio</a>
   <ul>
   <li><a href="#git-integration-in-rstudio" id="toc-git-integration-in-rstudio" class="nav-link" data-scroll-target="#git-integration-in-rstudio">Git Integration in RStudio</a></li>
   </ul></li>
@@ -247,6 +247,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#git-integration-in-positron" id="toc-git-integration-in-positron" class="nav-link" data-scroll-target="#git-integration-in-positron">Git Integration in Positron</a></li>
   <li><a href="#positron-extensions" id="toc-positron-extensions" class="nav-link" data-scroll-target="#positron-extensions">Positron extensions</a></li>
   </ul></li>
+  <li><a href="#publishing" id="toc-publishing" class="nav-link" data-scroll-target="#publishing">Publishing</a></li>
   </ul>
 </nav>
 </nav>
@@ -261,16 +262,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<p>I recently purchased a <a href="https://system76.com/">System76</a> laptop, which comes with their own Linux operating system: <a href="https://system76.com/pop/">Pop!_OS</a>. This post covers installing R, Python, and Quarto and setting up RStudio and Positron.</p>
-<section id="the-cosmic-desktop-environment" class="level2">
+<p>I recently purchased a <a href="https://system76.com/">System76</a> laptop, which comes with <a href="https://system76.com/pop/">Pop!_OS</a>, an Ubuntu-flavored operating system. This post covers installing R, Python, and Quarto and setting up RStudio and Positron.</p>
+<section id="the-cosmic-desktop-environment" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="the-cosmic-desktop-environment">The COSMIC Desktop Environment</h2>
-<p><a href="https://github.com/pop-os/cosmic-epoch">Pop!_OS</a> features the COSMIC (it previous used GNOME), a fully custom Rust-based desktop environment. COSMIC is built on Ubuntu, meaning it uses the same package ecosystem (<code>.deb</code> packages and <code>apt</code> package manager). Read more about the OS on the <a href="https://system76.com/pop/">System76 website.</a></p>
+<p><a href="https://github.com/pop-os/cosmic-epoch">Pop!_OS</a> features the COSMIC (it previous used GNOME), a fully custom Rust-based desktop environment. As mentioned previously, COSMIC is built on Ubuntu, meaning it uses the same package ecosystem (i.e., <code>.deb</code> files and <code>apt</code> package manager).</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><a href="img/cosmic-de.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="img/cosmic-de.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
 </figure>
 </div>
-<section id="the-cosmic-terminal" class="level3">
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p>Read more about the OS on the <a href="https://system76.com/pop/">System76 website</a></p>
+</div></div><section id="the-cosmic-terminal" class="level3">
 <h3 class="anchored" data-anchor-id="the-cosmic-terminal">The COSMIC Terminal</h3>
 <p><a href="https://github.com/pop-os/cosmic-epoch">Pop!_OS</a> ships with the <a href="https://github.com/pop-os/cosmic-term">COSMIC Terminal</a>, which is also written entirely in Rust.</p>
 <div class="quarto-figure quarto-figure-center">
@@ -321,7 +325,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The <code>uname</code> command returns information on the hardware platform and architecture:</p>
 <ul>
 <li><p><code>uname</code> alone returns just the kernel name (e.g., <code>Linux</code>)</p></li>
-<li><p><code>uname -i</code> returns the <strong>hardware platform</strong> (e.g., <code>x86_64</code>), indicating the CPU architecture</p></li>
+<li><p><code>uname -i</code> returns the <strong>hardware platform</strong> (e.g., <code>x86_64</code>), indicating the CPU architecture (important information for downloading <code>.deb</code> files).</p></li>
 </ul>
 </div>
 </div>
@@ -476,7 +480,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The output confirms <code>uv</code> and <code>uvx</code> (a tool runner) are installed to <code>/root/.local/bin</code>.</p>
 <p>The commands below will reload the shell configuration, which adds the installed location of <code>uv</code> (<code>/root/.local/bin</code>) to our <code>PATH</code>, making it accessible as a command.</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> ~/.bashrc  <span class="co"># or ~/.zshrc if using zsh   </span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> ~/.bashrc     </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We can confirm it with:</p>
 <div class="cell" data-layout-align="center">
@@ -525,7 +529,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p><br></p>
-<p>Locate where the Python 3.12.4 binary (in case we need to explicitly point tools or virtual environments to a specific Python version).</p>
+<p>To locate the Python 3.12.4 binary (in case we need to explicitly point tools or virtual environments to a specific Python version), we can use:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> python find 3.12.4</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -535,9 +539,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="quarto" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
-<p>I used the following steps to install Quarto. Consult the <a href="https://quarto.org/docs/get-started/">documentation</a> for more information.</p>
+<p>Installing Quarto (and getting it configured) required quite a few steps. Consult the <a href="https://quarto.org/docs/get-started/">documentation</a> for more information.</p>
 <p>Start by downloading the latest Quarto <code>.deb</code> package from the <a href="https://github.com/quarto-dev/quarto-cli/releases">Quarto releases page</a>.</p>
-<p>Install it with:</p>
+<p>Install the <code>.deb</code> with:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># change to Downloads folder with</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co"># cd Downloads</span></span>
@@ -552,7 +556,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <section id="initial-check" class="level3">
 <h3 class="anchored" data-anchor-id="initial-check">Initial check</h3>
-<p>Check the <code>quarto</code> installation and dependencies with:</p>
+<p>Having already installed R and Python, we will run <code>quarto check</code> on the initial installation:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -612,18 +616,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb33-51"><a href="#cb33-51" aria-hidden="true" tabindex="-1"></a><span class="ex">[✓]</span> Checking Julia installation...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>We can see there are a few items to address. Fortunately Quarto also has commands for installing these directly:</p>
-</section>
-<section id="tinytex" class="level3">
-<h3 class="anchored" data-anchor-id="tinytex">TinyTex</h3>
-<p>The <code>tools</code> section lists four missing dependencies:</p>
+<p>We can see there are a few items to address.</p>
+<ol type="1">
+<li>All the tools are missing (TinyTeX, Chromium, Chrome Headless Shell, and VeraPDF)<br>
+</li>
+<li>LaTeX/Tex is not detected<br>
+</li>
+<li>Chrome Headless/Chrome is not detected<br>
+</li>
+<li>The R installation is missing knitr and rmarkdown<br>
+</li>
+<li>The Python 3 installation is missing Jupyter</li>
+</ol>
+<p>Fortunately Quarto has commands for installing these dependencies directly. The <code>tools</code> section lists four missing dependencies:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="ex">TinyTeX:</span> <span class="er">(</span><span class="ex">not</span> installed<span class="kw">)</span></span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Chromium:</span> <span class="er">(</span><span class="ex">not</span> installed<span class="kw">)</span></span>
 <span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Chrome</span> Headless Shell: <span class="er">(</span><span class="ex">not</span> installed<span class="kw">)</span></span>
 <span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="ex">VeraPDF:</span> <span class="er">(</span><span class="ex">not</span> installed<span class="kw">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>We will address the TinyTex installation first with <code>quarto</code></p>
+</section>
+<section id="tinytex" class="level3">
+<h3 class="anchored" data-anchor-id="tinytex">TinyTex</h3>
+<p>We will address the <a href="https://quarto.org/docs/output-formats/pdf-engine.html#installing-tex">TinyTex installation</a> first with <code>quarto</code>:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> install tinytex</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -640,7 +655,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="chromium" class="level3">
 <h3 class="anchored" data-anchor-id="chromium">Chromium</h3>
-<p><code>Chrome:  (not detected)</code>: we can fix this by installing chromium with <code>quarto</code></p>
+<p>Quarto also has a command for installing <a href="https://www.chromium.org/getting-involved/download-chromium/">Chromium</a>:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> install chromium</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -650,10 +665,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="ex">[✓]</span> Installing Chromium 869685</span>
 <span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Installation</span> successful</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<p>We’ll address the Chrome Headless Shell and VeraPDF below.</p>
 </section>
 <section id="knitr-and-rmarkdown" class="level3">
 <h3 class="anchored" data-anchor-id="knitr-and-rmarkdown">knitr and rmarkdown</h3>
-<p>The R installation lists the knitr and rmarkdown packages as missing:</p>
+<p>The R installation lists the <code>knitr</code> and <code>rmarkdown</code> packages as missing:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="ex">knitr:</span> <span class="er">(</span><span class="ex">None</span><span class="kw">)</span></span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="ex">rmarkdown:</span> <span class="er">(</span><span class="ex">None</span><span class="kw">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -672,8 +688,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>These are now installed at the system-level.</p>
 </section>
-<section id="python-3-installation" class="level3 page-columns page-full">
-<h3 class="anchored" data-anchor-id="python-3-installation">Python 3 installation</h3>
+<section id="python-3" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="python-3">Python 3</h3>
 <p>The Python 3 installation is fine, but Quarto is currently detecting the <strong>system Python</strong> (<code>/usr/bin/python3</code>). We want to create a dedicated virtual environment for Quarto’s Jupyter dependency.</p>
 <p>Use <code>uv</code> to create a dedicated virtual environment for Quarto:</p>
 <div class="cell" data-layout-align="center">
@@ -808,7 +824,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb49-101"><a href="#cb49-101" aria-hidden="true" tabindex="-1"></a> <span class="ex">+</span> widgetsnbextension==4.0.15</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>Finally, we need to tell Quarto to use the virtual environment’s Python, which can so by setting the <code>QUARTO_PYTHON</code> environment variable to point to the <code>uv</code>-managed environment’s Python:</p>
+<p>Finally, we need to tell Quarto to use the virtual environment’s Python, which can do by setting the <code>QUARTO_PYTHON</code> environment variable to point to the <code>uv</code>-managed environment’s Python:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">'export QUARTO_PYTHON=~/.quarto-venv/bin/python'</span> <span class="op">&gt;&gt;</span> ~/.bashrc</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -825,7 +841,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div></div></section>
 <section id="re-check" class="level3">
 <h3 class="anchored" data-anchor-id="re-check">Re-check</h3>
-<p>We will re-check the Quarto dependencies:</p>
+<p>Now we will re-check the Quarto dependencies:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -885,9 +901,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb54-51"><a href="#cb54-51" aria-hidden="true" tabindex="-1"></a><span class="ex">[✓]</span> Checking Julia installation...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
+<p>This output was a little confusing:</p>
 <ol type="1">
 <li><p>The <code>Checking Chrome Headless</code> output confirms that Quarto was successfully installed using Chromium (<code>Using: Chromium installed by Quarto</code>), but the <code>(not installed)</code> line for the <code>Chrome Headless Shell</code> section refers to a separate standalone Chrome Headless Shell binary.</p></li>
-<li><p>The <code>VeraPDF</code> check looks for the PDF/A validation tool used for accessibility compliance checking.</p></li>
+<li><p><code>VeraPDF</code> is a the PDF/A validation tool used for accessibility compliance checking.</p></li>
 </ol>
 <p>Both of these can be installed with the <code>quarto install</code> utility as of <a href="https://github.com/quarto-dev/quarto-cli/blob/v1.9.30/news/changelog-1.9.md#install">version 1.9.30</a></p>
 </section>
@@ -912,7 +929,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Installing</span> verapdf</span>
 <span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Java</span> is not installed. veraPDF requires Java 8 or later.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>We can install Java Runtime Environment (<code>default-jre</code>) to run Java applications like VeraPDF. On Ubuntu/Pop!_OS 24.04, this will install OpenJDK 21, which exceeds VeraPDF’s minimum requirement of Java 8.</p>
+<p>I installed the Java Runtime Environment (<code>default-jre</code>) to run Java applications like VeraPDF. On <a href="https://system76.com/pop/">Ubuntu/Pop!_OS 24.04</a>, this will install OpenJDK 21, which exceeds VeraPDF’s minimum requirement of Java 8.</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="ex">apt</span> install default-jre</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -951,7 +968,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="final-check" class="level3">
 <h3 class="anchored" data-anchor-id="final-check">Final check</h3>
-<p>We’ll perform a final check:</p>
+<p>The final check should pass for all dependencies:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1012,18 +1029,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb63-52"><a href="#cb63-52" aria-hidden="true" tabindex="-1"></a><span class="ex">[✓]</span> Checking Julia installation...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
+<p>Now that we have R, Python, and Quarto installed and configured, I’ll configure Git before downloading RStudio and Positron.</p>
 </section>
-</section>
-<section id="rstudio" class="level2">
-<h2 class="anchored" data-anchor-id="rstudio">RStudio</h2>
-<p>On the <a href="https://posit.co/download/rstudio-desktop/">Posit website</a>, we can download RStudio for Ubuntu 22 or 24. Or if we want to live dangerously (which I do), we can download the RStudio daily release from the <a href="https://dailies.rstudio.com/">dailies page</a>.</p>
-<p>Download the <strong>RStudio Desktop for Ubuntu 24 (x86_64)</strong><code>.deb</code> file and double-click on it to install RStudio.</p>
-<p>Confirm the version by clicking on <strong>Help</strong> &gt; <strong>About RStudio</strong>:</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><a href="img/rstudio.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="img/rstudio.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
-</figure>
-</div>
 </section>
 <section id="git" class="level2">
 <h2 class="anchored" data-anchor-id="git">Git</h2>
@@ -1059,13 +1066,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a><span class="ex">user.email=your.email@example.com</span></span>
 <span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a><span class="ex">init.defaultbranch=main</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+</section>
+<section id="rstudio" class="level2">
+<h2 class="anchored" data-anchor-id="rstudio">RStudio</h2>
+<p>On the <a href="https://posit.co/download/rstudio-desktop/">Posit website</a>, we can download RStudio for Ubuntu 22 or 24. Or if we want to live dangerously (which I do), we can download the RStudio daily release from the <a href="https://dailies.rstudio.com/">dailies page</a>.</p>
+<p>Download the <strong>RStudio Desktop for Ubuntu 24 (x86_64)</strong><code>.deb</code> file and double-click on it to install RStudio. This will open the <strong>COSMIC Store</strong>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/rstudio-install.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="img/rstudio-install.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></a></p>
+</figure>
+</div>
+<p>After opening RStudio, confirm the version by clicking on <strong>Help</strong> &gt; <strong>About RStudio</strong>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/rstudio.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="img/rstudio.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
 <section id="git-integration-in-rstudio" class="level3">
 <h3 class="anchored" data-anchor-id="git-integration-in-rstudio">Git Integration in RStudio</h3>
 <p>We can also configure Git in RStudio and the <a href="https://usethis.r-lib.org/"><code>usethis</code> package</a>:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"usethis"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Set <code>user.name</code> and <code>user.email</code>:</p>
+<p>It’s also possible to configure the Git <code>user.name</code> and <code>user.email</code> with <code>usethis</code>:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">use_git_config</span>(<span class="at">user.name =</span> <span class="st">"Your Name"</span>, <span class="at">user.email =</span> <span class="st">"your.email@example.com"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -1081,11 +1104,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a><span class="ex">✔</span> Creating the global <span class="er">(</span><span class="ex">user-level</span><span class="kw">)</span> <span class="ex">gitignore:</span> ~/.gitignore </span>
 <span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a><span class="ex">✔</span> Adding <span class="st">".Rproj.user"</span>, <span class="st">".Rhistory"</span>, <span class="st">".RData"</span>, <span class="st">".httr-oauth"</span>, <span class="st">".DS_Store"</span>, and <span class="st">".quarto"</span> to /home/mjfrigaard/.gitignore.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Check configurations with:</p>
+<p>We can check configurations with:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">git_sitrep</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>You should see something like this:</p>
+<p>You’ll see something like this:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb76"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="ex">──</span> Git global <span class="er">(</span><span class="ex">user</span><span class="kw">)</span> </span>
 <span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a><span class="ex">•</span> Name: <span class="st">"Your Name"</span> </span>
@@ -1111,7 +1134,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <figure class="figure">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="img/positron.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Positron installation"><img src="img/positron.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Positron installation"></a></p>
+<p><a href="img/positron.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Positron installation"><img src="img/positron.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Positron installation"></a></p>
 </figure>
 </div>
 <figcaption>Positron installation</figcaption>
@@ -1124,7 +1147,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <figure class="figure">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="img/positron-github.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Positron &amp; GitHub"><img src="img/positron-github.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Positron &amp; GitHub"></a></p>
+<p><a href="img/positron-github.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Positron &amp; GitHub"><img src="img/positron-github.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Positron &amp; GitHub"></a></p>
 </figure>
 </div>
 <figcaption>Positron &amp; GitHub</figcaption>
@@ -1140,14 +1163,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="positron-extensions" class="level3">
 <h3 class="anchored" data-anchor-id="positron-extensions">Positron extensions</h3>
-<p>I’ve installed the following Positron extensions from the Positron extensions marketplace.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> None of these are required, but I’ve found them useful during R package/Shiny app development.</p>
+<p>I’ve installed the following Positron extensions from the Positron extensions marketplace.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> None of these are required, but I’ve found them useful during R package/Shiny app development.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
 <ol type="1">
-<li><p>The <a href="https://open-vsx.org/extension/eamodio/gitlens">GitLens extension</a> provides enhanced Git capabilities (inline blame annotations, commit history, and repository insights directly in the editor).</p></li>
-<li></li>
+<li><p><a href="https://open-vsx.org/extension/posit/shiny">Shiny - VS Code Extension</a>: Enables running, previewing, and debugging R and Python Shiny applications directly within Positron/VS Code.</p></li>
+<li><p><a href="https://open-vsx.org/extension/posit/publisher">Posit Publisher</a>: Deploys and publishes content (Shiny apps, Quarto documents, APIs, etc.) directly to Posit Connect from within the editor.</p></li>
+<li><p><a href="https://open-vsx.org/extension/quarto/quarto">Quarto - VS Code</a>: Provides syntax highlighting, preview, and rendering support for Quarto (<code>.qmd</code>) documents.</p></li>
+<li><p><a href="https://open-vsx.org/extension/posit/air-vscode">Air - R Language Support</a>: Provides R language support including real-time code formatting based on Posit’s Air R formatter.</p></li>
+<li><p><a href="https://open-vsx.org/extension/mhutchie/git-graph">Git Graph</a>: Visualizes your Git repository’s branch history and commit tree in an interactive graphical interface.</p></li>
+<li><p><a href="https://open-vsx.org/extension/github/vscode-pull-request-github">GitHub Pull Requests</a>: Allows you to create, review, and manage GitHub pull requests and issues directly within the editor.</p></li>
+<li><p><a href="https://open-vsx.org/extension/eamodio/gitlens">GitLens extension</a>: Enhances Git integration with inline blame annotations, commit history exploration, and repository insights.</p></li>
+<li><p><a href="https://open-vsx.org/extension/mikestead/dotenv">VSCode .env syntax highlighting</a>: Adds syntax highlighting for <code>.env</code> environment variable files.</p></li>
+<li><p><a href="https://open-vsx.org/extension/MermaidChart/vscode-mermaid-chart">Mermaid</a>: Adds syntax highlighting and live preview support for Mermaid diagrams within markdown and <code>.mmd</code> files.</p></li>
 </ol>
-
-
 </section>
+</section>
+<section id="publishing" class="level2">
+<h2 class="anchored" data-anchor-id="publishing">Publishing</h2>
+<p>To confirm everything is working correctly, I published this post using Positron. In my next post, I’ll dig a little deeper into my workflow in the COSMIC Desktop Environment (vs.&nbsp;macOS and Windows).</p>
+
+
 </section>
 
 
@@ -1156,6 +1190,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ol>
 <li id="fn1"><p>Posit has documentation for installing <a href="https://docs.posit.co/resources/install-r.html">R</a>, <a href="https://docs.posit.co/resources/install-python-uv.html">Python</a>, and <a href="https://docs.posit.co/resources/install-quarto.html">Quarto</a> on most operating systems.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>Positron uses the open-source <a href="https://positron.posit.co/extensions.html#open-vsx">Open VSX marketplace</a> for extensions.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Most of these extensions come from the <a href="https://open-vsx.org/extension/grrrck/positron-plus-1-e">Positron +1e extension pack</a> from <a href="https://github.com/gadenbuie">Garrick Aden-Buie</a>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

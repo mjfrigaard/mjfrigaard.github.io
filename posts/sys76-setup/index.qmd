@@ -63,13 +63,19 @@ co_box(color = "r",
 ```
 
 
-I recently purchased a [System76](https://system76.com/) laptop, which comes with their own Linux operating system: [Pop!\_OS](https://system76.com/pop/). This post covers installing R, Python, and Quarto and setting up RStudio and Positron. 
+I recently purchased a [System76](https://system76.com/) laptop, which comes with [Pop!\_OS](https://system76.com/pop/), an Ubuntu-flavored operating system. This post covers installing R, Python, and Quarto and setting up RStudio and Positron. 
 
 ## The COSMIC Desktop Environment 
 
-[Pop!\_OS](https://github.com/pop-os/cosmic-epoch) features the COSMIC  (it previous used GNOME), a fully custom Rust-based desktop environment. COSMIC is built on Ubuntu, meaning it uses the same package ecosystem (`.deb` packages and `apt` package manager). Read more about the OS on the [System76 website.](https://system76.com/pop/)
+[Pop!\_OS](https://github.com/pop-os/cosmic-epoch) features the COSMIC  (it previous used GNOME), a fully custom Rust-based desktop environment. As mentioned previously, COSMIC is built on Ubuntu, meaning it uses the same package ecosystem (i.e., `.deb` files and `apt` package manager). 
 
 ![](img/cosmic-de.png){width='100%' fig-align='center'}
+
+:::{.column-margin}
+
+Read more about the OS on the [System76 website](https://system76.com/pop/)
+
+:::
 
 ### The COSMIC Terminal 
 
@@ -130,7 +136,7 @@ The `uname` command returns information on the hardware platform and architectur
 
 - `uname` alone returns just the kernel name (e.g., `Linux`)
 
-- `uname -i` returns the **hardware platform** (e.g., `x86_64`), indicating the CPU architecture
+- `uname -i` returns the **hardware platform** (e.g., `x86_64`), indicating the CPU architecture (important information for downloading `.deb` files).
 
 ")
 ```
@@ -356,7 +362,7 @@ The commands below will reload the shell configuration, which adds the installed
 ```{bash}
 #| eval: false 
 #| code-fold: false
-source ~/.bashrc  # or ~/.zshrc if using zsh   
+source ~/.bashrc     
 ```
 
 We can confirm it with:    
@@ -421,7 +427,7 @@ These installations are kept **completely separate**, a benefit and key safety f
 
 <br>
 
-Locate where the Python 3.12.4 binary (in case we need to explicitly point tools or virtual environments to a specific Python version).
+To locate the Python 3.12.4 binary (in case we need to explicitly point tools or virtual environments to a specific Python version), we can use:
 
 ```{bash}
 #| eval: false 
@@ -437,11 +443,11 @@ uv python find 3.12.4
 
 ## Quarto 
 
-I used the following steps to install Quarto. Consult the [documentation](https://quarto.org/docs/get-started/) for more information. 
+Installing Quarto (and getting it configured) required quite a few steps. Consult the [documentation](https://quarto.org/docs/get-started/) for more information. 
 
 Start by downloading the latest Quarto `.deb` package from the [Quarto releases page](https://github.com/quarto-dev/quarto-cli/releases). 
 
-Install it with:
+Install the `.deb` with:
 
 ```{bash}
 #| eval: false 
@@ -463,7 +469,7 @@ Setting up quarto (1.9.30) ...
 
 ### Initial check
 
-Check the `quarto` installation and dependencies with:
+Having already installed R and Python, we will run `quarto check` on the initial installation:
 
 ```{bash}
 #| eval: false 
@@ -528,11 +534,15 @@ Quarto 1.9.30
 [✓] Checking Julia installation...
 ```
 
-We can see there are a few items to address. Fortunately Quarto also has commands for installing these directly:
+We can see there are a few items to address. 
 
-### TinyTex
+1. All the tools are missing (TinyTeX, Chromium, Chrome Headless Shell, and VeraPDF)  
+2. LaTeX/Tex is not detected    
+3. Chrome Headless/Chrome is not detected  
+4. The R installation is missing knitr and rmarkdown      
+5. The Python 3 installation is missing Jupyter  
 
-The `tools` section lists four missing dependencies:
+Fortunately Quarto has commands for installing these dependencies directly. The `tools` section lists four missing dependencies:
 
 ```{bash}
 #| eval: false 
@@ -543,7 +553,9 @@ Chrome Headless Shell: (not installed)
 VeraPDF: (not installed)
 ```
 
-We will address the TinyTex installation first with `quarto`
+### TinyTex
+
+We will address the [TinyTex installation](https://quarto.org/docs/output-formats/pdf-engine.html#installing-tex) first with `quarto`:
 
 ```{bash}
 #| eval: false 
@@ -563,9 +575,10 @@ Installing tinytex
 [✓] Default Repository: https://mirrors.ibiblio.org/pub/mirrors/CTAN/systems/texlive/tlnet/
 Installation successful
 ```
+
 ### Chromium
 
-`Chrome:  (not detected)`: we can fix this by installing chromium with `quarto`
+Quarto also has a command for installing [Chromium](https://www.chromium.org/getting-involved/download-chromium/):
 
 ```{bash}
 #| eval: false 
@@ -582,9 +595,11 @@ Installing chromium
 Installation successful
 ```
 
+We'll address the Chrome Headless Shell and VeraPDF below. 
+
 ### knitr and rmarkdown
 
-The R installation lists the knitr and rmarkdown packages as missing:
+The R installation lists the `knitr` and `rmarkdown` packages as missing:
 
 ```{bash}
 #| eval: false 
@@ -619,7 +634,7 @@ quit()
 
 These are now installed at the system-level.
 
-### Python 3 installation
+### Python 3 
 
 The Python 3 installation is fine, but Quarto is currently detecting the **system Python** (`/usr/bin/python3`). We want to create a dedicated virtual environment for Quarto's Jupyter dependency.
 
@@ -782,7 +797,7 @@ Installed 97 packages in 45ms
  + widgetsnbextension==4.0.15
 ```
 
-Finally, we need to tell Quarto to use the virtual environment's Python, which can so by setting the `QUARTO_PYTHON` environment variable to point to the `uv`-managed environment's Python:
+Finally, we need to tell Quarto to use the virtual environment's Python, which can do by setting the `QUARTO_PYTHON` environment variable to point to the `uv`-managed environment's Python:
 
 ```{bash}
 #| eval: false 
@@ -813,7 +828,7 @@ root@pop-os:/#
 
 ### Re-check
 
-We will re-check the Quarto dependencies:
+Now we will re-check the Quarto dependencies:
 
 ```{bash}
 #| eval: false 
@@ -878,10 +893,12 @@ Quarto 1.9.30
 [✓] Checking Julia installation...
 ```
 
+This output was a little confusing:
 
 1. The `Checking Chrome Headless` output confirms that Quarto was successfully installed using Chromium (`Using: Chromium installed by Quarto`), but the `(not installed)` line for the `Chrome Headless Shell` section refers to a separate standalone Chrome Headless Shell binary.
 
-2. The `VeraPDF` check looks for the PDF/A validation tool used for accessibility compliance checking.
+2. `VeraPDF` is a the PDF/A validation tool used for accessibility compliance checking.
+
 
 Both of these can be installed with the `quarto install` utility as of [version 1.9.30](https://github.com/quarto-dev/quarto-cli/blob/v1.9.30/news/changelog-1.9.md#install)
 
@@ -918,7 +935,7 @@ Installing verapdf
 Java is not installed. veraPDF requires Java 8 or later.
 ```
 
-We can install Java Runtime Environment (`default-jre`) to run Java applications like VeraPDF. On Ubuntu/Pop!\_OS 24.04, this will install OpenJDK 21, which exceeds VeraPDF's minimum requirement of Java 8.
+I installed the Java Runtime Environment (`default-jre`) to run Java applications like VeraPDF. On [Ubuntu/Pop!\_OS 24.04](https://system76.com/pop/), this will install OpenJDK 21, which exceeds VeraPDF's minimum requirement of Java 8.
 
 ```{bash}
 #| eval: false 
@@ -960,7 +977,7 @@ Installation successful
 
 ### Final check
 
-We'll perform a final check: 
+The final check should pass for all dependencies:
 
 ```{bash}
 #| eval: false 
@@ -1026,16 +1043,7 @@ Quarto 1.9.30
 [✓] Checking Julia installation...
 ```
 
-## RStudio
-
-On the [Posit website](https://posit.co/download/rstudio-desktop/), we can download RStudio for Ubuntu 22 or 24. Or if we want to live dangerously (which I do), we can download the RStudio daily release from the [dailies page](https://dailies.rstudio.com/).
-
-Download the **RStudio Desktop for Ubuntu 24 (x86_64)**` .deb` file and double-click on it to install RStudio. 
-
-Confirm the version by clicking on **Help** > **About RStudio**: 
-
-![](img/rstudio.png){width='100%' fig-align='center'}
-
+Now that we have R, Python, and Quarto installed and configured, I'll configure Git before downloading RStudio and Positron. 
 
 ## Git
 
@@ -1097,6 +1105,19 @@ user.email=your.email@example.com
 init.defaultbranch=main
 ```
 
+## RStudio
+
+On the [Posit website](https://posit.co/download/rstudio-desktop/), we can download RStudio for Ubuntu 22 or 24. Or if we want to live dangerously (which I do), we can download the RStudio daily release from the [dailies page](https://dailies.rstudio.com/).
+
+Download the **RStudio Desktop for Ubuntu 24 (x86_64)**` .deb` file and double-click on it to install RStudio. This will open the **COSMIC Store**:
+
+![](img/rstudio-install.png){width='80%' fig-align='center'}
+
+After opening RStudio, confirm the version by clicking on **Help** > **About RStudio**: 
+
+![](img/rstudio.png){width='100%' fig-align='center'}
+
+
 ### Git Integration in RStudio
 
 We can also configure Git in RStudio and the [`usethis` package](https://usethis.r-lib.org/):
@@ -1107,7 +1128,7 @@ We can also configure Git in RStudio and the [`usethis` package](https://usethis
 install.packages("usethis")
 ```
 
-Set `user.name` and `user.email`:
+It's also possible to configure the Git `user.name` and `user.email` with `usethis`:
 
 ```{r}
 #| eval: false 
@@ -1133,7 +1154,7 @@ usethis::git_vaccinate()
 ✔ Adding ".Rproj.user", ".Rhistory", ".RData", ".httr-oauth", ".DS_Store", and ".quarto" to /home/mjfrigaard/.gitignore.
 ```
 
-Check configurations with: 
+We can check configurations with: 
 
 ```{r}
 #| eval: false 
@@ -1141,7 +1162,7 @@ Check configurations with:
 usethis::git_sitrep()
 ```
 
-You should see something like this:
+You'll see something like this:
 
 ```{bash}
 #| eval: false 
@@ -1164,7 +1185,6 @@ You should see something like this:
 
 
 ## Positron
-
 
 You can download Positron from the [website](https://positron.posit.co/download.html) (or download the [Preview version](https://cdn.posit.co/positron/releases/deb/x86_64/Positron-2026.03.0-212-x64.deb)). Once again, we can double-click on the `Positron-2026.03.0-212-x64.deb` file to install Positron: 
 
@@ -1192,13 +1212,32 @@ git version 2.43.0
 
 ### Positron extensions
 
-I've installed the following Positron extensions from the Positron extensions marketplace.[^positron-ext] None of these are required, but I've found them useful during R package/Shiny app development. 
+I've installed the following Positron extensions from the Positron extensions marketplace.[^positron-ext] None of these are required, but I've found them useful during R package/Shiny app development.[^positon-ext-pak]
 
 [^positron-ext]: Positron uses the open-source [Open VSX marketplace](https://positron.posit.co/extensions.html#open-vsx) for extensions.
 
-1. The [GitLens extension](https://open-vsx.org/extension/eamodio/gitlens) provides enhanced Git capabilities (inline blame annotations, commit history, and repository insights directly in the editor).
+1. [Shiny - VS Code Extension](https://open-vsx.org/extension/posit/shiny): Enables running, previewing, and debugging R and Python Shiny applications directly within Positron/VS Code.
 
-2. 
+2. [Posit Publisher](https://open-vsx.org/extension/posit/publisher): Deploys and publishes content (Shiny apps, Quarto documents, APIs, etc.) directly to Posit Connect from within the editor.
+
+3. [Quarto - VS Code](https://open-vsx.org/extension/quarto/quarto): Provides syntax highlighting, preview, and rendering support for Quarto (`.qmd`) documents.
+
+4. [Air - R Language Support](https://open-vsx.org/extension/posit/air-vscode): Provides R language support including real-time code formatting based on Posit's Air R formatter.
+
+5. [Git Graph](https://open-vsx.org/extension/mhutchie/git-graph): Visualizes your Git repository's branch history and commit tree in an interactive graphical interface.
 
 
+6. [GitHub Pull Requests](https://open-vsx.org/extension/github/vscode-pull-request-github): Allows you to create, review, and manage GitHub pull requests and issues directly within the editor.
+
+7. [GitLens extension](https://open-vsx.org/extension/eamodio/gitlens): Enhances Git integration with inline blame annotations, commit history exploration, and repository insights.
+
+8. [VSCode .env syntax highlighting ](https://open-vsx.org/extension/mikestead/dotenv): Adds syntax highlighting for `.env` environment variable files.
+
+9. [Mermaid](https://open-vsx.org/extension/MermaidChart/vscode-mermaid-chart): Adds syntax highlighting and live preview support for Mermaid diagrams within markdown and `.mmd` files.
+
+[^positon-ext-pak]: Most of these extensions come from the [Positron +1e extension pack](https://open-vsx.org/extension/grrrck/positron-plus-1-e) from [Garrick Aden-Buie](https://github.com/gadenbuie).
+
+## Publishing
+
+To confirm everything is working correctly, I published this post using Positron. In my next post, I'll dig a little deeper into my workflow in the COSMIC Desktop Environment (vs. macOS and Windows).
 
