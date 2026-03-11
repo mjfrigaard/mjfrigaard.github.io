@@ -56,7 +56,7 @@ library(lobstr)
 #| label: co_box_dev
 #| echo: false
 #| results: asis
-#| eval: true
+#| eval: false
 co_box(color = "r", 
   header = "DRAFT!", 
   contents = "This post is currently under development--thank you for your patience.")
@@ -67,7 +67,7 @@ I recently purchased a [System76](https://system76.com/) laptop, which comes wit
 
 ## The COSMIC Desktop Environment 
 
-[Pop!\_OS](https://github.com/pop-os/cosmic-epoch) features the COSMIC  (it previous used GNOME), a fully custom Rust-based desktop environment. COSMIC is built on Ubuntu, meaning it uses the same package ecosystem (`.deb` packages and `apt` package manager). Read more about the OS on the [System76 website.](https://system76.com/pop/)
+[Pop!\_OS](https://github.com/pop-os/cosmic-epoch) features the COSMIC  (it previous used GNOME), a fully custom Rust-based desktop environment. COSMIC is built on Ubuntu, meaning it uses the same package ecosystem (`.deb` packages and `apt` package manager). Read more about the OS on the [System76 website.](https://system76.com/pop/)
 
 ![](img/cosmic-de.png){width='100%' fig-align='center'}
 
@@ -76,6 +76,8 @@ I recently purchased a [System76](https://system76.com/) laptop, which comes wit
 [Pop!\_OS](https://github.com/pop-os/cosmic-epoch) ships with the [COSMIC Terminal](https://github.com/pop-os/cosmic-term), which is also written entirely in Rust. 
 
 ![](img/cosmic-term.png){width='100%' fig-align='center'}
+
+Using any flavor of Ubuntu typically means getting comfortable using the Terminal, and we can start by confirming the `$XDG_CURRENT_DESKTOP`:
 
 ```{bash}
 #| eval: false 
@@ -88,6 +90,52 @@ echo $XDG_CURRENT_DESKTOP
 #| code-fold: false
 COSMIC
 ```
+
+[Pop!\_OS](https://github.com/pop-os/cosmic-epoch) uses Ubuntu 24, which you can discover using: 
+
+```{bash}
+#| eval: false 
+#| code-fold: false
+cat /etc/os-release
+```
+
+```{bash}
+#| eval: false 
+#| code-fold: false
+NAME="Pop!_OS"
+VERSION="24.04 LTS"
+ID=pop
+ID_LIKE="ubuntu debian"
+PRETTY_NAME="Pop!_OS 24.04 LTS"
+VERSION_ID="24.04"
+HOME_URL="https://pop.system76.com"
+SUPPORT_URL="https://support.system76.com"
+BUG_REPORT_URL="https://github.com/pop-os/pop/issues"
+PRIVACY_POLICY_URL="https://system76.com/privacy"
+VERSION_CODENAME=noble
+UBUNTU_CODENAME=noble
+LOGO=distributor-logo-pop-os
+```
+
+```{r}
+#| label: co_box_uname
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "g", 
+  header = "Checking the hardware platform", 
+  fold = TRUE,
+  contents = "
+The `uname` command returns information on the hardware platform and architecture: 
+
+- `uname` alone returns just the kernel name (e.g., `Linux`)
+
+- `uname -i` returns the **hardware platform** (e.g., `x86_64`), indicating the CPU architecture
+
+")
+```
+
+<br>
 
 The COSMIC Desktop Environment is still in active development, but we can check the current installed version with:
 
@@ -102,6 +150,10 @@ cosmic-term --version
 #| code-fold: false
 cosmic-term 1.0.8
 ```
+
+Below I'll cover installing and configuring R, Python, and Quarto. Most of these instructions can be found from Posit,[^posit-docs] but I've included additional details here (and any deviations from the official documentation).
+
+[^posit-docs]: Posit has documentation for installing [R](https://docs.posit.co/resources/install-r.html), [Python](https://docs.posit.co/resources/install-python-uv.html), and [Quarto](https://docs.posit.co/resources/install-quarto.html) on most operating systems.
 
 ## R 
 
@@ -219,6 +271,8 @@ noble
 ")
 ```
 
+<br>
+
 Finally, we install R from the CRAN repo we added in the step above.
 
 ```{bash}
@@ -257,9 +311,9 @@ https://www.gnu.org/licenses/.
 
 ## Python
 
-Below is an adaptation of the installation instructions from [Posit](https://docs.posit.co/resources/install-python-uv.html) (using `uv`).
+Below is an adaptation of the installation instructions from [Posit](https://docs.posit.co/resources/install-python-uv.html) (using `uv`). [Pop!\_OS](https://github.com/pop-os/cosmic-epoch) comes with Python installed at the system level, and we'll want this sepatated from the `uv` installations (more about this below).
 
-Start by installing the official `uv` installer scrip. 
+Start by installing the `uv` installer scrip. 
 
 ```{bash}
 #| eval: false 
@@ -319,7 +373,7 @@ uv --version
 uv 0.10.8
 ```
 
-Use `uv` to install Python 3.12.4, which manages its own Python installations independently of the system Python. 
+Now we can use `uv` to install Python 3.12.4, which manages its own Python installations independently of the system Python. 
 
 ```{bash}
 #| eval: false 
@@ -365,6 +419,8 @@ These installations are kept **completely separate**, a benefit and key safety f
 ")
 ```
 
+<br>
+
 Locate where the Python 3.12.4 binary (in case we need to explicitly point tools or virtual environments to a specific Python version).
 
 ```{bash}
@@ -383,7 +439,7 @@ uv python find 3.12.4
 
 I used the following steps to install Quarto. Consult the [documentation](https://quarto.org/docs/get-started/) for more information. 
 
-Start by downloading the latest Quarto `.deb` package from the [Quarto releases page](https://github.com/quarto-dev/quarto-cli/releases) (in this case it's **quarto-1.9.30-linux-amd64.deb**). 
+Start by downloading the latest Quarto `.deb` package from the [Quarto releases page](https://github.com/quarto-dev/quarto-cli/releases). 
 
 Install it with:
 
@@ -882,6 +938,8 @@ co_box(color = "g",
 The Java Runtime Environment (JRE) is distinct from the Java Development Kit (JDK), which includes additional tools for developing Java applications. Since we only need to run VeraPDF, the Runtime Environment is sufficient.")
 ```
 
+<br>
+
 Now re-install `verapdf`:
 
 ```{bash}
@@ -972,29 +1030,7 @@ Quarto 1.9.30
 
 On the [Posit website](https://posit.co/download/rstudio-desktop/), we can download RStudio for Ubuntu 22 or 24. Or if we want to live dangerously (which I do), we can download the RStudio daily release from the [dailies page](https://dailies.rstudio.com/).
 
-[Pop!\_OS](https://github.com/pop-os/cosmic-epoch) uses Ubuntu 24, which you can discover using: 
-
-```bash
-cat /etc/os-release
-```
-
-```bash
-NAME="Pop!_OS"
-VERSION="24.04 LTS"
-ID=pop
-ID_LIKE="ubuntu debian"
-PRETTY_NAME="Pop!_OS 24.04 LTS"
-VERSION_ID="24.04"
-HOME_URL="https://pop.system76.com"
-SUPPORT_URL="https://support.system76.com"
-BUG_REPORT_URL="https://github.com/pop-os/pop/issues"
-PRIVACY_POLICY_URL="https://system76.com/privacy"
-VERSION_CODENAME=noble
-UBUNTU_CODENAME=noble
-LOGO=distributor-logo-pop-os
-```
-
-Download the  `rstudio-2026.04.0-daily-368-amd64.deb` and double-click on it to install RStudio. 
+Download the **RStudio Desktop for Ubuntu 24 (x86_64)**` .deb` file and double-click on it to install RStudio. 
 
 Confirm the version by clicking on **Help** > **About RStudio**: 
 
@@ -1036,7 +1072,7 @@ git config --global user.email "your.email@example.com"
 ```
 
 
-Set default initial branch name to `main`:
+Set default initial branch name to `main`:
 
 ```{bash}
 #| eval: false 
@@ -1081,7 +1117,7 @@ usethis::use_git_config(user.name = "Your Name", user.email = "your.email@exampl
 
 I also recommend using [`usethis::git_vaccinate()`](https://usethis.r-lib.org/reference/git_vaccinate.html):
 
-> *Adds `.Rproj.user`, `.Rhistory`, `.Rdata`, `.httr-oauth`, `.DS_Store`, and `.quarto` to your global (a.k.a. user-level) `.gitignore`.*
+> *Adds `.Rproj.user`, `.Rhistory`, `.Rdata`, `.httr-oauth`, `.DS_Store`, and `.quarto` to your global (a.k.a. user-level) `.gitignore`.*
 
 ```{r}
 #| eval: false 
@@ -1148,5 +1184,21 @@ Verify Git is detected by Positron:
 git --version
 ```
 
-Consider installing the [GitLens extension](https://open-vsx.org/extension/eamodio/gitlens) from the Positron extensions marketplace for enhanced Git capabilities — this provides inline blame annotations, commit history, and repository insights directly in the editor.
+```{bash}
+#| eval: false 
+#| code-fold: false
+git version 2.43.0
+```
+
+### Positron extensions
+
+I've installed the following Positron extensions from the Positron extensions marketplace.[^positron-ext] None of these are required, but I've found them useful during R package/Shiny app development. 
+
+[^positron-ext]: Positron uses the open-source [Open VSX marketplace](https://positron.posit.co/extensions.html#open-vsx) for extensions.
+
+1. The [GitLens extension](https://open-vsx.org/extension/eamodio/gitlens) provides enhanced Git capabilities (inline blame annotations, commit history, and repository insights directly in the editor).
+
+2. 
+
+
 
