@@ -28,16 +28,19 @@
 
 
 
-<p>I recently purchased a <a href="https://system76.com/">System76</a> laptop, which comes with their own Linux operating system: <a href="https://system76.com/pop/">Pop!_OS</a>. This post covers installing R, Python, and Quarto and setting up RStudio and Positron.</p>
-<section id="the-cosmic-desktop-environment" class="level2">
+<p>I recently purchased a <a href="https://system76.com/">System76</a> laptop, which comes with <a href="https://system76.com/pop/">Pop!_OS</a>, an Ubuntu-flavored operating system. This post covers installing R, Python, and Quarto and setting up RStudio and Positron.</p>
+<section id="the-cosmic-desktop-environment" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="the-cosmic-desktop-environment">The COSMIC Desktop Environment</h2>
-<p><a href="https://github.com/pop-os/cosmic-epoch">Pop!_OS</a> features the COSMIC (it previous used GNOME), a fully custom Rust-based desktop environment. COSMIC is built on Ubuntu, meaning it uses the same package ecosystem (<code>.deb</code> packages and <code>apt</code> package manager). Read more about the OS on the <a href="https://system76.com/pop/">System76 website.</a></p>
+<p><a href="https://github.com/pop-os/cosmic-epoch">Pop!_OS</a> features the COSMIC (it previous used GNOME), a fully custom Rust-based desktop environment. As mentioned previously, COSMIC is built on Ubuntu, meaning it uses the same package ecosystem (i.e., <code>.deb</code> files and <code>apt</code> package manager).</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><a href="img/cosmic-de.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="https://mjfrigaard.github.io/posts/sys76-setup/img/cosmic-de.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
 </figure>
 </div>
-<section id="the-cosmic-terminal" class="level3">
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p>Read more about the OS on the <a href="https://system76.com/pop/">System76 website</a></p>
+</div></div><section id="the-cosmic-terminal" class="level3">
 <h3 class="anchored" data-anchor-id="the-cosmic-terminal">The COSMIC Terminal</h3>
 <p><a href="https://github.com/pop-os/cosmic-epoch">Pop!_OS</a> ships with the <a href="https://github.com/pop-os/cosmic-term">COSMIC Terminal</a>, which is also written entirely in Rust.</p>
 <div class="quarto-figure quarto-figure-center">
@@ -166,7 +169,7 @@ font-style: inherit;">=</span>distributor-logo-pop-os</span></code></pre></div><
 <p>The <code>uname</code> command returns information on the hardware platform and architecture:</p>
 <ul>
 <li><p><code>uname</code> alone returns just the kernel name (e.g., <code>Linux</code>)</p></li>
-<li><p><code>uname -i</code> returns the <strong>hardware platform</strong> (e.g., <code>x86_64</code>), indicating the CPU architecture</p></li>
+<li><p><code>uname -i</code> returns the <strong>hardware platform</strong> (e.g., <code>x86_64</code>), indicating the CPU architecture (important information for downloading <code>.deb</code> files).</p></li>
 </ul>
 </div>
 </div>
@@ -501,9 +504,7 @@ font-style: inherit;">    source $HOME/.local/bin/env.fish (fish)</span></span><
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><span class="bu" style="color: null;
 background-color: null;
-font-style: inherit;">source</span> ~/.bashrc  <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># or ~/.zshrc if using zsh   </span></span></code></pre></div></div>
+font-style: inherit;">source</span> ~/.bashrc     </span></code></pre></div></div>
 </div>
 <p>We can confirm it with:</p>
 <div class="cell" data-layout-align="center">
@@ -580,7 +581,7 @@ font-style: inherit;">&gt;</span> python3.12</span></code></pre></div></div>
 </div>
 </div>
 <p><br></p>
-<p>Locate where the Python 3.12.4 binary (in case we need to explicitly point tools or virtual environments to a specific Python version).</p>
+<p>To locate the Python 3.12.4 binary (in case we need to explicitly point tools or virtual environments to a specific Python version), we can use:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb28-1"><span class="ex" style="color: null;
 background-color: null;
@@ -594,9 +595,9 @@ font-style: inherit;">/root/.local/share/uv/python/cpython-3.12.4-linux-x86_64-g
 </section>
 <section id="quarto" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
-<p>I used the following steps to install Quarto. Consult the <a href="https://quarto.org/docs/get-started/">documentation</a> for more information.</p>
+<p>Installing Quarto (and getting it configured) required quite a few steps. Consult the <a href="https://quarto.org/docs/get-started/">documentation</a> for more information.</p>
 <p>Start by downloading the latest Quarto <code>.deb</code> package from the <a href="https://github.com/quarto-dev/quarto-cli/releases">Quarto releases page</a>.</p>
-<p>Install it with:</p>
+<p>Install the <code>.deb</code> with:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb30-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
@@ -655,7 +656,7 @@ font-style: inherit;">...</span></span></code></pre></div></div>
 </div>
 <section id="initial-check" class="level3">
 <h3 class="anchored" data-anchor-id="initial-check">Initial check</h3>
-<p>Check the <code>quarto</code> installation and dependencies with:</p>
+<p>Having already installed R and Python, we will run <code>quarto check</code> on the initial installation:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb32-1"><span class="ex" style="color: null;
 background-color: null;
@@ -880,11 +881,19 @@ background-color: null;
 font-style: inherit;">[✓]</span> Checking Julia installation...</span></code></pre></div></div>
 </details>
 </div>
-<p>We can see there are a few items to address. Fortunately Quarto also has commands for installing these directly:</p>
-</section>
-<section id="tinytex" class="level3">
-<h3 class="anchored" data-anchor-id="tinytex">TinyTex</h3>
-<p>The <code>tools</code> section lists four missing dependencies:</p>
+<p>We can see there are a few items to address.</p>
+<ol type="1">
+<li>All the tools are missing (TinyTeX, Chromium, Chrome Headless Shell, and VeraPDF)<br>
+</li>
+<li>LaTeX/Tex is not detected<br>
+</li>
+<li>Chrome Headless/Chrome is not detected<br>
+</li>
+<li>The R installation is missing knitr and rmarkdown<br>
+</li>
+<li>The Python 3 installation is missing Jupyter</li>
+</ol>
+<p>Fortunately Quarto has commands for installing these dependencies directly. The <code>tools</code> section lists four missing dependencies:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb34-1"><span class="ex" style="color: null;
 background-color: null;
@@ -927,7 +936,10 @@ background-color: null;
 font-weight: bold;
 font-style: inherit;">)</span></span></code></pre></div></div>
 </div>
-<p>We will address the TinyTex installation first with <code>quarto</code></p>
+</section>
+<section id="tinytex" class="level3">
+<h3 class="anchored" data-anchor-id="tinytex">TinyTex</h3>
+<p>We will address the <a href="https://quarto.org/docs/output-formats/pdf-engine.html#installing-tex">TinyTex installation</a> first with <code>quarto</code>:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb35-1"><span class="ex" style="color: null;
 background-color: null;
@@ -962,7 +974,7 @@ font-style: inherit;">Installation</span> successful</span></code></pre></div></
 </section>
 <section id="chromium" class="level3">
 <h3 class="anchored" data-anchor-id="chromium">Chromium</h3>
-<p><code>Chrome:  (not detected)</code>: we can fix this by installing chromium with <code>quarto</code></p>
+<p>Quarto also has a command for installing <a href="https://www.chromium.org/getting-involved/download-chromium/">Chromium</a>:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb37-1"><span class="ex" style="color: null;
 background-color: null;
@@ -982,10 +994,11 @@ font-style: inherit;">[✓]</span> Installing Chromium 869685</span>
 background-color: null;
 font-style: inherit;">Installation</span> successful</span></code></pre></div></div>
 </div>
+<p>We’ll address the Chrome Headless Shell and VeraPDF below.</p>
 </section>
 <section id="knitr-and-rmarkdown" class="level3">
 <h3 class="anchored" data-anchor-id="knitr-and-rmarkdown">knitr and rmarkdown</h3>
-<p>The R installation lists the knitr and rmarkdown packages as missing:</p>
+<p>The R installation lists the <code>knitr</code> and <code>rmarkdown</code> packages as missing:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb39-1"><span class="ex" style="color: null;
 background-color: null;
@@ -1034,8 +1047,8 @@ font-style: inherit;">quit</span>()</span></code></pre></div></div>
 </div>
 <p>These are now installed at the system-level.</p>
 </section>
-<section id="python-3-installation" class="level3 page-columns page-full">
-<h3 class="anchored" data-anchor-id="python-3-installation">Python 3 installation</h3>
+<section id="python-3" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="python-3">Python 3</h3>
 <p>The Python 3 installation is fine, but Quarto is currently detecting the <strong>system Python</strong> (<code>/usr/bin/python3</code>). We want to create a dedicated virtual environment for Quarto’s Jupyter dependency.</p>
 <p>Use <code>uv</code> to create a dedicated virtual environment for Quarto:</p>
 <div class="cell" data-layout-align="center">
@@ -1398,7 +1411,7 @@ background-color: null;
 font-style: inherit;">+</span> widgetsnbextension==4.0.15</span></code></pre></div></div>
 </details>
 </div>
-<p>Finally, we need to tell Quarto to use the virtual environment’s Python, which can so by setting the <code>QUARTO_PYTHON</code> environment variable to point to the <code>uv</code>-managed environment’s Python:</p>
+<p>Finally, we need to tell Quarto to use the virtual environment’s Python, which can do by setting the <code>QUARTO_PYTHON</code> environment variable to point to the <code>uv</code>-managed environment’s Python:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb50-1"><span class="bu" style="color: null;
 background-color: null;
@@ -1425,7 +1438,7 @@ font-style: inherit;">root@pop-os:/#</span></span></code></pre></div></div>
 </div></div></section>
 <section id="re-check" class="level3">
 <h3 class="anchored" data-anchor-id="re-check">Re-check</h3>
-<p>We will re-check the Quarto dependencies:</p>
+<p>Now we will re-check the Quarto dependencies:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb53-1"><span class="ex" style="color: null;
 background-color: null;
@@ -1585,9 +1598,10 @@ background-color: null;
 font-style: inherit;">[✓]</span> Checking Julia installation...</span></code></pre></div></div>
 </details>
 </div>
+<p>This output was a little confusing:</p>
 <ol type="1">
 <li><p>The <code>Checking Chrome Headless</code> output confirms that Quarto was successfully installed using Chromium (<code>Using: Chromium installed by Quarto</code>), but the <code>(not installed)</code> line for the <code>Chrome Headless Shell</code> section refers to a separate standalone Chrome Headless Shell binary.</p></li>
-<li><p>The <code>VeraPDF</code> check looks for the PDF/A validation tool used for accessibility compliance checking.</p></li>
+<li><p><code>VeraPDF</code> is a the PDF/A validation tool used for accessibility compliance checking.</p></li>
 </ol>
 <p>Both of these can be installed with the <code>quarto install</code> utility as of <a href="https://github.com/quarto-dev/quarto-cli/blob/v1.9.30/news/changelog-1.9.md#install">version 1.9.30</a></p>
 </section>
@@ -1626,7 +1640,7 @@ font-style: inherit;">Installing</span> verapdf</span>
 background-color: null;
 font-style: inherit;">Java</span> is not installed. veraPDF requires Java 8 or later.</span></code></pre></div></div>
 </div>
-<p>We can install Java Runtime Environment (<code>default-jre</code>) to run Java applications like VeraPDF. On Ubuntu/Pop!_OS 24.04, this will install OpenJDK 21, which exceeds VeraPDF’s minimum requirement of Java 8.</p>
+<p>I installed the Java Runtime Environment (<code>default-jre</code>) to run Java applications like VeraPDF. On <a href="https://system76.com/pop/">Ubuntu/Pop!_OS 24.04</a>, this will install OpenJDK 21, which exceeds VeraPDF’s minimum requirement of Java 8.</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb59-1"><span class="ex" style="color: null;
 background-color: null;
@@ -1679,7 +1693,7 @@ font-style: inherit;">Installation</span> successful</span></code></pre></div></
 </section>
 <section id="final-check" class="level3">
 <h3 class="anchored" data-anchor-id="final-check">Final check</h3>
-<p>We’ll perform a final check:</p>
+<p>The final check should pass for all dependencies:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb62-1"><span class="ex" style="color: null;
 background-color: null;
@@ -1828,18 +1842,8 @@ background-color: null;
 font-style: inherit;">[✓]</span> Checking Julia installation...</span></code></pre></div></div>
 </details>
 </div>
+<p>Now that we have R, Python, and Quarto installed and configured, I’ll configure Git before downloading RStudio and Positron.</p>
 </section>
-</section>
-<section id="rstudio" class="level2">
-<h2 class="anchored" data-anchor-id="rstudio">RStudio</h2>
-<p>On the <a href="https://posit.co/download/rstudio-desktop/">Posit website</a>, we can download RStudio for Ubuntu 22 or 24. Or if we want to live dangerously (which I do), we can download the RStudio daily release from the <a href="https://dailies.rstudio.com/">dailies page</a>.</p>
-<p>Download the <strong>RStudio Desktop for Ubuntu 24 (x86_64)</strong><code>.deb</code> file and double-click on it to install RStudio.</p>
-<p>Confirm the version by clicking on <strong>Help</strong> &gt; <strong>About RStudio</strong>:</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><a href="img/rstudio.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="https://mjfrigaard.github.io/posts/sys76-setup/img/rstudio.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
-</figure>
-</div>
 </section>
 <section id="git" class="level2">
 <h2 class="anchored" data-anchor-id="git">Git</h2>
@@ -1926,6 +1930,22 @@ font-style: inherit;">user.email=your.email@example.com</span></span>
 background-color: null;
 font-style: inherit;">init.defaultbranch=main</span></span></code></pre></div></div>
 </div>
+</section>
+<section id="rstudio" class="level2">
+<h2 class="anchored" data-anchor-id="rstudio">RStudio</h2>
+<p>On the <a href="https://posit.co/download/rstudio-desktop/">Posit website</a>, we can download RStudio for Ubuntu 22 or 24. Or if we want to live dangerously (which I do), we can download the RStudio daily release from the <a href="https://dailies.rstudio.com/">dailies page</a>.</p>
+<p>Download the <strong>RStudio Desktop for Ubuntu 24 (x86_64)</strong><code>.deb</code> file and double-click on it to install RStudio. This will open the <strong>COSMIC Store</strong>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/rstudio-install.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="https://mjfrigaard.github.io/posts/sys76-setup/img/rstudio-install.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></a></p>
+</figure>
+</div>
+<p>After opening RStudio, confirm the version by clicking on <strong>Help</strong> &gt; <strong>About RStudio</strong>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/rstudio.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="https://mjfrigaard.github.io/posts/sys76-setup/img/rstudio.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
 <section id="git-integration-in-rstudio" class="level3">
 <h3 class="anchored" data-anchor-id="git-integration-in-rstudio">Git Integration in RStudio</h3>
 <p>We can also configure Git in RStudio and the <a href="https://usethis.r-lib.org/"><code>usethis</code> package</a>:</p>
@@ -1936,7 +1956,7 @@ font-style: inherit;">install.packages</span>(<span class="st" style="color: #20
 background-color: null;
 font-style: inherit;">"usethis"</span>)</span></code></pre></div></div>
 </div>
-<p>Set <code>user.name</code> and <code>user.email</code>:</p>
+<p>It’s also possible to configure the Git <code>user.name</code> and <code>user.email</code> with <code>usethis</code>:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb72" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1">usethis<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -1995,7 +2015,7 @@ font-style: inherit;">".DS_Store"</span>, and <span class="st" style="color: #20
 background-color: null;
 font-style: inherit;">".quarto"</span> to /home/mjfrigaard/.gitignore.</span></code></pre></div></div>
 </div>
-<p>Check configurations with:</p>
+<p>We can check configurations with:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb75" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1">usethis<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -2003,7 +2023,7 @@ font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">git_sitrep</span>()</span></code></pre></div></div>
 </div>
-<p>You should see something like this:</p>
+<p>You’ll see something like this:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb76" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb76-1"><span class="ex" style="color: null;
 background-color: null;
@@ -2112,7 +2132,7 @@ font-style: inherit;">ℹ</span> No active usethis project.</span></code></pre><
 <figure class="figure">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="img/positron.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Positron installation"><img src="https://mjfrigaard.github.io/posts/sys76-setup/img/positron.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Positron installation"></a></p>
+<p><a href="img/positron.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Positron installation"><img src="https://mjfrigaard.github.io/posts/sys76-setup/img/positron.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Positron installation"></a></p>
 </figure>
 </div>
 <figcaption>Positron installation</figcaption>
@@ -2125,7 +2145,7 @@ font-style: inherit;">ℹ</span> No active usethis project.</span></code></pre><
 <figure class="figure">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><a href="img/positron-github.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Positron &amp; GitHub"><img src="https://mjfrigaard.github.io/posts/sys76-setup/img/positron-github.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Positron &amp; GitHub"></a></p>
+<p><a href="img/positron-github.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Positron &amp; GitHub"><img src="https://mjfrigaard.github.io/posts/sys76-setup/img/positron-github.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Positron &amp; GitHub"></a></p>
 </figure>
 </div>
 <figcaption>Positron &amp; GitHub</figcaption>
@@ -2147,14 +2167,25 @@ font-style: inherit;">git</span> version 2.43.0</span></code></pre></div></div>
 </section>
 <section id="positron-extensions" class="level3">
 <h3 class="anchored" data-anchor-id="positron-extensions">Positron extensions</h3>
-<p>I’ve installed the following Positron extensions from the Positron extensions marketplace.<sup>2</sup> None of these are required, but I’ve found them useful during R package/Shiny app development.</p>
+<p>I’ve installed the following Positron extensions from the Positron extensions marketplace.<sup>2</sup> None of these are required, but I’ve found them useful during R package/Shiny app development.<sup>3</sup></p>
 <ol type="1">
-<li><p>The <a href="https://open-vsx.org/extension/eamodio/gitlens">GitLens extension</a> provides enhanced Git capabilities (inline blame annotations, commit history, and repository insights directly in the editor).</p></li>
-<li></li>
+<li><p><a href="https://open-vsx.org/extension/posit/shiny">Shiny - VS Code Extension</a>: Enables running, previewing, and debugging R and Python Shiny applications directly within Positron/VS Code.</p></li>
+<li><p><a href="https://open-vsx.org/extension/posit/publisher">Posit Publisher</a>: Deploys and publishes content (Shiny apps, Quarto documents, APIs, etc.) directly to Posit Connect from within the editor.</p></li>
+<li><p><a href="https://open-vsx.org/extension/quarto/quarto">Quarto - VS Code</a>: Provides syntax highlighting, preview, and rendering support for Quarto (<code>.qmd</code>) documents.</p></li>
+<li><p><a href="https://open-vsx.org/extension/posit/air-vscode">Air - R Language Support</a>: Provides R language support including real-time code formatting based on Posit’s Air R formatter.</p></li>
+<li><p><a href="https://open-vsx.org/extension/mhutchie/git-graph">Git Graph</a>: Visualizes your Git repository’s branch history and commit tree in an interactive graphical interface.</p></li>
+<li><p><a href="https://open-vsx.org/extension/github/vscode-pull-request-github">GitHub Pull Requests</a>: Allows you to create, review, and manage GitHub pull requests and issues directly within the editor.</p></li>
+<li><p><a href="https://open-vsx.org/extension/eamodio/gitlens">GitLens extension</a>: Enhances Git integration with inline blame annotations, commit history exploration, and repository insights.</p></li>
+<li><p><a href="https://open-vsx.org/extension/mikestead/dotenv">VSCode .env syntax highlighting</a>: Adds syntax highlighting for <code>.env</code> environment variable files.</p></li>
+<li><p><a href="https://open-vsx.org/extension/MermaidChart/vscode-mermaid-chart">Mermaid</a>: Adds syntax highlighting and live preview support for Mermaid diagrams within markdown and <code>.mmd</code> files.</p></li>
 </ol>
-
-
 </section>
+</section>
+<section id="publishing" class="level2">
+<h2 class="anchored" data-anchor-id="publishing">Publishing</h2>
+<p>To confirm everything is working correctly, I published this post using Positron. In my next post, I’ll dig a little deeper into my workflow in the COSMIC Desktop Environment (vs.&nbsp;macOS and Windows).</p>
+
+
 </section>
 
 
@@ -2163,6 +2194,7 @@ font-style: inherit;">git</span> version 2.43.0</span></code></pre></div></div>
 <ol>
 <li id="fn1"><p>Posit has documentation for installing <a href="https://docs.posit.co/resources/install-r.html">R</a>, <a href="https://docs.posit.co/resources/install-python-uv.html">Python</a>, and <a href="https://docs.posit.co/resources/install-quarto.html">Quarto</a> on most operating systems.↩︎</p></li>
 <li id="fn2"><p>Positron uses the open-source <a href="https://positron.posit.co/extensions.html#open-vsx">Open VSX marketplace</a> for extensions.↩︎</p></li>
+<li id="fn3"><p>Most of these extensions come from the <a href="https://open-vsx.org/extension/grrrck/positron-plus-1-e">Positron +1e extension pack</a> from <a href="https://github.com/gadenbuie">Garrick Aden-Buie</a>.↩︎</p></li>
 </ol>
 </section></div> ]]></description>
   <category>Linux</category>
