@@ -2,7 +2,7 @@
 title: "Reproducible examples: a love letter"
 subtitle: "The best way to answer your own questions"
 author: "Martin Frigaard"
-date: "2026-03-05"
+date: "2026-03-15"
 categories: [R, Python, Markdown]
 # image: "img/image.png"
 toc: true
@@ -62,11 +62,29 @@ co_box(color = "r",
   contents = "This post is currently under development--thank you for your patience.")
 ```
 
-With developers using LLMs for coding questions, are reproducible examples (reprexes) still relevant? It might seem easier just to ask an AI, but I believe reprexes remain valuable—and we should keep finding ways to make them better.
+I’ve written three drafts of this post and deleted the previous versions because they all felt overly alarmist. I decided to actually publish this version because, instead of providing a technical description of how I am using LLMs in my current role, it captures how I can feel it changing the way I work (and think).  
 
-Most people write a reprex to ask about a problem. Sometimes it's an error or warning, but often the code just gives the wrong result. With LLMs generating code, these mistakes are even easier to miss—they may not show up until you test the output or something else fails.
+As developers use LLM more, I find myself asking what will become of things like [online books](https://r4ds.hadley.nz/), [stackoverflow](https://stackoverflow.com/questions/tagged/python?tab=Newest), and even [online documentation](https://dplyr.tidyverse.org/articles/index.html). Now that the LLMs are right in the IDE ([GitHub Copilot](https://github.com/features/copilot)/[Positron Assistant](https://positron.posit.co/assistant.html) and [Databot](https://positron.posit.co/databot.html)/[Posit Assistant in RStudio](https://posit.co/products/ai/)), I can provide basic instructions like “fix this” or “debug that”, and off it goes, doing the work (and thinking) for me. I’ve found myself feeling fortunate that most of my development takes place in a restricted environment without access to the IDE LLM tools. Not having direct access to an LLM makes me feel strangely more productive, and if I’m interacting with an LLM, I’m doing it more deliberately and thoughtfully.
 
-Problems without errors or warnings are worse—they look like they work, but no one knows what the code does or if it’s correct.
+## Assistants are amazing
+
+I should pause here to say I think LLMs are remarkable technology, and the accompanying ecosystem of tools built around them seems to be improving faster than I can adopt them. Outside of work, I regularly use both Positron Assistant and Posit Assistant (in RStudio) and find both to be incredible. I have less experience with Databot, but I appreciate Posit’s approach to developing these tools (something like “apprehensive enthusiasm”). The assistants are great for keeping my packages up to date, generating tests, and refactoring old code.
+
+Before assistants, most of my time was spent editing code files (including Quarto and R RMarkdown files) and reading and researching online. With assistants, I’m writing questions/instructions into a tiny chat text box and reviewing the output/changes. I’ll admit, I still have a text file open to keep track of the conversation, but I recognize it isn’t necessary.
+
+## Early warning signs
+
+The first thing I noticed was changes in the way I approached problem-solving. Before using LLMs, if I encountered an error message, I would read it before heading online to look for a solution. Sometimes this just meant figuring out what I was going to Google, but at least I’d confronted some language about the problem.
+
+When I first started using LLMs for debugging, I would provide roughly the same amount of information I would to a human. But as the models improve (and the tools become more integrated), I no longer need to provide background information about the problem.  
+
+This got me wondering: are reproducible examples (reprexes) still going to be a thing? A lot of time and attention have been invested in training developers to write questions that humans can help answer, and much of that training centers on human qualities. The reprex package philosophy states that a good reproducible example:
+
+> \- Must run and, therefore, should be run **by the person posting**. No faking it.
+
+> \- Should be easy for others to digest, so **they don’t necessarily have to run it**. You are encouraged to include selected bits of output. :scream:
+
+> \- Should be easy for others to copy + paste + run, **if and only if they so choose**. Don’t let inclusion of output break executability.”
 
 ```{r}
 #| label: co_box_reprex
@@ -115,8 +133,6 @@ graph TD
     
 ```
 
-## Embracing minimalism
-
 The real art in creating a good reprex is identifying the code that isn't needed to reproduce the error (including packages, function calls, objects, etc). Deleting code can be painful, especially if you've already made multiple attempts to address the error. But winnowing down code gives us an opportunity to think clearly and deeply about the problem we've encountered.
 
 ```{r}
@@ -130,9 +146,6 @@ co_box(color = "g",
 > '*rewriting is the key to improved thinking. It demands a real open-mindedness and objectivity.*'")
 ```
 
-
-
-
 ```{r}
 #| label: co_box_verbiage
 #| echo: false
@@ -143,8 +156,6 @@ co_box(color = "g",
   contents = "
 > '*[revision] demands a willingness to cull verbiage so that ideas stand out clearly. And it demands a willingness to meet logical contradictions head on and trace them to the premises that have created them.*'")
 ```
-
-
 
 ```{r}
 #| label: co_box_courage
