@@ -1,0 +1,15 @@
+{
+  "hash": "2b834e00f43b36e1f5cafa4b0209205f",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Positron Assistant vs. Posit AI\"\nsubtitle: \"Comparing IDE chat assistants\"\nauthor: \"Martin Frigaard\"\ndate: \"2026-03-14\"\ncategories: [LLMs, RStudio, Positron]\nimage: \"img/positron-rstudio-llm.png\"\ntoc: true\ntoc-depth: 5\ntoc-title: 'Contents'\ntoc-location: \"left\"\ncode-block-bg: \"#f8f8f8\"\ncode-block-border-left: \"#e8e8e8\"\ncode-fold: show\ncode-summary: 'show/hide'\ncallout-icon: false\n\ndraft: false\n\nfreeze: true\n\nknitr:\n  opts_chunk: \n    fig-dpi: 320\n    fig-width: 6\n    out-width: '85%'\n    fig-format: png\n    fig-align: 'center'\n\nexecute:\n  echo: true\n  message: false\n  warning: false\n  eval: false\n  \n---\n\n\n\nI recently downloaded the RStudio [daily](https://dailies.rstudio.com/) and subscribed to the [Posit AI](https://posit.ai/) platform. This post describes my first impressions of using LLMs in RStudio. I'll also compare it to the Positron Assistant. \n\n## Posit AI\n\nAfter subscribing to Posit AI, Posit Assistant can be configured by clicking on **Tools** > **Global Options...** > **Assistant** \n\n![](img/global-assistant-rstudio.png){width='80%' fig-align='center'}\n\nThe Posit Assistant adds another pane to the IDE (a wide screen is helpful here), and I'm able to select the Claude model I'd like to use:\n\n![](img/posit-assistant-pane.png){width='100%' fig-align='center'}\n\n\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}
