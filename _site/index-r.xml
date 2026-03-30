@@ -13,11 +13,13 @@
 <url>https://mjfrigaard.github.io/profile.png</url>
 <title>@mjfrigaard</title>
 <link>https://mjfrigaard.github.io/#category=R</link>
+<height>109</height>
+<width>144</width>
 </image>
-<generator>quarto-1.9.30</generator>
-<lastBuildDate>Sun, 15 Mar 2026 07:00:00 GMT</lastBuildDate>
+<generator>quarto-1.8.26</generator>
+<lastBuildDate>Sat, 28 Mar 2026 07:00:00 GMT</lastBuildDate>
 <item>
-  <title>Reproducible examples: a love letter</title>
+  <title>Reproducible examples</title>
   <dc:creator>Martin Frigaard</dc:creator>
   <link>https://mjfrigaard.github.io/posts/reprex-love-letter/</link>
   <description><![CDATA[ 
@@ -26,35 +28,26 @@
 
 
 
-<div class="cell" data-layout-align="center">
-<div class="callout callout-style-default callout-important no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span><span style="font-weight: bold; font-size: 1.15em;">DRAFT!</span>
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
-<div class="callout-body-container callout-body">
-<div style="font-size: 1.10em; color: #282b2d;">
-<p>This post is currently under development–thank you for your patience.</p>
-</div>
-</div>
-</div>
-</div>
-</div>
 <p>I’ve written and discarded several drafts of this post out of concern that they sounded overly alarmist. For this version, I chose to step back from the technical details of using LLMs in my current role and instead focus on how they are fundamentally altering the way I work and think. I’ve noticed that LLMs can help me solve problems, but they may also be changing how deeply I engage with and understand those problems.</p>
-<p>With LLMs now integrated into development tools, I find myself questioning the future of resources like online books, Stack Overflow, and package documentation. As developers increasingly rely on LLMs to write and debug code, the process and depth of our learning is shifting. In this post, I share observations about how using LLMs is beginning to reshape not just what I do, but how I approach and internalize my work.</p>
+<p>With LLMs now integrated into development tools, I find myself questioning the future of resources like online books, Stack Overflow, and package documentation.<sup>1</sup> As developers increasingly rely on LLMs to write and debug code, the process and depth of our learning is shifting. In this post, I share observations about how using LLMs is beginning to reshape not just what I do, but how I approach and internalize my work.</p>
 <section id="assistants-are-amazing" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="assistants-are-amazing">Assistants <em>are</em> amazing</h2>
 <p>I will start by stating I think LLMs are remarkable technology, and the accompanying ecosystem of tools built around them seems to be improving faster than I can adopt them. Outside of work, I regularly use LLM assistants and find them to be incredible for keeping my packages up to date, generating tests, and refactoring old code.</p>
 
 <div class="no-row-height column-margin column-container"><div class="">
 <p>I’m referring to <a href="https://github.com/features/copilot">GitHub Copilot</a> in VS Code, <a href="https://positron.posit.co/assistant.html">Positron Assistant</a> and <a href="https://positron.posit.co/databot.html">Databot</a>, and <a href="https://posit.co/products/ai/">Posit Assistant</a> in RStudio.</p>
-</div></div><p><strong><em>insert image</em></strong></p>
+</div></div><div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/positron-assistant.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Positron Assistant"><img src="https://mjfrigaard.github.io/posts/reprex-love-letter/img/positron-assistant.png" class="img-fluid figure-img" style="width:100.0%" alt="Positron Assistant"></a></p>
+<figcaption>Positron Assistant</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/posit-assistant.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Posit Assistant"><img src="https://mjfrigaard.github.io/posts/reprex-love-letter/img/posit-assistant.png" class="img-fluid figure-img" style="width:100.0%" alt="Posit Assistant"></a></p>
+<figcaption>Posit Assistant</figcaption>
+</figure>
+</div>
 <p>I have less experience with Databot, but I appreciate Posit’s approach to developing these tools (something like “apprehensive enthusiasm”).</p>
 <div class="callout callout-style-default callout-tip no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -88,7 +81,7 @@
 <p>Notice the ‘should be easy’ and ‘:scream:’? These aren’t technical requirements–they are human recommendations for human readers. Reducing code into a minimal example always reminds me of the advice from Marvin H. Swift,</p>
 <div class="cell" data-layout-align="center">
 <div class="callout callout-style-default callout-tip no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -97,7 +90,7 @@
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-3" class="callout-3-contents callout-collapse collapse show">
+<div id="callout-2" class="callout-2-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em; color: #282b2d;">
 <blockquote class="blockquote">
@@ -113,7 +106,7 @@
 <p>The real art in creating a good <code>reprex</code> is identifying the code that isn’t needed to reproduce the error. Deleting code can be painful, especially if I’ve already made multiple attempts to address the error. But winnowing down code gives me an opportunity to think clearly and deeply about the problem I’ve encountered, and attempt to persuade someone else to help me solve it.</p>
 <div class="cell" data-layout-align="center">
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -122,7 +115,7 @@
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div style="font-size: 1.10em; color: #282b2d;">
 <ul>
@@ -137,7 +130,7 @@
 </section>
 <section id="the-early-warning-signs" class="level2">
 <h2 class="anchored" data-anchor-id="the-early-warning-signs">The early warning signs</h2>
-<p>When I first started using LLMs for debugging, I would provide roughly the same amount of information I would to a human. Some of this was driven by the model provider’s interface, but I’ll admit, I chose to have a text file open to track the entire conversation.<sup>1</sup></p>
+<p>When I first started using LLMs for debugging, I would provide roughly the same amount of information I would to a human. Some of this was driven by the model provider’s interface, but I’ll admit, I chose to have a text file open to track the entire conversation.<sup>2</sup></p>
 <p>As the models improved (and my system prompts became better), the need for context or background information diminished. This is when I first noticed changes in how I approached problem-solving.</p>
 <p>Before LLMs, if I encountered an error message, I would read it before heading online to look for a solution. Sometimes this just meant figuring out what I was going to Google, but at least I’d been confronted by some language about the problem. With LLMs, I could just haphazardly copy and paste error messages and let the model tell me whether more information was needed.</p>
 <p>I consider this an ‘early warning sign’ because <strong>this new technology hasn’t been designed to improve my understanding of the problem, but to solve the problem for me.</strong> I was no longer being forced to confront error messages or to think about how I might ask a question that would convince a human to help me.</p>
@@ -146,12 +139,13 @@
 <p>In 2016, David Krakauer wrote an essay titled, <a href="https://davidckrakauer.com/artifacts/nepe5texr3xhwmizakmifcim8w20g6">Will A.I. Harm Us? Better to Ask How We’ll Reckon With Our Hybrid Nature</a>, where he differentiates between complementary and competitive cognitive artifacts. His main argument is that, throughout history, humans have used tools to enhance or amplify their cognitive limitations in areas such as memory, search, and calculation. For example, lists can store vast amounts of information, maps encode virtual representations of physical positions, and the abacus guides users through reliable steps to solve mathematical questions.</p>
 <p>An artifact is complementary if “<em>after repeated practice and training, the artifact itself could be set aside and its mental simulacrum deployed in its place.</em>” Lists, maps, and the abacus are all examples of complementary cognitive artifacts–their design can be internalized and provide us with useful mental models for interacting with the world.</p>
 <p>Competitive cognitive artifacts, on the other hand, amplify our cognitive processes without transferring any knowledge or understanding. Calculators, GPS systems, and LLMs are all competitive cognitive artifacts–they can enhance our abilities, but “<em>when we are deprived of their use, we are no better than when we started.</em>”</p>
-<p>With LLM assistants (i.e., those directly in the IDE), I’m writing questions/instructions into a tiny chat text box and reviewing the output. There is a record of the conversation, and I’m able to review and approve each step, but the process isolates me from other people doing similar work. Instead of exploring documentation or engaging in a conversation with another human about the problem, I’m just asking the machine to solve a problem for me.</p>
+<p>With LLM assistants (i.e., those directly in the IDE), I’m writing questions/instructions into a tiny chat text box and reviewing the output. There is a record of the conversation, and I can review and approve each step, but the process isolates me from others doing similar work. Instead of exploring documentation or engaging in a conversation with another human about the problem, I’m just asking the machine to solve a problem for me.</p>
 </section>
 </section>
-<section id="restricted-intentional-use-of-llms" class="level2">
-<h2 class="anchored" data-anchor-id="restricted-intentional-use-of-llms">Restricted, intentional use of LLMs</h2>
-<p>I’ve found myself feeling fortunate that most of the development I do for work takes place in a restricted environment without access to LLMs in the IDE. Not having direct access to these models makes me feel strangely <em>more</em> productive. If I do interact with an LLM, its more deliberate and thoughtful.</p>
+<section id="restricted-but-intentional-use-of-llms" class="level2">
+<h2 class="anchored" data-anchor-id="restricted-but-intentional-use-of-llms">Restricted but intentional use of LLMs</h2>
+<p>I’ve found myself feeling fortunate that most of the development I do for work takes place in a restricted environment without access to LLMs in the IDE. Not having direct access to the LLM assistants makes me feel more productive, because I am not merely approving or observing solutions. Without the assistant’s agentic capabilities (i.e., session context, variables, loaded packages, plots, console history, etc.) or access to external tools (i.e., through the model context protocol), the communication looks more like a letter one would compose to a pen pal: I’m forced to provide enough background so the model understands the question, and the reply shows whether I’ve explained the problem clearly.</p>
+<p>I won’t bother arguing that a ‘letter writing’ style of communication is the best use of this technology. An assistant in the IDE with agentic capabilities that give it access to the data environment to perform multi-step tasks clearly improves productivity. But I’m certain that reproducible examples (and other forms of human-to-human communications) were more than just inefficient ways to develop software. In combination, these forms of writing help me figure out what I think.</p>
 
 
 </section>
@@ -160,14 +154,16 @@
 <div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
 
 <ol>
-<li id="fn1"><p>The text file felt like a commit history or <code>CHANGELOG.txt</code> file, but much more tedious. Writing questions/outputs into a text file, copying and pasting that into the LLM interface, then pasting the model response to review the output was time-consuming.↩︎</p></li>
+<li id="fn1"><p>I’m referring to books like <a href="https://r4ds.hadley.nz/">R for Data Science</a>, <a href="https://adv-r.hadley.nz/">Advanced R</a>, the <a href="https://stackoverflow.com/questions/tagged/python?tab=Newest">‘Newest’ page</a> of Stack Overflow, and <a href="https://dplyr.tidyverse.org/articles/index.html">articles</a> for popular packages.↩︎</p></li>
+<li id="fn2"><p>The text file felt like a commit history or <code>CHANGELOG.txt</code> file, but much more tedious. Writing questions/outputs into a text file, copying and pasting that into the LLM interface, then pasting the model response to review the output was time-consuming.↩︎</p></li>
 </ol>
 </section></div> ]]></description>
   <category>R</category>
   <category>Python</category>
   <category>Markdown</category>
   <guid>https://mjfrigaard.github.io/posts/reprex-love-letter/</guid>
-  <pubDate>Sun, 15 Mar 2026 07:00:00 GMT</pubDate>
+  <pubDate>Sat, 28 Mar 2026 07:00:00 GMT</pubDate>
+  <media:content url="https://mjfrigaard.github.io/posts/reprex-love-letter/img/image.png" medium="image" type="image/png" height="45" width="144"/>
 </item>
 </channel>
 </rss>
