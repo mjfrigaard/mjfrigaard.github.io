@@ -1,10 +1,10 @@
 ---
-title: "Reproducible examples: a love letter"
-subtitle: "The best way to answer your own questions"
+title: "Reproducible examples"
+subtitle: "A love letter"
 author: "Martin Frigaard"
-date: "2026-03-15"
+date: "2026-03-28"
 categories: [R, Python, Markdown]
-# image: "img/image.png"
+image: "img/image.png"
 toc: true
 toc-depth: 5
 toc-title: 'Contents'
@@ -56,7 +56,7 @@ library(lobstr)
 #| label: co_box_dev
 #| echo: false
 #| results: asis
-#| eval: true
+#| eval: false
 co_box(color = "r", 
   header = "DRAFT!", 
   contents = "This post is currently under development--thank you for your patience.")
@@ -64,19 +64,21 @@ co_box(color = "r",
 
 I’ve written and discarded several drafts of this post out of concern that they sounded overly alarmist. For this version, I chose to step back from the technical details of using LLMs in my current role and instead focus on how they are fundamentally altering the way I work and think. I've noticed that LLMs can help me solve problems, but they may also be changing how deeply I engage with and understand those problems.
 
-With LLMs now integrated into development tools, I find myself questioning the future of resources like online books, Stack Overflow, and package documentation. As developers increasingly rely on LLMs to write and debug code, the process and depth of our learning is shifting. In this post, I share observations about how using LLMs is beginning to reshape not just what I do, but how I approach and internalize my work.
+With LLMs now integrated into development tools, I find myself questioning the future of resources like online books, Stack Overflow, and package documentation.[^1] As developers increasingly rely on LLMs to write and debug code, the process and depth of our learning is shifting. In this post, I share observations about how using LLMs is beginning to reshape not just what I do, but how I approach and internalize my work.
+
+[^1]: I'm referring to books like [R for Data Science](https://r4ds.hadley.nz/), [Advanced R](https://adv-r.hadley.nz/), the ['Newest' page](https://stackoverflow.com/questions/tagged/python?tab=Newest) of Stack Overflow, and [articles](https://dplyr.tidyverse.org/articles/index.html) for popular packages.
 
 ## Assistants *are* amazing
 
 I will start by stating I think LLMs are remarkable technology, and the accompanying ecosystem of tools built around them seems to be improving faster than I can adopt them. Outside of work, I regularly use LLM assistants and find them to be incredible for keeping my packages up to date, generating tests, and refactoring old code.
 
 ::: column-margin
-
 I'm referring to [GitHub Copilot](https://github.com/features/copilot) in VS Code, [Positron Assistant](https://positron.posit.co/assistant.html) and [Databot](https://positron.posit.co/databot.html), and [Posit Assistant](https://posit.co/products/ai/) in RStudio.
-
 :::
 
-***insert image***
+![Positron Assistant](img/positron-assistant.png){width='100%'}
+
+![Posit Assistant](img/posit-assistant.png){width='100%'}
 
 I have less experience with Databot, but I appreciate Posit’s approach to developing these tools (something like "apprehensive enthusiasm").
 
@@ -137,9 +139,9 @@ co_box(color = "b",
 
 ## The early warning signs
 
-When I first started using LLMs for debugging, I would provide roughly the same amount of information I would to a human. Some of this was driven by the model provider’s interface, but I’ll admit, I chose to have a text file open to track the entire conversation.[^1]
+When I first started using LLMs for debugging, I would provide roughly the same amount of information I would to a human. Some of this was driven by the model provider’s interface, but I’ll admit, I chose to have a text file open to track the entire conversation.[^2]
 
-[^1]: The text file felt like a commit history or `CHANGELOG.txt` file, but much more tedious. Writing questions/outputs into a text file, copying and pasting that into the LLM interface, then pasting the model response to review the output was time-consuming.
+[^2]: The text file felt like a commit history or `CHANGELOG.txt` file, but much more tedious. Writing questions/outputs into a text file, copying and pasting that into the LLM interface, then pasting the model response to review the output was time-consuming.
 
 As the models improved (and my system prompts became better), the need for context or background information diminished. This is when I first noticed changes in how I approached problem-solving.
 
@@ -155,11 +157,10 @@ An artifact is complementary if "*after repeated practice and training, the arti
 
 Competitive cognitive artifacts, on the other hand, amplify our cognitive processes without transferring any knowledge or understanding. Calculators, GPS systems, and LLMs are all competitive cognitive artifacts–they can enhance our abilities, but "*when we are deprived of their use, we are no better than when we started.*"
 
-With LLM assistants (i.e., those directly in the IDE), I'm writing questions/instructions into a tiny chat text box and reviewing the output. There is a record of the conversation, and I'm able to review and approve each step, but the process isolates me from other people doing similar work. Instead of exploring documentation or engaging in a conversation with another human about the problem, I’m just asking the machine to solve a problem for me.
+With LLM assistants (i.e., those directly in the IDE), I'm writing questions/instructions into a tiny chat text box and reviewing the output. There is a record of the conversation, and I can review and approve each step, but the process isolates me from others doing similar work. Instead of exploring documentation or engaging in a conversation with another human about the problem, I’m just asking the machine to solve a problem for me.
 
+## Restricted but intentional use of LLMs
 
-## Restricted, intentional use of LLMs
+I’ve found myself feeling fortunate that most of the development I do for work takes place in a restricted environment without access to LLMs in the IDE. Not having direct access to the LLM assistants makes me feel more productive, because I am not merely approving or observing solutions. Without the assistant's agentic capabilities (i.e., session context, variables, loaded packages, plots, console history, etc.) or access to external tools (i.e., through the model context protocol), the communication looks more like a letter one would compose to a pen pal: I’m forced to provide enough background so the model understands the question, and the reply shows whether I’ve explained the problem clearly.
 
-I’ve found myself feeling fortunate that most of the development I do for work takes place in a restricted environment without access to LLMs in the IDE. Not having direct access to these models makes me feel strangely *more* productive. If I do interact with an LLM, its more deliberate and thoughtful. 
-
-
+I won't bother arguing that a ‘letter writing' style of communication is the best use of this technology. An assistant in the IDE with agentic capabilities that give it access to the data environment to perform multi-step tasks clearly improves productivity. But I’m certain that reproducible examples (and other forms of human-to-human communications) were more than just inefficient ways to develop software. In combination, these forms of writing help me figure out what I think.
