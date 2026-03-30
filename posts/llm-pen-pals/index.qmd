@@ -3,7 +3,7 @@ title: "Who is this for?"
 subtitle: "How assistants made me appreciate writing"
 author: "Martin Frigaard"
 date: "2026-03-28"
-categories: [R, Python, Markdown]
+categories: [RStudio, Positron]
 image: "img/image.png"
 toc: true
 toc-depth: 5
@@ -92,7 +92,7 @@ Both Joe Cheng and Hadley Wickham have given excellent talks on using LLMs with 
 
 Before assistants, most of my time was spent writing and editing code (i.e., in R scripts, R Markdown and/or Quarto files). When I wasn’t writing or editing code, I was reading code or documentation. It’s worth emphasizing that nearly everything I was reading was **written by humans**. This might seem like an obvious point to linger on, but one only needs to peruse the issues in a GitHub repo to see how much human-to-human communication is required to keep a code project running smoothly.
 
-Engaging with code required an understanding of the project’s purpose and a set of norms and etiquette. For example, a lot of time and attention have been invested in training developers to write questions that other humans can help answer, and much of that training centers around their human qualities. Consider the philosophy of R’s reprex package:
+Engaging with code required an understanding of the project’s purpose and a set of norms and etiquette. For example, a lot of time and attention have been invested in training developers to write questions that other humans can help answer, and much of that training centers around their human qualities. Consider the philosophy of R’s [`reprex` package](https://reprex.tidyverse.org/):
 
 > -   *Must run and, therefore, should be run by the person posting. No faking it*
 > -   *Should be easy for others to digest, so they don’t necessarily have to run it. You are encouraged to include selected bits of output. :scream:*

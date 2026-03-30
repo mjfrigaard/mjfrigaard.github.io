@@ -58,7 +58,7 @@
 <section id="not-so-long-ago" class="level2">
 <h2 class="anchored" data-anchor-id="not-so-long-ago">Not so long ago</h2>
 <p>Before assistants, most of my time was spent writing and editing code (i.e., in R scripts, R Markdown and/or Quarto files). When I wasn’t writing or editing code, I was reading code or documentation. It’s worth emphasizing that nearly everything I was reading was <strong>written by humans</strong>. This might seem like an obvious point to linger on, but one only needs to peruse the issues in a GitHub repo to see how much human-to-human communication is required to keep a code project running smoothly.</p>
-<p>Engaging with code required an understanding of the project’s purpose and a set of norms and etiquette. For example, a lot of time and attention have been invested in training developers to write questions that other humans can help answer, and much of that training centers around their human qualities. Consider the philosophy of R’s reprex package:</p>
+<p>Engaging with code required an understanding of the project’s purpose and a set of norms and etiquette. For example, a lot of time and attention have been invested in training developers to write questions that other humans can help answer, and much of that training centers around their human qualities. Consider the philosophy of R’s <a href="https://reprex.tidyverse.org/"><code>reprex</code> package</a>:</p>
 <blockquote class="blockquote">
 <ul>
 <li><em>Must run and, therefore, should be run by the person posting. No faking it</em></li>
@@ -159,9 +159,8 @@
 <li id="fn2"><p>The text file felt like a commit history or <code>CHANGELOG.txt</code> file, but much more tedious. Writing questions/outputs into a text file, copying and pasting that into the LLM interface, then pasting the model response to review the output was time-consuming.↩︎</p></li>
 </ol>
 </section></div> ]]></description>
-  <category>R</category>
-  <category>Python</category>
-  <category>Markdown</category>
+  <category>RStudio</category>
+  <category>Positron</category>
   <guid>https://mjfrigaard.github.io/posts/llm-pen-pals/</guid>
   <pubDate>Sat, 28 Mar 2026 07:00:00 GMT</pubDate>
   <media:content url="https://mjfrigaard.github.io/posts/llm-pen-pals/img/image.png" medium="image" type="image/png" height="45" width="144"/>
@@ -17386,7 +17385,7 @@ font-style: inherit;">print</span>(x)</span>
 </div>
 </div>
 <p>When <code>datasetApp()</code> is run, the app displays the dataset object in the <code>tableOutput()</code>, and the <code>verbatimTextOutput()</code> renders the reactive values as a text:</p>
-<div id="fig-datasetApp_run" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center" width="100%">
+<div id="fig-datasetApp_run" class="quarto-float quarto-figure quarto-figure-center anchored" width="100%" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-datasetApp_run-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <a href="datasetApp_run.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;1: "><img src="https://mjfrigaard.github.io/posts/p3-test-shiny-module-tests/datasetApp_run.png" id="fig-datasetApp_run" class="img-fluid quarto-figure quarto-figure-center anchored figure-img" style="width:100.0%"></a>
