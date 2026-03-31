@@ -15,7 +15,7 @@ code-fold: show
 code-summary: 'show/hide'
 callout-icon: false
 
-draft: true
+draft: false
 
 freeze: true
 
@@ -65,11 +65,11 @@ co_box(color = "r",
   contents = "This post is currently under development--thank you for your patience.")
 ```
 
-In this post I'll cover a package/app I've been working on: [`ttdviewer`](https://mjfrigaard.github.io/ttdviewer/index.html). I designed this app to be an interactive tool for exploring the [#TidyTuesday datasets](https://github.com/rfordatascience/tidytuesday). This post will cover my experience developing this app in [Positron](https://positron.posit.co/), using the Assistant[^assistant], adjusting my LLM system prompts, and debugging the parameterized reports. 
+I've been working on an app-package for exploring the datasets in the [#TidyTuesday repo](https://github.com/rfordatascience/tidytuesday):  [`ttdviewer`](https://mjfrigaard.github.io/ttdviewer/index.html). This post will cover my experience developing this app in [Positron](https://positron.posit.co/), using the Assistant[^assistant], adjusting my LLM system prompts, and debugging the parameterized reports. 
 
 [^assistant]: Read more about configuring [Positron Assistant](https://positron.posit.co/assistant.html).
 
-## Objective
+## Design
 
 The entire application centers around a single UI input (i.e., dataset name) and a variety outputs with an optional downloadable report.[^tidytues] The downloadable report feature was tricky, but I think these are a great feature, so I've put together some tips I learned after debugging this feature in multiple applications. 
 
@@ -160,7 +160,7 @@ style InspectPlot fill:#FFD700
 
 ### Sidebar inputs 
 
-The inputs for the dataset and report download are available in the sidebar. 
+There are two input modules: one for the dataset and another for the report download. The report also includes a description and download modules. 
 
 ```{mermaid}
 %%| fig-align: center
@@ -186,7 +186,7 @@ flowchart LR
 
 ### Tab panels 
 
-Each output is displayed in it's own tab panel. 
+Each output has it's own module and is displayed in it's own tab panel. 
 
 ```{mermaid}
 %%| fig-align: center
@@ -207,45 +207,9 @@ flowchart LR
 
 ```
 
-### Package files 
-
-I've displayed the `R/` folder from the `ttdviewer` package  below. The code base includes a 
-handful of Shiny modules, utility functions, UI and server functions, and a standalone app function. 
-
-```{verbatim}
-R/
-├── app_server.R #<1>
-├── app_ui.R #<1>
-├── inspect_plot.R #<3>
-├── launch.R #<4>
-├── load_tt_data.R #<2>
-├── logr_msg.R #<5>
-├── mod_list.R #<6>
-├── mod_report_desc.R #<6>
-├── mod_report_download.R #<6>
-├── mod_report_input.R #<6>
-├── mod_table.R #<6>
-├── mod_input.R #<6>
-├── mod_viz.R #<6>
-├── render_report.R # <7>
-└── testthat.R # <8>
-
-1 directory, 15 files
-```
-1. App functions 
-2. Data utility function   
-3. Plot utility function   
-4. Standalone app function 
-5. Logging function 
-6. Shiny modules  
-7. Report utilities  
-8. Test utilities 
-
-In the sections below, we'll cover how to the inputs are passed between the modules before being rendered in the downloaded report.
-
 ## Dataset input
 
-The dataset input is used to download the dataset(s) from the [`#TidyTuesday` GitHub](https://github.com/rfordatascience/tidytuesday) repo. Other packages provide similar utilities, but I wanted `ttdviewer` to be able to reliably download *all* the #TidyTuesday datasets (not just the .csv files).[^similar-pkgs] After making a selection, the download progress is displayed (within `details()` and `summary()` tags).
+Users select a dataset from the dropdown and the dataset is downloaded from the [`#TidyTuesday` GitHub](https://github.com/rfordatascience/tidytuesday) repo. Other packages provide similar utilities, but I wanted `ttdviewer` to be able to reliably download *all* the #TidyTuesday datasets (not just the .csv files).[^similar-pkgs] After making a selection, the download progress is displayed (within `details()` and `summary()` tags).
 
 [^similar-pkgs]: [tidytuesdayR](https://dslc-io.github.io/tidytuesdayR/) and [ttmeta](https://r4ds.github.io/ttmeta/) also provide #TidyTuesday datasets and information. Read more in the [documentation.](https://mjfrigaard.github.io/ttdviewer/articles/data.html)
 
@@ -349,69 +313,15 @@ ttd <- load_tt_data("Space Launches")
 str(ttd)
 ```
 
-## Modules 
-
-Below is an abstract syntax tree[^ast] for the inputs (i.e., the dataset title and downloadable report format) and display modules (list, table, and graphs).
-
-```{r}
-#| eval: false  
-#| include: false
-#| echo: false
-#| comment: ""
-ast(
-  launch(
-    app_ui(
-      mod_input_ui(),
-      mod_list_ui(),
-      mod_plot_ui(),
-      mod_table_ui(),
-      mod_report_input_ui(),
-      mod_report_desc_ui(),
-      mod_report_download_ui()
-    ),
-    app_server(
-      mod_input_server(),
-      mod_list_server(),
-      mod_table_server(),
-      mod_plot_server(),
-      mod_report_input_server(),
-      mod_report_desc_server(),
-      mod_report_download_server()
-    )
-  )
-)
-```
-
-```{verbatim}
-█─launch
-├─█─app_ui 
-│ ├─█─mod_input_ui 
-│ ├─█─mod_list_ui 
-│ ├─█─mod_plot_ui 
-│ ├─█─mod_table_ui 
-│ ├─█─mod_report_input_ui 
-│ ├─█─mod_report_desc_ui 
-│ └─█─mod_report_download_ui 
-└─█─app_server 
-  ├─█─mod_input_server 
-  ├─█─mod_list_server 
-  ├─█─mod_table_server 
-  ├─█─mod_plot_server 
-  ├─█─mod_report_input_server 
-  ├─█─mod_report_desc_server 
-  └─█─mod_report_download_server 
-```
-
-[^ast]: Compliments of the [`lobstr::ast()`](https://lobstr.r-lib.org/reference/ast.html) function.
-
-### List display
+## List display
 
 On the first tab, the selected data is displayed using the  [`listviewerlite` package](https://long39ng.github.io/listviewerlite/).
 
 ![List view of selected #tidytuesday data](img/listviewerlite.png)
 
+The modules and utility function are displayed in the syntax tree below:[^ast]
 
-The modules and utility function are displayed in the syntax tree below:
+[^ast]: Compliments of the [`lobstr::ast()`](https://lobstr.r-lib.org/reference/ast.html) function.
 
 ```{r}
 #| eval: false 
@@ -473,7 +383,6 @@ ast(
     })
 ```
 
-
 The output is rendered with a `renderUI()` and displays the reactive `data()` list:
 
 ```{r}
@@ -507,7 +416,7 @@ The `data` and reactive `ds_title` are returned from the server function.
       ) 
 ```
 
-### Table display
+## Table display
 
 The second tab in the application contains a table display of the selected data from the sidebar. 
 
@@ -546,9 +455,7 @@ ast(
   └─█─mod_table_server 
 ```
 
-
 `mod_input_server()` returns a reactive list with the data (as `selected_data`), which is passed to `mod_table_server()`:
-
 
 ```{r}
 #| label: app_server-table
@@ -647,7 +554,7 @@ reactable::reactable(
 1. Subsetted data from the reactive list  
 
 
-### Graph display
+## Graph display
 
 The third tab display graphs for the selected [#TidyTuesday data](https://github.com/rfordatascience/tidytuesday) compliments of the 
 [`inspectdf` package](https://github.com/alastairrushworth/inspectdf/tree/master), which provides "*collection of utilities for columnwise summary, comparison and visualisation of data frames.*"
