@@ -1,0 +1,15 @@
+{
+  "hash": "b3b2208649cdcad47270340aceb0a552",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Go Language Code Analytics in R\"\nsubtitle: \"Wrapping scc in an R package\"\nauthor: \"Martin Frigaard\"\ndate: \"2026-04-19\"\ncategories: [R, Packages]\n# image: \"img/image.png\"\ntoc: true\ntoc-depth: 5\ntoc-title: 'Contents'\ntoc-location: \"left\"\ncode-block-bg: \"#f8f8f8\"\ncode-block-border-left: \"#e8e8e8\"\ncode-fold: show\ncode-summary: 'show/hide'\ncallout-icon: false\n\ndraft: true\n\nfreeze: true\n\nknitr:\n  opts_chunk: \n    fig-dpi: 320\n    fig-width: 6\n    out-width: '85%'\n    fig-format: png\n    fig-align: 'center'\n\nexecute:\n  echo: true\n  message: false\n  warning: false\n  eval: false\n  \n---\n\n\n\n\n::: {.cell layout-align=\"center\"}\n\n:::: {.callout-important collapse='false' appearance='default' icon=false}\n\n## [DRAFT!]{style='font-weight: bold; font-size: 1.15em;'}\n\n::: {style='font-size: 1.10em; color: #282b2d;'}\n\n\nThis post is currently under development--thank you for your patience.\n\n::: \n\n::::\n:::\n\n\nLast week I built an R package that wraps [scc](https://github.com/boyter/scc), a \"*a very fast accurate code counter with complexity calculations.*\" Code metrics have always been a fascination of mine, and now that code is increasingly written by both machines and humans, I wanted a set of tools I could use for comparison. \n\n## Background\n\nAdam Tornhill wrote two books on code metrics: [Software Design X-Rays](https://pragprog.com/titles/atevol/software-design-x-rays/) and [Your Code as a Crime Scene](https://pragprog.com/titles/atcrime2/your-code-as-a-crime-scene-second-edition/). Both are excellent reads, ",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}
