@@ -1,0 +1,461 @@
+---
+title: "glockr: An R Wrapper around Succinct Code Counter"
+subtitle: "Written in Go"
+author: "Martin Frigaard"
+date: "2026-04-19"
+categories: [R, Packages]
+# image: "img/image.png"
+toc: true
+toc-depth: 5
+toc-title: 'Contents'
+toc-location: "left"
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+code-fold: show
+code-summary: 'show/hide'
+callout-icon: false
+
+draft: false
+
+freeze: true
+
+knitr:
+  opts_chunk: 
+    fig-dpi: 320
+    fig-width: 6
+    out-width: '85%'
+    fig-format: png
+    fig-align: 'center'
+    collapse: true
+
+execute:
+  echo: true
+  message: false
+  warning: false
+  eval: false
+  
+  
+---
+
+```{r}
+#| label: setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("../_common.R")
+options(
+  scipen = 999,
+  repos = c(pm = "https://packagemanager.posit.co/cran/latest",
+            CRAN = "https://cloud.r-project.org")
+  )
+library(quarto)
+library(rmarkdown)
+library(shiny)
+library(lobstr)
+pkg_path <- "/Users/mjfrigaard/projects/dev/glockr-testing/rlang"
+```
+
+```{r}
+#| label: co_box_dev
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "r", 
+  header = "DRAFT!", 
+  contents = "This post is currently under development--thank you for your patience.")
+```
+
+Last week I built [`glockr`](https://mjfrigaard.github.io/glockr/), an R package that wraps [scc](https://github.com/boyter/scc), a "*very fast accurate code counter with complexity calculations.*" Code metrics are a fascination of mine, and now that code is increasingly written by *both* machines and humans, I wanted a set of tools I could use for comparison. 
+
+## Background
+
+Adam Tornhill wrote two books on code metrics: [Software Design X-Rays](https://pragprog.com/titles/atevol/software-design-x-rays/) and [Your Code as a Crime Scene, 2ed](https://pragprog.com/titles/atcrime2/your-code-as-a-crime-scene-second-edition/). Both are excellent reads, and were the first exposure I had to any measurements around code complexity.[^code-metrics-codacy] The approach to metrics and data visualizations Tornhill outlines has definitely improved the way I think about writing (and maintaining code). He covers topics like essential and accidental complexity, and how often code is changed (i.e., measured via version control) is usually as important as any metrics.
+
+The R ecosystem has some great packages for assessing code quality, too:[^adv-r-pkgs]    
+
+1. [`cloc`](https://github.com/hrbrmstr/cloc) ('*Count Lines of Code*') developed by [Bob Rudis](https://github.com/hrbrmstr), which wraps the ‘Perl’ command-line utility.[^cloc-orig]   
+2. [`pkgstats`](https://docs.ropensci.org/pkgstats/index.html) is a '*_static_ code analysis tool*' from [ROpenSci](https://ropensci.org/) for R packages.    
+3. [Luke Tierney](https://stat.uiowa.edu/people/luke-tierney)'s [`codetools`](https://r-universe.dev/manuals/codetools.html) package also has excellent code analysis tools for R.
+
+[^adv-r-pkgs]: Other packages worth noting are [`sloop`](https://adv-r.hadley.nz/oo.html#sloop) and [`lobstr`](https://adv-r.hadley.nz/names-values.html#prerequisites) -- these don't calculate metrics, but have been developed to improve users understanding of R and object oriented programming and are covered in [Advanced R, 2nd ed.](https://adv-r.hadley.nz/index.html).
+
+[^cloc-orig]: See the `cloc` command-line utility documentation [here](https://github.com/AlDanial/cloc). 
+
+[^code-metrics-codacy]: Codacy has a great overview of code metrics in [this blog post.](https://blog.codacy.com/code-complexity). 
+
+## What does `glockr` do? 
+
+`glockr` wraps the `scc` command-line tool in an R package (much like `cloc`). `scc` is written in pure Go, so it's much faster than the alternatives.[^scc-benchmarks] 
+
+Install `glockr` from GitHub: 
+
+```{r}
+#| label: install-pkg-glockr
+#| eval: false 
+#| code-fold: false 
+install.packages('remotes')
+remotes::install_github("mjfrigaard/glockr")
+```
+
+We'll also  install `gt` and `dplyr` for data manipulation and pretty tables.
+
+```{r}
+#| label: load-pkg-glockr
+#| eval: false 
+#| code-fold: false 
+install.packages(c('gt', 'dplyr'))
+```
+
+```{r}
+#| label: load-all-pkgs
+#| eval: true 
+#| code-fold: false 
+#| message: false 
+#| warning: false
+library(glockr)
+library(gt)
+library(dplyr)
+```
+
+
+[^scc-benchmarks]: Check the performance comparison of `scc` [here](https://github.com/boyter/scc#performance).
+
+`glockr` computes many of the same values of the `cloc` package, but also includes the weighted complexity, unique lines of code (uloc), and Constructive Cost Model (cocomo) estimates.
+
+Verify that `scc` is installed with:
+
+```{r}
+#| label: scc_version
+#| eval: true 
+#| code-fold: false 
+scc_version()
+```
+
+The primary function for `glockr` is `scc()`. We'll use the popular `rlang` package as an example:[^rlang-dowmload]
+
+[^rlang-dowmload]: This is a downloaded a local version of the [source files](https://github.com/r-lib/rlang/) as of 2026-05-26.
+
+```{r}
+#| label: pkg_path
+#| eval: false 
+#| code-fold: false 
+pkg_path <- file.path("rlang/")
+```
+
+```{r}
+#| label: rlang_scc
+#| eval: true 
+#| code-fold: false 
+rlang_scc <- scc(pkg_path) 
+dplyr::glimpse(rlang_scc)
+```
+
+The raw counts in the standard output from `scc()` includes the following columns: 
+
+1. `language`: Language of the file 
+2. `files`: Number of files   
+3. `lines`: Total physical line count across all files (code + comments + blanks)   
+4. `code`: Lines of source code (excludes blanks and comments)    
+5. `comments`: Number of total comments   
+5. `blanks`: Number of total blank lines    
+8. `bytes`: total file size in bytes across all files in that language      
+
+
+  
+## Complexity & Weighted Complexity 
+
+The complexity calculation in `scc` is an *approximation* of the standard [cyclomatic complexity](https://en.wikipedia.org/wiki/Cyclomatic_complexity):[^scc-sloc]
+
+> "*The reason it's an approximation is that it's calculated almost for free from a CPU point of view (since its a cheap lookup when counting), whereas a real cyclomatic complexity count would need to parse the code. It gives a reasonable guess in practice though even if it fails to identify recursive methods. The goal was never for it to be exact.*
+> 
+> *In short when `scc` is looking through what it has identified as code if it notices what are usually branch conditions it will increment a counter.*"
+
+
+[^scc-sloc]: How `scc` counts lines of code is outlined in the ['Features' section of the `README.md`](https://github.com/boyter/scc/blob/master/README.md#features)
+
+This approximation is an important limitation if your goal is to compare projects written in different languages. However, if your questions on code quality center around 1) "what are the most complex files in this project?" and -- by extension -- 2) "what code should be refactored?", these metrics work well.[^scc-complexity] 
+
+[^scc-complexity]: Read the full description of [Complexity Estimates](https://github.com/boyter/scc#complexity-estimates in the scc `README.md`).
+
+
+Below is the output from `scc()` for the `rlang` source files (sorted by `complexity`).
+
+```{r}
+#| label: gt-rlang_scc-desc-complexity
+#| eval: true 
+#| code-fold: false 
+rlang_scc |> 
+    dplyr::arrange(desc(complexity)) |> 
+    gt::gt() |> 
+    gt::tab_header(
+      title = "Succinct Code Count (rlang package)", 
+      subtitle = "Sorted by complexity")
+```
+
+This tells us -- not surprisingly -- that .R code files are the most complex files in this project. 
+
+
+A more useful output is the most complex files in the `rlang` package, which we can do using:
+
+```{r}
+#| label: gt-scc_by_file-desc-complexity
+#| eval: true 
+#| code-fold: false 
+r_files <- scc_by_file(pkg_path, include_ext = "r")
+r_files |> 
+  dplyr::arrange(desc(complexity)) |> 
+  dplyr::select(
+    c(filename, code, complexity)
+  ) |> 
+  head(10) |>
+  gt::gt() |>
+  gt::tab_header(
+    title    = "Top 10 most complex .R files",
+    subtitle = "raw branch-token count",
+    preheader = "rlang package")
+```
+
+If we compare this to the weighted complexity (`(complexity / code) * 100`), we can see a few of the top files change:
+
+```{r}
+#| label: gt-scc_by_file-desc-complexity-r-files
+#| eval: true 
+#| code-fold: false
+r_files <- scc_by_file(pkg_path, include_ext = "r")
+r_files |> 
+  dplyr::arrange(desc(weighted_complexity)) |> 
+  dplyr::select(
+    c(filename, code, complexity, weighted_complexity)
+  ) |> 
+  head(10) |>
+  gt::gt() |>
+  gt::tab_header(
+    title    = "Top 10 most complex (weighted) .R files",
+    subtitle = "Weighted Complexity",
+    preheader = "rlang package")
+```
+
+We won't spend too much time on these measures, because as you'll see below, `scc` has quite a few code metrics to choose from. 
+
+## Unique lines of code (uloc)
+
+The unique lines of code (ULOC) counts unique non-blank lines including comments. The `scc` author argues -- with help[^uloc-help] -- that this is better than relying on SLOC (source lines of code):
+
+> "*Compared to SLOC, not only are blank lines discounted, but so are close-brace lines and other repetitive code such as common includes. On the other hand, ULOC counts comments, which require just as much maintenance as the code around them does, while avoiding inflating the result with license headers which appear in every file, for example.*"
+
+[^uloc-help]: Read this discussion [here](https://cmcenroe.me/2018/12/14/uloc.html).
+
+For comparison, SLOC (the value in the `code` column) is just the raw count of non-blank, non-comment lines and includes duplicates. `uloc` is automatically included with both `scc()` and `scc_by_file()`. 
+
+The best way to see the differences is with the two minimal code files:
+
+```{r}
+#| label: code-file
+#| eval: false 
+#| code-fold: false
+# pure code, 5 lines, two duplicate pairs
+# save as code.R
+x <- 1
+y <- 2
+x <- 1
+y <- 2
+z <- 3
+```
+
+
+```{r}
+#| label: code_w_comments-file
+#| eval: false 
+#| code-fold: false
+# same code, plus three unique comments
+# save as code_w_comments.R 
+# step 1
+x <- 1
+y <- 2
+# step 2
+x <- 1
+y <- 2
+# step 3
+z <- 3
+```
+
+Now we can compare these with `scc_by_file()` and view the `lines`, `code`, `comments` and `uloc` columns.
+
+```{r}
+#| label: compare-code-vs-code_w_comments-files
+#| eval: true 
+#| code-fold: false
+fixtures <- c(
+  file.path("code.R"),
+  file.path("code_w_comments.R")
+)
+scc_by_file(fixtures) |>
+  dplyr::select(c(filename, lines, 
+  code, comments, uloc)) |> 
+  gt::gt() |>
+  gt::tab_header(
+    title    = "SLOC vs ULOC",
+    subtitle = "Both files contain the same 5 code lines",
+    preheader = "Local ULOC comparison")
+```
+
+### DRYness percentage
+
+The `DRYness %` can be added with `dryness = TRUE`. This is computed locally as `uloc / lines`, which matches scc’s `DRYness %` formula, applied per record instead of project-wide. 
+
+```{r}
+#| label: compare-code-vs-code_w_comments-files-dryness
+#| eval: true 
+#| code-fold: false
+scc_by_file(fixtures, dryness = TRUE) |>
+  dplyr::select(c(filename, lines, 
+  code, comments, uloc, dryness)) |> 
+  gt::gt() |>
+  gt::tab_header(
+    title    = "SLOC vs ULOC + DRYness",
+    subtitle = "Both files contain the same 5 code lines",
+    preheader = "Local SLOC, ULOC & DRYness comparison")
+```
+
+`DRYness` values close to 1 mean a file or language is mostly unique non-blank content and values closer to 0 mean heavy duplication, comments, or blanks.
+
+## COCOMO cost estimates
+
+`scc` includes a [COCOMO 81](https://en.wikipedia.org/wiki/COCOMO) model that estimates project effort and cost from `SLOC`. When `cocomo = TRUE`, the `scc()` output becomes a list and the COCOMO output is in the `cocomo` tibble. 
+
+```{r}
+#| label: cocomo
+#| eval: true 
+#| code-fold: false
+rlang_cocomo <- scc(pkg_path, cocomo = TRUE)
+```
+
+The `scc()` output is in the `scc` tibble: 
+
+```{r}
+#| label: names-cocomo
+#| eval: true 
+#| code-fold: false
+names(rlang_cocomo)
+```
+
+We can customize the COCOMO model with the following arguments: 
+
+1. `avg_wage`: annual salary in local currency     
+2. `cocomo_project_type`: “organic”, “semi-detached”, or “embedded”    
+3. `eaf`: effort adjustment factor     
+4. `overhead`: corporate overhead multiplier   
+5. `currency_symbol`: symbol shown in the value column     
+6. `auto_print_scc`: skip auto-printing the language tibble      
+
+**NOTE:** These arguments only work when `cocomo = TRUE`
+
+```{r}
+#| label: embedded-cocomo
+#| eval: true 
+#| code-fold: false
+embedded <- scc(pkg_path,
+    cocomo = TRUE,         
+    avg_wage = 120000L,        
+    cocomo_project_type = "embedded",     
+    eaf = 1.1,            
+    overhead = 2.0,            
+    currency_symbol = "$",            
+    auto_print_scc = FALSE)  
+```
+
+```{r}
+#| label: gt-embedded-cocomo
+#| eval: true 
+#| code-fold: false
+embedded$cocomo |> 
+  gt::gt() |> 
+  gt::tab_header(
+    title = "COCOMO", 
+    subtitle = "embedded project", 
+    preheader = "rlang package")
+```
+
+
+### Why not use COCOMO II ???
+
+`scc()` only gives us raw structural numbers (lines, code, complexity, bytes, etc.), but [COCOMO II](https://www.rose-hulman.edu/class/cs/csse372/201310/Homework/CII_modelman2000.pdf) needs 22 judgement inputs we can't derive from source code:
+
+  * The current COCOMO project types (`"organic"` / `"semi-detached"` / `"embedded"`) don't translate to COCOMO  II. 
+  * COCOMO II uses 5 scale factors to esitmate organizational/process attributes   
+  * COCOMO II also uses 17 effort multipliers for product, platform, personnel, and project context   
+    * Every one of these is a six-level human rating about the team, requirements stability, reuse strategy, tool maturity, schedule pressure, etc. 
+  * The only one that *might*  map would be CPLX (product complexity), but COCOMO II's CPLX is architectural/algorithmic complexity, not McCabe's cyclomatic.
+
+
+## Visualizing code complexity
+
+In [Your Code as a Crime Scene](https://pragprog.com/titles/atcrime2/your-code-as-a-crime-scene-second-edition/), Tornhill covers a collection of methods for visualizing code, but my favorite is his use of circle packing for identifying "hotspots." These are described below: 
+
+> "*Each circle represents a part of the system. The more complex a
+module, as measured by lines of code, the larger the circle. We then use color
+to serve as an attention magnet for the most critical property: change.*" - Adam Tornhill (Your Code as a Crime Scene, 2ed)
+
+![Tornhill's Hotspots from [Your Code as a Crime Scene, 2ed](https://pragprog.com/titles/atcrime2/your-code-as-a-crime-scene-second-edition/)](img/hotspots.png){width="80%" fig-align='center'}
+
+`glockr` doesn't have data on code changes (yet), but we can build circle packer graphs using the weighted complexity and DRYness percentage. 
+
+We'll make the circle area the file’s `weighted_complexity` (complexity per 100 LOC), meaning the files that 'pack' more branching per line are larger.
+
+The color `fill` aesthetic will be the file’s DRYness % (`uloc` / `lines`), with darker hues meaning more duplication relative to line counts and lighter hues meaning more unique, non-blank content.
+
+We'll start with a fresh dataset using `scc_by_file()`, setting `dryness` to `TRUE`.
+
+```{r}
+#| label: circle_packager-r_files
+#| code-fold: false 
+r_files <- scc_by_file(pkg_path, include_ext = "r", dryness = TRUE)
+```
+
+We'll exclude files with zero `weighted_complexity` because there is nothing to size the circle by: 
+
+```{r}
+#| label: filter-weighted_complexity-0
+#| code-fold: false 
+r_files <- dplyr::filter(r_files, weighted_complexity > 0)
+dplyr::glimpse(r_files)
+```
+
+We'll use `packcircles::circleProgressiveLayout()` to compute the area-proportional circle size:
+
+```{r}
+#| code-fold: false
+library(packcircles)
+```
+
+```{r}
+#| label: packing-circleProgressiveLayout
+#| code-fold: false
+packing <- packcircles::circleProgressiveLayout(
+  r_files$weighted_complexity, sizetype = "area"
+)
+```
+
+This creates a dataset with x, y, and radius columns (with the same number of observations as our previous `r_files` dataset). 
+
+```{r}
+#| label: glimpse-packing-circleProgressiveLayout
+#| code-fold: false
+dplyr::glimpse(packing)
+```
+
+The number of rows is important, because now we can add the `filename`, `weighted_complexity`, and `dryness` columns back to the packing data: 
+
+```{r}
+#| label: bind_cols-packing-r_files
+packing <- dplyr::bind_cols(
+  packing, # circle size data 
+  dplyr::select(r_files, # original columns
+    filename, weighted_complexity, dryness)
+  )
+dplyr::glimpse(packing)
+```
+
+
+
+

@@ -13,11 +13,4041 @@
 <url>https://mjfrigaard.github.io/profile.png</url>
 <title>@mjfrigaard</title>
 <link>https://mjfrigaard.github.io/</link>
-<height>169</height>
-<width>144</width>
 </image>
 <generator>quarto-1.8.26</generator>
-<lastBuildDate>Sat, 28 Mar 2026 07:00:00 GMT</lastBuildDate>
+<lastBuildDate>Sun, 19 Apr 2026 07:00:00 GMT</lastBuildDate>
+<item>
+  <title>glockr: An R Wrapper around Succinct Code Counter</title>
+  <dc:creator>Martin Frigaard</dc:creator>
+  <link>https://mjfrigaard.github.io/posts/glockr/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<div class="cell" data-layout-align="center">
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span><span style="font-weight: bold; font-size: 1.15em;">DRAFT!</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>This post is currently under development–thank you for your patience.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>Last week I built <a href="https://mjfrigaard.github.io/glockr/"><code>glockr</code></a>, an R package that wraps <a href="https://github.com/boyter/scc">scc</a>, a “<em>very fast accurate code counter with complexity calculations.</em>” Code metrics are a fascination of mine, and now that code is increasingly written by <em>both</em> machines and humans, I wanted a set of tools I could use for comparison.</p>
+<section id="background" class="level2">
+<h2 class="anchored" data-anchor-id="background">Background</h2>
+<p>Adam Tornhill wrote two books on code metrics: <a href="https://pragprog.com/titles/atevol/software-design-x-rays/">Software Design X-Rays</a> and <a href="https://pragprog.com/titles/atcrime2/your-code-as-a-crime-scene-second-edition/">Your Code as a Crime Scene, 2ed</a>. Both are excellent reads, and were the first exposure I had to any measurements around code complexity.<sup>1</sup> The approach to metrics and data visualizations Tornhill outlines has definitely improved the way I think about writing (and maintaining code). He covers topics like essential and accidental complexity, and how often code is changed (i.e., measured via version control) is usually as important as any metrics.</p>
+<p>The R ecosystem has some great packages for assessing code quality, too:<sup>2</sup></p>
+<ol type="1">
+<li><a href="https://github.com/hrbrmstr/cloc"><code>cloc</code></a> (‘<em>Count Lines of Code</em>’) developed by <a href="https://github.com/hrbrmstr">Bob Rudis</a>, which wraps the ‘Perl’ command-line utility.<sup>3</sup><br>
+</li>
+<li><a href="https://docs.ropensci.org/pkgstats/index.html"><code>pkgstats</code></a> is a ‘<em><em>static</em> code analysis tool</em>’ from <a href="https://ropensci.org/">ROpenSci</a> for R packages.<br>
+</li>
+<li><a href="https://stat.uiowa.edu/people/luke-tierney">Luke Tierney</a>’s <a href="https://r-universe.dev/manuals/codetools.html"><code>codetools</code></a> package also has excellent code analysis tools for R.</li>
+</ol>
+</section>
+<section id="what-does-glockr-do" class="level2">
+<h2 class="anchored" data-anchor-id="what-does-glockr-do">What does <code>glockr</code> do?</h2>
+<p><code>glockr</code> wraps the <code>scc</code> command-line tool in an R package (much like <code>cloc</code>). <code>scc</code> is written in pure Go, so it’s much faster than the alternatives.<sup>4</sup></p>
+<p>Install <code>glockr</code> from GitHub:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">install.packages</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'remotes'</span>)</span>
+<span id="cb1-2">remotes<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">install_github</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"mjfrigaard/glockr"</span>)</span></code></pre></div></div>
+</div>
+<p>We’ll also install <code>gt</code> and <code>dplyr</code> for data manipulation and pretty tables.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">install.packages</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'gt'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'dplyr'</span>))</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(glockr)</span>
+<span id="cb3-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(gt)</span>
+<span id="cb3-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(dplyr)</span></code></pre></div></div>
+</div>
+<p><code>glockr</code> computes many of the same values of the <code>cloc</code> package, but also includes the weighted complexity, unique lines of code (uloc), and Constructive Cost Model (cocomo) estimates.</p>
+<p>Verify that <code>scc</code> is installed with:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">scc_version</span>()</span>
+<span id="cb4-2"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## [1] "scc version 3.7.0"</span></span></code></pre></div></div>
+</div>
+<p>The primary function for <code>glockr</code> is <code>scc()</code>. We’ll use the popular <code>rlang</code> package as an example:<sup>5</sup></p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1">pkg_path <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">file.path</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"rlang/"</span>)</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1">rlang_scc <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">scc</span>(pkg_path) </span>
+<span id="cb6-2">dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">glimpse</span>(rlang_scc)</span>
+<span id="cb6-3"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Rows: 11</span></span>
+<span id="cb6-4"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Columns: 10</span></span>
+<span id="cb6-5"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## $ language            &lt;chr&gt; "R", "Markdown", "C"…</span></span>
+<span id="cb6-6"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## $ files               &lt;int&gt; 163, 53, 70, 72, 9, …</span></span>
+<span id="cb6-7"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## $ lines               &lt;int&gt; 44571, 16935, 14014,…</span></span>
+<span id="cb6-8"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## $ code                &lt;int&gt; 28038, 13866, 10960,…</span></span>
+<span id="cb6-9"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## $ comments            &lt;int&gt; 11152, 0, 872, 1777,…</span></span>
+<span id="cb6-10"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## $ blanks              &lt;int&gt; 5381, 3069, 2182, 11…</span></span>
+<span id="cb6-11"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## $ complexity          &lt;int&gt; 2323, 0, 1851, 691, …</span></span>
+<span id="cb6-12"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## $ weighted_complexity &lt;dbl&gt; 8.285184, 0.000000, …</span></span>
+<span id="cb6-13"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## $ bytes               &lt;int&gt; 1188357, 496932, 376…</span></span>
+<span id="cb6-14"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## $ uloc                &lt;int&gt; 23837, 5358, 6931, 4…</span></span></code></pre></div></div>
+</div>
+<p>The raw counts in the standard output from <code>scc()</code> includes the following columns:</p>
+<ol type="1">
+<li><code>language</code>: Language of the file</li>
+<li><code>files</code>: Number of files<br>
+</li>
+<li><code>lines</code>: Total physical line count across all files (code + comments + blanks)<br>
+</li>
+<li><code>code</code>: Lines of source code (excludes blanks and comments)<br>
+</li>
+<li><code>comments</code>: Number of total comments<br>
+</li>
+<li><code>blanks</code>: Number of total blank lines<br>
+</li>
+<li><code>bytes</code>: total file size in bytes across all files in that language</li>
+</ol>
+</section>
+<section id="complexity-weighted-complexity" class="level2">
+<h2 class="anchored" data-anchor-id="complexity-weighted-complexity">Complexity &amp; Weighted Complexity</h2>
+<p>The complexity calculation in <code>scc</code> is an <em>approximation</em> of the standard <a href="https://en.wikipedia.org/wiki/Cyclomatic_complexity">cyclomatic complexity</a>:<sup>6</sup></p>
+<blockquote class="blockquote">
+<p>“<em>The reason it’s an approximation is that it’s calculated almost for free from a CPU point of view (since its a cheap lookup when counting), whereas a real cyclomatic complexity count would need to parse the code. It gives a reasonable guess in practice though even if it fails to identify recursive methods. The goal was never for it to be exact.</em></p>
+<p><em>In short when <code>scc</code> is looking through what it has identified as code if it notices what are usually branch conditions it will increment a counter.</em>”</p>
+</blockquote>
+<p>This approximation is an important limitation if your goal is to compare projects written in different languages. However, if your questions on code quality center around 1) “what are the most complex files in this project?” and – by extension – 2) “what code should be refactored?”, these metrics work well.<sup>7</sup></p>
+<p>Below is the output from <code>scc()</code> for the <code>rlang</code> source files (sorted by <code>complexity</code>).</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1">rlang_scc <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb7-2">    dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">arrange</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">desc</span>(complexity)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb7-3">    gt<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">gt</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb7-4">    gt<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tab_header</span>(</span>
+<span id="cb7-5">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">title =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Succinct Code Count (rlang package)"</span>, </span>
+<span id="cb7-6">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">subtitle =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Sorted by complexity"</span>)</span></code></pre></div></div>
+<div class="cell-output-display">
+<div id="uazselxrqj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#uazselxrqj table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#uazselxrqj thead, #uazselxrqj tbody, #uazselxrqj tfoot, #uazselxrqj tr, #uazselxrqj td, #uazselxrqj th {
+  border-style: none;
+}
+
+#uazselxrqj p {
+  margin: 0;
+  padding: 0;
+}
+
+#uazselxrqj .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#uazselxrqj .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#uazselxrqj .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#uazselxrqj .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#uazselxrqj .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#uazselxrqj .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#uazselxrqj .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#uazselxrqj .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#uazselxrqj .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#uazselxrqj .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#uazselxrqj .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#uazselxrqj .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#uazselxrqj .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#uazselxrqj .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#uazselxrqj .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#uazselxrqj .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#uazselxrqj .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#uazselxrqj .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#uazselxrqj .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#uazselxrqj .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#uazselxrqj .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#uazselxrqj .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#uazselxrqj .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#uazselxrqj .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#uazselxrqj .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#uazselxrqj .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#uazselxrqj .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#uazselxrqj .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#uazselxrqj .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#uazselxrqj .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#uazselxrqj .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#uazselxrqj .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#uazselxrqj .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#uazselxrqj .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#uazselxrqj .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#uazselxrqj .gt_left {
+  text-align: left;
+}
+
+#uazselxrqj .gt_center {
+  text-align: center;
+}
+
+#uazselxrqj .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#uazselxrqj .gt_font_normal {
+  font-weight: normal;
+}
+
+#uazselxrqj .gt_font_bold {
+  font-weight: bold;
+}
+
+#uazselxrqj .gt_font_italic {
+  font-style: italic;
+}
+
+#uazselxrqj .gt_super {
+  font-size: 65%;
+}
+
+#uazselxrqj .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#uazselxrqj .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#uazselxrqj .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#uazselxrqj .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#uazselxrqj .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#uazselxrqj .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#uazselxrqj .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#uazselxrqj .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#uazselxrqj div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<td colspan="10" class="gt_heading gt_title gt_font_normal">Succinct Code Count (rlang package)</td>
+</tr>
+<tr class="gt_heading even">
+<td colspan="10" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border">Sorted by complexity</td>
+</tr>
+<tr class="gt_col_headings header">
+<th id="language" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">language</th>
+<th id="files" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">files</th>
+<th id="lines" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">lines</th>
+<th id="code" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">code</th>
+<th id="comments" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">comments</th>
+<th id="blanks" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">blanks</th>
+<th id="complexity" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">complexity</th>
+<th id="weighted_complexity" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">weighted_complexity</th>
+<th id="bytes" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">bytes</th>
+<th id="uloc" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">uloc</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="language">R</td>
+<td class="gt_row gt_right" headers="files">163</td>
+<td class="gt_row gt_right" headers="lines">44571</td>
+<td class="gt_row gt_right" headers="code">28038</td>
+<td class="gt_row gt_right" headers="comments">11152</td>
+<td class="gt_row gt_right" headers="blanks">5381</td>
+<td class="gt_row gt_right" headers="complexity">2323</td>
+<td class="gt_row gt_right" headers="weighted_complexity">8.285184</td>
+<td class="gt_row gt_right" headers="bytes">1188357</td>
+<td class="gt_row gt_right" headers="uloc">23837</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="language">C</td>
+<td class="gt_row gt_right" headers="files">70</td>
+<td class="gt_row gt_right" headers="lines">14014</td>
+<td class="gt_row gt_right" headers="code">10960</td>
+<td class="gt_row gt_right" headers="comments">872</td>
+<td class="gt_row gt_right" headers="blanks">2182</td>
+<td class="gt_row gt_right" headers="complexity">1851</td>
+<td class="gt_row gt_right" headers="weighted_complexity">16.888686</td>
+<td class="gt_row gt_right" headers="bytes">376444</td>
+<td class="gt_row gt_right" headers="uloc">6931</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="language">C Header</td>
+<td class="gt_row gt_right" headers="files">72</td>
+<td class="gt_row gt_right" headers="lines">8210</td>
+<td class="gt_row gt_right" headers="code">5315</td>
+<td class="gt_row gt_right" headers="comments">1777</td>
+<td class="gt_row gt_right" headers="blanks">1118</td>
+<td class="gt_row gt_right" headers="complexity">691</td>
+<td class="gt_row gt_right" headers="weighted_complexity">13.000941</td>
+<td class="gt_row gt_right" headers="bytes">270950</td>
+<td class="gt_row gt_right" headers="uloc">4809</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="language">Makefile</td>
+<td class="gt_row gt_right" headers="files">1</td>
+<td class="gt_row gt_right" headers="lines">11</td>
+<td class="gt_row gt_right" headers="code">7</td>
+<td class="gt_row gt_right" headers="comments">0</td>
+<td class="gt_row gt_right" headers="blanks">4</td>
+<td class="gt_row gt_right" headers="complexity">2</td>
+<td class="gt_row gt_right" headers="weighted_complexity">28.571429</td>
+<td class="gt_row gt_right" headers="bytes">184</td>
+<td class="gt_row gt_right" headers="uloc">8</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="language">Markdown</td>
+<td class="gt_row gt_right" headers="files">53</td>
+<td class="gt_row gt_right" headers="lines">16935</td>
+<td class="gt_row gt_right" headers="code">13866</td>
+<td class="gt_row gt_right" headers="comments">0</td>
+<td class="gt_row gt_right" headers="blanks">3069</td>
+<td class="gt_row gt_right" headers="complexity">0</td>
+<td class="gt_row gt_right" headers="weighted_complexity">0.000000</td>
+<td class="gt_row gt_right" headers="bytes">496932</td>
+<td class="gt_row gt_right" headers="uloc">5358</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="language">YAML</td>
+<td class="gt_row gt_right" headers="files">9</td>
+<td class="gt_row gt_right" headers="lines">735</td>
+<td class="gt_row gt_right" headers="code">587</td>
+<td class="gt_row gt_right" headers="comments">35</td>
+<td class="gt_row gt_right" headers="blanks">113</td>
+<td class="gt_row gt_right" headers="complexity">0</td>
+<td class="gt_row gt_right" headers="weighted_complexity">0.000000</td>
+<td class="gt_row gt_right" headers="bytes">17940</td>
+<td class="gt_row gt_right" headers="uloc">449</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="language">C++</td>
+<td class="gt_row gt_right" headers="files">2</td>
+<td class="gt_row gt_right" headers="lines">25</td>
+<td class="gt_row gt_right" headers="code">21</td>
+<td class="gt_row gt_right" headers="comments">0</td>
+<td class="gt_row gt_right" headers="blanks">4</td>
+<td class="gt_row gt_right" headers="complexity">0</td>
+<td class="gt_row gt_right" headers="weighted_complexity">0.000000</td>
+<td class="gt_row gt_right" headers="bytes">492</td>
+<td class="gt_row gt_right" headers="uloc">17</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="language">C++ Header</td>
+<td class="gt_row gt_right" headers="files">1</td>
+<td class="gt_row gt_right" headers="lines">26</td>
+<td class="gt_row gt_right" headers="code">21</td>
+<td class="gt_row gt_right" headers="comments">0</td>
+<td class="gt_row gt_right" headers="blanks">5</td>
+<td class="gt_row gt_right" headers="complexity">0</td>
+<td class="gt_row gt_right" headers="weighted_complexity">0.000000</td>
+<td class="gt_row gt_right" headers="bytes">429</td>
+<td class="gt_row gt_right" headers="uloc">21</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="language">SVG</td>
+<td class="gt_row gt_right" headers="files">10</td>
+<td class="gt_row gt_right" headers="lines">10</td>
+<td class="gt_row gt_right" headers="code">10</td>
+<td class="gt_row gt_right" headers="comments">0</td>
+<td class="gt_row gt_right" headers="blanks">0</td>
+<td class="gt_row gt_right" headers="complexity">0</td>
+<td class="gt_row gt_right" headers="weighted_complexity">0.000000</td>
+<td class="gt_row gt_right" headers="bytes">9687</td>
+<td class="gt_row gt_right" headers="uloc">10</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="language">License</td>
+<td class="gt_row gt_right" headers="files">1</td>
+<td class="gt_row gt_right" headers="lines">2</td>
+<td class="gt_row gt_right" headers="code">2</td>
+<td class="gt_row gt_right" headers="comments">0</td>
+<td class="gt_row gt_right" headers="blanks">0</td>
+<td class="gt_row gt_right" headers="complexity">0</td>
+<td class="gt_row gt_right" headers="weighted_complexity">0.000000</td>
+<td class="gt_row gt_right" headers="bytes">43</td>
+<td class="gt_row gt_right" headers="uloc">2</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="language">TOML</td>
+<td class="gt_row gt_right" headers="files">1</td>
+<td class="gt_row gt_right" headers="lines">2</td>
+<td class="gt_row gt_right" headers="code">2</td>
+<td class="gt_row gt_right" headers="comments">0</td>
+<td class="gt_row gt_right" headers="blanks">0</td>
+<td class="gt_row gt_right" headers="complexity">0</td>
+<td class="gt_row gt_right" headers="weighted_complexity">0.000000</td>
+<td class="gt_row gt_right" headers="bytes">34</td>
+<td class="gt_row gt_right" headers="uloc">2</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>This tells us – not surprisingly – that .R code files are the most complex files in this project.</p>
+<p>A more useful output is the most complex files in the <code>rlang</code> package, which we can do using:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1">r_files <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">scc_by_file</span>(pkg_path, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">include_ext =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"r"</span>)</span>
+<span id="cb8-2">r_files <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb8-3">  dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">arrange</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">desc</span>(complexity)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb8-4">  dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">select</span>(</span>
+<span id="cb8-5">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(filename, code, complexity)</span>
+<span id="cb8-6">  ) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb8-7">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">head</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb8-8">  gt<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">gt</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb8-9">  gt<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tab_header</span>(</span>
+<span id="cb8-10">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">title    =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Top 10 most complex .R files"</span>,</span>
+<span id="cb8-11">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">subtitle =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"raw branch-token count"</span>,</span>
+<span id="cb8-12">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">preheader =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"rlang package"</span>)</span></code></pre></div></div>
+<div class="cell-output-display">
+<div id="ssquyfzihd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#ssquyfzihd table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#ssquyfzihd thead, #ssquyfzihd tbody, #ssquyfzihd tfoot, #ssquyfzihd tr, #ssquyfzihd td, #ssquyfzihd th {
+  border-style: none;
+}
+
+#ssquyfzihd p {
+  margin: 0;
+  padding: 0;
+}
+
+#ssquyfzihd .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#ssquyfzihd .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#ssquyfzihd .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#ssquyfzihd .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#ssquyfzihd .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ssquyfzihd .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ssquyfzihd .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#ssquyfzihd .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#ssquyfzihd .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#ssquyfzihd .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#ssquyfzihd .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#ssquyfzihd .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#ssquyfzihd .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#ssquyfzihd .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#ssquyfzihd .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#ssquyfzihd .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#ssquyfzihd .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#ssquyfzihd .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#ssquyfzihd .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ssquyfzihd .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#ssquyfzihd .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#ssquyfzihd .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#ssquyfzihd .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ssquyfzihd .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#ssquyfzihd .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#ssquyfzihd .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ssquyfzihd .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ssquyfzihd .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#ssquyfzihd .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ssquyfzihd .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#ssquyfzihd .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#ssquyfzihd .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ssquyfzihd .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ssquyfzihd .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#ssquyfzihd .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#ssquyfzihd .gt_left {
+  text-align: left;
+}
+
+#ssquyfzihd .gt_center {
+  text-align: center;
+}
+
+#ssquyfzihd .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#ssquyfzihd .gt_font_normal {
+  font-weight: normal;
+}
+
+#ssquyfzihd .gt_font_bold {
+  font-weight: bold;
+}
+
+#ssquyfzihd .gt_font_italic {
+  font-style: italic;
+}
+
+#ssquyfzihd .gt_super {
+  font-size: 65%;
+}
+
+#ssquyfzihd .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#ssquyfzihd .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#ssquyfzihd .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#ssquyfzihd .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#ssquyfzihd .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#ssquyfzihd .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#ssquyfzihd .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#ssquyfzihd .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#ssquyfzihd div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<td colspan="3" class="gt_heading gt_title gt_font_normal">Top 10 most complex .R files</td>
+</tr>
+<tr class="gt_heading even">
+<td colspan="3" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border">raw branch-token count</td>
+</tr>
+<tr class="gt_col_headings header">
+<th id="filename" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">filename</th>
+<th id="code" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">code</th>
+<th id="complexity" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">complexity</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="filename">cnd-abort.R</td>
+<td class="gt_row gt_right" headers="code">691</td>
+<td class="gt_row gt_right" headers="complexity">152</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="filename">standalone-cli.R</td>
+<td class="gt_row gt_right" headers="code">432</td>
+<td class="gt_row gt_right" headers="complexity">135</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="filename">trace.R</td>
+<td class="gt_row gt_right" headers="code">807</td>
+<td class="gt_row gt_right" headers="complexity">134</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="filename">deparse.R</td>
+<td class="gt_row gt_right" headers="code">819</td>
+<td class="gt_row gt_right" headers="complexity">111</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="filename">standalone-vctrs.R</td>
+<td class="gt_row gt_right" headers="code">505</td>
+<td class="gt_row gt_right" headers="complexity">107</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="filename">call.R</td>
+<td class="gt_row gt_right" headers="code">451</td>
+<td class="gt_row gt_right" headers="complexity">92</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="filename">standalone-obj-type.R</td>
+<td class="gt_row gt_right" headers="code">206</td>
+<td class="gt_row gt_right" headers="complexity">64</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="filename">cnd-entrace.R</td>
+<td class="gt_row gt_right" headers="code">213</td>
+<td class="gt_row gt_right" headers="complexity">61</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="filename">utils.R</td>
+<td class="gt_row gt_right" headers="code">302</td>
+<td class="gt_row gt_right" headers="complexity">59</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="filename">expr.R</td>
+<td class="gt_row gt_right" headers="code">157</td>
+<td class="gt_row gt_right" headers="complexity">52</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>If we compare this to the weighted complexity (<code>(complexity / code) * 100</code>), we can see a few of the top files change:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1">r_files <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">scc_by_file</span>(pkg_path, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">include_ext =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"r"</span>)</span>
+<span id="cb9-2">r_files <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb9-3">  dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">arrange</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">desc</span>(weighted_complexity)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb9-4">  dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">select</span>(</span>
+<span id="cb9-5">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(filename, code, complexity, weighted_complexity)</span>
+<span id="cb9-6">  ) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb9-7">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">head</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb9-8">  gt<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">gt</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb9-9">  gt<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tab_header</span>(</span>
+<span id="cb9-10">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">title    =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Top 10 most complex (weighted) .R files"</span>,</span>
+<span id="cb9-11">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">subtitle =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Weighted Complexity"</span>,</span>
+<span id="cb9-12">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">preheader =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"rlang package"</span>)</span></code></pre></div></div>
+<div class="cell-output-display">
+<div id="lobdiyamhq" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#lobdiyamhq table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#lobdiyamhq thead, #lobdiyamhq tbody, #lobdiyamhq tfoot, #lobdiyamhq tr, #lobdiyamhq td, #lobdiyamhq th {
+  border-style: none;
+}
+
+#lobdiyamhq p {
+  margin: 0;
+  padding: 0;
+}
+
+#lobdiyamhq .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#lobdiyamhq .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#lobdiyamhq .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#lobdiyamhq .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#lobdiyamhq .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#lobdiyamhq .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#lobdiyamhq .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#lobdiyamhq .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#lobdiyamhq .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#lobdiyamhq .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#lobdiyamhq .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#lobdiyamhq .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#lobdiyamhq .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#lobdiyamhq .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#lobdiyamhq .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#lobdiyamhq .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#lobdiyamhq .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#lobdiyamhq .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#lobdiyamhq .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#lobdiyamhq .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#lobdiyamhq .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#lobdiyamhq .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#lobdiyamhq .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#lobdiyamhq .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#lobdiyamhq .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#lobdiyamhq .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#lobdiyamhq .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#lobdiyamhq .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#lobdiyamhq .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#lobdiyamhq .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#lobdiyamhq .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#lobdiyamhq .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#lobdiyamhq .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#lobdiyamhq .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#lobdiyamhq .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#lobdiyamhq .gt_left {
+  text-align: left;
+}
+
+#lobdiyamhq .gt_center {
+  text-align: center;
+}
+
+#lobdiyamhq .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#lobdiyamhq .gt_font_normal {
+  font-weight: normal;
+}
+
+#lobdiyamhq .gt_font_bold {
+  font-weight: bold;
+}
+
+#lobdiyamhq .gt_font_italic {
+  font-style: italic;
+}
+
+#lobdiyamhq .gt_super {
+  font-size: 65%;
+}
+
+#lobdiyamhq .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#lobdiyamhq .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#lobdiyamhq .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#lobdiyamhq .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#lobdiyamhq .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#lobdiyamhq .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#lobdiyamhq .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#lobdiyamhq .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#lobdiyamhq div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<td colspan="4" class="gt_heading gt_title gt_font_normal">Top 10 most complex (weighted) .R files</td>
+</tr>
+<tr class="gt_heading even">
+<td colspan="4" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border">Weighted Complexity</td>
+</tr>
+<tr class="gt_col_headings header">
+<th id="filename" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">filename</th>
+<th id="code" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">code</th>
+<th id="complexity" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">complexity</th>
+<th id="weighted_complexity" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">weighted_complexity</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="filename">operators.R</td>
+<td class="gt_row gt_right" headers="code">32</td>
+<td class="gt_row gt_right" headers="complexity">11</td>
+<td class="gt_row gt_right" headers="weighted_complexity">34.37500</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="filename">expr.R</td>
+<td class="gt_row gt_right" headers="code">157</td>
+<td class="gt_row gt_right" headers="complexity">52</td>
+<td class="gt_row gt_right" headers="weighted_complexity">33.12102</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="filename">standalone-cli.R</td>
+<td class="gt_row gt_right" headers="code">432</td>
+<td class="gt_row gt_right" headers="complexity">135</td>
+<td class="gt_row gt_right" headers="weighted_complexity">31.25000</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="filename">standalone-obj-type.R</td>
+<td class="gt_row gt_right" headers="code">206</td>
+<td class="gt_row gt_right" headers="complexity">64</td>
+<td class="gt_row gt_right" headers="weighted_complexity">31.06796</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="filename">utils-cli-tree.R</td>
+<td class="gt_row gt_right" headers="code">113</td>
+<td class="gt_row gt_right" headers="complexity">35</td>
+<td class="gt_row gt_right" headers="weighted_complexity">30.97345</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="filename">utils-encoding.R</td>
+<td class="gt_row gt_right" headers="code">37</td>
+<td class="gt_row gt_right" headers="complexity">11</td>
+<td class="gt_row gt_right" headers="weighted_complexity">29.72973</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="filename">cnd-entrace.R</td>
+<td class="gt_row gt_right" headers="code">213</td>
+<td class="gt_row gt_right" headers="complexity">61</td>
+<td class="gt_row gt_right" headers="weighted_complexity">28.63850</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="filename">error-backtrace-empty.R</td>
+<td class="gt_row gt_right" headers="code">16</td>
+<td class="gt_row gt_right" headers="complexity">4</td>
+<td class="gt_row gt_right" headers="weighted_complexity">25.00000</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="filename">raw.R</td>
+<td class="gt_row gt_right" headers="code">9</td>
+<td class="gt_row gt_right" headers="complexity">2</td>
+<td class="gt_row gt_right" headers="weighted_complexity">22.22222</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="filename">cnd-abort.R</td>
+<td class="gt_row gt_right" headers="code">691</td>
+<td class="gt_row gt_right" headers="complexity">152</td>
+<td class="gt_row gt_right" headers="weighted_complexity">21.99711</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>We won’t spend too much time on these measures, because as you’ll see below, <code>scc</code> has quite a few code metrics to choose from.</p>
+</section>
+<section id="unique-lines-of-code-uloc" class="level2">
+<h2 class="anchored" data-anchor-id="unique-lines-of-code-uloc">Unique lines of code (uloc)</h2>
+<p>The unique lines of code (ULOC) counts unique non-blank lines including comments. The <code>scc</code> author argues – with help<sup>8</sup> – that this is better than relying on SLOC (source lines of code):</p>
+<blockquote class="blockquote">
+<p>“<em>Compared to SLOC, not only are blank lines discounted, but so are close-brace lines and other repetitive code such as common includes. On the other hand, ULOC counts comments, which require just as much maintenance as the code around them does, while avoiding inflating the result with license headers which appear in every file, for example.</em>”</p>
+</blockquote>
+<p>For comparison, SLOC (the value in the <code>code</code> column) is just the raw count of non-blank, non-comment lines and includes duplicates. <code>uloc</code> is automatically included with both <code>scc()</code> and <code>scc_by_file()</code>.</p>
+<p>The best way to see the differences is with the two minimal code files:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># pure code, 5 lines, two duplicate pairs</span></span>
+<span id="cb10-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># save as code.R</span></span>
+<span id="cb10-3">x <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb10-4">y <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span></span>
+<span id="cb10-5">x <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb10-6">y <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span></span>
+<span id="cb10-7">z <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span></span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># same code, plus three unique comments</span></span>
+<span id="cb11-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># save as code_w_comments.R </span></span>
+<span id="cb11-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># step 1</span></span>
+<span id="cb11-4">x <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb11-5">y <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span></span>
+<span id="cb11-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># step 2</span></span>
+<span id="cb11-7">x <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb11-8">y <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span></span>
+<span id="cb11-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># step 3</span></span>
+<span id="cb11-10">z <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span></span></code></pre></div></div>
+</div>
+<p>Now we can compare these with <code>scc_by_file()</code> and view the <code>lines</code>, <code>code</code>, <code>comments</code> and <code>uloc</code> columns.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1">fixtures <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(</span>
+<span id="cb12-2">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">file.path</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"code.R"</span>),</span>
+<span id="cb12-3">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">file.path</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"code_w_comments.R"</span>)</span>
+<span id="cb12-4">)</span>
+<span id="cb12-5"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">scc_by_file</span>(fixtures) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb12-6">  dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">select</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(filename, lines, </span>
+<span id="cb12-7">  code, comments, uloc)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb12-8">  gt<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">gt</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb12-9">  gt<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tab_header</span>(</span>
+<span id="cb12-10">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">title    =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"SLOC vs ULOC"</span>,</span>
+<span id="cb12-11">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">subtitle =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Both files contain the same 5 code lines"</span>,</span>
+<span id="cb12-12">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">preheader =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Local ULOC comparison"</span>)</span></code></pre></div></div>
+<div class="cell-output-display">
+<div id="aviwkfvurk" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#aviwkfvurk table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#aviwkfvurk thead, #aviwkfvurk tbody, #aviwkfvurk tfoot, #aviwkfvurk tr, #aviwkfvurk td, #aviwkfvurk th {
+  border-style: none;
+}
+
+#aviwkfvurk p {
+  margin: 0;
+  padding: 0;
+}
+
+#aviwkfvurk .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#aviwkfvurk .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#aviwkfvurk .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#aviwkfvurk .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#aviwkfvurk .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#aviwkfvurk .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#aviwkfvurk .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#aviwkfvurk .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#aviwkfvurk .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#aviwkfvurk .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#aviwkfvurk .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#aviwkfvurk .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#aviwkfvurk .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#aviwkfvurk .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#aviwkfvurk .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#aviwkfvurk .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#aviwkfvurk .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#aviwkfvurk .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#aviwkfvurk .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#aviwkfvurk .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#aviwkfvurk .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#aviwkfvurk .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#aviwkfvurk .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#aviwkfvurk .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#aviwkfvurk .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#aviwkfvurk .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#aviwkfvurk .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#aviwkfvurk .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#aviwkfvurk .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#aviwkfvurk .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#aviwkfvurk .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#aviwkfvurk .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#aviwkfvurk .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#aviwkfvurk .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#aviwkfvurk .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#aviwkfvurk .gt_left {
+  text-align: left;
+}
+
+#aviwkfvurk .gt_center {
+  text-align: center;
+}
+
+#aviwkfvurk .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#aviwkfvurk .gt_font_normal {
+  font-weight: normal;
+}
+
+#aviwkfvurk .gt_font_bold {
+  font-weight: bold;
+}
+
+#aviwkfvurk .gt_font_italic {
+  font-style: italic;
+}
+
+#aviwkfvurk .gt_super {
+  font-size: 65%;
+}
+
+#aviwkfvurk .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#aviwkfvurk .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#aviwkfvurk .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#aviwkfvurk .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#aviwkfvurk .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#aviwkfvurk .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#aviwkfvurk .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#aviwkfvurk .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#aviwkfvurk div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<td colspan="5" class="gt_heading gt_title gt_font_normal">SLOC vs ULOC</td>
+</tr>
+<tr class="gt_heading even">
+<td colspan="5" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border">Both files contain the same 5 code lines</td>
+</tr>
+<tr class="gt_col_headings header">
+<th id="filename" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">filename</th>
+<th id="lines" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">lines</th>
+<th id="code" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">code</th>
+<th id="comments" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">comments</th>
+<th id="uloc" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">uloc</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="filename">code.R</td>
+<td class="gt_row gt_right" headers="lines">5</td>
+<td class="gt_row gt_right" headers="code">5</td>
+<td class="gt_row gt_right" headers="comments">0</td>
+<td class="gt_row gt_right" headers="uloc">3</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="filename">code_w_comments.R</td>
+<td class="gt_row gt_right" headers="lines">9</td>
+<td class="gt_row gt_right" headers="code">5</td>
+<td class="gt_row gt_right" headers="comments">4</td>
+<td class="gt_row gt_right" headers="uloc">7</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<section id="dryness-percentage" class="level3">
+<h3 class="anchored" data-anchor-id="dryness-percentage">DRYness percentage</h3>
+<p>The <code>DRYness %</code> can be added with <code>dryness = TRUE</code>. This is computed locally as <code>uloc / lines</code>, which matches scc’s <code>DRYness %</code> formula, applied per record instead of project-wide.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">scc_by_file</span>(fixtures, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">dryness =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb13-2">  dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">select</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(filename, lines, </span>
+<span id="cb13-3">  code, comments, uloc, dryness)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb13-4">  gt<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">gt</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb13-5">  gt<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tab_header</span>(</span>
+<span id="cb13-6">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">title    =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"SLOC vs ULOC + DRYness"</span>,</span>
+<span id="cb13-7">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">subtitle =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Both files contain the same 5 code lines"</span>,</span>
+<span id="cb13-8">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">preheader =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Local SLOC, ULOC &amp; DRYness comparison"</span>)</span></code></pre></div></div>
+<div class="cell-output-display">
+<div id="gqqbsdnmdc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#gqqbsdnmdc table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#gqqbsdnmdc thead, #gqqbsdnmdc tbody, #gqqbsdnmdc tfoot, #gqqbsdnmdc tr, #gqqbsdnmdc td, #gqqbsdnmdc th {
+  border-style: none;
+}
+
+#gqqbsdnmdc p {
+  margin: 0;
+  padding: 0;
+}
+
+#gqqbsdnmdc .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#gqqbsdnmdc .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#gqqbsdnmdc .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#gqqbsdnmdc .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#gqqbsdnmdc .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#gqqbsdnmdc .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#gqqbsdnmdc .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#gqqbsdnmdc .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#gqqbsdnmdc .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#gqqbsdnmdc .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#gqqbsdnmdc .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#gqqbsdnmdc .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#gqqbsdnmdc .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#gqqbsdnmdc .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#gqqbsdnmdc .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#gqqbsdnmdc .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#gqqbsdnmdc .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#gqqbsdnmdc .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#gqqbsdnmdc .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#gqqbsdnmdc .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#gqqbsdnmdc .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#gqqbsdnmdc .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#gqqbsdnmdc .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#gqqbsdnmdc .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#gqqbsdnmdc .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#gqqbsdnmdc .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#gqqbsdnmdc .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#gqqbsdnmdc .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#gqqbsdnmdc .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#gqqbsdnmdc .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#gqqbsdnmdc .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#gqqbsdnmdc .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#gqqbsdnmdc .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#gqqbsdnmdc .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#gqqbsdnmdc .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#gqqbsdnmdc .gt_left {
+  text-align: left;
+}
+
+#gqqbsdnmdc .gt_center {
+  text-align: center;
+}
+
+#gqqbsdnmdc .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#gqqbsdnmdc .gt_font_normal {
+  font-weight: normal;
+}
+
+#gqqbsdnmdc .gt_font_bold {
+  font-weight: bold;
+}
+
+#gqqbsdnmdc .gt_font_italic {
+  font-style: italic;
+}
+
+#gqqbsdnmdc .gt_super {
+  font-size: 65%;
+}
+
+#gqqbsdnmdc .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#gqqbsdnmdc .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#gqqbsdnmdc .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#gqqbsdnmdc .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#gqqbsdnmdc .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#gqqbsdnmdc .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#gqqbsdnmdc .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#gqqbsdnmdc .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#gqqbsdnmdc div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<td colspan="6" class="gt_heading gt_title gt_font_normal">SLOC vs ULOC + DRYness</td>
+</tr>
+<tr class="gt_heading even">
+<td colspan="6" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border">Both files contain the same 5 code lines</td>
+</tr>
+<tr class="gt_col_headings header">
+<th id="filename" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">filename</th>
+<th id="lines" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">lines</th>
+<th id="code" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">code</th>
+<th id="comments" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">comments</th>
+<th id="uloc" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">uloc</th>
+<th id="dryness" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">dryness</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="filename">code.R</td>
+<td class="gt_row gt_right" headers="lines">5</td>
+<td class="gt_row gt_right" headers="code">5</td>
+<td class="gt_row gt_right" headers="comments">0</td>
+<td class="gt_row gt_right" headers="uloc">3</td>
+<td class="gt_row gt_right" headers="dryness">0.6000000</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="filename">code_w_comments.R</td>
+<td class="gt_row gt_right" headers="lines">9</td>
+<td class="gt_row gt_right" headers="code">5</td>
+<td class="gt_row gt_right" headers="comments">4</td>
+<td class="gt_row gt_right" headers="uloc">7</td>
+<td class="gt_row gt_right" headers="dryness">0.7777778</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p><code>DRYness</code> values close to 1 mean a file or language is mostly unique non-blank content and values closer to 0 mean heavy duplication, comments, or blanks.</p>
+</section>
+</section>
+<section id="cocomo-cost-estimates" class="level2">
+<h2 class="anchored" data-anchor-id="cocomo-cost-estimates">COCOMO cost estimates</h2>
+<p><code>scc</code> includes a <a href="https://en.wikipedia.org/wiki/COCOMO">COCOMO 81</a> model that estimates project effort and cost from <code>SLOC</code>. When <code>cocomo = TRUE</code>, the <code>scc()</code> output becomes a list and the COCOMO output is in the <code>cocomo</code> tibble.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1">rlang_cocomo <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">scc</span>(pkg_path, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">cocomo =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>)</span>
+<span id="cb14-2"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## # A tibble: 11 × 10</span></span>
+<span id="cb14-3"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##    language   files lines  code comments blanks</span></span>
+<span id="cb14-4"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##    &lt;chr&gt;      &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;  &lt;int&gt;</span></span>
+<span id="cb14-5"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  1 R            163 44571 28038    11152   5381</span></span>
+<span id="cb14-6"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  2 Markdown      53 16935 13866        0   3069</span></span>
+<span id="cb14-7"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  3 C             70 14014 10960      872   2182</span></span>
+<span id="cb14-8"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  4 C Header      72  8210  5315     1777   1118</span></span>
+<span id="cb14-9"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  5 YAML           9   735   587       35    113</span></span>
+<span id="cb14-10"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  6 C++            2    25    21        0      4</span></span>
+<span id="cb14-11"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  7 C++ Header     1    26    21        0      5</span></span>
+<span id="cb14-12"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  8 SVG           10    10    10        0      0</span></span>
+<span id="cb14-13"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  9 Makefile       1    11     7        0      4</span></span>
+<span id="cb14-14"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## 10 License        1     2     2        0      0</span></span>
+<span id="cb14-15"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## 11 TOML           1     2     2        0      0</span></span>
+<span id="cb14-16"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## # ℹ 4 more variables: complexity &lt;int&gt;,</span></span>
+<span id="cb14-17"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## #   weighted_complexity &lt;dbl&gt;, bytes &lt;int&gt;,</span></span>
+<span id="cb14-18"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## #   uloc &lt;int&gt;</span></span>
+<span id="cb14-19"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## # A tibble: 3 × 3</span></span>
+<span id="cb14-20"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##   metric                    project_type value    </span></span>
+<span id="cb14-21"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##   &lt;chr&gt;                     &lt;chr&gt;        &lt;chr&gt;    </span></span>
+<span id="cb14-22"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## 1 Estimated Cost to Develop organic      $1,948,3…</span></span>
+<span id="cb14-23"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## 2 Estimated Schedule Effort organic      17.72 mo…</span></span>
+<span id="cb14-24"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## 3 Estimated People Required organic      9.77</span></span></code></pre></div></div>
+</div>
+<p>The <code>scc()</code> output is in the <code>scc</code> tibble:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">names</span>(rlang_cocomo)</span>
+<span id="cb15-2"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## [1] "scc"    "cocomo"</span></span></code></pre></div></div>
+</div>
+<p>We can customize the COCOMO model with the following arguments:</p>
+<ol type="1">
+<li><code>avg_wage</code>: annual salary in local currency<br>
+</li>
+<li><code>cocomo_project_type</code>: “organic”, “semi-detached”, or “embedded”<br>
+</li>
+<li><code>eaf</code>: effort adjustment factor<br>
+</li>
+<li><code>overhead</code>: corporate overhead multiplier<br>
+</li>
+<li><code>currency_symbol</code>: symbol shown in the value column<br>
+</li>
+<li><code>auto_print_scc</code>: skip auto-printing the language tibble</li>
+</ol>
+<p><strong>NOTE:</strong> These arguments only work when <code>cocomo = TRUE</code></p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1">embedded <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">scc</span>(pkg_path,</span>
+<span id="cb16-2">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">cocomo =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>,         </span>
+<span id="cb16-3">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">avg_wage =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">120000</span>L,        </span>
+<span id="cb16-4">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">cocomo_project_type =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"embedded"</span>,     </span>
+<span id="cb16-5">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">eaf =</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.1</span>,            </span>
+<span id="cb16-6">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">overhead =</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2.0</span>,            </span>
+<span id="cb16-7">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">currency_symbol =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"$"</span>,            </span>
+<span id="cb16-8">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">auto_print_scc =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">FALSE</span>)  </span>
+<span id="cb16-9"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## # A tibble: 3 × 3</span></span>
+<span id="cb16-10"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##   metric                    project_type value    </span></span>
+<span id="cb16-11"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##   &lt;chr&gt;                     &lt;chr&gt;        &lt;chr&gt;    </span></span>
+<span id="cb16-12"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## 1 Estimated Cost to Develop embedded     $10,525,…</span></span>
+<span id="cb16-13"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## 2 Estimated Schedule Effort embedded     18.57 mo…</span></span>
+<span id="cb16-14"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## 3 Estimated People Required embedded     28.35</span></span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1">embedded<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>cocomo <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb17-2">  gt<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">gt</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb17-3">  gt<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tab_header</span>(</span>
+<span id="cb17-4">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">title =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"COCOMO"</span>, </span>
+<span id="cb17-5">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">subtitle =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"embedded project"</span>, </span>
+<span id="cb17-6">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">preheader =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"rlang package"</span>)</span></code></pre></div></div>
+<div class="cell-output-display">
+<div id="xudlnediue" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#xudlnediue table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#xudlnediue thead, #xudlnediue tbody, #xudlnediue tfoot, #xudlnediue tr, #xudlnediue td, #xudlnediue th {
+  border-style: none;
+}
+
+#xudlnediue p {
+  margin: 0;
+  padding: 0;
+}
+
+#xudlnediue .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#xudlnediue .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#xudlnediue .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#xudlnediue .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#xudlnediue .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#xudlnediue .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#xudlnediue .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#xudlnediue .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#xudlnediue .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#xudlnediue .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#xudlnediue .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#xudlnediue .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#xudlnediue .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#xudlnediue .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#xudlnediue .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#xudlnediue .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#xudlnediue .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#xudlnediue .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#xudlnediue .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xudlnediue .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#xudlnediue .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#xudlnediue .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#xudlnediue .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xudlnediue .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#xudlnediue .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#xudlnediue .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#xudlnediue .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xudlnediue .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#xudlnediue .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#xudlnediue .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#xudlnediue .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#xudlnediue .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#xudlnediue .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xudlnediue .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#xudlnediue .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xudlnediue .gt_left {
+  text-align: left;
+}
+
+#xudlnediue .gt_center {
+  text-align: center;
+}
+
+#xudlnediue .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#xudlnediue .gt_font_normal {
+  font-weight: normal;
+}
+
+#xudlnediue .gt_font_bold {
+  font-weight: bold;
+}
+
+#xudlnediue .gt_font_italic {
+  font-style: italic;
+}
+
+#xudlnediue .gt_super {
+  font-size: 65%;
+}
+
+#xudlnediue .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#xudlnediue .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#xudlnediue .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#xudlnediue .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#xudlnediue .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#xudlnediue .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#xudlnediue .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#xudlnediue .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#xudlnediue div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<td colspan="3" class="gt_heading gt_title gt_font_normal">COCOMO</td>
+</tr>
+<tr class="gt_heading even">
+<td colspan="3" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border">embedded project</td>
+</tr>
+<tr class="gt_col_headings header">
+<th id="metric" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">metric</th>
+<th id="project_type" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">project_type</th>
+<th id="value" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">value</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="metric">Estimated Cost to Develop</td>
+<td class="gt_row gt_left" headers="project_type">embedded</td>
+<td class="gt_row gt_left" headers="value">$10,525,311</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="metric">Estimated Schedule Effort</td>
+<td class="gt_row gt_left" headers="project_type">embedded</td>
+<td class="gt_row gt_left" headers="value">18.57 months</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="metric">Estimated People Required</td>
+<td class="gt_row gt_left" headers="project_type">embedded</td>
+<td class="gt_row gt_left" headers="value">28.35</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<section id="why-not-use-cocomo-ii" class="level3">
+<h3 class="anchored" data-anchor-id="why-not-use-cocomo-ii">Why not use COCOMO II ???</h3>
+<p><code>scc()</code> only gives us raw structural numbers (lines, code, complexity, bytes, etc.), but <a href="https://www.rose-hulman.edu/class/cs/csse372/201310/Homework/CII_modelman2000.pdf">COCOMO II</a> needs 22 judgement inputs we can’t derive from source code:</p>
+<ul>
+<li>The current COCOMO project types (<code>"organic"</code> / <code>"semi-detached"</code> / <code>"embedded"</code>) don’t translate to COCOMO II.</li>
+<li>COCOMO II uses 5 scale factors to esitmate organizational/process attributes<br>
+</li>
+<li>COCOMO II also uses 17 effort multipliers for product, platform, personnel, and project context
+<ul>
+<li>Every one of these is a six-level human rating about the team, requirements stability, reuse strategy, tool maturity, schedule pressure, etc.</li>
+</ul></li>
+<li>The only one that <em>might</em> map would be CPLX (product complexity), but COCOMO II’s CPLX is architectural/algorithmic complexity, not McCabe’s cyclomatic.</li>
+</ul>
+</section>
+</section>
+<section id="visualizing-code-complexity" class="level2">
+<h2 class="anchored" data-anchor-id="visualizing-code-complexity">Visualizing code complexity</h2>
+<p>In <a href="https://pragprog.com/titles/atcrime2/your-code-as-a-crime-scene-second-edition/">Your Code as a Crime Scene</a>, Tornhill covers a collection of methods for visualizing code, but my favorite is his use of circle packing for identifying “hotspots.” These are described below:</p>
+<blockquote class="blockquote">
+<p>“<em>Each circle represents a part of the system. The more complex a module, as measured by lines of code, the larger the circle. We then use color to serve as an attention magnet for the most critical property: change.</em>” - Adam Tornhill (Your Code as a Crime Scene, 2ed)</p>
+</blockquote>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="img/hotspots.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Tornhill’s Hotspots from Your Code as a Crime Scene, 2ed"><img src="https://mjfrigaard.github.io/posts/glockr/img/hotspots.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%" alt="Tornhill’s Hotspots from Your Code as a Crime Scene, 2ed"></a></p>
+</figure>
+</div>
+<figcaption>Tornhill’s Hotspots from <a href="https://pragprog.com/titles/atcrime2/your-code-as-a-crime-scene-second-edition/">Your Code as a Crime Scene, 2ed</a></figcaption>
+</figure>
+</div>
+<p><code>glockr</code> doesn’t have data on code changes (yet), but we can build circle packer graphs using the weighted complexity and DRYness percentage.</p>
+<p>We’ll make the circle area the file’s <code>weighted_complexity</code> (complexity per 100 LOC), meaning the files that ‘pack’ more branching per line are larger.</p>
+<p>The color <code>fill</code> aesthetic will be the file’s DRYness % (<code>uloc</code> / <code>lines</code>), with darker hues meaning more duplication relative to line counts and lighter hues meaning more unique, non-blank content.</p>
+<p>We’ll start with a fresh dataset using <code>scc_by_file()</code>, setting <code>dryness</code> to <code>TRUE</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1">r_files <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">scc_by_file</span>(pkg_path, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">include_ext =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"r"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">dryness =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>)</span></code></pre></div></div>
+</div>
+<p>We’ll exclude files with zero <code>weighted_complexity</code> because there is nothing to size the circle by:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1">r_files <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">filter</span>(r_files, weighted_complexity <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>)</span>
+<span id="cb19-2">dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">glimpse</span>(r_files)</span></code></pre></div></div>
+</div>
+<p>We’ll use <code>packcircles::circleProgressiveLayout()</code> to compute the area-proportional circle size:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(packcircles)</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1">packing <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> packcircles<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">circleProgressiveLayout</span>(</span>
+<span id="cb21-2">  r_files<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>weighted_complexity, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">sizetype =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"area"</span></span>
+<span id="cb21-3">)</span></code></pre></div></div>
+</div>
+<p>This creates a dataset with x, y, and radius columns (with the same number of observations as our previous <code>r_files</code> dataset).</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1">dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">glimpse</span>(packing)</span></code></pre></div></div>
+</div>
+<p>The number of rows is important, because now we can add the <code>filename</code>, <code>weighted_complexity</code>, and <code>dryness</code> columns back to the packing data:</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>show/hide</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1">packing <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">bind_cols</span>(</span>
+<span id="cb23-2">  packing, <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># circle size data </span></span>
+<span id="cb23-3">  dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">select</span>(r_files, <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># original columns</span></span>
+<span id="cb23-4">    filename, weighted_complexity, dryness)</span>
+<span id="cb23-5">  )</span>
+<span id="cb23-6">dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">glimpse</span>(packing)</span></code></pre></div></div>
+</details>
+</div>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Codacy has a great overview of code metrics in <a href="https://blog.codacy.com/code-complexity">this blog post.</a>.↩︎</p></li>
+<li id="fn2"><p>Other packages worth noting are <a href="https://adv-r.hadley.nz/oo.html#sloop"><code>sloop</code></a> and <a href="https://adv-r.hadley.nz/names-values.html#prerequisites"><code>lobstr</code></a> – these don’t calculate metrics, but have been developed to improve users understanding of R and object oriented programming and are covered in <a href="https://adv-r.hadley.nz/index.html">Advanced R, 2nd ed.</a>.↩︎</p></li>
+<li id="fn3"><p>See the <code>cloc</code> command-line utility documentation <a href="https://github.com/AlDanial/cloc">here</a>.↩︎</p></li>
+<li id="fn4"><p>Check the performance comparison of <code>scc</code> <a href="https://github.com/boyter/scc#performance">here</a>.↩︎</p></li>
+<li id="fn5"><p>This is a downloaded a local version of the <a href="https://github.com/r-lib/rlang/">source files</a> as of 2026-05-26.↩︎</p></li>
+<li id="fn6"><p>How <code>scc</code> counts lines of code is outlined in the <a href="https://github.com/boyter/scc/blob/master/README.md#features">‘Features’ section of the <code>README.md</code></a>↩︎</p></li>
+<li id="fn7"><p>Read the full description of <a href="https://github.com/boyter/scc#complexity-estimates%20in%20the%20scc%20%60README.md%60">Complexity Estimates</a>.↩︎</p></li>
+<li id="fn8"><p>Read this discussion <a href="https://cmcenroe.me/2018/12/14/uloc.html">here</a>.↩︎</p></li>
+</ol>
+</section></div> ]]></description>
+  <category>R</category>
+  <category>Packages</category>
+  <guid>https://mjfrigaard.github.io/posts/glockr/</guid>
+  <pubDate>Sun, 19 Apr 2026 07:00:00 GMT</pubDate>
+</item>
 <item>
   <title>Who is this for?</title>
   <dc:creator>Martin Frigaard</dc:creator>
