@@ -3,32 +3,66 @@ toc: false
 ---
 
 <center>
-## Projects 
+## Code Projects 
 </center>
 
-R Packages
--------------------------------------
+## R Packages
 
-:::{style='font-size: 1.3em;'}
+:::{style='font-size: 1.1em;'}
 
-* Quickly access the Shiny applications in the [Shiny App-Packages (book)](https://mjfrigaard.github.io/shiny-app-pkgs/) with the [**shinypak**](https://mjfrigaard.github.io/shinypak/) package. [[**Repo**](https://github.com/mjfrigaard/shinypak)]
+* [**shinypak**](https://mjfrigaard.github.io/shinypak/): Quickly access the Shiny applications in the [Shiny App-Packages (book)](https://mjfrigaard.github.io/shiny-app-pkgs/)  [[**Repo**](https://github.com/mjfrigaard/shinypak)]
 
+* [**ghreadme**](https://mjfrigaard.github.io/ghreadme/): Create a GitHub README.md file using R [[**Repo**](https://github.com/mjfrigaard/ghreadme)]
 
-* **M**astering **S**hiny **s**hiny**t**est**2** **a**pp-**p**ackage ([**msst2ap**](https://mjfrigaard.github.io/msst2ap/)) demonstrates how to test a Shiny app-package using [`testthat`](https://testthat.r-lib.org/) and [`shinytest2`](https://rstudio.github.io/shinytest2/). All examples come from the [Modules chapter of Mastering Shiny.](https://mastering-shiny.org/scaling-modules.html) [[**Repo**](https://github.com/mjfrigaard/msst2ap)]
+* [**glockr**](https://mjfrigaard.github.io/glockr/): R package wrapper for [`scc`](https://github.com/boyter/scc) (Sloc, Cloc and Code) for counting blank lines, comment lines, and physical lines of source code. Written in pure Go [[**Repo**](https://github.com/mjfrigaard/glockr)]
 
-* **M**astering **S**hiny **t**`est`**S**`erver()` **a**pp-**p**ackage ([**mstsap**](https://mjfrigaard.github.io/mstsap/)) is a collection of tests using [`testthat`](https://testthat.r-lib.org/) and
-[`shiny::testServer()`](https://search.r-project.org/CRAN/refmans/shiny/html/testServer.html) The modules and application in `mstsap` come from the [Shiny modules chapter](https://mastering-shiny.org/scaling-modules.html) of [Mastering Shiny](https://mastering-shiny.org/index.html) [[**Repo**](https://github.com/mjfrigaard/mstsap)]
+* [**shooters**](https://mjfrigaard.github.io/shooters/): static-analysis utilities for Shiny applications. The flagship function, `ns_tree()`, parses R source files in a directory and prints a plain-text call tree showing how functions relate to one another — with no need to run the app. [[**Repo**](https://github.com/mjfrigaard/shooters)]
 
-* [**dopingdata**](https://mjfrigaard.github.io/dopingdata/) contains data from the [United States Anti-Doping Agency](https://en.wikipedia.org/wiki/United_States_Anti-Doping_Agency) for exploration, modeling, and visualizations. The datasets in this package are derived from the [USADA website](https://www.usada.org/) and the [World Anti-Doping Agency (WADA) banned substances list](https://www.wada-ama.org/en/prohibited-list?q=) [[**Repo**](https://github.com/mjfrigaard/dopingdata)]
+* [**dopingdata**](https://mjfrigaard.github.io/dopingdata/): Contains data from the [United States Anti-Doping Agency](https://en.wikipedia.org/wiki/United_States_Anti-Doping_Agency) for exploration, modeling, and visualizations. The datasets in this package are derived from the [USADA website](https://www.usada.org/) and the [World Anti-Doping Agency (WADA) banned substances list](https://www.wada-ama.org/en/prohibited-list?q=) [[**Repo**](https://github.com/mjfrigaard/dopingdata)]
 
 * **G**ood **e**nough **R** **p**ractices ([**gerp**](https://mjfrigaard.github.io/gerp/)). [[**Repo**](https://github.com/mjfrigaard/gerp)]
 
 :::
 
-Sites
--------------------------------------
 
-:::{style='font-size: 1.3em;'}
+## Shiny Apps/Packages
+
+:::{style='font-size: 1.1em;'}
+
+* [**ttdviewer**](https://mjfrigaard.github.io/ttdviewer/): Shiny app-package with downloadable [#TidyTuesday](https://github.com/rfordatascience/tidytuesday) dataset and reports [[**Repo**](https://github.com/mjfrigaard/ttdviewer)]
+
+* [**tooltipexplorer**](https://mjfrigaard.github.io/tooltipexplorer/): Shiny app-package for demonstrating tool-tip/hover info options [[**Repo**](https://github.com/mjfrigaard/tooltipexplorer)]
+
+:::
+
+### Apps/packages for testing
+
+:::{style='font-size: 1.1em;'}
+
+* [**noap**](https://mjfrigaard.github.io/utap/) Testing a Shiny app (not in an R package) with `testthat` [[**Repo**](https://github.com/mjfrigaard/noap)]
+
+* [**utap**](https://mjfrigaard.github.io/utap/) **U**nit **t**esting **a**pp **p**ackage: Unit testing Shiny app-package for demonstrating `shiny` utility function unit testing with `testthat` [[**Repo**](https://github.com/mjfrigaard/utap)]
+
+* [**tsap**](https://mjfrigaard.github.io/tsap/) **t**`estServer()` **a**pp **p**ackage: Shiny app-package for demonstrating integration tests with shiny's `testServer()` function [[**Repo**](https://github.com/mjfrigaard/tsap)]
+
+:::
+
+### Mastering Shiny App-Packages (for testing)
+
+:::{style='font-size: 1.1em;'}
+
+These are Shiny app-packages I've developed for various testing patterns. All use the code/apps covered in [Mastering Shiny](https://mastering-shiny.org/). 
+
+* **M**astering **S**hiny **t**`est`**S**`erver()` **a**pp-**p**ackage ([**mstsap**](https://mjfrigaard.github.io/mstsap/)) is a collection of tests using [`testthat`](https://testthat.r-lib.org/) and
+[`shiny::testServer()`](https://search.r-project.org/CRAN/refmans/shiny/html/testServer.html) The modules and application in `mstsap` come from the [Shiny modules chapter](https://mastering-shiny.org/scaling-modules.html) of [Mastering Shiny](https://mastering-shiny.org/index.html) [[**Repo**](https://github.com/mjfrigaard/mstsap)]
+
+* **M**astering **S**hiny **s**hiny**t**est**2** **a**pp-**p**ackage ([**msst2ap**](https://mjfrigaard.github.io/msst2ap/)) demonstrates how to test a Shiny app-package using [`testthat`](https://testthat.r-lib.org/) and [`shinytest2`](https://rstudio.github.io/shinytest2/). All examples come from the [Modules chapter of Mastering Shiny.](https://mastering-shiny.org/scaling-modules.html) [[**Repo**](https://github.com/mjfrigaard/msst2ap)]
+
+:::
+
+## Sites
+
+:::{style='font-size: 1.1em;'}
 
 * [**Shiny Frameworks**](https://mjfrigaard.github.io/sfw/): Shiny app demos with three popular frameworks (`golem`, `leprechaun`, and `rhino`) [[**Repo**](https://github.com/mjfrigaard/sfw)]
 
