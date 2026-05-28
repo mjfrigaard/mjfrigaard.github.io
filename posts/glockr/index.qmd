@@ -2,7 +2,7 @@
 title: "glockr: An R Wrapper around Succinct Code Counter"
 subtitle: "Written in Go"
 author: "Martin Frigaard"
-date: "2026-04-19"
+date: "2026-05-24"
 categories: [R, Packages]
 # image: "img/image.png"
 toc: true
@@ -22,8 +22,8 @@ freeze: true
 knitr:
   opts_chunk: 
     fig-dpi: 320
-    fig-width: 6
-    out-width: '85%'
+    fig-width: 8
+    out-width: '100%'
     fig-format: png
     fig-align: 'center'
     collapse: true
@@ -59,7 +59,7 @@ pkg_path <- "/Users/mjfrigaard/projects/dev/glockr-testing/rlang"
 #| label: co_box_dev
 #| echo: false
 #| results: asis
-#| eval: true
+#| eval: false
 co_box(color = "r", 
   header = "DRAFT!", 
   contents = "This post is currently under development--thank you for your patience.")
@@ -398,39 +398,43 @@ to serve as an attention magnet for the most critical property: change.*" - Adam
 
 ![Tornhill's Hotspots from [Your Code as a Crime Scene, 2ed](https://pragprog.com/titles/atcrime2/your-code-as-a-crime-scene-second-edition/)](img/hotspots.png){width="80%" fig-align='center'}
 
-`glockr` doesn't have data on code changes (yet), but we can build circle packer graphs using the weighted complexity and DRYness percentage. 
+The `glockr` package doesn't have data on code changes (yet), but we can build circle packer graphs using weighted complexity and DRYness. 
 
-We'll make the circle area the file’s `weighted_complexity` (complexity per 100 LOC), meaning the files that 'pack' more branching per line are larger.
+We'll start by making each circle's area tied to the file’s `weighted_complexity`, meaning the files that 'pack more branching per line' are larger.
 
-The color `fill` aesthetic will be the file’s DRYness % (`uloc` / `lines`), with darker hues meaning more duplication relative to line counts and lighter hues meaning more unique, non-blank content.
+Next, the color `fill` aesthetic will be the file’s DRYness % (`uloc` / `lines`), with darker hues meaning more duplication relative to line counts, and lighter hues meaning more unique, non-blank content.
 
 We'll start with a fresh dataset using `scc_by_file()`, setting `dryness` to `TRUE`.
 
 ```{r}
 #| label: circle_packager-r_files
 #| code-fold: false 
+#| eval: true
 r_files <- scc_by_file(pkg_path, include_ext = "r", dryness = TRUE)
 ```
 
-We'll exclude files with zero `weighted_complexity` because there is nothing to size the circle by: 
+We can exclude files with zero `weighted_complexity` because there is nothing to size the circle by: 
 
 ```{r}
 #| label: filter-weighted_complexity-0
 #| code-fold: false 
+#| eval: true
 r_files <- dplyr::filter(r_files, weighted_complexity > 0)
 dplyr::glimpse(r_files)
 ```
 
-We'll use `packcircles::circleProgressiveLayout()` to compute the area-proportional circle size:
+The `packcircles::circleProgressiveLayout()` can be used to compute the area-proportional circle size:
 
 ```{r}
 #| code-fold: false
+#| eval: true
 library(packcircles)
 ```
 
 ```{r}
 #| label: packing-circleProgressiveLayout
 #| code-fold: false
+#| eval: true
 packing <- packcircles::circleProgressiveLayout(
   r_files$weighted_complexity, sizetype = "area"
 )
@@ -441,13 +445,16 @@ This creates a dataset with x, y, and radius columns (with the same number of ob
 ```{r}
 #| label: glimpse-packing-circleProgressiveLayout
 #| code-fold: false
+#| eval: true
 dplyr::glimpse(packing)
 ```
 
-The number of rows is important, because now we can add the `filename`, `weighted_complexity`, and `dryness` columns back to the packing data: 
+The number of rows in `packing` is important, because it allows us to bind the `filename`, `weighted_complexity`, and `dryness` columns back to the `packing` data: 
 
 ```{r}
 #| label: bind_cols-packing-r_files
+#| eval: true
+#| code-fold: false
 packing <- dplyr::bind_cols(
   packing, # circle size data 
   dplyr::select(r_files, # original columns
@@ -456,6 +463,171 @@ packing <- dplyr::bind_cols(
 dplyr::glimpse(packing)
 ```
 
+The `circleLayoutVertices()` function from `packcircles` creates "*a data frame of circle vertices for plotting*"
 
+```{r}
+#| label: circleLayoutVertices
+#| eval: true
+#| code-fold: false
+polygons <- packcircles::circleLayoutVertices(packing, npoints = 60)
+dplyr::glimpse(polygons)
+```
 
+Now we're going to perform a positional join using the `id` from `polygons` and a new `id` we'll create in `r_files` using `dplyr::row_number()` (and limit the columns to only `filename`,  `weighted_complexity`, and `dryness`).
 
+```{r}
+#| label: join-polygons-r_files-id
+#| eval: true
+#| code-fold: false
+polygons <- polygons |>
+  dplyr::left_join(
+    r_files |>
+      dplyr::mutate(id = dplyr::row_number()) |>
+      dplyr::select(
+        id, 
+        filename, 
+        weighted_complexity, 
+        dryness),
+    by = "id"
+  )
+dplyr::glimpse(polygons)
+```
+
+1. The `x`, `y`, and `group` aesthetics draw the circles, and `fill` is the `dryness` percentage value. 
+2. The [`geom_polygon()`](https://ggplot2.tidyverse.org/reference/geom_polygon.html) is used to connect start and end points (and `fill` the area inside)    
+3. [`scale_fill_viridis_c()`](https://ggplot2.tidyverse.org/reference/scale_viridis.html) is used for 'filling' continuous data, and [`coord_equal()`](https://ggplot2.tidyverse.org/reference/coord_fixed.html) ensures ensures equal unit length on the x-axis and y-axis.    
+
+```{r}
+#| label: circle-pack-start
+#| eval: true
+#| code-fold: false
+#| fig-width: 10
+#| out-width: '100%'
+ggplot2::ggplot(polygons,
+                ggplot2::aes(
+                  x = x, 
+                  y = y, 
+                  group = id, 
+                  fill = dryness)) +
+  ggplot2::geom_polygon(
+    colour = "white", 
+    linewidth = 0.2) + 
+  ggplot2::scale_fill_viridis_c(
+    name    = "DRYness\n(uloc / lines)",
+    option  = "viridis",
+    limits  = c(0, 1)
+  ) +
+  ggplot2::coord_equal() 
+```
+
+We can't label *every* file in the circle packer graph, but we can make sure the files with the highest levels of complexity have text labels. We'll create a `top_labels` dataset for the top 10 `weighted_complexity` values. 
+
+```{r}
+#| label: top_labels
+#| eval: true
+#| code-fold: false
+top_labels <- packing |>
+  dplyr::slice_max(weighted_complexity, n = 10)
+```
+
+Given the color palette we're using, we will make sure our labels have a dark outline (behind white text) with the [`shadowtext` package](https://github.com/GuangchuangYu/shadowtext/). 
+
+```{r}
+#| eval: false
+#| code-fold: false
+remotes::install_github("GuangchuangYu/shadowtext")
+```
+
+Now we can add the labels and `theme_void()`: 
+
+```{r}
+#| label: circle-pack-shadowtext-void
+#| eval: true
+#| code-fold: false
+#| fig-width: 10
+#| out-width: '100%'
+# for the labels
+library(shadowtext)
+ggplot2::ggplot(polygons,
+                ggplot2::aes(
+                  x = x, 
+                  y = y, 
+                  group = id, 
+                  fill = dryness)) +
+  ggplot2::geom_polygon(
+    colour = "white", 
+    linewidth = 0.2) +
+  # add text labels
+  shadowtext::geom_shadowtext(
+    data    = top_labels,
+    mapping = ggplot2::aes(
+      x = x, 
+      y = y, 
+      label = filename),
+    inherit.aes = FALSE,
+    size      = 3,
+    colour    = "#2B2B2B",     # dark text
+    bg.colour = "white",       # white halo so dark text stays legible
+    bg.r      = 0.15,
+    fontface  = "bold"
+  ) +
+  ggplot2::scale_fill_viridis_c(
+    name    = "DRYness\n(uloc / lines)",
+    option  = "viridis",
+    limits  = c(0, 1)
+  ) +
+  ggplot2::coord_equal() +
+  ggplot2::theme_void(base_size = 11)
+```
+
+This looks better. I'll add some finishing touches with `lab()` and `theme()`:
+
+```{r}
+#| label: circle-pack-static
+#| eval: true
+#| code-fold: false
+#| fig-width: 10
+#| out-width: '100%'
+# for the labels
+library(shadowtext)
+ggplot2::ggplot(polygons,
+                ggplot2::aes(
+                  x = x, 
+                  y = y, 
+                  group = id, 
+                  fill = dryness)) +
+  ggplot2::geom_polygon(
+    colour = "white", 
+    linewidth = 0.2) +
+  # add text labels
+  shadowtext::geom_shadowtext(
+    data    = top_labels,
+    mapping = ggplot2::aes(x = x, y = y, label = filename),
+    inherit.aes = FALSE,
+    size      = 3,
+    colour    = "#2B2B2B",     # dark text
+    bg.colour = "white",       # white halo so dark text stays legible
+    bg.r      = 0.15,
+    fontface  = "bold"
+  ) +
+  ggplot2::scale_fill_viridis_c(
+    name    = "DRYness\n(uloc / lines)",
+    option  = "viridis",
+    limits  = c(0, 1)
+  ) +
+  ggplot2::coord_equal() +
+  ggplot2::labs(
+    title    = "rlang R files: complexity vs. DRYness",
+    subtitle = "circle area = weighted complexity; fill = uloc / lines; top 10 labelled",
+    x = "",
+    y = "",
+    caption  = "scc_by_file(..., dryness = TRUE)"
+  ) +
+  ggplot2::theme_void(base_size = 11) +
+  ggplot2::theme(
+    plot.title = ggplot2::element_text(face = "bold"),
+    legend.position = "right"
+  )
+```
+
+In the [Visualization vignette](https://mjfrigaard.github.io/glockr/articles/viz.html) I cover how to convert this into an interactive graph. In future versions, I'll add the change (Git) data for more interesting hotspot visualizations. 
