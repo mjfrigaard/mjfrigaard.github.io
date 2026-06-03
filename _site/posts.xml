@@ -17,7 +17,1143 @@
 <width>144</width>
 </image>
 <generator>quarto-1.8.26</generator>
-<lastBuildDate>Sun, 24 May 2026 07:00:00 GMT</lastBuildDate>
+<lastBuildDate>Sun, 31 May 2026 07:00:00 GMT</lastBuildDate>
+<item>
+  <title>Create GitHub README with R Markdown</title>
+  <dc:creator>Martin Frigaard</dc:creator>
+  <link>https://mjfrigaard.github.io/posts/ghreadme/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<p>GitHub <code>README</code> files allow users to introduce themselves, share interests, projects, status, etc.<sup>1</sup> I love working in RMarkdown, so I wrote a small package that allows me to update my profile <code>README</code> with badges and <code>ggplot2</code> graphs. I’ll walk through the workflow in this post.</p>
+<p>Install the package from GitHub:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">install.packages</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'remotes'</span>)</span>
+<span id="cb1-2">remotes<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">install_github</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"mjfrigaard/ghreadme"</span>)</span></code></pre></div></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(ghreadme)</span></code></pre></div></div>
+</div>
+<p>Create a new RMarkdown <code>README.Rmd</code> file with the <code>use_profile_readme()</code> function:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">use_profile_readme</span>(</span>
+<span id="cb3-2">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">name     =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Martin"</span>,</span>
+<span id="cb3-3">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">likes    =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"#rstats and data visualization."</span>,</span>
+<span id="cb3-4">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">learn    =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Shiny app development, Python, and Linux"</span>,</span>
+<span id="cb3-5">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">work     =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"R package development tools."</span>,</span>
+<span id="cb3-6">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">collab   =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"#rstats packages for data science."</span>,</span>
+<span id="cb3-7">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">username =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"mjfrigaard"</span></span>
+<span id="cb3-8">)</span></code></pre></div></div>
+</div>
+<p>Use <code>overwrite = TRUE</code> to replace the existing file.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">✔</span> Wrote ./README.Rmd</span>
+<span id="cb4-2"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">ℹ</span> Edit the placeholders, then knit to regenerate README.md.</span></code></pre></div></div>
+</div>
+<section id="introduce-yourself" class="level2">
+<h2 class="anchored" data-anchor-id="introduce-yourself">Introduce yourself</h2>
+<p>The <a href="https://mjfrigaard.github.io/ghreadme/reference/who_am_i.html"><code>who_am_i()</code></a> function can be used to create a .gif of your likes, what you’re currently learning/working on, and how you’d like to connect.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="who_am_i.gif" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="https://mjfrigaard.github.io/posts/ghreadme/who_am_i.gif" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</section>
+<section id="collecting-git-info" class="level2">
+<h2 class="anchored" data-anchor-id="collecting-git-info">Collecting Git info</h2>
+<p>You can collect your Git info with the <code>collect_git_commits()</code> function. <code>include</code> can also provide commits, stars, issues, and PRs.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1">stats <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">collect_git_commits</span>(</span>
+<span id="cb5-2">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">user    =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"your-username"</span>,</span>
+<span id="cb5-3">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">emails  =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"you@example.com"</span>,</span>
+<span id="cb5-4">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">include =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"commits"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"stars"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"issues"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"prs"</span>)</span>
+<span id="cb5-5">)</span></code></pre></div></div>
+</div>
+<p>A list with four <code>tibble</code>s is returned. Once you have your Git information, you can create graphs for your <code>README</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">names</span>(stats)</span>
+<span id="cb6-2"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## [1] "commits" "stars"   "issues"  "prs"</span></span></code></pre></div></div>
+</div>
+<section id="commits" class="level3">
+<h3 class="anchored" data-anchor-id="commits">Commits</h3>
+<p>Probably the most interesting data is the <code>commits</code> dataset:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">str</span>(stats<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>commits)</span>
+<span id="cb7-2"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## Classes 'tbl_df', 'tbl' and 'data.frame':    2528 obs. of  11 variables:</span></span>
+<span id="cb7-3"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ repo        : chr  "r-journalism-code-thru" "r-journalism-code-thru" "r-journalism-code-thru" "r-journalism-code-thru" ...</span></span>
+<span id="cb7-4"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ sha         : chr  "36babd1e3eac9b83e70112ae975a1e0ce68521d9" "33a7a08c3f39c620d79fa3d8eb455eaa5526e796" "aad50f0730ab5c2463c4bcc9eea7458691da4cce" "20964d120b88bb76e9e645f4857702183d3e7300" ...</span></span>
+<span id="cb7-5"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ timestamp   : POSIXct, format:  ...</span></span>
+<span id="cb7-6"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ author_name : chr  "Martin Frigaard" "Martin Frigaard" "Martin Frigaard" "Martin Frigaard" ...</span></span>
+<span id="cb7-7"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ author_email: chr  "mjfrigaard@gmail.com" "mjfrigaard@gmail.com" "mjfrigaard@gmail.com" "mjfrigaard@gmail.com" ...</span></span>
+<span id="cb7-8"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ message     : chr  "upload data and notebook" "New README .Rmd file" "New text on video" "Merge branch 'master' of https://github.com/mjfrigaard/r-journalism_code_thru" ...</span></span>
+<span id="cb7-9"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ local_ts    : POSIXct, format:  ...</span></span>
+<span id="cb7-10"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ date        : Date, format:  ...</span></span>
+<span id="cb7-11"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ hour        : int  0 8 10 10 10 10 16 16 14 14 ...</span></span>
+<span id="cb7-12"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ weekday     : Factor w/ 7 levels "Monday","Tuesday",..: 4 4 4 4 4 4 6 6 4 4 ...</span></span>
+<span id="cb7-13"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ year        : int  2018 2018 2018 2018 2018 2018 2018 2018 2018 2018 ...</span></span></code></pre></div></div>
+</div>
+<p>I’ve included functions in <code>ghreadme</code> for quickly making graphs to visualize your commits.</p>
+<section id="cumulative-line-plot" class="level4">
+<h4 class="anchored" data-anchor-id="cumulative-line-plot">Cumulative Line Plot</h4>
+<p><code>cumulative_line_plot()</code> creates a line graph of the cumulative commits over time per repo:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(ggplot2)</span>
+<span id="cb8-2"></span>
+<span id="cb8-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">cumulative_line_plot</span>(</span>
+<span id="cb8-4">  stats<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>commits,</span>
+<span id="cb8-5">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">repo =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">NULL</span>,</span>
+<span id="cb8-6">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">date_begin =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"2023-01-01"</span>,</span>
+<span id="cb8-7">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">date_end =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"2026-06-01"</span>,</span>
+<span id="cb8-8">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">top_n =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>,</span>
+<span id="cb8-9">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">show_other =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>,</span>
+<span id="cb8-10">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">title =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Cumulative Line Plot"</span></span>
+<span id="cb8-11">)</span></code></pre></div></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-5-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="https://mjfrigaard.github.io/posts/ghreadme/index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="calendar-heatmap-plot" class="level4">
+<h4 class="anchored" data-anchor-id="calendar-heatmap-plot">Calendar Heatmap Plot</h4>
+<p><code>calendar_heatmap_plot()</code> creates a heatmap similar to the GitHub heatmap, and allows us to facet by year.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">calendar_heatmap_plot</span>(</span>
+<span id="cb9-2">  stats<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>commits,</span>
+<span id="cb9-3">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">repo =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">NULL</span>,</span>
+<span id="cb9-4">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">date_begin =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"2023-01-01"</span>,</span>
+<span id="cb9-5">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">date_end =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"2026-06-01"</span>,</span>
+<span id="cb9-6">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">title =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Calendar Heatmap"</span>,</span>
+<span id="cb9-7">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">week_start =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Sunday"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Monday"</span>),</span>
+<span id="cb9-8">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">low =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"#ebedf0"</span>,</span>
+<span id="cb9-9">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">high =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"#216e39"</span></span>
+<span id="cb9-10">)</span></code></pre></div></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-6-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="https://mjfrigaard.github.io/posts/ghreadme/index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="punch-card-plot" class="level4">
+<h4 class="anchored" data-anchor-id="punch-card-plot">Punch Card Plot</h4>
+<p><code>punchcard_plot()</code> lets you view the time of day your commits occur:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">punchcard_plot</span>(</span>
+<span id="cb10-2">  stats<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>commits,</span>
+<span id="cb10-3">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">repo =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">NULL</span>,</span>
+<span id="cb10-4">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">date_begin =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"2023-01-01"</span>,</span>
+<span id="cb10-5">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">date_end =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"2026-06-01"</span>,</span>
+<span id="cb10-6">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">title =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Punchcard Plot"</span>,</span>
+<span id="cb10-7">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">point_color =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"#1f6feb"</span></span>
+<span id="cb10-8">)</span></code></pre></div></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/unnamed-chunk-7-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="https://mjfrigaard.github.io/posts/ghreadme/index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="stars" class="level3">
+<h3 class="anchored" data-anchor-id="stars">Stars</h3>
+<p>The <code>stars</code> data has similar structure to the <code>commits</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">str</span>(stats<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>stars)</span>
+<span id="cb11-2"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## tibble [155 × 8] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb11-3"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ repo            : chr [1:155] "shiny-app-pkgs" "sap" "Rsixer" "shinypak" ...</span></span>
+<span id="cb11-4"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ stargazers_count: int [1:155] 20 6 3 3 2 2 2 2 2 2 ...</span></span>
+<span id="cb11-5"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ forks_count     : int [1:155] 0 0 0 0 0 0 0 0 0 0 ...</span></span>
+<span id="cb11-6"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ watchers_count  : int [1:155] 20 6 3 3 2 2 2 2 2 2 ...</span></span>
+<span id="cb11-7"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ language        : chr [1:155] "HTML" "R" "R" "R" ...</span></span>
+<span id="cb11-8"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ description     : chr [1:155] "Shiny app-packages (book)" "A collection of {S}hiny {A}pp-{P}ackages" "Shiny, R packages, R6" "R package (code examples for Shiny App-Packages book)" ...</span></span>
+<span id="cb11-9"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ created_at      : POSIXct[1:155], format:  ...</span></span>
+<span id="cb11-10"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ updated_at      : POSIXct[1:155], format:  ...</span></span></code></pre></div></div>
+</div>
+<section id="top-10-repos-by-stars" class="level4">
+<h4 class="anchored" data-anchor-id="top-10-repos-by-stars">Top 10 repos by stars</h4>
+<p>Below is a “Top 10 repos by stars” bar graph using <code>stargazers_count</code> and <code>repo</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1">stats<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>stars <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb12-2">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">head</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb12-3">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ggplot</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">aes</span>(</span>
+<span id="cb12-4">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x =</span> stargazers_count,</span>
+<span id="cb12-5">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">reorder</span>(repo, stargazers_count)</span>
+<span id="cb12-6">  )) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb12-7">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">geom_col</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fill =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"#1E5F8C"</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb12-8">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">labs</span>(</span>
+<span id="cb12-9">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Stars"</span>,</span>
+<span id="cb12-10">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">NULL</span>,</span>
+<span id="cb12-11">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">title =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Top 10 repos by stars"</span></span>
+<span id="cb12-12">  ) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb12-13">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">theme_minimal</span>()</span></code></pre></div></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="index_files/figure-html/top-10-repos-by-stars-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5"><img src="https://mjfrigaard.github.io/posts/ghreadme/index_files/figure-html/top-10-repos-by-stars-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="issues" class="level3">
+<h3 class="anchored" data-anchor-id="issues">Issues</h3>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">str</span>(stats<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>issues)</span>
+<span id="cb13-2"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">## tibble [46 × 7] (S3: tbl_df/tbl/data.frame)</span></span>
+<span id="cb13-3"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ repo      : chr [1:46] "posit-dev/btw" "posit-dev/btw" "mjfrigaard/fm-linux" "mjfrigaard/fm-linux" ...</span></span>
+<span id="cb13-4"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ number    : int [1:46] 124 122 6 5 4 3 2 1 18 17 ...</span></span>
+<span id="cb13-5"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ title     : chr [1:46] "btw_app(): parse error: premature EOF" "btw_app(): Error in $: object of type 'closure' is not subsettable" "Basics: update to include users and groups and permissions" "Preface: update outline" ...</span></span>
+<span id="cb13-6"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ state     : chr [1:46] "closed" "closed" "open" "open" ...</span></span>
+<span id="cb13-7"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ created_at: POSIXct[1:46], format:  ...</span></span>
+<span id="cb13-8"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ closed_at : POSIXct[1:46], format:  ...</span></span>
+<span id="cb13-9"><span class="do" style="color: #5E5E5E;
+background-color: null;
+font-style: italic;">##  $ url       : chr [1:46] "https://github.com/posit-dev/btw/issues/124" "https://github.com/posit-dev/btw/issues/122" "https://github.com/mjfrigaard/fm-linux/issues/6" "https://github.com/mjfrigaard/fm-linux/issues/5" ...</span></span></code></pre></div></div>
+</div>
+<section id="issues-per-year-by-state" class="level4">
+<h4 class="anchored" data-anchor-id="issues-per-year-by-state">Issues per year (by state)</h4>
+<p>Table outputs are also great for your README. Below is a “issues opened per year, by state” summary:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1">stats<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>issues <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb14-2">  dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">mutate</span>(</span>
+<span id="cb14-3">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">year =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">as.integer</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">format</span>(created_at, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"%Y"</span>))</span>
+<span id="cb14-4">    ) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb14-5">  dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">count</span>(year, state) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="cb14-6">  tidyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">pivot_wider</span>(</span>
+<span id="cb14-7">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">names_from =</span> state, </span>
+<span id="cb14-8">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">values_from =</span> n, </span>
+<span id="cb14-9">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">values_fill =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb14-10">  dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">arrange</span>(dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">desc</span>(year)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb14-11">  gt<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">gt</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span> </span>
+<span id="cb14-12">  gt<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tab_header</span>(</span>
+<span id="cb14-13">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">title =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Issues opened per year"</span>, </span>
+<span id="cb14-14">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">subtitle =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"By state"</span>)</span></code></pre></div></div>
+<div class="cell-output-display">
+<div id="gicksrpkhx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#gicksrpkhx table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#gicksrpkhx thead, #gicksrpkhx tbody, #gicksrpkhx tfoot, #gicksrpkhx tr, #gicksrpkhx td, #gicksrpkhx th {
+  border-style: none;
+}
+
+#gicksrpkhx p {
+  margin: 0;
+  padding: 0;
+}
+
+#gicksrpkhx .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#gicksrpkhx .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#gicksrpkhx .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#gicksrpkhx .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#gicksrpkhx .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#gicksrpkhx .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#gicksrpkhx .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#gicksrpkhx .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#gicksrpkhx .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#gicksrpkhx .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#gicksrpkhx .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#gicksrpkhx .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#gicksrpkhx .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#gicksrpkhx .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#gicksrpkhx .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#gicksrpkhx .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#gicksrpkhx .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#gicksrpkhx .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#gicksrpkhx .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#gicksrpkhx .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#gicksrpkhx .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#gicksrpkhx .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#gicksrpkhx .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#gicksrpkhx .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#gicksrpkhx .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#gicksrpkhx .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#gicksrpkhx .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#gicksrpkhx .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#gicksrpkhx .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#gicksrpkhx .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#gicksrpkhx .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#gicksrpkhx .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#gicksrpkhx .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#gicksrpkhx .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#gicksrpkhx .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#gicksrpkhx .gt_left {
+  text-align: left;
+}
+
+#gicksrpkhx .gt_center {
+  text-align: center;
+}
+
+#gicksrpkhx .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#gicksrpkhx .gt_font_normal {
+  font-weight: normal;
+}
+
+#gicksrpkhx .gt_font_bold {
+  font-weight: bold;
+}
+
+#gicksrpkhx .gt_font_italic {
+  font-style: italic;
+}
+
+#gicksrpkhx .gt_super {
+  font-size: 65%;
+}
+
+#gicksrpkhx .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#gicksrpkhx .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#gicksrpkhx .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#gicksrpkhx .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#gicksrpkhx .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#gicksrpkhx .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#gicksrpkhx .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#gicksrpkhx .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#gicksrpkhx div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<td colspan="3" class="gt_heading gt_title gt_font_normal">Issues opened per year</td>
+</tr>
+<tr class="gt_heading even">
+<td colspan="3" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border">By state</td>
+</tr>
+<tr class="gt_col_headings header">
+<th id="year" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">year</th>
+<th id="closed" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">closed</th>
+<th id="open" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">open</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_right" headers="year">2025</td>
+<td class="gt_row gt_right" headers="closed">8</td>
+<td class="gt_row gt_right" headers="open">3</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="year">2024</td>
+<td class="gt_row gt_right" headers="closed">5</td>
+<td class="gt_row gt_right" headers="open">1</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="year">2023</td>
+<td class="gt_row gt_right" headers="closed">10</td>
+<td class="gt_row gt_right" headers="open">7</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="year">2021</td>
+<td class="gt_row gt_right" headers="closed">3</td>
+<td class="gt_row gt_right" headers="open">0</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="year">2020</td>
+<td class="gt_row gt_right" headers="closed">3</td>
+<td class="gt_row gt_right" headers="open">0</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="year">2019</td>
+<td class="gt_row gt_right" headers="closed">0</td>
+<td class="gt_row gt_right" headers="open">3</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="year">2018</td>
+<td class="gt_row gt_right" headers="closed">1</td>
+<td class="gt_row gt_right" headers="open">0</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="year">2017</td>
+<td class="gt_row gt_right" headers="closed">0</td>
+<td class="gt_row gt_right" headers="open">1</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="year">2016</td>
+<td class="gt_row gt_right" headers="closed">1</td>
+<td class="gt_row gt_right" headers="open">0</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="creating-.gifs" class="level3">
+<h3 class="anchored" data-anchor-id="creating-.gifs">Creating .gifs</h3>
+<p>For changes over time, you can use the recipes in the <a href="https://mjfrigaard.github.io/ghreadme/articles/viz-git-gif.html">visualization vignette</a> to create animated .gifs. I’ve included examples below.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="cumulative.gif" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Cumulative Line Plot"><img src="https://mjfrigaard.github.io/posts/ghreadme/cumulative.gif" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Cumulative Line Plot"></a></p>
+</figure>
+</div>
+<figcaption>Cumulative Line Plot</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="calendar.gif" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Calendar Heatmap Plot"><img src="https://mjfrigaard.github.io/posts/ghreadme/calendar.gif" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Calendar Heatmap Plot"></a></p>
+</figure>
+</div>
+<figcaption>Calendar Heatmap Plot</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="punchcard.gif" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Punch Card Plot"><img src="https://mjfrigaard.github.io/posts/ghreadme/punchcard.gif" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%" alt="Punch Card Plot"></a></p>
+</figure>
+</div>
+<figcaption>Punch Card Plot</figcaption>
+</figure>
+</div>
+<p>Check out the package documentation for more updates!</p>
+
+
+</section>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Read more about <a href="https://docs.github.com/en/account-and-profile/how-tos/profile-customization/managing-your-profile-readme#prerequisites">GitHub README prerequisites</a>↩︎</p></li>
+</ol>
+</section></div> ]]></description>
+  <category>R</category>
+  <category>Packages</category>
+  <category>Git</category>
+  <guid>https://mjfrigaard.github.io/posts/ghreadme/</guid>
+  <pubDate>Sun, 31 May 2026 07:00:00 GMT</pubDate>
+  <media:content url="https://mjfrigaard.github.io/posts/ghreadme/img/image.gif" medium="image" type="image/gif"/>
+</item>
 <item>
   <title>glockr: An R Wrapper around Succinct Code Counter</title>
   <dc:creator>Martin Frigaard</dc:creator>
@@ -22227,7 +23363,7 @@ font-style: inherit;">print</span>(x)</span>
 </div>
 </div>
 <p>When <code>datasetApp()</code> is run, the app displays the dataset object in the <code>tableOutput()</code>, and the <code>verbatimTextOutput()</code> renders the reactive values as a text:</p>
-<div id="fig-datasetApp_run" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center" width="100%">
+<div id="fig-datasetApp_run" class="quarto-float quarto-figure quarto-figure-center anchored" width="100%" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-datasetApp_run-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <a href="datasetApp_run.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;1: "><img src="https://mjfrigaard.github.io/posts/p3-test-shiny-module-tests/datasetApp_run.png" id="fig-datasetApp_run" class="img-fluid quarto-figure quarto-figure-center anchored figure-img" style="width:100.0%"></a>
