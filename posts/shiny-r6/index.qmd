@@ -1,6 +1,6 @@
 ---
 title: "Shiny, R packages, and R6"
-subtitle: "A deep dive into using R6 in Shiny apps"
+subtitle: "Managing state and business logic with R6 classes in Shiny app-packages"
 author: "Martin Frigaard"
 date: "2026-01-22"
 categories: [R6, Shiny]
@@ -9,19 +9,18 @@ toc: true
 toc-depth: 5
 toc-title: 'Contents'
 toc-location: "left"
-# code-block-border-left: true
 code-block-bg: "#f8f8f8"
 code-block-border-left: "#e8e8e8"
 code-fold: show
 code-summary: 'show/hide'
 callout-icon: false
 
-draft: true
+draft: false
 
 freeze: true
 
 knitr:
-  opts_chunk: 
+  opts_chunk:
     fig-dpi: 320
     fig-width: 6
     out-width: '85%'
@@ -37,8 +36,8 @@ execute:
 
 ```{r}
 #| label: setup
-#| eval: true 
-#| echo: false 
+#| eval: true
+#| echo: false
 #| include: false
 source("../_common.R")
 options(scipen = 999)
@@ -46,8 +45,6 @@ library(quarto)
 library(rmarkdown)
 library(shiny)
 library(lobstr)
-# pak::pak('long39ng/listviewerlite')
-# pak::pak('mjfrigaard/ttdviewer')
 library(ttdviewer)
 ```
 
@@ -56,46 +53,106 @@ library(ttdviewer)
 #| echo: false
 #| results: asis
 #| eval: true
-co_box(color = "r", 
-  header = "ALERT!", 
+co_box(color = "r",
+  header = "ALERT!",
   contents = "This post is currently under development--thank you for your patience.")
 ```
 
+As a Shiny app grows, the server function tends to accumulate: reactive values tracking multiple pieces of mutable state, helper functions managing business logic, and implicit dependencies that are hard to follow. Packaging the app as an R package helps with organization, but it doesn't solve the underlying problem of managing state that changes at runtime.
 
-As your Shiny application grows in complexity, organizing code in a modular and object-oriented way becomes crucial. While Shiny is inherently reactive and functional, **R6 classes** provide a powerful tool for encapsulating state, behavior, and logic — particularly useful in large-scale apps or when designing reusable components inside an R package.
+**R6 classes** offer a clean answer. They let you bundle mutable state and the methods that operate on it into a single object, separate from your reactive graph. The result is code that is easier to test, easier to reuse across modules, and much easier to reason about when something goes wrong.
 
-In this post, we’ll explore:
+In this post, we'll cover:
 
-* What R6 is and why it's useful in Shiny
-* How to define and use R6 classes in a Shiny app-package
-* Best practices for integrating R6 with reactivity
-* A practical example within a package structure
+- What R6 is and how it differs from R's other object systems
+- How to define R6 classes and place them inside an R package
+- Three strategies for wiring R6 state to Shiny's reactive graph
+- A practical, session-aware logger example that ties everything together
 
 ## What is R6?
 
-R6 is an object-oriented system in R that enables the creation of **reference-based** objects. Unlike S3 or S4 objects, R6 objects maintain state and support encapsulation, inheritance, and private/public members — much like objects in other OOP languages (e.g., Python, Java).
+R has several object-oriented systems: S3, S4, R5 (Reference Classes), and R6. The first two use **copy-on-modify** semantics — when you pass an object to a function and modify it, you modify a copy, not the original. R5 and R6 use **reference semantics**: all variables that point to the same R6 object share the same underlying data. Modifying the object through one variable is immediately visible through all other variables that reference it.
 
-This makes R6 especially useful for:
+Reference semantics are exactly what you want for mutable state in a Shiny server. A counter, a user session record, a log buffer — these all need to change in place rather than produce modified copies.
 
-* Managing mutable state (e.g., counters, user sessions)
-* Bundling business logic with data
-* Reusing logic across modules or apps
+R6 is preferred over R5 (Reference Classes) because it is faster, has a cleaner API, supports portable (non-environment-based) objects for serialization, and integrates well with `testthat`.
 
-In an app packaged as an R package, R6 classes help you separate concerns and avoid global state.
+Install the package if needed:
 
 ```{r}
-#| label: r6
+#| label: r6-install
 #| code-fold: false
-install.packages('R6')
+install.packages("R6")
 library(R6)
 ```
 
-### Defining an R6 Class
+## Defining an R6 Class
 
-You define R6 classes using the `R6` package. Here's a simple example of an R6 class for a counter:
+You define an R6 class with `R6::R6Class()`. Everything visible to outside code goes in `public`; implementation details that callers should not touch go in `private`.
 
-```r
-# In R/counter.R
+Here is a minimal counter class:
+
+```{r}
+#| label: counter-class
+Counter <- R6::R6Class(   #<1>
+  "Counter",
+  public = list(
+    value = 0,            #<2>
+    initialize = function(start = 0) {
+      self$value <- start #<3>
+    },
+    increment = function() {
+      self$value <- self$value + 1
+    },
+    reset = function() {
+      self$value <- 0
+    },
+    get = function() {
+      self$value
+    }
+  )
+)
+```
+1. The first argument is the class name (used in `inherits()` checks and error messages).
+2. Public fields are mutable and accessible with `$`.
+3. `self` always refers to the current instance inside method bodies.
+
+### Mini-experiment: verify reference semantics
+
+Before wiring this into Shiny, it is worth confirming that reference semantics actually behave differently from the copy-on-modify model you are probably used to.
+
+```{r}
+#| label: reference-semantics
+a <- Counter$new(start = 10)
+b <- a          # b is NOT a copy — it points to the same object
+
+a$increment()   # mutate through a ...
+b$get()         # ... and b sees the change immediately
+#> [1] 11
+```
+
+This is the key insight: once you pass an R6 object into a function, changes inside that function affect the original object. That is different from how a plain list or data frame would behave, and it is what makes R6 useful for Shiny state management.
+
+## R6 Classes in a Package
+
+In an app-package, place each class definition in `R/` with a descriptive file name. Keeping one class per file makes the code easier to navigate.
+
+```
+R/
+  counter.R   # Counter class
+  logger.R    # Logger class
+  app.R       # shinyApp() wrapper
+```
+
+Add roxygen documentation so the class is exported and usable from other packages or in tests:
+
+```{r}
+#| label: counter-export
+#' Counter R6 class
+#'
+#' Tracks a numeric value with increment and reset methods.
+#'
+#' @export
 Counter <- R6::R6Class(
   "Counter",
   public = list(
@@ -116,20 +173,29 @@ Counter <- R6::R6Class(
 )
 ```
 
-Place this class definition inside your `R/` directory so it is loaded with the rest of your package code.
+One rule to keep in mind: never instantiate R6 objects at the package level (i.e., outside a function). If you write `my_counter <- Counter$new()` at the top of an `R/` file, that object is shared across every user session. Always create instances inside `server()` or module server functions, where they are scoped to a single session.
 
-### Using R6 in the Shiny Server Function
+## Wiring R6 to Shiny Reactivity
 
-To use the class in your app, instantiate it inside the `server` function and wrap its methods in `reactive` or `observe` blocks where needed:
+R6 objects are not inherently reactive. Shiny does not know an R6 field has changed unless you explicitly tell it. There are three strategies for bridging the gap, each with different trade-offs.
 
-```r
-# In inst/app/server.R
+```{r}
+#| label: shiny-library
+#| code-fold: false
+library(shiny)
+```
 
+### Strategy 1: `render*` driven by input events
+
+The simplest approach: an `observeEvent` calls the R6 method, and the `render*` function reads from the object on every event. This works when the R6 state only needs to be displayed, not shared across multiple outputs.
+
+```{r}
+#| label: strategy-1
 server <- function(input, output, session) {
-  counter <- Counter$new()
+  counter <- Counter$new()                #<1>
 
   observeEvent(input$increment_btn, {
-    counter$increment()
+    counter$increment()                   #<2>
   })
 
   observeEvent(input$reset_btn, {
@@ -137,16 +203,20 @@ server <- function(input, output, session) {
   })
 
   output$counter_text <- renderText({
+    input$increment_btn                   #<3>
+    input$reset_btn
     paste("Current count:", counter$get())
   })
 }
 ```
+1. Create a new instance inside `server()` — scoped to this session only.
+2. Mutate through the R6 method; the object updates in place.
+3. Take a reactive dependency on the input buttons so `renderText` re-runs after each click. Without these lines, `counter$get()` would only run once.
 
-And in the UI:
+The UI for all three strategies uses the same skeleton:
 
-```r
-# In inst/app/ui.R
-
+```{r}
+#| label: ui-counter
 ui <- fluidPage(
   actionButton("increment_btn", "Increment"),
   actionButton("reset_btn", "Reset"),
@@ -154,103 +224,290 @@ ui <- fluidPage(
 )
 ```
 
----
+### Strategy 2: External reactive trigger
 
-## Reactivity and R6
+Strategy 1 couples the `render*` function directly to the input events. If you have several outputs that all depend on the same R6 state, maintaining separate input references in each `render*` becomes repetitive. A shared `reactiveVal` trigger solves this.
 
-R6 objects aren't inherently reactive. If you want your app to respond to changes in an R6 object's state, you need to wrap getters in reactive expressions or use `reactiveVal`/`reactiveValues` internally.
-
-## Strategy 1: Wrap method calls in `render*` functions
-
-This is the simplest method, shown above with `renderText()`.
-
-## Strategy 2: Use reactive triggers
-
-You can also use `reactiveVal` to track state and trigger UI updates:
-
-```r
+```{r}
+#| label: strategy-2
 server <- function(input, output, session) {
   counter <- Counter$new()
-  trigger <- reactiveVal(0)
+  trigger <- reactiveVal(0)                 #<1>
 
   observeEvent(input$increment_btn, {
     counter$increment()
+    trigger(trigger() + 1)                  #<2>
+  })
+
+  observeEvent(input$reset_btn, {
+    counter$reset()
     trigger(trigger() + 1)
   })
 
   output$counter_text <- renderText({
-    trigger()
+    trigger()                               #<3>
     paste("Current count:", counter$get())
+  })
+
+  output$counter_double <- renderText({
+    trigger()                               #<4>
+    paste("Double:", counter$get() * 2)
   })
 }
 ```
+1. A single `reactiveVal` acts as a manual invalidation signal.
+2. After every mutation, increment the trigger to notify all dependents.
+3. Reading `trigger()` creates a reactive dependency; this output re-runs whenever the trigger changes.
+4. A second output can depend on the same trigger without duplicating input references.
 
-## Organizing R6 Classes in a Package
+```{r}
+#| label: co_box_strategy2
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(
+  color = "b",
+  header = "When to use this strategy",
+  contents = "Use an external trigger when multiple outputs read from the same R6 object. It centralizes invalidation and keeps `render*` functions focused on display logic."
+)
+```
 
-To integrate smoothly with your app-package:
+### Strategy 3: Reactive binding inside the R6 class
 
-* Place class definitions in `R/` with clear, modular file names (e.g., `R/counter.R`)
-* Use `@export` roxygen tags if you want to make classes available to users
-* Test classes with `testthat` as you would with functions
-* Avoid instantiating R6 objects at the package level (e.g., outside of functions); do so inside `server()` or module server functions
+For objects designed exclusively for use inside Shiny, you can move the reactive plumbing into the class itself. This keeps mutation and notification together, which is useful when the same class is used across many modules.
 
-
-## Example: Session-Aware Logger
-
-Suppose we want an R6 class that logs user actions with session tracking:
-
-```r
-# In R/logger.R
-Logger <- R6::R6Class("Logger",
+```{r}
+#| label: strategy-3
+ReactiveCounter <- R6::R6Class(
+  "ReactiveCounter",
   public = list(
-    session_id = NULL,
-    logs = character(),
-    
-    initialize = function(session_id) {
-      self$session_id <- session_id
+    .trigger = NULL,                            #<1>
+    value = 0,
+
+    initialize = function(start = 0) {
+      self$.trigger <- reactiveVal(0)           #<2>
+      self$value <- start
     },
-    
-    log = function(message) {
-      timestamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-      entry <- paste0("[", self$session_id, " @ ", timestamp, "] ", message)
-      self$logs <- c(self$logs, entry)
+
+    increment = function() {
+      self$value <- self$value + 1
+      self$.trigger(self$.trigger() + 1)        #<3>
     },
-    
-    get_logs = function() {
-      self$logs
+
+    reset = function() {
+      self$value <- 0
+      self$.trigger(self$.trigger() + 1)
+    },
+
+    reactive_get = function() {
+      self$.trigger()                           #<4>
+      self$value
     }
   )
 )
 ```
+1. A public field named with `.` prefix signals "internal use" by convention (you could also put this in `private`).
+2. The trigger is created during initialization, so it is always available.
+3. Every mutation fires the trigger automatically — callers do not need to manage this.
+4. `reactive_get()` takes a dependency on the trigger; any reactive context that calls it will re-run on mutation.
 
-In the server:
+Using `ReactiveCounter` in a server function is then much cleaner:
 
-```r
+```{r}
+#| label: strategy-3-server
 server <- function(input, output, session) {
-  logger <- Logger$new(session$token)
+  counter <- ReactiveCounter$new()
 
-  observeEvent(input$do_something, {
-    logger$log("Button clicked")
-  })
+  observeEvent(input$increment_btn, counter$increment())
+  observeEvent(input$reset_btn, counter$reset())
 
-  output$log_output <- renderPrint({
-    logger$get_logs()
+  output$counter_text <- renderText({
+    paste("Current count:", counter$reactive_get())  #<1>
   })
 }
 ```
+1. `reactive_get()` handles both reading the value and registering the dependency; no manual trigger management needed at the call site.
 
+```{r}
+#| label: co_box_strategy3
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(
+  color = "o",
+  header = "Trade-off",
+  contents = "Strategy 3 produces the cleanest call sites, but it tightly couples the class to Shiny. A class that contains `reactiveVal()` cannot be instantiated outside a reactive context (e.g., in plain unit tests) without extra effort. Strategies 1 and 2 keep the class itself framework-agnostic and are easier to test with `testthat`."
+)
+```
 
+### Choosing a strategy
+
+The diagram below shows when each strategy fits best.
+
+```{mermaid}
+flowchart TD
+  SingOut["Single output\nreads R6 state"]
+  MultiOut["Multiple outputs\nread same R6 state"]
+  ShinyOnly["Class is\nShiny-only"]
+
+  SingOut --> Strat1["Strategy 1\nrender* + input dep"]
+  MultiOut --> Strat2["Strategy 2\nexternal reactiveVal"]
+  ShinyOnly --> Strat3["Strategy 3\ninternal reactive binding"]
+```
+
+## Testing R6 Classes
+
+One of R6's advantages over embedding logic in the server function is testability. Classes defined without reactive internals (Strategies 1 and 2) can be tested directly with `testthat`:
+
+```{r}
+#| label: testthat-counter
+test_that("Counter increments from zero", {
+  c <- Counter$new()
+  c$increment()
+  c$increment()
+  expect_equal(c$get(), 2)
+})
+
+test_that("Counter reset brings value back to zero", {
+  c <- Counter$new(start = 5)
+  c$reset()
+  expect_equal(c$get(), 0)
+})
+```
+
+Place tests in `tests/testthat/test-counter.R`. Because `Counter` is a plain R6 class with no Shiny dependencies, no `shinytest2` or special reactive context is needed to run these.
+
+## Example: Session-Aware Logger
+
+The counter is a good minimal example, but a session-aware logger shows R6 being used for something you could not easily replicate with `reactiveValues` alone: accumulating structured log entries tied to the user's session token.
+
+### Class definition
+
+<details><summary>Logger R6 class (R/logger.R)</summary>
+
+```{r}
+#| label: logger-class
+#' Logger R6 class
+#'
+#' Records timestamped log entries for a single Shiny session.
+#'
+#' @export
+Logger <- R6::R6Class(
+  "Logger",
+  private = list(
+    session_id = NULL,                         #<1>
+    logs = NULL
+  ),
+  public = list(
+    initialize = function(session_id) {
+      private$session_id <- session_id
+      private$logs <- character()
+    },
+
+    log = function(message) {                  #<2>
+      ts <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+      entry <- sprintf(
+        "[%s @ %s] %s",
+        private$session_id,
+        ts,
+        message
+      )
+      private$logs <- c(private$logs, entry)
+      invisible(self)                          #<3>
+    },
+
+    get_logs = function() {
+      private$logs
+    },
+
+    n_entries = function() {
+      length(private$logs)
+    },
+
+    clear = function() {
+      private$logs <- character()
+      invisible(self)
+    }
+  )
+)
+```
+1. `session_id` and `logs` are private: callers must use `log()` and `get_logs()` rather than accessing the fields directly. This prevents accidental mutation from outside the class.
+2. Each call appends a formatted entry; the method returns `self` invisibly so calls can be chained: `logger$log("step 1")$log("step 2")`.
+3. Returning `self` invisibly from mutating methods is an R6 convention.
+
+</details>
+
+### Shiny integration
+
+```{r}
+#| label: logger-server
+server <- function(input, output, session) {
+  logger <- Logger$new(session$token)          #<1>
+  log_trigger <- reactiveVal(0)                #<2>
+
+  observeEvent(input$action_btn, {
+    logger$log("Action button clicked")
+    log_trigger(log_trigger() + 1)
+  })
+
+  observeEvent(input$clear_btn, {
+    logger$clear()
+    log_trigger(log_trigger() + 1)
+  })
+
+  output$log_output <- renderPrint({
+    log_trigger()
+    logger$get_logs()
+  })
+
+  output$entry_count <- renderText({
+    log_trigger()
+    paste(logger$n_entries(), "log entries")
+  })
+}
+```
+1. `session$token` is a unique identifier per browser session; passing it in at construction time means every log entry is tagged to the right user without any global state.
+2. Strategy 2 is used here because two outputs (`log_output` and `entry_count`) both depend on the logger's state.
+
+```{r}
+#| label: logger-ui
+ui <- fluidPage(
+  actionButton("action_btn", "Do something"),
+  actionButton("clear_btn", "Clear log"),
+  textOutput("entry_count"),
+  verbatimTextOutput("log_output")
+)
+```
+
+### Testing the logger without Shiny
+
+```{r}
+#| label: logger-tests
+test_that("Logger records entries with session ID", {
+  lg <- Logger$new("test-session")
+  lg$log("first event")
+  lg$log("second event")
+  expect_equal(lg$n_entries(), 2L)
+  expect_true(all(grepl("test-session", lg$get_logs())))
+})
+
+test_that("Logger clear removes all entries", {
+  lg <- Logger$new("s1")
+  lg$log("a")$log("b")
+  lg$clear()
+  expect_equal(lg$n_entries(), 0L)
+})
+```
 
 ## Recap
 
-Using R6 in Shiny app-packages gives you a scalable, maintainable approach to organizing business logic and managing state. It shines when:
+R6 gives you a place to put mutable state and business logic that grows with your app without cluttering the reactive graph. The key points:
 
-* You want object-oriented abstractions
-* You need mutable objects tied to user sessions
-* You're building reusable modules within or across apps
+- Use **reference semantics** deliberately: pass R6 objects into helper functions when you want in-place mutation; avoid them when you want immutable data.
+- **Strategy 1** (render* with input dependency) covers simple single-output cases with no extra plumbing.
+- **Strategy 2** (external `reactiveVal` trigger) scales to multiple outputs reading the same state.
+- **Strategy 3** (internal reactive binding) produces the cleanest call sites but ties the class to Shiny; reserve it for classes you know will only live in a reactive context.
+- Keeping R6 classes framework-agnostic (Strategies 1 and 2) means you can test them with plain `testthat` without a running Shiny session.
+- Define classes in `R/`, one per file, export them with roxygen tags, and always instantiate inside `server()` or module server functions — never at package load time.
 
-While not every Shiny app needs R6, mastering this tool adds a robust pattern to your Shiny developer toolkit — particularly when packaging your app for production or distribution.
-
-
-
-In the next chapter, we'll explore how to use **Shiny modules** in combination with R6 objects to further encapsulate functionality within your package structure.
+The session-aware logger pattern extends naturally to audit trails, undo stacks, and any other use case that involves accumulating structured records over the lifetime of a user session.
