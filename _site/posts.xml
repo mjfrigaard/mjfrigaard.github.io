@@ -15,7 +15,1830 @@
 <link>https://mjfrigaard.github.io/posts.html</link>
 </image>
 <generator>quarto-1.8.26</generator>
-<lastBuildDate>Sun, 31 May 2026 07:00:00 GMT</lastBuildDate>
+<lastBuildDate>Mon, 22 Jun 2026 07:00:00 GMT</lastBuildDate>
+<item>
+  <title>Shiny, R packages, and R6</title>
+  <dc:creator>Martin Frigaard</dc:creator>
+  <link>https://mjfrigaard.github.io/posts/shiny-r6/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<p>Shiny apps accumulate complexity in two places: the UI tends to get wide; the server tends to get deep. In a large app the server becomes a tangle of reactive values, observers, and helper functions all sharing mutable state through <code>reactiveValues</code> objects passed around as implicit globals. Packaging the app as an R package helps with tooling; R6 classes help with architecture. Together they let you draw a clean line between “things that change at runtime” and “things that handle reactivity” — and test each side independently.</p>
+<p>In this post we walk through <code>movexplR6</code>, a Shiny app-package that lets users explore movie ratings from a SQLite database. R6 manages the database connection and filtering logic; Shiny modules handle the UI and reactive wiring. We’ll cover:</p>
+<ul>
+<li>What R6 is and why reference semantics matter for Shiny state</li>
+<li>The <code>MovieData</code> R6 class: database access, filtering, and cleanup</li>
+<li>Package structure and where R6 classes live</li>
+<li>How <code>movies_server()</code> wires <code>MovieData</code> into the reactive graph</li>
+<li>Module composition with <code>mod_filters</code> and <code>mod_plot</code></li>
+<li>Testing <code>MovieData</code> independently of Shiny</li>
+</ul>
+<section id="the-app-at-a-glance" class="level2">
+<h2 class="anchored" data-anchor-id="the-app-at-a-glance">The App at a Glance</h2>
+<p><code>movexplR6</code> has one R6 class, two Shiny modules, and a thin server/UI layer that connects them. The diagram below shows how the pieces fit together.</p>
+<div class="cell" data-eval="true" data-layout-align="center">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"16px"}}}%%
+
+flowchart TD
+  subgraph Pkg["movexplR6 package"]
+    MovData["MovieData&lt;br&gt;(R6 class)&lt;br&gt;R/MovieData.R"]
+    FilMod["mod_filters&lt;br&gt;R/mod_filters.R"]
+    PltMod["mod_plot&lt;br&gt;R/mod_plot.R"]
+    MovServ["movies_server()&lt;br&gt;R/movies_server.R"]
+    MovUI["movies_ui()&lt;br&gt;R/movies_ui.R"]
+  end
+
+  DB[("SQLite&lt;br&gt;movies.db")]
+
+  MovData -- "DBI::dbConnect()" --&gt; DB
+  MovServ -- "MovieData$new()" --&gt; MovData
+  MovServ -- "mod_filters_server()" --&gt; FilMod
+  MovServ -- "mod_plot_server()" --&gt; PltMod
+  FilMod -- "filters() reactive" --&gt; MovServ
+  MovServ -- "movies() reactive" --&gt; PltMod
+  MovUI -- "mod_filters_ui()" --&gt; FilMod
+  MovUI -- "mod_plot_ui()" --&gt; PltMod
+</pre>
+</div>
+<p></p><figcaption> movexplR6 at a glance</figcaption> </figure><p></p>
+</div>
+</div>
+</div>
+<p>The key insight is that <code>MovieData</code> sits outside the reactive graph entirely. It knows nothing about Shiny; it just connects to a database, holds the data, and filters it on demand. The server function is the adapter between R6 and reactivity.</p>
+</section>
+<section id="what-is-r6" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-r6">What Is R6?</h2>
+<p>R has several object-oriented systems. S3 and S4 use <strong>copy-on-modify</strong> semantics: when you pass an object to a function and modify it inside, you modify a copy and the original is unchanged. R6 uses <strong>reference semantics</strong>: all variables that point to the same R6 object share the same underlying data. Modifying the object through one variable is immediately visible through all other variables that reference it.</p>
+<p>Reference semantics are exactly what you want for mutable state in a Shiny server. A database connection, a cached dataset, a log buffer; these all need to change in place rather than produce modified copies. R6 is also faster than R5 (Reference Classes), has a cleaner API, and integrates well with <code>testthat</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">install.packages</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"R6"</span>)</span>
+<span id="cb1-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(R6)</span></code></pre></div></div>
+</div>
+<p>A quick mini-experiment makes the difference concrete. If you assign an R6 object to two variables, both variables refer to the same object:</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>show/hide</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1">DemoClass <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> R6<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">R6Class</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"DemoClass"</span>,</span>
+<span id="cb2-2">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">public =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">list</span>(</span>
+<span id="cb2-3">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">value =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>,</span>
+<span id="cb2-4">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">set =</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>(v) self<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>value <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> v</span>
+<span id="cb2-5">  )</span>
+<span id="cb2-6">)</span>
+<span id="cb2-7"></span>
+<span id="cb2-8">a <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> DemoClass<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">new</span>()</span>
+<span id="cb2-9">b <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> a          <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># b is NOT a copy; it points to the same object</span></span>
+<span id="cb2-10"></span>
+<span id="cb2-11">a<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">set</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">99</span>)</span>
+<span id="cb2-12">b<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>value         <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 99 — mutation through a is visible via b</span></span></code></pre></div></div>
+</details>
+</div>
+<p>This is different from how a plain list behaves and it is the property that makes R6 useful for Shiny state.</p>
+</section>
+<section id="the-moviedata-r6-class" class="level2">
+<h2 class="anchored" data-anchor-id="the-moviedata-r6-class">The <code>MovieData</code> R6 Class</h2>
+<p><code>MovieData</code> is the heart of <code>movexplR6</code>. It owns the database connection, loads the full joined dataset into memory on initialization, and exposes a single <code>filter()</code> method that returns a filtered data frame on demand.</p>
+<p>The class diagram below shows its public interface and private internals.</p>
+<div class="cell" data-eval="true" data-layout-align="center">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"16px"}}}%%
+
+classDiagram
+  class MovieData {
+    +DBIConnection con
+    +data.frame all_movies
+    +initialize(db_path)
+    +filter(reviews, oscars, year, boxoffice, genre, director, cast)
+    +disconnect()
+    -load_data()
+    -finalize()
+  }
+  
+</pre>
+</div>
+<p></p><figcaption> movexplR6 at a glance</figcaption> </figure><p></p>
+</div>
+</div>
+</div>
+<p>Below is the definition of the <code>MovieData</code> object (expand to view):</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>MovieData class definition (R/MovieData.R)</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-3" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><button class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="1">1</button><span id="annotated-cell-3-1" class="code-annotation-target">MovieData <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> R6<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">R6Class</span>(</span>
+<span id="annotated-cell-3-2">  <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"MovieData"</span>,</span>
+<span id="annotated-cell-3-3">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">public =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">list</span>(</span>
+<span id="annotated-cell-3-4">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">con        =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">NULL</span>,</span>
+<span id="annotated-cell-3-5">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">all_movies =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">NULL</span>,</span>
+<span id="annotated-cell-3-6"></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="2">2</button><span id="annotated-cell-3-7" class="code-annotation-target">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">initialize =</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>(db_path) {</span>
+<span id="annotated-cell-3-8">      self<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>con <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> DBI<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbConnect</span>(</span>
+<span id="annotated-cell-3-9">        RSQLite<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">SQLite</span>(),</span>
+<span id="annotated-cell-3-10">        db_path</span>
+<span id="annotated-cell-3-11">      )</span>
+<span id="annotated-cell-3-12">      logger<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">log_info</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Connected to {db_path}"</span>)</span>
+<span id="annotated-cell-3-13">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tryCatch</span>(</span>
+<span id="annotated-cell-3-14">        private<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">load_data</span>(),</span>
+<span id="annotated-cell-3-15">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">error =</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>(e) {</span>
+<span id="annotated-cell-3-16">          logger<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">log_error</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"load_data() failed: {e$message}"</span>)</span>
+<span id="annotated-cell-3-17">          <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">stop</span>(e)</span>
+<span id="annotated-cell-3-18">        }</span>
+<span id="annotated-cell-3-19">      )</span>
+<span id="annotated-cell-3-20">    },</span>
+<span id="annotated-cell-3-21"></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="3">3</button><span id="annotated-cell-3-22" class="code-annotation-target">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">filter =</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>(</span>
+<span id="annotated-cell-3-23">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">reviews   =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>,</span>
+<span id="annotated-cell-3-24">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">oscars    =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>,</span>
+<span id="annotated-cell-3-25">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">year      =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1940</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2014</span>),</span>
+<span id="annotated-cell-3-26">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">boxoffice =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">800</span>),</span>
+<span id="annotated-cell-3-27">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">genre     =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"All"</span>,</span>
+<span id="annotated-cell-3-28">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">director  =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">""</span>,</span>
+<span id="annotated-cell-3-29">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">cast      =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">""</span></span>
+<span id="annotated-cell-3-30">    ) {</span>
+<span id="annotated-cell-3-31">      df <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> self<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>all_movies</span>
+<span id="annotated-cell-3-32">      df <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> df[df<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>Reviews <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;=</span> reviews <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&amp;</span> df<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>Oscars <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;=</span> oscars, ]</span>
+<span id="annotated-cell-3-33">      df <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> df[df<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>Year <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;=</span> year[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>] <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&amp;</span> df<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>Year <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;=</span> year[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>], ]</span>
+<span id="annotated-cell-3-34">      df <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> df[</span>
+<span id="annotated-cell-3-35">        df<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>BoxOffice <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;=</span> boxoffice[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>] <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1e6</span> <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&amp;</span></span>
+<span id="annotated-cell-3-36">        df<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>BoxOffice <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;=</span> boxoffice[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>] <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1e6</span>, ]</span>
+<span id="annotated-cell-3-37">      <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (genre <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"All"</span>) df <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> df[df<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>Genre <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> genre, ]</span>
+<span id="annotated-cell-3-38">      <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">nchar</span>(director) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>)</span>
+<span id="annotated-cell-3-39">        df <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> df[<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">grepl</span>(director, df<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>Director, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">ignore.case =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>), ]</span>
+<span id="annotated-cell-3-40">      <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">nchar</span>(cast) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>)</span>
+<span id="annotated-cell-3-41">        df <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> df[<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">grepl</span>(cast, df<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>Cast, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">ignore.case =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>), ]</span>
+<span id="annotated-cell-3-42">      df<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>has_oscar <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ifelse</span>(df<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>Oscars <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Yes"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"No"</span>)</span>
+<span id="annotated-cell-3-43">      logger<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">log_debug</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"{nrow(df)} rows after filter"</span>)</span>
+<span id="annotated-cell-3-44">      df</span>
+<span id="annotated-cell-3-45">    },</span>
+<span id="annotated-cell-3-46"></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="4">4</button><span id="annotated-cell-3-47" class="code-annotation-target">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">disconnect =</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>() {</span>
+<span id="annotated-cell-3-48">      <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (DBI<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbIsValid</span>(self<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>con)) {</span>
+<span id="annotated-cell-3-49">        DBI<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbDisconnect</span>(self<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>con)</span>
+<span id="annotated-cell-3-50">        logger<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">log_info</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Database disconnected"</span>)</span>
+<span id="annotated-cell-3-51">      }</span>
+<span id="annotated-cell-3-52">    }</span>
+<span id="annotated-cell-3-53">  ),</span>
+<span id="annotated-cell-3-54"></span>
+<span id="annotated-cell-3-55">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">private =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">list</span>(</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="5">5</button><span id="annotated-cell-3-56" class="code-annotation-target">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">finalize =</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>() self<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">disconnect</span>(),</span>
+<span id="annotated-cell-3-57"></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-3" data-target-annotation="6">6</button><span id="annotated-cell-3-58" class="code-annotation-target">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">load_data =</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>() {</span>
+<span id="annotated-cell-3-59">      omdb     <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tbl</span>(self<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>con, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"omdb"</span>)</span>
+<span id="annotated-cell-3-60">      tomatoes <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tbl</span>(self<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>con, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"tomatoes"</span>)</span>
+<span id="annotated-cell-3-61">      self<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>all_movies <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> omdb <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="annotated-cell-3-62">        dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">inner_join</span>(tomatoes, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">by =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ID"</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="annotated-cell-3-63">        dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">filter</span>(Reviews <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="annotated-cell-3-64">        dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">select</span>(</span>
+<span id="annotated-cell-3-65">          ID, Title, Year, Runtime, Genre, Director, Cast,</span>
+<span id="annotated-cell-3-66">          BoxOffice, Oscars, imdbRating, imdbVotes,</span>
+<span id="annotated-cell-3-67">          Meter, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">Rating =</span> Rating.y, Reviews, Fresh, Rotten,</span>
+<span id="annotated-cell-3-68">          userMeter, userRating, userReviews</span>
+<span id="annotated-cell-3-69">        ) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">|&gt;</span></span>
+<span id="annotated-cell-3-70">        dplyr<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">collect</span>()</span>
+<span id="annotated-cell-3-71">      logger<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">log_info</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"{nrow(self$all_movies)} movies loaded"</span>)</span>
+<span id="annotated-cell-3-72">    }</span>
+<span id="annotated-cell-3-73">  )</span>
+<span id="annotated-cell-3-74">)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+</details>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-3" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="1" data-code-annotation="1"><code>R6::R6Class()</code> takes the class name as its first argument; this name is used by <code>inherits()</code> checks and in error messages.</span>
+</dd>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="7" data-code-annotation="2"><code>initialize()</code> runs when you call <code>MovieData$new(db_path)</code>. It opens the connection and immediately loads data; any error during <code>load_data()</code> is logged and re-thrown so the caller knows construction failed.</span>
+</dd>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="22" data-code-annotation="3"><code>filter()</code> operates on <code>all_movies</code> in memory; no additional database queries happen after initialization. <code>boxoffice</code> is in millions in the UI but raw dollars in the data, so the method scales before filtering.</span>
+</dd>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="47" data-code-annotation="4"><code>disconnect()</code> guards against calling <code>DBI::dbDisconnect()</code> on an already-closed connection — important because <code>finalize()</code> and <code>shiny::onStop()</code> may both attempt cleanup.</span>
+</dd>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="5">5</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="56" data-code-annotation="5"><code>finalize()</code> is R6’s garbage-collection hook; it is called when the object is garbage-collected. In practice <code>onStop()</code> disconnects first, but <code>finalize()</code> is a safety net.</span>
+</dd>
+<dt data-target-cell="annotated-cell-3" data-target-annotation="6">6</dt>
+<dd>
+<span data-code-cell="annotated-cell-3" data-code-lines="58" data-code-annotation="6"><code>load_data()</code> is private; callers cannot invoke it directly. It joins two SQLite tables with <code>dbplyr</code>, applies a minimum-reviews pre-filter, then collects the result into a plain data frame that lives in memory for the lifetime of the session.</span>
+</dd>
+</dl>
+</div>
+</div>
+<section id="initialize-connecting-and-loading" class="level3">
+<h3 class="anchored" data-anchor-id="initialize-connecting-and-loading"><code>initialize()</code>: connecting and loading</h3>
+<div class="cell" data-layout-align="center">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span><span style="font-weight: bold; font-size: 1.15em;">Public vs.&nbsp;private</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>Put everything callers need in <code>public</code>. Put implementation details in <code>private</code>. Private members are inaccessible outside the class (attempting <code>md$load_data()</code> throws an error), which prevents callers from accidentally corrupting internal state.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="a-note-on-filter-returning-plain-data" class="level3">
+<h3 class="anchored" data-anchor-id="a-note-on-filter-returning-plain-data">A note on <code>filter()</code> returning plain data</h3>
+<p><code>filter()</code> returns an ordinary <code>data.frame</code>, not a reactive. This is intentional; keeping <code>MovieData</code> free of Shiny dependencies means you can call <code>filter()</code> in unit tests, in a script, or in a plumber API without loading Shiny at all. The reactive wrapper lives one layer up in <code>movies_server()</code>.</p>
+</section>
+</section>
+<section id="package-structure" class="level2">
+<h2 class="anchored" data-anchor-id="package-structure">Package Structure</h2>
+<p>Place each R6 class definition in <code>R/</code> with a descriptive file name. One class per file keeps things easy to navigate.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">movexplR6/</span></span>
+<span id="cb3-2">  <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">R/</span></span>
+<span id="cb3-3">    <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">MovieData.R</span>      <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># R6 class</span></span>
+<span id="cb3-4">    <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">mod_filters.R</span>    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># filters UI + server module</span></span>
+<span id="cb3-5">    <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">mod_plot.R</span>       <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># plot UI + server module</span></span>
+<span id="cb3-6">    <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">movies_ui.R</span>      <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># top-level UI</span></span>
+<span id="cb3-7">    <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">movies_server.R</span>  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># top-level server</span></span>
+<span id="cb3-8">    <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">launch_app.R</span>     <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># shinyApp() wrapper</span></span>
+<span id="cb3-9">    <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">utils.R</span>          <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># axis_vars vector</span></span>
+<span id="cb3-10">  <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">inst/</span></span>
+<span id="cb3-11">    <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">extdata/</span></span>
+<span id="cb3-12">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">movies.db</span>      <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># SQLite database</span></span>
+<span id="cb3-13">  <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">tests/</span></span>
+<span id="cb3-14">    <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">testthat/</span></span>
+<span id="cb3-15">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">helper.R</span></span>
+<span id="cb3-16">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">test-MovieData.R</span></span>
+<span id="cb3-17">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">test-mod_filters.R</span></span>
+<span id="cb3-18">      <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">test-mod_plot.R</span></span></code></pre></div></div>
+</div>
+<p>Add a roxygen2 <code>@export</code> tag so the class is available to users of the package:</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>show/hide</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#' MovieData R6 class</span></span>
+<span id="cb4-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#'</span></span>
+<span id="cb4-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#' Manages the SQLite connection and filtered movie dataset.</span></span>
+<span id="cb4-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#'</span></span>
+<span id="cb4-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#' @export</span></span>
+<span id="cb4-6">MovieData <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> R6<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">R6Class</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"MovieData"</span>, ...)</span></code></pre></div></div>
+</details>
+</div>
+<p>One rule that matters: never instantiate R6 objects at the package level (outside a function). Writing <code>movie_data &lt;- MovieData$new(db_path)</code> at the top of an <code>R/</code> file creates one shared object loaded for every session. Always instantiate inside <code>server()</code> or a module server function, where the object is scoped to a single user session.</p>
+</section>
+<section id="wiring-moviedata-to-the-reactive-graph" class="level2">
+<h2 class="anchored" data-anchor-id="wiring-moviedata-to-the-reactive-graph">Wiring <code>MovieData</code> to the Reactive Graph</h2>
+<p><code>movies_server()</code> is the adapter between <code>MovieData</code> and Shiny. It creates the R6 instance once, registers cleanup, and wraps <code>filter()</code> in a reactive so that the UI can trigger re-filtering when inputs change.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>show/hide</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-6" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-6-1">movies_server <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>(input, output, session) {</span>
+<span id="annotated-cell-6-2"></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="1">1</button><span id="annotated-cell-6-3" class="code-annotation-target">  db_path    <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">system.file</span>(</span>
+<span id="annotated-cell-6-4">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"extdata/movies.db"</span>,</span>
+<span id="annotated-cell-6-5">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">package =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"movexplR6"</span></span>
+<span id="annotated-cell-6-6">  )</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="2">2</button><span id="annotated-cell-6-7" class="code-annotation-target">  movie_data <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> MovieData<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">new</span>(db_path)</span>
+<span id="annotated-cell-6-8"></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="3">3</button><span id="annotated-cell-6-9" class="code-annotation-target">  shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">onStop</span>(<span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>() movie_data<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">disconnect</span>())</span>
+<span id="annotated-cell-6-10"></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="4">4</button><span id="annotated-cell-6-11" class="code-annotation-target">  filters <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">mod_filters_server</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"filters"</span>)</span>
+<span id="annotated-cell-6-12"></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="5">5</button><span id="annotated-cell-6-13" class="code-annotation-target">  movies <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">reactive</span>({</span>
+<span id="annotated-cell-6-14">    f <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">filters</span>()</span>
+<span id="annotated-cell-6-15">    movie_data<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">filter</span>(</span>
+<span id="annotated-cell-6-16">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">reviews   =</span> f<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>reviews,</span>
+<span id="annotated-cell-6-17">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">oscars    =</span> f<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>oscars,</span>
+<span id="annotated-cell-6-18">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">year      =</span> f<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>year,</span>
+<span id="annotated-cell-6-19">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">boxoffice =</span> f<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>boxoffice,</span>
+<span id="annotated-cell-6-20">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">genre     =</span> f<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>genre,</span>
+<span id="annotated-cell-6-21">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">director  =</span> f<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>director,</span>
+<span id="annotated-cell-6-22">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">cast      =</span> f<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>cast</span>
+<span id="annotated-cell-6-23">    )</span>
+<span id="annotated-cell-6-24">  })</span>
+<span id="annotated-cell-6-25"></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="6">6</button><span id="annotated-cell-6-26" class="code-annotation-target">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">mod_plot_server</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"plot"</span>, movies, filters)</span>
+<span id="annotated-cell-6-27">}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+</details>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-6" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="3" data-code-annotation="1"><code>system.file()</code> resolves the path to the bundled SQLite database inside the installed package.</span>
+</dd>
+<dt data-target-cell="annotated-cell-6" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="7" data-code-annotation="2"><code>MovieData$new()</code> runs <code>initialize()</code>: opens the connection and loads all movies into <code>all_movies</code>. This happens once per session.</span>
+</dd>
+<dt data-target-cell="annotated-cell-6" data-target-annotation="3">3</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="9" data-code-annotation="3"><code>shiny::onStop()</code> registers a callback that fires when the session ends (browser closes, user disconnects). This is the primary cleanup path; the private <code>finalize()</code> is a backstop in case the session ends unexpectedly.</span>
+</dd>
+<dt data-target-cell="annotated-cell-6" data-target-annotation="4">4</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="11" data-code-annotation="4"><code>mod_filters_server()</code> returns a reactive list of the current filter values; it re-evaluates whenever any input changes.</span>
+</dd>
+<dt data-target-cell="annotated-cell-6" data-target-annotation="5">5</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="13" data-code-annotation="5">The <code>movies</code> reactive calls <code>movie_data$filter()</code> with the current filter values whenever <code>filters()</code> invalidates. Notice that <code>movie_data</code> is captured by reference — R6’s reference semantics mean no copying happens here.</span>
+</dd>
+<dt data-target-cell="annotated-cell-6" data-target-annotation="6">6</dt>
+<dd>
+<span data-code-cell="annotated-cell-6" data-code-lines="26" data-code-annotation="6">Both reactives (<code>movies</code> and <code>filters</code>) are passed into the plot module so it can display the filtered count and render axes from <code>filters()$xvar</code> and <code>filters()$yvar</code>.</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>The reactive data flow looks like this:</p>
+<div class="cell" data-eval="true" data-layout-align="center">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"16px"}}}%%
+
+flowchart TD
+  UIIn["UI Inputs&lt;br&gt;(sliders, selects,&lt;br&gt;text boxes)"]
+  FilServ["mod_filters_server()&lt;br&gt;returns reactive list"]
+  FilReact["filters()&lt;br&gt;{reviews, oscars, year,&lt;br&gt;boxoffice, genre,&lt;br&gt;director, cast,&lt;br&gt;xvar, yvar}"]
+  MovReact["movies()&lt;br&gt;reactive"]
+  MovData["movie_data$filter()&lt;br&gt;R6 method"]
+  PltServ["mod_plot_server()"]
+  Scatter["renderPlotly()&lt;br&gt;output$scatter"]
+  Count["renderText()&lt;br&gt;output$n_movies"]
+
+  UIIn --&gt; FilServ
+  FilServ --&gt; FilReact
+  FilReact --&gt; MovReact
+  MovData --&gt; MovReact
+  MovReact --&gt; PltServ
+  FilReact --&gt; PltServ
+  PltServ --&gt; Scatter
+  PltServ --&gt; Count
+</pre>
+</div>
+<p></p><figcaption> Reactive data flow</figcaption> </figure><p></p>
+</div>
+</div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span><span style="font-weight: bold; font-size: 1.15em;">The adapter pattern</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>The <code>movies</code> reactive is the adapter between R6 and Shiny. Above the adapter: plain R6 methods that return data frames and know nothing about reactivity. Below the adapter: Shiny renders and observers that know nothing about the database. This boundary makes both sides independently testable.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="module-composition" class="level2">
+<h2 class="anchored" data-anchor-id="module-composition">Module Composition</h2>
+<section id="mod_filters-returning-a-reactive-list" class="level3">
+<h3 class="anchored" data-anchor-id="mod_filters-returning-a-reactive-list"><code>mod_filters</code>: returning a reactive list</h3>
+<p><code>mod_filters_server()</code> does one thing: collect all filter inputs and return them as a single reactive list. Bundling the outputs into one reactive means downstream consumers call <code>filters()</code> once rather than taking individual dependencies on seven separate inputs.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>show/hide</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-7" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-7-1">mod_filters_server <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>(id) {</span>
+<span id="annotated-cell-7-2">  shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">moduleServer</span>(id, <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>(input, output, session) {</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="1">1</button><span id="annotated-cell-7-3" class="code-annotation-target">    shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">reactive</span>({</span>
+<span id="annotated-cell-7-4">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">list</span>(</span>
+<span id="annotated-cell-7-5">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">reviews   =</span> input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>reviews,</span>
+<span id="annotated-cell-7-6">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">oscars    =</span> input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>oscars,</span>
+<span id="annotated-cell-7-7">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">year      =</span> input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>year,</span>
+<span id="annotated-cell-7-8">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">boxoffice =</span> input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>boxoffice,</span>
+<span id="annotated-cell-7-9">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">genre     =</span> input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>genre,</span>
+<span id="annotated-cell-7-10">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">director  =</span> input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>director,</span>
+<span id="annotated-cell-7-11">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">cast      =</span> input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>cast,</span>
+<span id="annotated-cell-7-12">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">xvar      =</span> input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>xvar,</span>
+<span id="annotated-cell-7-13">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">yvar      =</span> input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>yvar</span>
+<span id="annotated-cell-7-14">      )</span>
+<span id="annotated-cell-7-15">    })</span>
+<span id="annotated-cell-7-16">  })</span>
+<span id="annotated-cell-7-17">}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+</details>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-7" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-7" data-code-lines="3" data-code-annotation="1">The entire return value is one <code>reactive()</code>; every element re-evaluates together whenever any input changes. This is simpler than returning a <code>reactiveValues()</code> object and avoids partial-update race conditions.</span>
+</dd>
+</dl>
+</div>
+</div>
+</section>
+<section id="mod_plot-consuming-movies-and-filters" class="level3">
+<h3 class="anchored" data-anchor-id="mod_plot-consuming-movies-and-filters"><code>mod_plot</code>: consuming movies and filters</h3>
+<p><code>mod_plot_server()</code> receives two reactives and owns both outputs. Accepting <code>movies</code> as a reactive argument (rather than calling <code>movie_data$filter()</code> directly) keeps the module decoupled from the data source; you can pass any reactive data frame in tests.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>show/hide</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-8" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-8-1">mod_plot_server <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>(id, movies, filters) {</span>
+<span id="annotated-cell-8-2">  shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">moduleServer</span>(id, <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>(input, output, session) {</span>
+<span id="annotated-cell-8-3"></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-8" data-target-annotation="1">1</button><span id="annotated-cell-8-4" class="code-annotation-target">    output<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>scatter <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> plotly<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">renderPlotly</span>({</span>
+<span id="annotated-cell-8-5">      f <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">filters</span>()</span>
+<span id="annotated-cell-8-6">      p <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> ggplot2<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ggplot</span>(</span>
+<span id="annotated-cell-8-7">        <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">movies</span>(),</span>
+<span id="annotated-cell-8-8">        ggplot2<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">aes</span>(</span>
+<span id="annotated-cell-8-9">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x    =</span> .data[[f<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>xvar]],</span>
+<span id="annotated-cell-8-10">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y    =</span> .data[[f<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>yvar]],</span>
+<span id="annotated-cell-8-11">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">color =</span> has_oscar,</span>
+<span id="annotated-cell-8-12">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">text  =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">paste0</span>(</span>
+<span id="annotated-cell-8-13">            Title, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">" ("</span>, Year, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">")</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">$"</span>,</span>
+<span id="annotated-cell-8-14">            scales<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">comma</span>(BoxOffice)</span>
+<span id="annotated-cell-8-15">          )</span>
+<span id="annotated-cell-8-16">        )</span>
+<span id="annotated-cell-8-17">      ) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="annotated-cell-8-18">        ggplot2<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">geom_point</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">alpha =</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.4</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="annotated-cell-8-19">        ggplot2<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">scale_color_manual</span>(</span>
+<span id="annotated-cell-8-20">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">values =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Yes"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"orange"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"No"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"#aaaaaa"</span>)</span>
+<span id="annotated-cell-8-21">        ) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="annotated-cell-8-22">        ggplot2<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">theme_minimal</span>()</span>
+<span id="annotated-cell-8-23">      plotly<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ggplotly</span>(p, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">tooltip =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"text"</span>)</span>
+<span id="annotated-cell-8-24">    })</span>
+<span id="annotated-cell-8-25"></span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-8" data-target-annotation="2">2</button><span id="annotated-cell-8-26" class="code-annotation-target">    output<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>n_movies <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">renderText</span>({</span>
+<span id="annotated-cell-8-27">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">paste</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Movies selected:"</span>, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">nrow</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">movies</span>()))</span>
+<span id="annotated-cell-8-28">    })</span>
+<span id="annotated-cell-8-29">  })</span>
+<span id="annotated-cell-8-30">}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+</details>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-8" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-8" data-code-lines="4" data-code-annotation="1"><code>.data[[f$xvar]]</code> uses tidy evaluation’s <code>.data</code> pronoun to select columns by name at runtime; <code>f$xvar</code> and <code>f$yvar</code> come from the <code>filters()</code> reactive so the axes update whenever the user changes the axis selectors.</span>
+</dd>
+<dt data-target-cell="annotated-cell-8" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-8" data-code-lines="26" data-code-annotation="2"><code>movies()</code> is called again here; because it is the same reactive, Shiny caches the result and does not re-run <code>movie_data$filter()</code> a second time within a single reactive flush.</span>
+</dd>
+</dl>
+</div>
+</div>
+</section>
+<section id="module-wiring-in-the-ui" class="level3">
+<h3 class="anchored" data-anchor-id="module-wiring-in-the-ui">Module wiring in the UI</h3>
+<p><code>movies_ui()</code> uses <code>bslib::page_sidebar()</code> with the filter module in the sidebar and the plot module in the main content area.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>show/hide</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-9" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-9-1">movies_ui <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>() {</span>
+<span id="annotated-cell-9-2">  bslib<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">page_sidebar</span>(</span>
+<span id="annotated-cell-9-3">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">title   =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Movie Explorer"</span>,</span>
+<span id="annotated-cell-9-4">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">sidebar =</span> bslib<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sidebar</span>(</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="1">1</button><span id="annotated-cell-9-5" class="code-annotation-target">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">mod_filters_ui</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"filters"</span>)</span>
+<span id="annotated-cell-9-6">    ),</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="2">2</button><span id="annotated-cell-9-7" class="code-annotation-target">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">mod_plot_ui</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"plot"</span>)</span>
+<span id="annotated-cell-9-8">  )</span>
+<span id="annotated-cell-9-9">}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+</details>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-9" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-9" data-code-lines="5" data-code-annotation="1">The <code>"filters"</code> ID here must match the <code>"filters"</code> ID passed to <code>mod_filters_server()</code> in <code>movies_server()</code>.</span>
+</dd>
+<dt data-target-cell="annotated-cell-9" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-9" data-code-lines="7" data-code-annotation="2"><code>mod_plot_ui("plot")</code> likewise pairs with <code>mod_plot_server("plot", ...)</code>.</span>
+</dd>
+</dl>
+</div>
+</div>
+</section>
+</section>
+<section id="the-session-lifecycle" class="level2">
+<h2 class="anchored" data-anchor-id="the-session-lifecycle">The Session Lifecycle</h2>
+<p>The sequence below traces a complete user session from browser open to browser close.</p>
+<div class="cell" data-eval="true" data-layout-align="center">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'neutral', 'themeVariables': { 'fontFamily': 'monospace', "fontSize":"16px"}}}%%
+
+sequenceDiagram
+  participant Usr as Browser
+  participant Srv as movies_server()
+  participant R6 as MovieData
+  participant DB as SQLite DB
+
+  Usr-&gt;&gt;Srv: session starts
+  Srv-&gt;&gt;R6: MovieData$new(db_path)
+  R6-&gt;&gt;DB: DBI::dbConnect()
+  R6-&gt;&gt;DB: load_data() — join omdb + tomatoes
+  DB--&gt;&gt;R6: all_movies (data frame in memory)
+  R6--&gt;&gt;Srv: movie_data instance
+
+  loop User changes filters
+    Usr-&gt;&gt;Srv: input changes
+    Srv-&gt;&gt;R6: movie_data$filter(...)
+    R6--&gt;&gt;Srv: filtered data frame
+    Srv--&gt;&gt;Usr: updated plot + count
+  end
+
+  Usr-&gt;&gt;Srv: browser closes / session ends
+  Srv-&gt;&gt;R6: onStop fires → movie_data$disconnect()
+  R6-&gt;&gt;DB: DBI::dbDisconnect()
+</pre>
+</div>
+<p></p><figcaption> Session Lifecycle</figcaption> </figure><p></p>
+</div>
+</div>
+</div>
+<p>The important observation is that <code>MovieData$new()</code> runs once per session and <code>filter()</code> runs many times. Keeping <code>load_data()</code> in <code>initialize()</code> means the expensive join happens once; every filter call is an in-memory operation on an already-collected data frame.</p>
+</section>
+<section id="testing-moviedata-without-shiny" class="level2">
+<h2 class="anchored" data-anchor-id="testing-moviedata-without-shiny">Testing <code>MovieData</code> Without Shiny</h2>
+<p>Because <code>MovieData</code> has no reactive internals, you test it with plain <code>testthat</code> — no <code>shinytest2</code>, no <code>testServer()</code>, no running app required.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>show/hide</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-10" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-10-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># tests/testthat/test-MovieData.R</span></span>
+<span id="annotated-cell-10-2"></span>
+<span id="annotated-cell-10-3">db_path <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">system.file</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"extdata/movies.db"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">package =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"movexplR6"</span>)</span>
+<span id="annotated-cell-10-4"></span>
+<span id="annotated-cell-10-5"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"MovieData initializes and loads data"</span>, {</span>
+<span id="annotated-cell-10-6">  md <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> MovieData<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">new</span>(db_path)</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="1">1</button><span id="annotated-cell-10-7" class="code-annotation-target">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">on.exit</span>(md<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">disconnect</span>())</span>
+<span id="annotated-cell-10-8"></span>
+<span id="annotated-cell-10-9">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">expect_true</span>(R6<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">is.R6</span>(md))</span>
+<span id="annotated-cell-10-10">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">expect_s3_class</span>(md<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>all_movies, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"data.frame"</span>)</span>
+<span id="annotated-cell-10-11">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">expect_true</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">nrow</span>(md<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>all_movies) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>)</span>
+<span id="annotated-cell-10-12">})</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+</details>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-10" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-10" data-code-lines="7" data-code-annotation="1"><code>on.exit()</code> guarantees <code>disconnect()</code> runs even if a test assertion fails; this prevents leaked database connections across test files.</span>
+</dd>
+</dl>
+</div>
+</div>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>show/hide</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-11" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-11-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"filter() respects reviews threshold"</span>, {</span>
+<span id="annotated-cell-11-2">  md <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> MovieData<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">new</span>(db_path)</span>
+<span id="annotated-cell-11-3">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">on.exit</span>(md<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">disconnect</span>())</span>
+<span id="annotated-cell-11-4"></span>
+<span id="annotated-cell-11-5">  n_low  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">nrow</span>(md<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">filter</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">reviews =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>))</span>
+<span id="annotated-cell-11-6">  n_high <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">nrow</span>(md<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">filter</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">reviews =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">200</span>))</span>
+<span id="annotated-cell-11-7">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">expect_gt</span>(n_low, n_high)</span>
+<span id="annotated-cell-11-8">})</span>
+<span id="annotated-cell-11-9"></span>
+<span id="annotated-cell-11-10"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"filter() adds has_oscar column"</span>, {</span>
+<span id="annotated-cell-11-11">  md <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> MovieData<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">new</span>(db_path)</span>
+<span id="annotated-cell-11-12">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">on.exit</span>(md<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">disconnect</span>())</span>
+<span id="annotated-cell-11-13"></span>
+<span id="annotated-cell-11-14">  result <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> md<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">filter</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">oscars =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="annotated-cell-11-15">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">expect_true</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"has_oscar"</span> <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%in%</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">names</span>(result))</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-11" data-target-annotation="1">1</button><span id="annotated-cell-11-16" class="code-annotation-target">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">expect_true</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">all</span>(result<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>has_oscar <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Yes"</span>))</span>
+<span id="annotated-cell-11-17">})</span>
+<span id="annotated-cell-11-18"></span>
+<span id="annotated-cell-11-19"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"disconnect() closes the connection"</span>, {</span>
+<span id="annotated-cell-11-20">  md <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> MovieData<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">new</span>(db_path)</span>
+<span id="annotated-cell-11-21">  md<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">disconnect</span>()</span>
+<span id="annotated-cell-11-22">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">expect_false</span>(DBI<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dbIsValid</span>(md<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>con))</span>
+<span id="annotated-cell-11-23">})</span>
+<span id="annotated-cell-11-24"></span>
+<span id="annotated-cell-11-25"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"disconnect() is idempotent"</span>, {</span>
+<span id="annotated-cell-11-26">  md <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> MovieData<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">new</span>(db_path)</span>
+<span id="annotated-cell-11-27">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">expect_no_error</span>({</span>
+<span id="annotated-cell-11-28">    md<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">disconnect</span>()</span>
+<button class="code-annotation-anchor" data-target-cell="annotated-cell-11" data-target-annotation="2">2</button><span id="annotated-cell-11-29" class="code-annotation-target">    md<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">disconnect</span>()</span>
+<span id="annotated-cell-11-30">  })</span>
+<span id="annotated-cell-11-31">})</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
+</details>
+<div class="cell-annotation">
+<dl class="code-annotation-container-hidden code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-11" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-11" data-code-lines="16" data-code-annotation="1">When <code>oscars = 1</code> every returned row must have won at least one Oscar, so <code>has_oscar</code> should be <code>"Yes"</code> for all.</span>
+</dd>
+<dt data-target-cell="annotated-cell-11" data-target-annotation="2">2</dt>
+<dd>
+<span data-code-cell="annotated-cell-11" data-code-lines="29" data-code-annotation="2">Calling <code>disconnect()</code> twice must not throw; the internal <code>DBI::dbIsValid()</code> guard handles this.</span>
+</dd>
+</dl>
+</div>
+</div>
+<p>Module tests use <code>shiny::testServer()</code>, which provides a lightweight reactive context without a running browser:</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>show/hide</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># tests/testthat/test-mod_filters.R</span></span>
+<span id="cb5-2"></span>
+<span id="cb5-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"mod_filters_server returns a reactive list"</span>, {</span>
+<span id="cb5-4">  shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">testServer</span>(mod_filters_server, {</span>
+<span id="cb5-5">    session<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">setInputs</span>(</span>
+<span id="cb5-6">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">reviews =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">120</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">oscars =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>,</span>
+<span id="cb5-7">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">year =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2000</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2010</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">boxoffice =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">400</span>),</span>
+<span id="cb5-8">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">genre =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Action"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">director =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Nolan"</span>,</span>
+<span id="cb5-9">      <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">cast =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">""</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">xvar =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"BoxOffice"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">yvar =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Year"</span></span>
+<span id="cb5-10">    )</span>
+<span id="cb5-11">    f <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> session<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">returned</span>()</span>
+<span id="cb5-12">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">expect_equal</span>(f<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>reviews, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">120</span>)</span>
+<span id="cb5-13">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">expect_equal</span>(f<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>genre,   <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Action"</span>)</span>
+<span id="cb5-14">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">expect_equal</span>(f<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>xvar,    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"BoxOffice"</span>)</span>
+<span id="cb5-15">  })</span>
+<span id="cb5-16">})</span></code></pre></div></div>
+</details>
+</div>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold">
+<summary>show/hide</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># tests/testthat/test-mod_plot.R</span></span>
+<span id="cb6-2"></span>
+<span id="cb6-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"mod_plot_server renders movie count"</span>, {</span>
+<span id="cb6-4">  md       <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> MovieData<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">new</span>(db_path)</span>
+<span id="cb6-5">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">on.exit</span>(md<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">disconnect</span>())</span>
+<span id="cb6-6">  filtered <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> md<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">filter</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">genre =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Drama"</span>)</span>
+<span id="cb6-7">  movies   <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">reactive</span>(filtered)</span>
+<span id="cb6-8">  filters  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">reactive</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">list</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">xvar =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Meter"</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">yvar =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Reviews"</span>))</span>
+<span id="cb6-9"></span>
+<span id="cb6-10">  shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">testServer</span>(</span>
+<span id="cb6-11">    mod_plot_server,</span>
+<span id="cb6-12">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">args =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">list</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">movies =</span> movies, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">filters =</span> filters),</span>
+<span id="cb6-13">    {</span>
+<span id="cb6-14">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">expect_match</span>(output<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>n_movies, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"^Movies selected: [0-9]+$"</span>)</span>
+<span id="cb6-15">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">expect_equal</span>(</span>
+<span id="cb6-16">        <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">as.integer</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sub</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Movies selected: "</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">""</span>, output<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>n_movies)),</span>
+<span id="cb6-17">        <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">nrow</span>(filtered)</span>
+<span id="cb6-18">      )</span>
+<span id="cb6-19">    }</span>
+<span id="cb6-20">  )</span>
+<span id="cb6-21">})</span></code></pre></div></div>
+</details>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span><span style="font-weight: bold; font-size: 1.15em;">Testing at two levels</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div style="font-size: 1.10em; color: #282b2d;">
+<p>Test the R6 class with plain <code>testthat</code> (no Shiny needed). Test the modules with <code>shiny::testServer()</code> (no browser needed). Reserve <code>shinytest2</code> for end-to-end flows that require a real browser.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="recap" class="level2">
+<h2 class="anchored" data-anchor-id="recap">Recap</h2>
+<p><code>movexplR6</code> demonstrates a clean division of labor between R6 and Shiny:</p>
+<ul>
+<li><strong><code>MovieData</code></strong> owns the database connection and all filtering logic. It is framework-agnostic and fully testable with plain <code>testthat</code>. Keep R6 classes like this: one responsibility, no reactive internals.</li>
+<li><strong><code>movies_server()</code></strong> is the adapter. It creates <code>MovieData</code> once per session, wraps <code>filter()</code> in a <code>reactive()</code> so the rest of the app can depend on it, and registers cleanup with <code>shiny::onStop()</code>.</li>
+<li><strong>Modules</strong> (<code>mod_filters</code>, <code>mod_plot</code>) communicate through reactive arguments passed by the server. Neither module knows about <code>MovieData</code> directly; they only see a reactive data frame. This decoupling is what makes them independently testable.</li>
+<li><strong>Never instantiate R6 objects at the package level.</strong> Any object created in <code>R/</code> outside a function is shared across all sessions. Create instances inside <code>server()</code> or module server functions.</li>
+<li><strong><code>finalize()</code> is a backstop, not the primary cleanup.</strong> Register <code>disconnect()</code> with <code>shiny::onStop()</code>; let <code>finalize()</code> catch anything that slips through.</li>
+</ul>
+<p>The pattern scales naturally: add more R6 classes for additional data sources or domain logic, keep each one free of Shiny dependencies, and wire them into the reactive graph through thin adapter reactives in the server.</p>
+
+
+</section>
+
+ ]]></description>
+  <category>R6</category>
+  <category>Shiny</category>
+  <guid>https://mjfrigaard.github.io/posts/shiny-r6/</guid>
+  <pubDate>Mon, 22 Jun 2026 07:00:00 GMT</pubDate>
+</item>
 <item>
   <title>Create GitHub README with R Markdown</title>
   <dc:creator>Martin Frigaard</dc:creator>
@@ -8329,1419 +10152,6 @@ style InspectPlot fill:#FFD700
   <guid>https://mjfrigaard.github.io/posts/shiny-utilities/</guid>
   <pubDate>Sat, 21 Feb 2026 07:00:00 GMT</pubDate>
   <media:content url="https://mjfrigaard.github.io/posts/shiny-utilities/img/image.png" medium="image" type="image/png" height="185" width="144"/>
-</item>
-<item>
-  <title>Shiny, R packages, and R6</title>
-  <dc:creator>Martin Frigaard</dc:creator>
-  <link>https://mjfrigaard.github.io/posts/shiny-r6/</link>
-  <description><![CDATA[ 
-
-
-
-
-
-<div class="cell" data-layout-align="center">
-<div class="callout callout-style-default callout-important no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span><span style="font-weight: bold; font-size: 1.15em;">ALERT!</span>
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
-<div class="callout-body-container callout-body">
-<div style="font-size: 1.10em; color: #282b2d;">
-<p>This post is currently under development–thank you for your patience.</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-<p>As a Shiny app grows, the server function tends to accumulate: reactive values tracking multiple pieces of mutable state, helper functions managing business logic, and implicit dependencies that are hard to follow. Packaging the app as an R package helps with organization, but it doesn’t solve the underlying problem of managing state that changes at runtime.</p>
-<p><strong>R6 classes</strong> offer a clean answer. They let you bundle mutable state and the methods that operate on it into a single object, separate from your reactive graph. The result is code that is easier to test, easier to reuse across modules, and much easier to reason about when something goes wrong.</p>
-<p>In this post, we’ll cover:</p>
-<ul>
-<li>What R6 is and how it differs from R’s other object systems</li>
-<li>How to define R6 classes and place them inside an R package</li>
-<li>Three strategies for wiring R6 state to Shiny’s reactive graph</li>
-<li>A practical, session-aware logger example that ties everything together</li>
-</ul>
-<section id="what-is-r6" class="level2">
-<h2 class="anchored" data-anchor-id="what-is-r6">What is R6?</h2>
-<p>R has several object-oriented systems: S3, S4, R5 (Reference Classes), and R6. The first two use <strong>copy-on-modify</strong> semantics — when you pass an object to a function and modify it, you modify a copy, not the original. R5 and R6 use <strong>reference semantics</strong>: all variables that point to the same R6 object share the same underlying data. Modifying the object through one variable is immediately visible through all other variables that reference it.</p>
-<p>Reference semantics are exactly what you want for mutable state in a Shiny server. A counter, a user session record, a log buffer — these all need to change in place rather than produce modified copies.</p>
-<p>R6 is preferred over R5 (Reference Classes) because it is faster, has a cleaner API, supports portable (non-environment-based) objects for serialization, and integrates well with <code>testthat</code>.</p>
-<p>Install the package if needed:</p>
-<div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">install.packages</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"R6"</span>)</span>
-<span id="cb1-2"><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">library</span>(R6)</span></code></pre></div></div>
-</div>
-</section>
-<section id="defining-an-r6-class" class="level2">
-<h2 class="anchored" data-anchor-id="defining-an-r6-class">Defining an R6 Class</h2>
-<p>You define an R6 class with <code>R6::R6Class()</code>. Everything visible to outside code goes in <code>public</code>; implementation details that callers should not touch go in <code>private</code>.</p>
-<p>Here is a minimal counter class:</p>
-<div class="cell" data-layout-align="center">
-<details open="" class="code-fold">
-<summary>show/hide</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-2" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><button class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="1">1</button><span id="annotated-cell-2-1" class="code-annotation-target">Counter <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> R6<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">R6Class</span>(</span>
-<span id="annotated-cell-2-2">  <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Counter"</span>,</span>
-<span id="annotated-cell-2-3">  <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">public =</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">list</span>(</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="2">2</button><span id="annotated-cell-2-4" class="code-annotation-target">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">value =</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>,</span>
-<span id="annotated-cell-2-5">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">initialize =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>(<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">start =</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>) {</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-2" data-target-annotation="3">3</button><span id="annotated-cell-2-6" class="code-annotation-target">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>value <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> start</span>
-<span id="annotated-cell-2-7">    },</span>
-<span id="annotated-cell-2-8">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">increment =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>() {</span>
-<span id="annotated-cell-2-9">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>value <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>value <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span></span>
-<span id="annotated-cell-2-10">    },</span>
-<span id="annotated-cell-2-11">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">reset =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>() {</span>
-<span id="annotated-cell-2-12">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>value <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span></span>
-<span id="annotated-cell-2-13">    },</span>
-<span id="annotated-cell-2-14">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">get =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>() {</span>
-<span id="annotated-cell-2-15">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>value</span>
-<span id="annotated-cell-2-16">    }</span>
-<span id="annotated-cell-2-17">  )</span>
-<span id="annotated-cell-2-18">)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
-</details>
-<div class="cell-annotation">
-<dl class="code-annotation-container-hidden code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-2" data-target-annotation="1">1</dt>
-<dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="1" data-code-annotation="1">The first argument is the class name (used in <code>inherits()</code> checks and error messages).</span>
-</dd>
-<dt data-target-cell="annotated-cell-2" data-target-annotation="2">2</dt>
-<dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="4" data-code-annotation="2">Public fields are mutable and accessible with <code>$</code>.</span>
-</dd>
-<dt data-target-cell="annotated-cell-2" data-target-annotation="3">3</dt>
-<dd>
-<span data-code-cell="annotated-cell-2" data-code-lines="6" data-code-annotation="3"><code>self</code> always refers to the current instance inside method bodies.</span>
-</dd>
-</dl>
-</div>
-</div>
-<section id="mini-experiment-verify-reference-semantics" class="level3">
-<h3 class="anchored" data-anchor-id="mini-experiment-verify-reference-semantics">Mini-experiment: verify reference semantics</h3>
-<p>Before wiring this into Shiny, it is worth confirming that reference semantics actually behave differently from the copy-on-modify model you are probably used to.</p>
-<div class="cell" data-layout-align="center">
-<details open="" class="code-fold">
-<summary>show/hide</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1">a <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> Counter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">new</span>(<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">start =</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">10</span>)</span>
-<span id="cb2-2">b <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> a          <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># b is NOT a copy — it points to the same object</span></span>
-<span id="cb2-3"></span>
-<span id="cb2-4">a<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">increment</span>()   <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># mutate through a ...</span></span>
-<span id="cb2-5">b<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">get</span>()         <span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># ... and b sees the change immediately</span></span>
-<span id="cb2-6"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">#&gt; [1] 11</span></span></code></pre></div></div>
-</details>
-</div>
-<p>This is the key insight: once you pass an R6 object into a function, changes inside that function affect the original object. That is different from how a plain list or data frame would behave, and it is what makes R6 useful for Shiny state management.</p>
-</section>
-</section>
-<section id="r6-classes-in-a-package" class="level2">
-<h2 class="anchored" data-anchor-id="r6-classes-in-a-package">R6 Classes in a Package</h2>
-<p>In an app-package, place each class definition in <code>R/</code> with a descriptive file name. Keeping one class per file makes the code easier to navigate.</p>
-<pre><code>R/
-  counter.R   # Counter class
-  logger.R    # Logger class
-  app.R       # shinyApp() wrapper</code></pre>
-<p>Add roxygen documentation so the class is exported and usable from other packages or in tests:</p>
-<div class="cell" data-layout-align="center">
-<details open="" class="code-fold">
-<summary>show/hide</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">#' Counter R6 class</span></span>
-<span id="cb4-2"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">#'</span></span>
-<span id="cb4-3"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">#' Tracks a numeric value with increment and reset methods.</span></span>
-<span id="cb4-4"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">#'</span></span>
-<span id="cb4-5"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">#' @export</span></span>
-<span id="cb4-6">Counter <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> R6<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">R6Class</span>(</span>
-<span id="cb4-7">  <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Counter"</span>,</span>
-<span id="cb4-8">  <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">public =</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">list</span>(</span>
-<span id="cb4-9">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">value =</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>,</span>
-<span id="cb4-10">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">initialize =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>(<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">start =</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>) {</span>
-<span id="cb4-11">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>value <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> start</span>
-<span id="cb4-12">    },</span>
-<span id="cb4-13">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">increment =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>() {</span>
-<span id="cb4-14">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>value <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>value <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span></span>
-<span id="cb4-15">    },</span>
-<span id="cb4-16">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">reset =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>() {</span>
-<span id="cb4-17">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>value <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span></span>
-<span id="cb4-18">    },</span>
-<span id="cb4-19">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">get =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>() {</span>
-<span id="cb4-20">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>value</span>
-<span id="cb4-21">    }</span>
-<span id="cb4-22">  )</span>
-<span id="cb4-23">)</span></code></pre></div></div>
-</details>
-</div>
-<p>One rule to keep in mind: never instantiate R6 objects at the package level (i.e., outside a function). If you write <code>my_counter &lt;- Counter$new()</code> at the top of an <code>R/</code> file, that object is shared across every user session. Always create instances inside <code>server()</code> or module server functions, where they are scoped to a single session.</p>
-</section>
-<section id="wiring-r6-to-shiny-reactivity" class="level2">
-<h2 class="anchored" data-anchor-id="wiring-r6-to-shiny-reactivity">Wiring R6 to Shiny Reactivity</h2>
-<p>R6 objects are not inherently reactive. Shiny does not know an R6 field has changed unless you explicitly tell it. There are three strategies for bridging the gap, each with different trade-offs.</p>
-<div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">library</span>(shiny)</span></code></pre></div></div>
-</div>
-<section id="strategy-1-render-driven-by-input-events" class="level3">
-<h3 class="anchored" data-anchor-id="strategy-1-render-driven-by-input-events">Strategy 1: <code>render*</code> driven by input events</h3>
-<p>The simplest approach: an <code>observeEvent</code> calls the R6 method, and the <code>render*</code> function reads from the object on every event. This works when the R6 state only needs to be displayed, not shared across multiple outputs.</p>
-<div class="cell" data-layout-align="center">
-<details open="" class="code-fold">
-<summary>show/hide</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-7" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-7-1">server <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>(input, output, session) {</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="1">1</button><span id="annotated-cell-7-2" class="code-annotation-target">  counter <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> Counter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">new</span>()</span>
-<span id="annotated-cell-7-3"></span>
-<span id="annotated-cell-7-4">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">observeEvent</span>(input<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>increment_btn, {</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="2">2</button><span id="annotated-cell-7-5" class="code-annotation-target">    counter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">increment</span>()</span>
-<span id="annotated-cell-7-6">  })</span>
-<span id="annotated-cell-7-7"></span>
-<span id="annotated-cell-7-8">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">observeEvent</span>(input<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>reset_btn, {</span>
-<span id="annotated-cell-7-9">    counter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">reset</span>()</span>
-<span id="annotated-cell-7-10">  })</span>
-<span id="annotated-cell-7-11"></span>
-<span id="annotated-cell-7-12">  output<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>counter_text <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">renderText</span>({</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="3">3</button><span id="annotated-cell-7-13" class="code-annotation-target">    input<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>increment_btn</span>
-<span id="annotated-cell-7-14">    input<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>reset_btn</span>
-<span id="annotated-cell-7-15">    <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">paste</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Current count:"</span>, counter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">get</span>())</span>
-<span id="annotated-cell-7-16">  })</span>
-<span id="annotated-cell-7-17">}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
-</details>
-<div class="cell-annotation">
-<dl class="code-annotation-container-hidden code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-7" data-target-annotation="1">1</dt>
-<dd>
-<span data-code-cell="annotated-cell-7" data-code-lines="2" data-code-annotation="1">Create a new instance inside <code>server()</code> — scoped to this session only.</span>
-</dd>
-<dt data-target-cell="annotated-cell-7" data-target-annotation="2">2</dt>
-<dd>
-<span data-code-cell="annotated-cell-7" data-code-lines="5" data-code-annotation="2">Mutate through the R6 method; the object updates in place.</span>
-</dd>
-<dt data-target-cell="annotated-cell-7" data-target-annotation="3">3</dt>
-<dd>
-<span data-code-cell="annotated-cell-7" data-code-lines="13" data-code-annotation="3">Take a reactive dependency on the input buttons so <code>renderText</code> re-runs after each click. Without these lines, <code>counter$get()</code> would only run once.</span>
-</dd>
-</dl>
-</div>
-</div>
-<p>The UI for all three strategies uses the same skeleton:</p>
-<div class="cell" data-layout-align="center">
-<details open="" class="code-fold">
-<summary>show/hide</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1">ui <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">fluidPage</span>(</span>
-<span id="cb6-2">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">actionButton</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"increment_btn"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Increment"</span>),</span>
-<span id="cb6-3">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">actionButton</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"reset_btn"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Reset"</span>),</span>
-<span id="cb6-4">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">textOutput</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"counter_text"</span>)</span>
-<span id="cb6-5">)</span></code></pre></div></div>
-</details>
-</div>
-</section>
-<section id="strategy-2-external-reactive-trigger" class="level3">
-<h3 class="anchored" data-anchor-id="strategy-2-external-reactive-trigger">Strategy 2: External reactive trigger</h3>
-<p>Strategy 1 couples the <code>render*</code> function directly to the input events. If you have several outputs that all depend on the same R6 state, maintaining separate input references in each <code>render*</code> becomes repetitive. A shared <code>reactiveVal</code> trigger solves this.</p>
-<div class="cell" data-layout-align="center">
-<details open="" class="code-fold">
-<summary>show/hide</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-9" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-9-1">server <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>(input, output, session) {</span>
-<span id="annotated-cell-9-2">  counter <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> Counter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">new</span>()</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="1">1</button><span id="annotated-cell-9-3" class="code-annotation-target">  trigger <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">reactiveVal</span>(<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>)</span>
-<span id="annotated-cell-9-4"></span>
-<span id="annotated-cell-9-5">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">observeEvent</span>(input<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>increment_btn, {</span>
-<span id="annotated-cell-9-6">    counter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">increment</span>()</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="2">2</button><span id="annotated-cell-9-7" class="code-annotation-target">    <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">trigger</span>(<span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">trigger</span>() <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span>)</span>
-<span id="annotated-cell-9-8">  })</span>
-<span id="annotated-cell-9-9"></span>
-<span id="annotated-cell-9-10">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">observeEvent</span>(input<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>reset_btn, {</span>
-<span id="annotated-cell-9-11">    counter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">reset</span>()</span>
-<span id="annotated-cell-9-12">    <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">trigger</span>(<span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">trigger</span>() <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span>)</span>
-<span id="annotated-cell-9-13">  })</span>
-<span id="annotated-cell-9-14"></span>
-<span id="annotated-cell-9-15">  output<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>counter_text <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">renderText</span>({</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="3">3</button><span id="annotated-cell-9-16" class="code-annotation-target">    <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">trigger</span>()</span>
-<span id="annotated-cell-9-17">    <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">paste</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Current count:"</span>, counter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">get</span>())</span>
-<span id="annotated-cell-9-18">  })</span>
-<span id="annotated-cell-9-19"></span>
-<span id="annotated-cell-9-20">  output<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>counter_double <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">renderText</span>({</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="4">4</button><span id="annotated-cell-9-21" class="code-annotation-target">    <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">trigger</span>()</span>
-<span id="annotated-cell-9-22">    <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">paste</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Double:"</span>, counter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">get</span>() <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">*</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">2</span>)</span>
-<span id="annotated-cell-9-23">  })</span>
-<span id="annotated-cell-9-24">}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
-</details>
-<div class="cell-annotation">
-<dl class="code-annotation-container-hidden code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-9" data-target-annotation="1">1</dt>
-<dd>
-<span data-code-cell="annotated-cell-9" data-code-lines="3" data-code-annotation="1">A single <code>reactiveVal</code> acts as a manual invalidation signal.</span>
-</dd>
-<dt data-target-cell="annotated-cell-9" data-target-annotation="2">2</dt>
-<dd>
-<span data-code-cell="annotated-cell-9" data-code-lines="7" data-code-annotation="2">After every mutation, increment the trigger to notify all dependents.</span>
-</dd>
-<dt data-target-cell="annotated-cell-9" data-target-annotation="3">3</dt>
-<dd>
-<span data-code-cell="annotated-cell-9" data-code-lines="16" data-code-annotation="3">Reading <code>trigger()</code> creates a reactive dependency; this output re-runs whenever the trigger changes.</span>
-</dd>
-<dt data-target-cell="annotated-cell-9" data-target-annotation="4">4</dt>
-<dd>
-<span data-code-cell="annotated-cell-9" data-code-lines="21" data-code-annotation="4">A second output can depend on the same trigger without duplicating input references.</span>
-</dd>
-</dl>
-</div>
-</div>
-<div class="cell" data-layout-align="center">
-<div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span><span style="font-weight: bold; font-size: 1.15em;">When to use this strategy</span>
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse show">
-<div class="callout-body-container callout-body">
-<div style="font-size: 1.10em; color: #282b2d;">
-<p>Use an external trigger when multiple outputs read from the same R6 object. It centralizes invalidation and keeps <code>render*</code> functions focused on display logic.</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="strategy-3-reactive-binding-inside-the-r6-class" class="level3">
-<h3 class="anchored" data-anchor-id="strategy-3-reactive-binding-inside-the-r6-class">Strategy 3: Reactive binding inside the R6 class</h3>
-<p>For objects designed exclusively for use inside Shiny, you can move the reactive plumbing into the class itself. This keeps mutation and notification together, which is useful when the same class is used across many modules.</p>
-<div class="cell" data-layout-align="center">
-<details open="" class="code-fold">
-<summary>show/hide</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-10" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-10-1">ReactiveCounter <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> R6<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">R6Class</span>(</span>
-<span id="annotated-cell-10-2">  <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"ReactiveCounter"</span>,</span>
-<span id="annotated-cell-10-3">  <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">public =</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">list</span>(</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="1">1</button><span id="annotated-cell-10-4" class="code-annotation-target">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">.trigger =</span> <span class="cn" style="color: #8f5902;
-background-color: null;
-font-style: inherit;">NULL</span>,</span>
-<span id="annotated-cell-10-5">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">value =</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>,</span>
-<span id="annotated-cell-10-6"></span>
-<span id="annotated-cell-10-7">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">initialize =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>(<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">start =</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>) {</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="2">2</button><span id="annotated-cell-10-8" class="code-annotation-target">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>.trigger <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">reactiveVal</span>(<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>)</span>
-<span id="annotated-cell-10-9">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>value <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> start</span>
-<span id="annotated-cell-10-10">    },</span>
-<span id="annotated-cell-10-11"></span>
-<span id="annotated-cell-10-12">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">increment =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>() {</span>
-<span id="annotated-cell-10-13">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>value <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>value <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span></span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="3">3</button><span id="annotated-cell-10-14" class="code-annotation-target">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">.trigger</span>(self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">.trigger</span>() <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span>)</span>
-<span id="annotated-cell-10-15">    },</span>
-<span id="annotated-cell-10-16"></span>
-<span id="annotated-cell-10-17">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">reset =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>() {</span>
-<span id="annotated-cell-10-18">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>value <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span></span>
-<span id="annotated-cell-10-19">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">.trigger</span>(self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">.trigger</span>() <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span>)</span>
-<span id="annotated-cell-10-20">    },</span>
-<span id="annotated-cell-10-21"></span>
-<span id="annotated-cell-10-22">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">reactive_get =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>() {</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-10" data-target-annotation="4">4</button><span id="annotated-cell-10-23" class="code-annotation-target">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">.trigger</span>()</span>
-<span id="annotated-cell-10-24">      self<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>value</span>
-<span id="annotated-cell-10-25">    }</span>
-<span id="annotated-cell-10-26">  )</span>
-<span id="annotated-cell-10-27">)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
-</details>
-<div class="cell-annotation">
-<dl class="code-annotation-container-hidden code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-10" data-target-annotation="1">1</dt>
-<dd>
-<span data-code-cell="annotated-cell-10" data-code-lines="4" data-code-annotation="1">A public field named with <code>.</code> prefix signals “internal use” by convention (you could also put this in <code>private</code>).</span>
-</dd>
-<dt data-target-cell="annotated-cell-10" data-target-annotation="2">2</dt>
-<dd>
-<span data-code-cell="annotated-cell-10" data-code-lines="8" data-code-annotation="2">The trigger is created during initialization, so it is always available.</span>
-</dd>
-<dt data-target-cell="annotated-cell-10" data-target-annotation="3">3</dt>
-<dd>
-<span data-code-cell="annotated-cell-10" data-code-lines="14" data-code-annotation="3">Every mutation fires the trigger automatically — callers do not need to manage this.</span>
-</dd>
-<dt data-target-cell="annotated-cell-10" data-target-annotation="4">4</dt>
-<dd>
-<span data-code-cell="annotated-cell-10" data-code-lines="23" data-code-annotation="4"><code>reactive_get()</code> takes a dependency on the trigger; any reactive context that calls it will re-run on mutation.</span>
-</dd>
-</dl>
-</div>
-</div>
-<p>Using <code>ReactiveCounter</code> in a server function is then much cleaner:</p>
-<div class="cell" data-layout-align="center">
-<details open="" class="code-fold">
-<summary>show/hide</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-11" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-11-1">server <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>(input, output, session) {</span>
-<span id="annotated-cell-11-2">  counter <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> ReactiveCounter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">new</span>()</span>
-<span id="annotated-cell-11-3"></span>
-<span id="annotated-cell-11-4">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">observeEvent</span>(input<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>increment_btn, counter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">increment</span>())</span>
-<span id="annotated-cell-11-5">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">observeEvent</span>(input<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>reset_btn, counter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">reset</span>())</span>
-<span id="annotated-cell-11-6"></span>
-<span id="annotated-cell-11-7">  output<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>counter_text <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">renderText</span>({</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-11" data-target-annotation="1">1</button><span id="annotated-cell-11-8" class="code-annotation-target">    <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">paste</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Current count:"</span>, counter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">reactive_get</span>())</span>
-<span id="annotated-cell-11-9">  })</span>
-<span id="annotated-cell-11-10">}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
-</details>
-<div class="cell-annotation">
-<dl class="code-annotation-container-hidden code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-11" data-target-annotation="1">1</dt>
-<dd>
-<span data-code-cell="annotated-cell-11" data-code-lines="8" data-code-annotation="1"><code>reactive_get()</code> handles both reading the value and registering the dependency; no manual trigger management needed at the call site.</span>
-</dd>
-</dl>
-</div>
-</div>
-<div class="cell" data-layout-align="center">
-<div class="callout callout-style-default callout-warning no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="true" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span><span style="font-weight: bold; font-size: 1.15em;">Trade-off</span>
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-3" class="callout-3-contents callout-collapse collapse show">
-<div class="callout-body-container callout-body">
-<div style="font-size: 1.10em; color: #282b2d;">
-<p>Strategy 3 produces the cleanest call sites, but it tightly couples the class to Shiny. A class that contains <code>reactiveVal()</code> cannot be instantiated outside a reactive context (e.g., in plain unit tests) without extra effort. Strategies 1 and 2 keep the class itself framework-agnostic and are easier to test with <code>testthat</code>.</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="choosing-a-strategy" class="level3">
-<h3 class="anchored" data-anchor-id="choosing-a-strategy">Choosing a strategy</h3>
-<p>The diagram below shows when each strategy fits best.</p>
-<div class="cell" data-layout-align="default">
-<details open="" class="code-fold">
-<summary>show/hide</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb7-1">flowchart TD</span>
-<span id="cb7-2">  SingOut["Single output\nreads R6 state"]</span>
-<span id="cb7-3">  MultiOut["Multiple outputs\nread same R6 state"]</span>
-<span id="cb7-4">  ShinyOnly["Class is\nShiny-only"]</span>
-<span id="cb7-5"></span>
-<span id="cb7-6">  SingOut --&gt; Strat1["Strategy 1\nrender* + input dep"]</span>
-<span id="cb7-7">  MultiOut --&gt; Strat2["Strategy 2\nexternal reactiveVal"]</span>
-<span id="cb7-8">  ShinyOnly --&gt; Strat3["Strategy 3\ninternal reactive binding"]</span></code></pre></div></div>
-</details>
-<div class="cell-output-display">
-<div>
-<p></p><figure class="figure"><p></p>
-<div>
-
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-</section>
-</section>
-<section id="testing-r6-classes" class="level2">
-<h2 class="anchored" data-anchor-id="testing-r6-classes">Testing R6 Classes</h2>
-<p>One of R6’s advantages over embedding logic in the server function is testability. Classes defined without reactive internals (Strategies 1 and 2) can be tested directly with <code>testthat</code>:</p>
-<div class="cell" data-layout-align="center">
-<details open="" class="code-fold">
-<summary>show/hide</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Counter increments from zero"</span>, {</span>
-<span id="cb8-2">  c <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> Counter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">new</span>()</span>
-<span id="cb8-3">  c<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">increment</span>()</span>
-<span id="cb8-4">  c<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">increment</span>()</span>
-<span id="cb8-5">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">expect_equal</span>(c<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">get</span>(), <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">2</span>)</span>
-<span id="cb8-6">})</span>
-<span id="cb8-7"></span>
-<span id="cb8-8"><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Counter reset brings value back to zero"</span>, {</span>
-<span id="cb8-9">  c <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> Counter<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">new</span>(<span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">start =</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">5</span>)</span>
-<span id="cb8-10">  c<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">reset</span>()</span>
-<span id="cb8-11">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">expect_equal</span>(c<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">get</span>(), <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>)</span>
-<span id="cb8-12">})</span></code></pre></div></div>
-</details>
-</div>
-<p>Place tests in <code>tests/testthat/test-counter.R</code>. Because <code>Counter</code> is a plain R6 class with no Shiny dependencies, no <code>shinytest2</code> or special reactive context is needed to run these.</p>
-</section>
-<section id="example-session-aware-logger" class="level2">
-<h2 class="anchored" data-anchor-id="example-session-aware-logger">Example: Session-Aware Logger</h2>
-<p>The counter is a good minimal example, but a session-aware logger shows R6 being used for something you could not easily replicate with <code>reactiveValues</code> alone: accumulating structured log entries tied to the user’s session token.</p>
-<section id="class-definition" class="level3">
-<h3 class="anchored" data-anchor-id="class-definition">Class definition</h3>
-<details>
-<summary>
-Logger R6 class (R/logger.R)
-</summary>
-<div class="cell" data-layout-align="center">
-<details open="" class="code-fold">
-<summary>show/hide</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-14" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-14-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">#' Logger R6 class</span></span>
-<span id="annotated-cell-14-2"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">#'</span></span>
-<span id="annotated-cell-14-3"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">#' Records timestamped log entries for a single Shiny session.</span></span>
-<span id="annotated-cell-14-4"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">#'</span></span>
-<span id="annotated-cell-14-5"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">#' @export</span></span>
-<span id="annotated-cell-14-6">Logger <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> R6<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">R6Class</span>(</span>
-<span id="annotated-cell-14-7">  <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Logger"</span>,</span>
-<span id="annotated-cell-14-8">  <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">private =</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">list</span>(</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-14" data-target-annotation="1">1</button><span id="annotated-cell-14-9" class="code-annotation-target">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">session_id =</span> <span class="cn" style="color: #8f5902;
-background-color: null;
-font-style: inherit;">NULL</span>,</span>
-<span id="annotated-cell-14-10">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">logs =</span> <span class="cn" style="color: #8f5902;
-background-color: null;
-font-style: inherit;">NULL</span></span>
-<span id="annotated-cell-14-11">  ),</span>
-<span id="annotated-cell-14-12">  <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">public =</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">list</span>(</span>
-<span id="annotated-cell-14-13">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">initialize =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>(session_id) {</span>
-<span id="annotated-cell-14-14">      private<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>session_id <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> session_id</span>
-<span id="annotated-cell-14-15">      private<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>logs <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">character</span>()</span>
-<span id="annotated-cell-14-16">    },</span>
-<span id="annotated-cell-14-17"></span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-14" data-target-annotation="2">2</button><span id="annotated-cell-14-18" class="code-annotation-target">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">log =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>(message) {</span>
-<span id="annotated-cell-14-19">      ts <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">format</span>(<span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">Sys.time</span>(), <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"%Y-%m-%d %H:%M:%S"</span>)</span>
-<span id="annotated-cell-14-20">      entry <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">sprintf</span>(</span>
-<span id="annotated-cell-14-21">        <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"[%s @ %s] %s"</span>,</span>
-<span id="annotated-cell-14-22">        private<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>session_id,</span>
-<span id="annotated-cell-14-23">        ts,</span>
-<span id="annotated-cell-14-24">        message</span>
-<span id="annotated-cell-14-25">      )</span>
-<span id="annotated-cell-14-26">      private<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>logs <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">c</span>(private<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>logs, entry)</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-14" data-target-annotation="3">3</button><span id="annotated-cell-14-27" class="code-annotation-target">      <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">invisible</span>(self)</span>
-<span id="annotated-cell-14-28">    },</span>
-<span id="annotated-cell-14-29"></span>
-<span id="annotated-cell-14-30">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">get_logs =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>() {</span>
-<span id="annotated-cell-14-31">      private<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>logs</span>
-<span id="annotated-cell-14-32">    },</span>
-<span id="annotated-cell-14-33"></span>
-<span id="annotated-cell-14-34">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">n_entries =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>() {</span>
-<span id="annotated-cell-14-35">      <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">length</span>(private<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>logs)</span>
-<span id="annotated-cell-14-36">    },</span>
-<span id="annotated-cell-14-37"></span>
-<span id="annotated-cell-14-38">    <span class="at" style="color: #657422;
-background-color: null;
-font-style: inherit;">clear =</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>() {</span>
-<span id="annotated-cell-14-39">      private<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>logs <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">character</span>()</span>
-<span id="annotated-cell-14-40">      <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">invisible</span>(self)</span>
-<span id="annotated-cell-14-41">    }</span>
-<span id="annotated-cell-14-42">  )</span>
-<span id="annotated-cell-14-43">)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
-</details>
-<div class="cell-annotation">
-<dl class="code-annotation-container-hidden code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-14" data-target-annotation="1">1</dt>
-<dd>
-<span data-code-cell="annotated-cell-14" data-code-lines="9" data-code-annotation="1"><code>session_id</code> and <code>logs</code> are private: callers must use <code>log()</code> and <code>get_logs()</code> rather than accessing the fields directly. This prevents accidental mutation from outside the class.</span>
-</dd>
-<dt data-target-cell="annotated-cell-14" data-target-annotation="2">2</dt>
-<dd>
-<span data-code-cell="annotated-cell-14" data-code-lines="18" data-code-annotation="2">Each call appends a formatted entry; the method returns <code>self</code> invisibly so calls can be chained: <code>logger$log("step 1")$log("step 2")</code>.</span>
-</dd>
-<dt data-target-cell="annotated-cell-14" data-target-annotation="3">3</dt>
-<dd>
-<span data-code-cell="annotated-cell-14" data-code-lines="27" data-code-annotation="3">Returning <code>self</code> invisibly from mutating methods is an R6 convention.</span>
-</dd>
-</dl>
-</div>
-</div>
-</details>
-</section>
-<section id="shiny-integration" class="level3">
-<h3 class="anchored" data-anchor-id="shiny-integration">Shiny integration</h3>
-<div class="cell" data-layout-align="center">
-<details open="" class="code-fold">
-<summary>show/hide</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-15" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-15-1">server <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">function</span>(input, output, session) {</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-15" data-target-annotation="1">1</button><span id="annotated-cell-15-2" class="code-annotation-target">  logger <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> Logger<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">new</span>(session<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>token)</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-15" data-target-annotation="2">2</button><span id="annotated-cell-15-3" class="code-annotation-target">  log_trigger <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">reactiveVal</span>(<span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>)</span>
-<span id="annotated-cell-15-4"></span>
-<span id="annotated-cell-15-5">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">observeEvent</span>(input<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>action_btn, {</span>
-<span id="annotated-cell-15-6">    logger<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">log</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Action button clicked"</span>)</span>
-<span id="annotated-cell-15-7">    <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">log_trigger</span>(<span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">log_trigger</span>() <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span>)</span>
-<span id="annotated-cell-15-8">  })</span>
-<span id="annotated-cell-15-9"></span>
-<span id="annotated-cell-15-10">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">observeEvent</span>(input<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>clear_btn, {</span>
-<span id="annotated-cell-15-11">    logger<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">clear</span>()</span>
-<span id="annotated-cell-15-12">    <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">log_trigger</span>(<span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">log_trigger</span>() <span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span>)</span>
-<span id="annotated-cell-15-13">  })</span>
-<span id="annotated-cell-15-14"></span>
-<span id="annotated-cell-15-15">  output<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>log_output <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">renderPrint</span>({</span>
-<span id="annotated-cell-15-16">    <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">log_trigger</span>()</span>
-<span id="annotated-cell-15-17">    logger<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">get_logs</span>()</span>
-<span id="annotated-cell-15-18">  })</span>
-<span id="annotated-cell-15-19"></span>
-<span id="annotated-cell-15-20">  output<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span>entry_count <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">renderText</span>({</span>
-<span id="annotated-cell-15-21">    <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">log_trigger</span>()</span>
-<span id="annotated-cell-15-22">    <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">paste</span>(logger<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">n_entries</span>(), <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"log entries"</span>)</span>
-<span id="annotated-cell-15-23">  })</span>
-<span id="annotated-cell-15-24">}</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
-</details>
-<div class="cell-annotation">
-<dl class="code-annotation-container-hidden code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-15" data-target-annotation="1">1</dt>
-<dd>
-<span data-code-cell="annotated-cell-15" data-code-lines="2" data-code-annotation="1"><code>session$token</code> is a unique identifier per browser session; passing it in at construction time means every log entry is tagged to the right user without any global state.</span>
-</dd>
-<dt data-target-cell="annotated-cell-15" data-target-annotation="2">2</dt>
-<dd>
-<span data-code-cell="annotated-cell-15" data-code-lines="3" data-code-annotation="2">Strategy 2 is used here because two outputs (<code>log_output</code> and <code>entry_count</code>) both depend on the logger’s state.</span>
-</dd>
-</dl>
-</div>
-</div>
-<div class="cell" data-layout-align="center">
-<details open="" class="code-fold">
-<summary>show/hide</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1">ui <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">fluidPage</span>(</span>
-<span id="cb9-2">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">actionButton</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"action_btn"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Do something"</span>),</span>
-<span id="cb9-3">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">actionButton</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"clear_btn"</span>, <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Clear log"</span>),</span>
-<span id="cb9-4">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">textOutput</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"entry_count"</span>),</span>
-<span id="cb9-5">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">verbatimTextOutput</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"log_output"</span>)</span>
-<span id="cb9-6">)</span></code></pre></div></div>
-</details>
-</div>
-</section>
-<section id="testing-the-logger-without-shiny" class="level3">
-<h3 class="anchored" data-anchor-id="testing-the-logger-without-shiny">Testing the logger without Shiny</h3>
-<div class="cell" data-layout-align="center">
-<details open="" class="code-fold">
-<summary>show/hide</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Logger records entries with session ID"</span>, {</span>
-<span id="cb10-2">  lg <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> Logger<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">new</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"test-session"</span>)</span>
-<span id="cb10-3">  lg<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">log</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"first event"</span>)</span>
-<span id="cb10-4">  lg<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">log</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"second event"</span>)</span>
-<span id="cb10-5">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">expect_equal</span>(lg<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">n_entries</span>(), <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">2</span>L)</span>
-<span id="cb10-6">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">expect_true</span>(<span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">all</span>(<span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">grepl</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"test-session"</span>, lg<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">get_logs</span>())))</span>
-<span id="cb10-7">})</span>
-<span id="cb10-8"></span>
-<span id="cb10-9"><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">test_that</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Logger clear removes all entries"</span>, {</span>
-<span id="cb10-10">  lg <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">&lt;-</span> Logger<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">new</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"s1"</span>)</span>
-<span id="cb10-11">  lg<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">log</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"a"</span>)<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">log</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"b"</span>)</span>
-<span id="cb10-12">  lg<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">clear</span>()</span>
-<span id="cb10-13">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">expect_equal</span>(lg<span class="sc" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">n_entries</span>(), <span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>L)</span>
-<span id="cb10-14">})</span></code></pre></div></div>
-</details>
-</div>
-</section>
-</section>
-<section id="recap" class="level2">
-<h2 class="anchored" data-anchor-id="recap">Recap</h2>
-<p>R6 gives you a place to put mutable state and business logic that grows with your app without cluttering the reactive graph. The key points:</p>
-<ul>
-<li>Use <strong>reference semantics</strong> deliberately: pass R6 objects into helper functions when you want in-place mutation; avoid them when you want immutable data.</li>
-<li><strong>Strategy 1</strong> (render* with input dependency) covers simple single-output cases with no extra plumbing.</li>
-<li><strong>Strategy 2</strong> (external <code>reactiveVal</code> trigger) scales to multiple outputs reading the same state.</li>
-<li><strong>Strategy 3</strong> (internal reactive binding) produces the cleanest call sites but ties the class to Shiny; reserve it for classes you know will only live in a reactive context.</li>
-<li>Keeping R6 classes framework-agnostic (Strategies 1 and 2) means you can test them with plain <code>testthat</code> without a running Shiny session.</li>
-<li>Define classes in <code>R/</code>, one per file, export them with roxygen tags, and always instantiate inside <code>server()</code> or module server functions — never at package load time.</li>
-</ul>
-<p>The session-aware logger pattern extends naturally to audit trails, undo stacks, and any other use case that involves accumulating structured records over the lifetime of a user session.</p>
-
-
-</section>
-
- ]]></description>
-  <category>R6</category>
-  <category>Shiny</category>
-  <guid>https://mjfrigaard.github.io/posts/shiny-r6/</guid>
-  <pubDate>Thu, 22 Jan 2026 07:00:00 GMT</pubDate>
 </item>
 <item>
   <title>Shiny (for Python) &amp; APIs</title>
@@ -24774,7 +25184,7 @@ font-style: inherit;">print</span>(x)</span>
 </div>
 </div>
 <p>When <code>datasetApp()</code> is run, the app displays the dataset object in the <code>tableOutput()</code>, and the <code>verbatimTextOutput()</code> renders the reactive values as a text:</p>
-<div id="fig-datasetApp_run" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center" width="100%">
+<div id="fig-datasetApp_run" class="quarto-float quarto-figure quarto-figure-center anchored" width="100%" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-datasetApp_run-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <a href="datasetApp_run.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;1: "><img src="https://mjfrigaard.github.io/posts/p3-test-shiny-module-tests/datasetApp_run.png" id="fig-datasetApp_run" class="img-fluid quarto-figure quarto-figure-center anchored figure-img" style="width:100.0%"></a>
