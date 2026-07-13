@@ -13,8 +13,6 @@
 <url>https://mjfrigaard.github.io/profile.png</url>
 <title>@mjfrigaard</title>
 <link>https://mjfrigaard.github.io/posts.html</link>
-<height>169</height>
-<width>144</width>
 </image>
 <generator>quarto-1.8.26</generator>
 <lastBuildDate>Sun, 05 Jul 2026 07:00:00 GMT</lastBuildDate>
@@ -28,46 +26,55 @@
 
 
 
-<p>As your Shiny application grows, organizing code into modular, object-oriented pieces becomes crucial. While Shiny’s reactive programming model is naturally functional, R6 classes provide a powerful abstraction for encapsulating state, behavior, and business logic. If you’re building a Shiny app as an R package, R6 brings real benefits: clean separation of concerns, easier testing, and reusable module patterns that survive across projects.</p>
+<p>As your Shiny application grows, organizing code into modular, object-oriented pieces becomes crucial. While Shiny’s reactive programming model is naturally functional, <code>R6</code> classes provide a powerful abstraction for encapsulating state, behavior, and business logic. If you’re building a Shiny app-package, R6 brings real benefits: clean separation of concerns, easier testing, and reusable module patterns that survive across projects.</p>
 <p>In this post, we’ll explore:</p>
 <ol type="1">
-<li>What R6 is and why it shines in Shiny app-packages</li>
-<li>Defining R6 classes for Shiny modules (UI and server)</li>
-<li>Wiring R6 objects into your app’s reactive flow</li>
-<li>A real working example from a stock volatility dashboard</li>
+<li>What <code>R6</code> is and why it shines in Shiny app-packages</li>
+<li>Defining <code>R6</code> classes for Shiny modules (UI and server)</li>
+<li>Wiring <code>R6</code> objects into your app’s reactive flow</li>
 </ol>
+<p>I created working example of a stock volatility dashboard you can view and follow along with here: &lt;mjfrigaard.github.io/Rsixer/&gt;</p>
 <section id="what-is-r6" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-r6">What is R6?</h2>
-<p>R6 is an object-oriented system in R that creates reference-based objects. Unlike S3 or S4, R6 objects are mutable, support encapsulation (public and private members), and feel familiar to developers from Python or Java.</p>
-<p>R6 is especially useful for:</p>
+<p><code>R6</code> is an object-oriented system in R that creates reference-based objects. Unlike <code>S3</code> or <code>S4</code>, <code>R6</code> objects are mutable and support encapsulation (i.e., public and private members). <code>R6</code> objects feel familiar for Python or Java developers because they both include similar implementations.</p>
+<p>To create R6 objects, install the <code>R6</code> package:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">install.packages</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"R6"</span>)</span></code></pre></div></div>
+</div>
+<p><code>R6</code> is especially useful for:</p>
 <ol type="1">
-<li>Bundling UI generation with business logic (module as a unified object)</li>
+<li>Bundling UI generation with business logic (module as a unified object)<br>
+</li>
 <li>Managing state tied to a user session or module instance</li>
 <li>Encapsulating dependencies and configuration</li>
 </ol>
-<p>In an app-package, R6 prevents you from scattering related logic across separate files and avoids the need for global state or overly nested reactive functions.</p>
+<p>In app-packages, <code>R6</code> objects can prevent us from scattering related logic across separate files. They also help avoid the need for global state or overly nested reactive functions.</p>
 </section>
 <section id="defining-an-r6-shiny-module" class="level2">
 <h2 class="anchored" data-anchor-id="defining-an-r6-shiny-module">Defining an R6 Shiny Module</h2>
-<p>An R6 module wraps both its UI and server logic into one class. Here’s a simplified example from the Rsixer stock dashboard app:</p>
+<p>An <code>R6</code> module wraps both its UI and server logic into one class.</p>
+<p>Here’s a simplified example from the <code>Rsixer</code> stock dashboard app:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-1" style="background: #f1f3f5;"><pre class="sourceCode r code-annotation-code code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-1-1">ModInputs <span class="ot" style="color: #003B4F;
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1">ModInputs <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> R6<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">R6Class</span>(</span>
-<span id="annotated-cell-1-2">  <span class="st" style="color: #20794D;
+<span id="cb2-2">  <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"ModInputs"</span>,</span>
-<span id="annotated-cell-1-3"></span>
-<span id="annotated-cell-1-4">  <span class="at" style="color: #657422;
+<span id="cb2-3">  <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">public =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">list</span>(</span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="1">1</button><span id="annotated-cell-1-5" class="code-annotation-target">    <span class="at" style="color: #657422;
+<span id="cb2-4">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">initialize =</span> <span class="cf" style="color: #003B4F;
 background-color: null;
@@ -77,12 +84,12 @@ background-color: null;
 font-style: inherit;">id =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"inputs"</span>) {</span>
-<span id="annotated-cell-1-6">      private<span class="sc" style="color: #5E5E5E;
+<span id="cb2-5">      private<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>id <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> id</span>
-<span id="annotated-cell-1-7">      private<span class="sc" style="color: #5E5E5E;
+<span id="cb2-6">      private<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>ns <span class="ot" style="color: #003B4F;
 background-color: null;
@@ -91,25 +98,37 @@ background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">NS</span>(id)</span>
-<span id="annotated-cell-1-8">    },</span>
-<span id="annotated-cell-1-9"></span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="2">2</button><span id="annotated-cell-1-10" class="code-annotation-target">    <span class="at" style="color: #657422;
+<span id="cb2-7">    },</span>
+<span id="cb2-8">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">ui =</span> <span class="cf" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">function</span>() {</span>
-<span id="annotated-cell-1-11">      bslib<span class="sc" style="color: #5E5E5E;
+<span id="cb2-9">      bslib<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">sidebar</span>(</span>
-<span id="annotated-cell-1-12">        shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb2-10">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">280</span>,</span>
+<span id="cb2-11">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">bg =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"#f8f9fa"</span>,</span>
+<span id="cb2-12">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># ticker picker ─────</span></span>
+<span id="cb2-13">        shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">selectizeInput</span>(</span>
-<span id="annotated-cell-1-13">          <span class="at" style="color: #657422;
+<span id="cb2-14">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">inputId =</span> private<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -118,23 +137,104 @@ background-color: null;
 font-style: inherit;">ns</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"tickers"</span>),</span>
-<span id="annotated-cell-1-14">          <span class="at" style="color: #657422;
+<span id="cb2-15">          <span class="at" style="color: #657422;
 background-color: null;
-font-style: inherit;">label =</span> <span class="st" style="color: #20794D;
+font-style: inherit;">label =</span> shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span>tags<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">span</span>(</span>
+<span id="cb2-16">            <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"Tickers"</span>,</span>
-<span id="annotated-cell-1-15">          <span class="at" style="color: #657422;
+<span id="cb2-17">            <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">mod_tooltip</span>(</span>
+<span id="cb2-18">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">trigger =</span> bsicons<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">bs_icon</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"info-circle"</span>),</span>
+<span id="cb2-19">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">type =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bslib"</span>,</span>
+<span id="cb2-20">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">contents =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Enter one or more stock ticker symbols (e.g. AAPL, MSFT)."</span>,</span>
+<span id="cb2-21">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"0.85rem"</span>,</span>
+<span id="cb2-22">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">style =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"color:#6c757d"</span></span>
+<span id="cb2-23">            )</span>
+<span id="cb2-24">          ),</span>
+<span id="cb2-25">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">choices =</span> default_tickers,</span>
+<span id="cb2-26">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">selected =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"AAPL"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"MSFT"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"GOOGL"</span>),</span>
+<span id="cb2-27">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">multiple =</span> <span class="cn" style="color: #8f5902;
 background-color: null;
+font-style: inherit;">TRUE</span>,</span>
+<span id="cb2-28">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">options =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">list</span>(</span>
+<span id="cb2-29">            <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">plugins =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">list</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"remove_button"</span>),</span>
+<span id="cb2-30">            <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">placeholder =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Add a ticker\u2026"</span>,</span>
+<span id="cb2-31">            <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">create =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
 font-style: inherit;">TRUE</span></span>
-<span id="annotated-cell-1-16">        ),</span>
-<span id="annotated-cell-1-17">        shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb2-32">          )</span>
+<span id="cb2-33">        ),</span>
+<span id="cb2-34">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># date range ────</span></span>
+<span id="cb2-35">        shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">dateRangeInput</span>(</span>
-<span id="annotated-cell-1-18">          <span class="at" style="color: #657422;
+<span id="cb2-36">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">inputId =</span> private<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -143,22 +243,270 @@ background-color: null;
 font-style: inherit;">ns</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"dates"</span>),</span>
-<span id="annotated-cell-1-19">          <span class="at" style="color: #657422;
+<span id="cb2-37">          <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">label =</span> <span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"Date range"</span></span>
-<span id="annotated-cell-1-20">        )</span>
-<span id="annotated-cell-1-21">      )</span>
-<span id="annotated-cell-1-22">    },</span>
-<span id="annotated-cell-1-23"></span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="3">3</button><span id="annotated-cell-1-24" class="code-annotation-target">    <span class="at" style="color: #657422;
+font-style: inherit;">"Date range"</span>,</span>
+<span id="cb2-38">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">start =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">Sys.Date</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">365</span>,</span>
+<span id="cb2-39">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">end =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">Sys.Date</span>(),</span>
+<span id="cb2-40">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">min =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"2000-01-01"</span>,</span>
+<span id="cb2-41">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">max =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">Sys.Date</span>()</span>
+<span id="cb2-42">        ),</span>
+<span id="cb2-43">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># rolling-vol window ────</span></span>
+<span id="cb2-44">        shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sliderInput</span>(</span>
+<span id="cb2-45">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">inputId =</span> private<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ns</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"vol_window"</span>),</span>
+<span id="cb2-46">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">label =</span> shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span>tags<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">span</span>(</span>
+<span id="cb2-47">            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Rolling vol window (days)"</span>,</span>
+<span id="cb2-48">            <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">mod_tooltip</span>(</span>
+<span id="cb2-49">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">trigger =</span> bsicons<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">bs_icon</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"info-circle"</span>),</span>
+<span id="cb2-50">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">type =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bslib"</span>,</span>
+<span id="cb2-51">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">contents =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Number of trading days used for the rolling volatility calculation."</span>,</span>
+<span id="cb2-52">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">size =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"0.85rem"</span>,</span>
+<span id="cb2-53">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">style =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"color:#6c757d"</span></span>
+<span id="cb2-54">            )</span>
+<span id="cb2-55">          ),</span>
+<span id="cb2-56">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">min =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>L,</span>
+<span id="cb2-57">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">max =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">120</span>L,</span>
+<span id="cb2-58">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">value =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">30</span>L,</span>
+<span id="cb2-59">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">step =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>L</span>
+<span id="cb2-60">        ),</span>
+<span id="cb2-61">        shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">actionButton</span>(</span>
+<span id="cb2-62">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">inputId =</span> private<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ns</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"fetch"</span>),</span>
+<span id="cb2-63">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">label =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Fetch data"</span>,</span>
+<span id="cb2-64">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">icon =</span> shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">icon</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"download"</span>),</span>
+<span id="cb2-65">          <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">class =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"btn-primary w-100"</span></span>
+<span id="cb2-66">        ),</span>
+<span id="cb2-67">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># report download (placeholder) ─────</span></span>
+<span id="cb2-68">        bslib<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">card</span>(</span>
+<span id="cb2-69">          bslib<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">card_header</span>(</span>
+<span id="cb2-70">            bsicons<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">bs_icon</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"file-earmark-arrow-down"</span>), <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">" Download Report"</span></span>
+<span id="cb2-71">          ),</span>
+<span id="cb2-72">          bslib<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">card_body</span>(</span>
+<span id="cb2-73">            shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">selectInput</span>(</span>
+<span id="cb2-74">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">inputId =</span> private<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ns</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"format"</span>),</span>
+<span id="cb2-75">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">label =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Report format"</span>,</span>
+<span id="cb2-76">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">choices =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"HTML"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"html"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"PDF"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"pdf"</span>),</span>
+<span id="cb2-77">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">selected =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"html"</span></span>
+<span id="cb2-78">            ),</span>
+<span id="cb2-79">            shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">downloadButton</span>(</span>
+<span id="cb2-80">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">outputId =</span> private<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ns</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"download"</span>),</span>
+<span id="cb2-81">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">label =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Download"</span>,</span>
+<span id="cb2-82">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">icon =</span> shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">icon</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"download"</span>),</span>
+<span id="cb2-83">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">class =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"btn-outline-primary w-100"</span></span>
+<span id="cb2-84">            )</span>
+<span id="cb2-85">          )</span>
+<span id="cb2-86">        )</span>
+<span id="cb2-87">      )</span>
+<span id="cb2-88">    },</span>
+<span id="cb2-89">    </span>
+<span id="cb2-90">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">server =</span> <span class="cf" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">function</span>() {</span>
-<span id="annotated-cell-1-25">      shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb2-91">      shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -168,91 +516,156 @@ font-style: inherit;">$</span>id, <span class="cf" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">function</span>(input, output, session) {</span>
-<span id="annotated-cell-1-26">        shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb2-92">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># fetch button observer ──────</span></span>
+<span id="cb2-93">        shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">observe</span>({</span>
+<span id="cb2-94">          shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">req</span>(input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>fetch)</span>
+<span id="cb2-95">          <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">length</span>(input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>tickers) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>) {</span>
+<span id="cb2-96">            shiny<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">showNotification</span>(</span>
+<span id="cb2-97">              <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Please select at least one ticker."</span>,</span>
+<span id="cb2-98">              <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">type =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"warning"</span></span>
+<span id="cb2-99">            )</span>
+<span id="cb2-100">          }</span>
+<span id="cb2-101">        })</span>
+<span id="cb2-102">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># reactive inputs list ────</span></span>
+<span id="cb2-103">        shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">reactive</span>({</span>
-<span id="annotated-cell-1-27">          <span class="fu" style="color: #4758AB;
+<span id="cb2-104">          <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">with_logging</span>(</span>
+<span id="cb2-105">            <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">context =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ModInputs / reactive list"</span>,</span>
+<span id="cb2-106">            <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">ns =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"rsixer/inputs"</span>,</span>
+<span id="cb2-107">            {</span>
+<span id="cb2-108">              inp <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">list</span>(</span>
-<span id="annotated-cell-1-28">            <span class="at" style="color: #657422;
+<span id="cb2-109">                <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">tickers =</span> input<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>tickers,</span>
-<span id="annotated-cell-1-29">            <span class="at" style="color: #657422;
+<span id="cb2-110">                <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">from =</span> input<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>dates[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>],</span>
-<span id="annotated-cell-1-30">            <span class="at" style="color: #657422;
+<span id="cb2-111">                <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">to =</span> input<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>dates[<span class="dv" style="color: #AD0000;
 background-color: null;
-font-style: inherit;">2</span>]</span>
-<span id="annotated-cell-1-31">          )</span>
-<span id="annotated-cell-1-32">        })</span>
-<span id="annotated-cell-1-33">      })</span>
-<span id="annotated-cell-1-34">    }</span>
-<span id="annotated-cell-1-35">  ),</span>
-<span id="annotated-cell-1-36"></span>
-<button class="code-annotation-anchor" data-target-cell="annotated-cell-1" data-target-annotation="4">4</button><span id="annotated-cell-1-37" class="code-annotation-target">  <span class="at" style="color: #657422;
+font-style: inherit;">2</span>],</span>
+<span id="cb2-112">                <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">vol_window =</span> input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>vol_window,</span>
+<span id="cb2-113">                <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">fetch =</span> input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>fetch,</span>
+<span id="cb2-114">                <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">format =</span> input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>format</span>
+<span id="cb2-115">              )</span>
+<span id="cb2-116">              inp</span>
+<span id="cb2-117">            }</span>
+<span id="cb2-118">          )</span>
+<span id="cb2-119">        })</span>
+<span id="cb2-120">      })</span>
+<span id="cb2-121">    }</span>
+<span id="cb2-122">  ),</span>
+<span id="cb2-123">  <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">private =</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">list</span>(</span>
-<span id="annotated-cell-1-38">    <span class="at" style="color: #657422;
+<span id="cb2-124">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">id =</span> <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">NULL</span>,</span>
-<span id="annotated-cell-1-39">    <span class="at" style="color: #657422;
+<span id="cb2-125">    <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">ns =</span> <span class="cn" style="color: #8f5902;
 background-color: null;
 font-style: inherit;">NULL</span></span>
-<span id="annotated-cell-1-40">  )</span>
-<span id="annotated-cell-1-41">)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div></div>
-<div class="cell-annotation">
-<dl class="code-annotation-container-hidden code-annotation-container-grid">
-<dt data-target-cell="annotated-cell-1" data-target-annotation="1">1</dt>
-<dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="5,8" data-code-annotation="1"><code>initialize()</code> stores the module’s namespace ID and creates a namespace function</span>
-</dd>
-<dt data-target-cell="annotated-cell-1" data-target-annotation="2">2</dt>
-<dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="10" data-code-annotation="2"><code>ui()</code> is a public method that builds UI tags; it uses <code>private$ns()</code> to namespace inputs</span>
-</dd>
-<dt data-target-cell="annotated-cell-1" data-target-annotation="3">3</dt>
-<dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="24" data-code-annotation="3"><code>server()</code> wraps the module server logic and returns a reactive expression</span>
-</dd>
-<dt data-target-cell="annotated-cell-1" data-target-annotation="4">4</dt>
-<dd>
-<span data-code-cell="annotated-cell-1" data-code-lines="37" data-code-annotation="4"><code>private</code> members hold internal state; can’t be accessed from outside the object</span>
-</dd>
-</dl>
+<span id="cb2-126">  )</span>
+<span id="cb2-127">)</span></code></pre></div></div>
 </div>
-</div>
+<ol type="1">
+<li><code>initialize()</code> stores the module’s namespace ID and creates a namespace function</li>
+<li><code>ui()</code> is a public method that builds UI tags; it uses <code>private$ns()</code> to namespace inputs</li>
+<li><code>server()</code> wraps the module server logic and returns a reactive expression</li>
+<li><code>private</code> members hold internal state; can’t be accessed from outside the object</li>
+</ol>
 </section>
 <section id="using-r6-modules-in-your-app" class="level2">
 <h2 class="anchored" data-anchor-id="using-r6-modules-in-your-app">Using R6 Modules in Your App</h2>
 <p>In your app’s UI, instantiate and call the <code>ui()</code> method:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1">app_ui <span class="ot" style="color: #003B4F;
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1">app_ui <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">function</span>() {</span>
-<span id="cb1-2">  <span class="fu" style="color: #4758AB;
+<span id="cb3-2">  <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">page_fillable</span>(</span>
-<span id="cb1-3">    inputs <span class="ot" style="color: #003B4F;
+<span id="cb3-3">    inputs <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> ModInputs<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -263,24 +676,24 @@ background-color: null;
 font-style: inherit;">id =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"inputs"</span>)</span>
-<span id="cb1-4">    inputs<span class="sc" style="color: #5E5E5E;
+<span id="cb3-4">    inputs<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">ui</span>()</span>
-<span id="cb1-5">  )</span>
-<span id="cb1-6">}</span></code></pre></div></div>
+<span id="cb3-5">  )</span>
+<span id="cb3-6">}</span></code></pre></div></div>
 <p>In your app’s server, instantiate and call the <code>server()</code> method, then wire its output to downstream modules:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1">app_server <span class="ot" style="color: #003B4F;
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1">app_server <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">function</span>(input, output, session) {</span>
-<span id="cb2-2">  <span class="co" style="color: #5E5E5E;
+<span id="cb4-2">  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># ── Input module ──────────────────────────</span></span>
-<span id="cb2-3">  inputs <span class="ot" style="color: #003B4F;
+<span id="cb4-3">  inputs <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> ModInputs<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -291,7 +704,7 @@ background-color: null;
 font-style: inherit;">id =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"inputs"</span>)</span>
-<span id="cb2-4">  inputs_r <span class="ot" style="color: #003B4F;
+<span id="cb4-4">  inputs_r <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> inputs<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -300,11 +713,11 @@ background-color: null;
 font-style: inherit;">server</span>()  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Returns reactive list</span></span>
-<span id="cb2-5"></span>
-<span id="cb2-6">  <span class="co" style="color: #5E5E5E;
+<span id="cb4-5"></span>
+<span id="cb4-6">  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># ── Output module ─────────────────────────</span></span>
-<span id="cb2-7">  outputs <span class="ot" style="color: #003B4F;
+<span id="cb4-7">  outputs <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> ModOutputs<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -315,7 +728,7 @@ background-color: null;
 font-style: inherit;">id =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"outputs"</span>)</span>
-<span id="cb2-8">  perf_r <span class="ot" style="color: #003B4F;
+<span id="cb4-8">  perf_r <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> outputs<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -326,11 +739,11 @@ background-color: null;
 font-style: inherit;">inputs_r =</span> inputs_r)  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Consumes input_r</span></span>
-<span id="cb2-9"></span>
-<span id="cb2-10">  <span class="co" style="color: #5E5E5E;
+<span id="cb4-9"></span>
+<span id="cb4-10">  <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># ── Download module ──────────────────────</span></span>
-<span id="cb2-11">  download <span class="ot" style="color: #003B4F;
+<span id="cb4-11">  download <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> ModDownload<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -341,7 +754,7 @@ background-color: null;
 font-style: inherit;">id =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"download"</span>)</span>
-<span id="cb2-12">  download<span class="sc" style="color: #5E5E5E;
+<span id="cb4-12">  download<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -350,20 +763,20 @@ background-color: null;
 font-style: inherit;">inputs_r =</span> inputs_r, <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">perf_r =</span> perf_r)</span>
-<span id="cb2-13">}</span></code></pre></div></div>
+<span id="cb4-13">}</span></code></pre></div></div>
 <p>Each module is instantiated fresh per session, so there’s no global state. Reactive dependencies flow naturally between them.</p>
 </section>
 <section id="reactivity-and-r6" class="level2">
 <h2 class="anchored" data-anchor-id="reactivity-and-r6">Reactivity and R6</h2>
 <p>R6 objects themselves are not reactive; they’re just containers for logic. To make your app respond to changes in an R6 module’s state, you must return reactive expressions from the <code>server()</code> method.</p>
 <p>In ModInputs, the <code>server()</code> method returns a reactive list:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1">server <span class="ot" style="color: #003B4F;
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1">server <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="cf" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">function</span>() {</span>
-<span id="cb3-2">  shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb5-2">  shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -373,48 +786,48 @@ font-style: inherit;">$</span>id, <span class="cf" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">function</span>(input, output, session) {</span>
-<span id="cb3-3">    <span class="co" style="color: #5E5E5E;
+<span id="cb5-3">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Return a reactive list so downstream modules can access tickers, dates, etc.</span></span>
-<span id="cb3-4">    shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb5-4">    shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">reactive</span>({</span>
-<span id="cb3-5">      <span class="fu" style="color: #4758AB;
+<span id="cb5-5">      <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">list</span>(</span>
-<span id="cb3-6">        <span class="at" style="color: #657422;
+<span id="cb5-6">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">tickers =</span> input<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>tickers,</span>
-<span id="cb3-7">        <span class="at" style="color: #657422;
+<span id="cb5-7">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">from =</span> input<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>dates[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>],</span>
-<span id="cb3-8">        <span class="at" style="color: #657422;
+<span id="cb5-8">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">to =</span> input<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>dates[<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">2</span>]</span>
-<span id="cb3-9">      )</span>
-<span id="cb3-10">    })</span>
-<span id="cb3-11">  })</span>
-<span id="cb3-12">}</span></code></pre></div></div>
+<span id="cb5-9">      )</span>
+<span id="cb5-10">    })</span>
+<span id="cb5-11">  })</span>
+<span id="cb5-12">}</span></code></pre></div></div>
 <p>Then in ModOutputs, you consume that reactive list:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1">server <span class="ot" style="color: #003B4F;
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1">server <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">=</span> <span class="cf" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">function</span>(inputs_r) {</span>
-<span id="cb4-2">  shiny<span class="sc" style="color: #5E5E5E;
+<span id="cb6-2">  shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
 background-color: null;
@@ -424,10 +837,10 @@ font-style: inherit;">$</span>id, <span class="cf" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">function</span>(input, output, session) {</span>
-<span id="cb4-3">    <span class="co" style="color: #5E5E5E;
+<span id="cb6-3">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Downstream modules receive inputs_r and call it as a function</span></span>
-<span id="cb4-4">    prices_r <span class="ot" style="color: #003B4F;
+<span id="cb6-4">    prices_r <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> shiny<span class="sc" style="color: #5E5E5E;
 background-color: null;
@@ -438,33 +851,33 @@ background-color: null;
 font-style: inherit;">inputs_r</span>()<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>fetch, {</span>
-<span id="cb4-5">      inp <span class="ot" style="color: #003B4F;
+<span id="cb6-5">      inp <span class="ot" style="color: #003B4F;
 background-color: null;
 font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">inputs_r</span>()</span>
-<span id="cb4-6">      <span class="fu" style="color: #4758AB;
+<span id="cb6-6">      <span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">get_stock_prices</span>(</span>
-<span id="cb4-7">        <span class="at" style="color: #657422;
+<span id="cb6-7">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">tickers =</span> inp<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>tickers,</span>
-<span id="cb4-8">        <span class="at" style="color: #657422;
+<span id="cb6-8">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">from =</span> inp<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>from,</span>
-<span id="cb4-9">        <span class="at" style="color: #657422;
+<span id="cb6-9">        <span class="at" style="color: #657422;
 background-color: null;
 font-style: inherit;">to =</span> inp<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">$</span>to</span>
-<span id="cb4-10">      )</span>
-<span id="cb4-11">    })</span>
-<span id="cb4-12">  })</span>
-<span id="cb4-13">}</span></code></pre></div></div>
+<span id="cb6-10">      )</span>
+<span id="cb6-11">    })</span>
+<span id="cb6-12">  })</span>
+<span id="cb6-13">}</span></code></pre></div></div>
 <p>This pattern keeps the dependency graph explicit and testable.</p>
 </section>
 <section id="organizing-r6-classes-in-a-package" class="level2">
@@ -23716,7 +24129,7 @@ font-style: inherit;">print</span>(x)</span>
 </div>
 </div>
 <p>When <code>datasetApp()</code> is run, the app displays the dataset object in the <code>tableOutput()</code>, and the <code>verbatimTextOutput()</code> renders the reactive values as a text:</p>
-<div id="fig-datasetApp_run" class="quarto-float quarto-figure quarto-figure-center anchored" width="100%" data-fig-align="center">
+<div id="fig-datasetApp_run" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center" width="100%">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-datasetApp_run-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <a href="datasetApp_run.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;1: "><img src="https://mjfrigaard.github.io/posts/p3-test-shiny-module-tests/datasetApp_run.png" id="fig-datasetApp_run" class="img-fluid quarto-figure quarto-figure-center anchored figure-img" style="width:100.0%"></a>

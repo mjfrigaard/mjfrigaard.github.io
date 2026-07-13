@@ -49,71 +49,169 @@ library(ttdviewer)
 ```
 
 
-As your Shiny application grows, organizing code into modular, object-oriented pieces becomes crucial. While Shiny's reactive programming model is naturally functional, R6 classes provide a powerful abstraction for encapsulating state, behavior, and business logic. If you're building a Shiny app as an R package, R6 brings real benefits: clean separation of concerns, easier testing, and reusable module patterns that survive across projects.
+As your Shiny application grows, organizing code into modular, object-oriented pieces becomes crucial. While Shiny's reactive programming model is naturally functional, `R6` classes provide a powerful abstraction for encapsulating state, behavior, and business logic. If you're building a Shiny app-package, R6 brings real benefits: clean separation of concerns, easier testing, and reusable module patterns that survive across projects.
 
 In this post, we'll explore:
 
-1. What R6 is and why it shines in Shiny app-packages
-2. Defining R6 classes for Shiny modules (UI and server)
-3. Wiring R6 objects into your app's reactive flow
-4. A real working example from a stock volatility dashboard
+1. What `R6` is and why it shines in Shiny app-packages
+2. Defining `R6` classes for Shiny modules (UI and server)
+3. Wiring `R6` objects into your app's reactive flow
+
+
+I created working example of a stock volatility dashboard you can view and follow along with here: <mjfrigaard.github.io/Rsixer/>
 
 ## What is R6?
 
-R6 is an object-oriented system in R that creates reference-based objects. Unlike S3 or S4, R6 objects are mutable, support encapsulation (public and private members), and feel familiar to developers from Python or Java.
+`R6` is an object-oriented system in R that creates reference-based objects. Unlike `S3` or `S4`, `R6` objects are mutable and support encapsulation (i.e., public and private members). `R6` objects feel familiar for Python or Java developers because they both include similar implementations.
 
-R6 is especially useful for:
+To create R6 objects, install the `R6` package: 
 
-1. Bundling UI generation with business logic (module as a unified object)
+```{r}
+#| eval: false 
+#| code-fold: false
+install.packages("R6")
+```
+
+`R6` is especially useful for:
+
+1. Bundling UI generation with business logic (module as a unified object)  
 2. Managing state tied to a user session or module instance
 3. Encapsulating dependencies and configuration
 
-In an app-package, R6 prevents you from scattering related logic across separate files and avoids the need for global state or overly nested reactive functions.
+In app-packages, `R6` objects can prevent us from scattering related logic across separate files. They also help avoid the need for global state or overly nested reactive functions.
 
 ## Defining an R6 Shiny Module
 
-An R6 module wraps both its UI and server logic into one class. Here's a simplified example from the Rsixer stock dashboard app:
+An `R6` module wraps both its UI and server logic into one class. 
+
+Here's a simplified example from the `Rsixer` stock dashboard app:
 
 ```{r}
 #| eval: false 
 #| code-fold: false 
 ModInputs <- R6::R6Class(
   "ModInputs",
-
   public = list(
-    initialize = function(id = "inputs") { #<1>
+    initialize = function(id = "inputs") {
       private$id <- id
       private$ns <- shiny::NS(id)
-    }, #<1>
-
-    ui = function() { #<2>
+    },
+    ui = function() {
       bslib::sidebar(
+        width = 280,
+        bg = "#f8f9fa",
+        # ticker picker ─────
         shiny::selectizeInput(
           inputId = private$ns("tickers"),
-          label = "Tickers",
-          multiple = TRUE
+          label = shiny::tags$span(
+            "Tickers",
+            mod_tooltip(
+              trigger = bsicons::bs_icon("info-circle"),
+              type = "bslib",
+              contents = "Enter one or more stock ticker symbols (e.g. AAPL, MSFT).",
+              size = "0.85rem",
+              style = "color:#6c757d"
+            )
+          ),
+          choices = default_tickers,
+          selected = c("AAPL", "MSFT", "GOOGL"),
+          multiple = TRUE,
+          options = list(
+            plugins = list("remove_button"),
+            placeholder = "Add a ticker\u2026",
+            create = TRUE
+          )
         ),
+        # date range ────
         shiny::dateRangeInput(
           inputId = private$ns("dates"),
-          label = "Date range"
+          label = "Date range",
+          start = Sys.Date() - 365,
+          end = Sys.Date(),
+          min = "2000-01-01",
+          max = Sys.Date()
+        ),
+        # rolling-vol window ────
+        shiny::sliderInput(
+          inputId = private$ns("vol_window"),
+          label = shiny::tags$span(
+            "Rolling vol window (days)",
+            mod_tooltip(
+              trigger = bsicons::bs_icon("info-circle"),
+              type = "bslib",
+              contents = "Number of trading days used for the rolling volatility calculation.",
+              size = "0.85rem",
+              style = "color:#6c757d"
+            )
+          ),
+          min = 5L,
+          max = 120L,
+          value = 30L,
+          step = 5L
+        ),
+        shiny::actionButton(
+          inputId = private$ns("fetch"),
+          label = "Fetch data",
+          icon = shiny::icon("download"),
+          class = "btn-primary w-100"
+        ),
+        # report download (placeholder) ─────
+        bslib::card(
+          bslib::card_header(
+            bsicons::bs_icon("file-earmark-arrow-down"), " Download Report"
+          ),
+          bslib::card_body(
+            shiny::selectInput(
+              inputId = private$ns("format"),
+              label = "Report format",
+              choices = c("HTML" = "html", "PDF" = "pdf"),
+              selected = "html"
+            ),
+            shiny::downloadButton(
+              outputId = private$ns("download"),
+              label = "Download",
+              icon = shiny::icon("download"),
+              class = "btn-outline-primary w-100"
+            )
+          )
         )
       )
     },
-
-    server = function() { #<3>
+    
+    server = function() {
       shiny::moduleServer(private$id, function(input, output, session) {
+        # fetch button observer ──────
+        shiny::observe({
+          shiny::req(input$fetch)
+          if (length(input$tickers) == 0) {
+            shiny::showNotification(
+              "Please select at least one ticker.",
+              type = "warning"
+            )
+          }
+        })
+        # reactive inputs list ────
         shiny::reactive({
-          list(
-            tickers = input$tickers,
-            from = input$dates[1],
-            to = input$dates[2]
+          with_logging(
+            context = "ModInputs / reactive list",
+            ns = "rsixer/inputs",
+            {
+              inp <- list(
+                tickers = input$tickers,
+                from = input$dates[1],
+                to = input$dates[2],
+                vol_window = input$vol_window,
+                fetch = input$fetch,
+                format = input$format
+              )
+              inp
+            }
           )
         })
       })
     }
   ),
-
-  private = list( #<4>
+  private = list(
     id = NULL,
     ns = NULL
   )
