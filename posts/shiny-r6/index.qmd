@@ -58,7 +58,7 @@ In this post, we'll explore:
 3. Wiring `R6` objects into your app's reactive flow
 
 
-I created working example of a stock volatility dashboard you can view and follow along with here: <mjfrigaard.github.io/Rsixer/>
+I created working example of a stock volatility dashboard you can view and follow along with here: [mjfrigaard.github.io/Rsixer](https://mjfrigaard.github.io/Rsixer/)
 
 ## What is R6?
 
@@ -82,26 +82,24 @@ In app-packages, `R6` objects can prevent us from scattering related logic acros
 
 ## Defining an R6 Shiny Module
 
-An `R6` module wraps both its UI and server logic into one class. 
-
-Here's a simplified example from the `Rsixer` stock dashboard app:
+When writing regular Shiny modules, both the UI and server function included in a single file. `R6` modules wrap both its UI and server logic into a single *class*. Below is a simplified example from the `Rsixer` stock dashboard app. You can view the full version [on GitHub.](https://github.com/mjfrigaard/Rsixer/blob/main/R/ModInputs.R)
 
 ```{r}
 #| eval: false 
-#| code-fold: false 
+#| code-fold: true 
+#| code-summary: 'hide/show ModInputs'
 ModInputs <- R6::R6Class(
   "ModInputs",
   public = list(
-    initialize = function(id = "inputs") {
+    initialize = function(id = "inputs") { #<1>
       private$id <- id
       private$ns <- shiny::NS(id)
-    },
-    ui = function() {
+    }, #<1>
+    ui = function() { #<2>
       bslib::sidebar(
         width = 280,
         bg = "#f8f9fa",
-        # ticker picker ─────
-        shiny::selectizeInput(
+        shiny::selectizeInput( #<3>
           inputId = private$ns("tickers"),
           label = shiny::tags$span(
             "Tickers",
@@ -121,18 +119,16 @@ ModInputs <- R6::R6Class(
             placeholder = "Add a ticker\u2026",
             create = TRUE
           )
-        ),
-        # date range ────
-        shiny::dateRangeInput(
+        ), #<3>
+        shiny::dateRangeInput( #<4>
           inputId = private$ns("dates"),
           label = "Date range",
           start = Sys.Date() - 365,
           end = Sys.Date(),
           min = "2000-01-01",
           max = Sys.Date()
-        ),
-        # rolling-vol window ────
-        shiny::sliderInput(
+        ), #<4>
+        shiny::sliderInput( #<5>
           inputId = private$ns("vol_window"),
           label = shiny::tags$span(
             "Rolling vol window (days)",
@@ -148,15 +144,14 @@ ModInputs <- R6::R6Class(
           max = 120L,
           value = 30L,
           step = 5L
-        ),
-        shiny::actionButton(
+        ), #<5>
+        shiny::actionButton( #<6>
           inputId = private$ns("fetch"),
           label = "Fetch data",
           icon = shiny::icon("download"),
           class = "btn-primary w-100"
-        ),
-        # report download (placeholder) ─────
-        bslib::card(
+        ), #<6>
+        bslib::card( #<7>
           bslib::card_header(
             bsicons::bs_icon("file-earmark-arrow-down"), " Download Report"
           ),
@@ -174,14 +169,13 @@ ModInputs <- R6::R6Class(
               class = "btn-outline-primary w-100"
             )
           )
-        )
+        ) #<7>
       )
-    },
+    }, #<2>
     
-    server = function() {
+    server = function() { #<8>
       shiny::moduleServer(private$id, function(input, output, session) {
-        # fetch button observer ──────
-        shiny::observe({
+        shiny::observe({ #<9>
           shiny::req(input$fetch)
           if (length(input$tickers) == 0) {
             shiny::showNotification(
@@ -189,9 +183,8 @@ ModInputs <- R6::R6Class(
               type = "warning"
             )
           }
-        })
-        # reactive inputs list ────
-        shiny::reactive({
+        }) #<9>
+        shiny::reactive({ #<10>
           with_logging(
             context = "ModInputs / reactive list",
             ns = "rsixer/inputs",
@@ -207,20 +200,105 @@ ModInputs <- R6::R6Class(
               inp
             }
           )
-        })
+        }) #<10>
       })
     }
-  ),
-  private = list(
+  ), #<8>
+  private = list( #<11>
     id = NULL,
     ns = NULL
-  )
+  ) #<11>
 )
 ```
 1. `initialize()` stores the module's namespace ID and creates a namespace function
-2. `ui()` is a public method that builds UI tags; it uses `private$ns()` to namespace inputs
-3. `server()` wraps the module server logic and returns a reactive expression
-4. `private` members hold internal state; can't be accessed from outside the object
+2. `ui()` is a public method that builds UI tags; it uses `private$ns()` to namespace inputs  
+3. Stock ticker picker 
+4. Date range input  
+5. Rolling-vol window   
+6. Fetch stock data 
+7. Report download (placeholder) 
+8. `server()` wraps the module server logic and returns a reactive expression
+9. Fetch button observer   
+10.  Reactive inputs list  
+11. `private` members hold internal state; can't be accessed from outside the object
+
+I'll go into more depth in each section below. 
+
+## Public methods
+
+:::{layout="[33,33,33]" layout-valign="top"}
+
+### `initialize`
+
+Establishes the module namespace by storing the module ID (`private$id`) and creating a namespace function  (`private$ns`) that prefixes element IDs, ensuring UI elements are properly scoped within the module.
+
+### `ui`
+
+Constructs the module's UI components by wrapping HTML tags with the private namespace function, preventing ID conflicts in multi-instance applications.
+
+### `server`
+
+Encapsulates reactive logic and returns a reactive value or function, operating within the module's namespace to maintain isolation from parent or sibling modules.
+
+:::
+
+
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center' 
+%%| fig-caption: 'R6 Module Structure'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+flowchart TD
+    subgraph "R6 Module Structure"
+        Init["<strong>initialize(id)</strong>"]
+        Id("private$id")
+        Ns("private$ns()")
+        UI["<strong>ui()</strong>"]
+        Server["<strong>server()</strong>"]
+    end
+
+    Init -->|"<em>stores</em>"| Id
+    Init -->|"<em>creates</em>"| Ns
+    UI -->|"<em>uses</em>"| Ns
+    Server -->|"<em>uses</em>"| Ns
+
+    style Init fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace,text-align:'center'
+    style Id fill:#FFFFFF,color:#000000,stroke:#333,font-family:monospace,text-align:'center'
+    style Ns fill:#FFFFFF,color:#000000,stroke:#333,font-family:monospace,text-align:'center'
+    style UI fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace,text-align:'center'
+    style Server fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace,text-align:'center'
+```
+
+## Private methods
+
+The `private` method starts as list with `NULL` values for `id` and `ns`. These store the module's identifier and namespace function, providing internal state that is accessed by `public` methods to generate properly scoped element references.
+
+```{mermaid}
+%%| eval: true 
+%%| echo: false 
+%%| fig-align: 'center' 
+%%| fig-caption: 'Namespace Isolation'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart TD
+    subgraph "Namespace Isolation"
+        Ns(["<strong>ns()</strong>"])
+        IDs("input/output IDs")
+        Prefix("Prefixed IDs<br><code>ns-input</code>")
+    end
+
+    Ns -->|prefixes| IDs
+    IDs -->|creates| Prefix
+    Prefix -->|prevents| Conflicts("ID conflicts<br>across modules")
+
+    style Ns fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace,text-align:'center'
+    style IDs fill:#FFFFFF,color:#000000,stroke:#333
+    style Prefix fill:#FFFFFF,color:#000000,stroke:#333
+    style Conflicts fill:#FFFFFF,color:#000000,stroke:#333
+    
+```
 
 ## Using R6 Modules in Your App
 
@@ -308,7 +386,7 @@ Structure your R6 classes for clarity and maintainability:
 
 Example from Rsixer's package structure:
 
-```
+```{verbatim}
 R/
   mod_inputs.R      # ModInputs class
   mod_outputs.R     # ModOutputs class
