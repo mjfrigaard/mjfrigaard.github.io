@@ -80,6 +80,136 @@ install.packages("R6")
 
 In app-packages, `R6` objects can prevent us from scattering related logic across separate files. They also help avoid the need for global state or overly nested reactive functions.
 
+## R6 vs Traditional Shiny Modules
+
+Traditional Shiny modules separate UI and server logic into two functions, while R6 modules bundle both into a single class. The diagrams below show how each pattern organizes code and manages state:
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center' 
+%%| fig-caption: 'Traditional Shiny Module'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart LR
+    subgraph "<strong>Traditional Shiny Module</strong>"
+        UIFunc["<strong>mod_name_ui()</strong>"]
+        ServerFunc["<strong>mod_name_server()</strong>"]
+        GlobalState["Global variables<br/>or closures"]
+    end
+    
+    UIFunc -->|"HTML tags & inputs return"| HTML["HTML tags"]
+    ServerFunc -->|"Reactive logic return"| Reactive["Reactive values"]
+    
+    style UIFunc fill:#FFFFFF,color:#000000,stroke:#999
+    style ServerFunc fill:#FFFFFF,color:#000000,stroke:#999
+    style GlobalState fill:#FFE0E0,color:#000000,stroke:#999
+```
+
+In the traditional pattern, the UI and server functions live side by side but don't actually share anything except a namespace. Any state they need to coordinate has to be passed around or stashed in a closure. The R6 approach collapses these two functions into a single object, with the UI and server as methods that share the same private state.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'R6 Shiny Module'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart LR
+    subgraph "R6 Shiny Module"
+        Init["<strong>initialize</strong>"]
+        UiMethod["<strong>ui</strong>"]
+        ServerMethod["<strong>server</strong>"]
+      subgraph Class["R6 class"]
+        R6Mod["<strong>ModName</strong>"]
+      end
+      subgraph Encapsulated["Encapsulated state"]
+        Private{{"<strong>private$</strong>"}}
+      end
+    end
+
+    R6Mod -->|instantiate| Init
+    Init -->|creates| Private
+    UiMethod -->|uses| Private
+    ServerMethod -->|uses| Private
+
+    style R6Mod fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style Init fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style UiMethod fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style ServerMethod fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style Private fill:#E0F0ED,color:#000000,stroke:#4CBB9D,font-family:monospace
+
+```
+
+The instance owns its state, and every method reaches for the same `private$` members. This changes two things worth comparing directly: where the state lives, and how values flow through the reactive graph. The diagram below sets the traditional and R6 patterns next to each other on both counts.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'Encapsulation & State'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart TD
+    subgraph "Encapsulation & State"
+        TradState["State scattered<br/>across functions<br/>& environments"]
+        R6State["State tied to<br/>object instance<br/><code>private$</code> members"]
+    end
+
+    subgraph "Reactivity Flow"
+        Input["Input values<br/>(namespaced)"]
+        Reactive["Reactive<br/>computations"]
+        Output["Output values<br/>(reactive)"]
+    end
+
+    TradState -.->|unclear ownership| Input
+    R6State -->|clear ownership| Input
+    Input -->|feeds| Reactive
+    Reactive -->|produces| Output
+
+    style TradState fill:#FFE0E0,color:#000000,stroke:#999
+    style R6State fill:#E0F0ED,color:#000000,stroke:#4CBB9D
+    style Input fill:#FFFFFF,color:#000000,stroke:#333
+    style Reactive fill:#FFFFFF,color:#000000,stroke:#333
+    style Output fill:#FFFFFF,color:#000000,stroke:#333
+```
+
+The payoff here is ownership. When state is tied to an instance, you always know which object is responsible for a given value, so there's no guessing about where a reactive came from or who might have changed it. That makes the module easier to reason about as it grows, and it removes a whole category of bugs that come from shared or leaked state bleeding between parts of an app.
+
+I've hit this exact failure mode with traditional modules. Picture a dashboard with two filter panels built from the same module function, and imagine the selected ticker gets cached in a package-level variable (or any object living outside the module's server closure) instead of inside `reactiveValues`. Because both instances read and write that same variable, selecting `AAPL` in the first panel silently changes the second panel to `AAPL` too, even though the two are supposed to be independent. The state is shared without anyone intending it to be, and tracking down *why* the second panel keeps changing on its own can cost you an afternoon.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'Leaked State Between Module Instances'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart TD
+    subgraph Panel1["<strong>Filter Panel 1</strong>"]
+        Select1["selectInput('AAPL')"]
+    end
+
+    subgraph Panel2["<strong>Filter Panel 2</strong>"]
+        Select2["selectInput('???')"]
+    end
+
+    subgraph Leak["Package-level variable"]
+        Shared[("<code>ticker_cache</code>")]
+    end
+
+    Select1 -->|"writes"| Shared
+    Shared -->|"overwrites"| Select2
+    Select2 -.->|"unexpected update"| Broken["Panel 2 now shows AAPL"]
+
+    style Panel1 fill:#FFFFFF,color:#000000,stroke:#999
+    style Panel2 fill:#FFFFFF,color:#000000,stroke:#999
+    style Shared fill:#FFE0E0,color:#000000,stroke:#c0392b
+    style Broken fill:#FFE0E0,color:#000000,stroke:#c0392b
+```
+
+Nothing in either panel's own code looks wrong. The bug lives in the space between them, in a variable neither module treats as its own.
+
 ## Defining an R6 Shiny Module
 
 When writing regular Shiny modules, both the UI and server function included in a single file. `R6` modules wrap both its UI and server logic into a single *class*. Below is a simplified example from the `Rsixer` stock dashboard app. You can view the full version [on GitHub.](https://github.com/mjfrigaard/Rsixer/blob/main/R/ModInputs.R)
