@@ -463,6 +463,170 @@ app_server <- function(input, output, session) {
 
 Each module is instantiated fresh per session, so there's no global state. Reactive dependencies flow naturally between them.
 
+## Shared State Patterns: R6 vs. Function-Based Modules
+
+The Shiny ecosystem uses two main patterns for building modules: traditional function-based modules and R6 classes. Both work; the choice depends on the complexity of your state and how many developers will maintain the app.
+
+Function-based modules (like those in the `tooltipexplorer` app) split UI and server into separate functions that both take an `id` argument:
+
+```r
+# Function-based approach (tooltipexplorer style)
+mod_inputs_ui <- function(id) {
+  ns <- shiny::NS(id)
+  # Build UI using ns() for namespacing
+}
+
+mod_inputs_server <- function(id) {
+  shiny::moduleServer(id, function(input, output, session) {
+    # Return reactive expression
+    shiny::reactive({ list(...) })
+  })
+}
+
+# In app_server
+inputs_r <- mod_inputs_server("inputs")
+outputs_r <- mod_outputs_server("outputs", inputs_r = inputs_r)
+```
+
+R6 modules bundle both UI and server into a class with public methods:
+
+```r
+# R6 approach (Rsixer style)
+ModInputs <- R6::R6Class(
+  "ModInputs",
+  public = list(
+    ui = function() { ... },      # Build UI
+    server = function() { ... }   # Server logic
+  ),
+  private = list(id = NULL, ns = NULL)
+)
+
+# In app_server
+inputs <- ModInputs$new(id = "inputs")
+inputs_r <- inputs$server()
+```
+
+Here's how the two patterns compare when wiring modules together:
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'Function-Based vs R6 Module Flow'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart TD
+    subgraph FunctionBased["Function-Based (tooltipexplorer)"]
+        direction TB
+        ModUi1["mod_inputs_ui(id)"]
+        ModServ1["mod_inputs_server(id)"]
+        React1["reactive list"]
+    end
+
+    subgraph R6Based["R6 Class (Rsixer)"]
+        direction TB
+        New["ModInputs$new(id)"]
+        UiMethod["$ui()"]
+        ServMethod["$server()"]
+        React2["reactive list"]
+    end
+
+    subgraph Wire["Wiring Downstream"]
+        PassReact["Pass reactive<br/>to next module"]
+    end
+
+    ModUi1 -->|"separate<br/>functions"| ModServ1
+    ModServ1 -->|"returns"| React1
+
+    New -->|"creates<br/>instance"| UiMethod
+    New -->|"creates<br/>instance"| ServMethod
+    ServMethod -->|"returns"| React2
+
+    React1 --> PassReact
+    React2 --> PassReact
+
+    style FunctionBased fill:#FFF8E7,color:#000000,stroke:#999
+    style R6Based fill:#E0F0ED,color:#000000,stroke:#4CBB9D
+    style New fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style UiMethod fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style ServMethod fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style React1 fill:#FFF8E7,color:#000000,stroke:#999
+    style React2 fill:#E0F0ED,color:#000000,stroke:#4CBB9D
+```
+
+Both patterns pass reactive values downstream, but R6 has a key advantage: encapsulation. When you instantiate `ModInputs$new()`, the instance owns its ID and namespace; they're stored in private members that every method can access. With function-based modules, the `id` is a parameter that must be passed to both `mod_inputs_ui()` and `mod_inputs_server()`. If they get called with different IDs by mistake, the UI and server stop talking to each other silently.
+
+Here's a concrete example. Imagine you're building tooltipexplorer's UI and accidentally pass the wrong ID to the server:
+
+```r
+app_ui <- function() {
+  page_sidebar(
+    sidebar = mod_inputs_ui("inputs"),  # Correct ID
+    ...
+  )
+}
+
+app_server <- function(input, output, session) {
+  # Oops: wrong ID passed here
+  inputs_r <- mod_inputs_server("other_inputs")
+  outputs_r <- mod_outputs_server("outputs", inputs_r = inputs_r)
+}
+```
+
+The app will render and run without errors. The sidebar will work. But `inputs_r` will be empty because the UI and server are in different namespaces. The bug is silent and can take hours to track down.
+
+With R6, this class of bug is impossible:
+
+```r
+app_server <- function(input, output, session) {
+  # Single instantiation, ID is bound to the object
+  inputs <- ModInputs$new(id = "inputs")
+  inputs_r <- inputs$server()  # Uses same ID internally
+}
+```
+
+The instance owns both UI and server; they're locked together at creation time.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'Namespace Mismatch Prevention'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart TD
+    subgraph FuncProblems["Function-Based Risk"]
+        UI1["mod_inputs_ui('inputs')"]
+        ServeWrong["mod_inputs_server('other_inputs')"]
+        BugSilent["Silent namespace mismatch<br/>No error, app breaks"]
+    end
+
+    subgraph R6Safe["R6 Protection"]
+        Instance["ModInputs$new('inputs')"]
+        Ui2["$ui()"]
+        Serve2["$server()"]
+        BugFree["Same ID throughout<br/>Impossible to mismatch"]
+    end
+
+    UI1 -->|"different ID"| ServeWrong
+    ServeWrong --> BugSilent
+
+    Instance -->|"one ID"| Ui2
+    Instance -->|"same ID"| Serve2
+    Serve2 --> BugFree
+
+    style BugSilent fill:#FFE0E0,color:#000000,stroke:#c0392b
+    style BugFree fill:#E0F0ED,color:#000000,stroke:#4CBB9D
+    style Instance fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Ui2 fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Serve2 fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+```
+
+When to use each:
+
+- Use function-based modules for simple, independent modules (filters, info boxes) with minimal shared state
+- Use R6 for complex modules that manage multiple inputs, outputs, or session-level state; when multiple developers work on the same app; or when you want to reuse the same module class across projects
+
 ## Reactivity and R6
 
 R6 objects themselves are not reactive; they're just containers for logic. To make your app respond to changes in an R6 module's state, you must return reactive expressions from the `server()` method.
