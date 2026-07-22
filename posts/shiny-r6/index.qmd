@@ -58,7 +58,106 @@ In this post, we'll explore:
 3. Wiring `R6` objects into your app's reactive flow
 
 
-I created working example of a stock volatility dashboard you can view and follow along with here: [mjfrigaard.github.io/Rsixer](https://mjfrigaard.github.io/Rsixer/)
+I've created two stock volatility apps to flesh out some of the differences between standard Shiny app-packges and R6 Shiny app-packages: 
+
+## Standard shiny app-package
+
+Access the code here: [mjfrigaard.github.io/tooltipexplorer](https://mjfrigaard.github.io/tooltipexplorer/)
+
+![](img/tooltipexplorer.png){width='100%' fig-align='center'}
+
+I've included the `R/` folder tree below to help understand how this application is built.
+
+```{verbatim}
+R/
+├── app_server.R #<1>
+├── app_set_log_threshold.R #<2>
+├── app_ui.R #<3>
+├── compute_rolling_vol.R #<4>
+├── custom_head.R #<5>
+├── default_tickers.R #<6>
+├── get_ff3_factors.R #<7>
+├── get_stock_prices.R #<8>
+├── get_stock_returns.R #<9>
+├── launch.R #<10>
+├── mod_download.R #<11>
+├── mod_hoverinfo.R #<12>
+├── mod_inputs.R #<13>
+├── mod_outputs.R #<14>
+├── mod_tooltip.R #<15>
+├── setup_theme.R #<16>
+├── summarise_performance.R #<17>
+├── utils_operators.R #<18>
+├── utils_reactable_theme.R #<19>
+└── with_logging.R #<20>
+
+1 directory, 20 files
+```
+
+1. Wires together function-based modules by calling `mod_inputs_server("inputs")`, `mod_outputs_server("outputs", ...)`, `mod_download_server("download", ...)` sequentially; passes reactive values between them.
+2. Logging configuration setup (initializes `logger` threshold).
+3. Top-level UI function; calls `mod_inputs_ui()`, `mod_outputs_ui()`, `mod_download_ui()` to compose the page.
+4. Computes rolling volatility metric for stock analysis.
+5. Helper function for displaying data in a compact format.
+6. Exports default ticker symbols as a package constant.
+7. Fetches Fama-French 3-factor data from external source.
+8. Fetches historical stock price data from API.
+9. Calculates stock returns from price data.
+10. App entry point; calls `shinyApp(ui, server)`.
+11. Function-based download module; pairs `mod_download_ui()` and `mod_download_server(id)` in one file.
+12. Helper that wraps hover/tooltip text for `reactable` table cells.
+13. Function-based inputs module; contains `mod_inputs_ui(id)` and `mod_inputs_server(id)` returning reactive list.
+14. Function-based outputs module; consumes `inputs_r` and renders performance metrics.
+15. Tooltip icon helper component.
+16. Theme and styling configuration.
+17. Calculates performance summary metrics (returns, Sharpe ratio, etc.).
+18. Custom operators (`%>%`, `%||%`, etc.).
+19. `reactable` table theme utilities.
+20. Logging wrapper utility for side-effect tracking.
+
+## `R6` app-package
+
+Access the code here: [mjfrigaard.github.io/Rsixer](https://mjfrigaard.github.io/Rsixer/)
+
+![](img/rsixer.png){width='100%' fig-align='center'}
+
+If you're wondering why the applications look so similar, it's because the `Rsixer` application is a direct conversion of the `tooltipexplorer` into the `R6` architecture. The `R/` folder is below:
+
+```{verbatim}
+R/
+├── app_server.R #<1>
+├── app_ui.R #<2>
+├── launch.R #<3>
+├── mod_hoverinfo.R #<4>
+├── mod_tooltip.R #<5>
+├── ModDownload.R #<6>
+├── ModInputs.R #<7>
+├── ModOutputs.R #<8>
+├── utils_data.R #<9>
+├── utils_logging.R #<10>
+├── utils_operators.R #<11>
+├── utils_reactable_theme.R #<12>
+└── utils_theme.R #<13>
+
+1 directory, 13 files
+```
+
+1. Instantiates R6 module classes (`ModInputs$new("inputs")`, `ModOutputs$new("outputs")`, `ModDownload$new("download")`) and calls their `$server()` methods sequentially; passes reactive values downstream; the `id` is bound to the instance, preventing namespace mismatches.
+2. Top-level UI function; calls `$ui()` method on each R6 instance to compose the page.
+3. App entry point; calls `shinyApp(ui, server)`.
+4. Helper that wraps hover/tooltip text for `reactable` table cells (identical to `tooltipexplorer`).
+5. Tooltip icon helper component (identical to `tooltipexplorer`).
+6. **R6 class bundling download UI and server logic; single instantiation ensures UI and server share the same `id` internally.**
+7. **R6 class bundling inputs UI and server logic; returns reactive list from `$server()` method.**
+8. **R6 class bundling outputs UI and server logic; consumes reactive inputs from `ModInputs`.**
+9. Consolidated data-retrieval functions (`get_stock_prices()`, `get_stock_returns()`, `get_ff3_factors()`) in one file; reduces scattered file count vs. `tooltipexplorer`.  
+10. Consolidated logging setup and utilities (e.g., `app_set_log_threshold()`, `logging` wrappers); contrasts with `tooltipexplorer`'s scattered approach.
+11. Custom operators (`%>%`, `%||%`, etc.) (identical to `tooltipexplorer`).
+12. reactable table theme utilities (identical to `tooltipexplorer`).
+13. Simplified theme and styling configuration.
+
+
+Notice there are 13 source files in `Rsixer` (vs. the 20 in `tooltipexplorer`). `R6` bundling eliminates the need for separate UI/server function pairs. We'll explore these benefits and more in the sections below. 
 
 ## What is R6?
 
@@ -82,133 +181,126 @@ In app-packages, `R6` objects can prevent us from scattering related logic acros
 
 ## R6 vs Traditional Shiny Modules
 
-Traditional Shiny modules separate UI and server logic into two functions, while R6 modules bundle both into a single class. The diagrams below show how each pattern organizes code and manages state:
+Both function-based and R6 module patterns work; the difference lies in how they organize code and protect against state leaks as your app grows.
 
-```{mermaid}
-%%| eval: true
-%%| fig-align: 'center' 
-%%| fig-caption: 'Traditional Shiny Module'
-%%| echo: false
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
-
-flowchart LR
-    subgraph "<strong>Traditional Shiny Module</strong>"
-        UIFunc["<strong>mod_name_ui()</strong>"]
-        ServerFunc["<strong>mod_name_server()</strong>"]
-        GlobalState["Global variables<br/>or closures"]
-    end
-    
-    UIFunc -->|"HTML tags & inputs return"| HTML["HTML tags"]
-    ServerFunc -->|"Reactive logic return"| Reactive["Reactive values"]
-    
-    style UIFunc fill:#FFFFFF,color:#000000,stroke:#999
-    style ServerFunc fill:#FFFFFF,color:#000000,stroke:#999
-    style GlobalState fill:#FFE0E0,color:#000000,stroke:#999
-```
-
-In the traditional pattern, the UI and server functions live side by side but don't actually share anything except a namespace. Any state they need to coordinate has to be passed around or stashed in a closure. The R6 approach collapses these two functions into a single object, with the UI and server as methods that share the same private state.
+In `tooltipexplorer`, each module splits into two functions living in the same file. `mod_inputs.R` contains both `mod_inputs_ui(id)` and `mod_inputs_server(id)`. The UI function returns HTML tags, the server function returns a reactive list. 
 
 ```{mermaid}
 %%| eval: true
 %%| fig-align: 'center'
-%%| fig-caption: 'R6 Shiny Module'
-%%| echo: false
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
-
-flowchart LR
-    subgraph "R6 Shiny Module"
-        Init["<strong>initialize</strong>"]
-        UiMethod["<strong>ui</strong>"]
-        ServerMethod["<strong>server</strong>"]
-      subgraph Class["R6 class"]
-        R6Mod["<strong>ModName</strong>"]
-      end
-      subgraph Encapsulated["Encapsulated state"]
-        Private{{"<strong>private$</strong>"}}
-      end
-    end
-
-    R6Mod -->|instantiate| Init
-    Init -->|creates| Private
-    UiMethod -->|uses| Private
-    ServerMethod -->|uses| Private
-
-    style R6Mod fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style Init fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style UiMethod fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style ServerMethod fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style Private fill:#E0F0ED,color:#000000,stroke:#4CBB9D,font-family:monospace
-
-```
-
-The instance owns its state, and every method reaches for the same `private$` members. This changes two things worth comparing directly: where the state lives, and how values flow through the reactive graph. The diagram below sets the traditional and R6 patterns next to each other on both counts.
-
-```{mermaid}
-%%| eval: true
-%%| fig-align: 'center'
-%%| fig-caption: 'Encapsulation & State'
+%%| fig-caption: 'Module Architecture: Function-Based'
 %%| echo: false
 %%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
 
 flowchart TD
-    subgraph "Encapsulation & State"
-        TradState["State scattered<br/>across functions<br/>& environments"]
-        R6State["State tied to<br/>object instance<br/><code>private$</code> members"]
+    subgraph FuncBased["Function-Based (<code>tooltipexplorer</code>)"]
+        direction LR
+        UICall("mod_inputs_ui('inputs')")
+        ServerCall("mod_inputs_server('inputs')")
+        Separate(("<em>Two separate<br/>function calls</em>"))
     end
-
-    subgraph "Reactivity Flow"
-        Input["Input values<br/>(namespaced)"]
-        Reactive["Reactive<br/>computations"]
-        Output["Output values<br/>(reactive)"]
-    end
-
-    TradState -.->|unclear ownership| Input
-    R6State -->|clear ownership| Input
-    Input -->|feeds| Reactive
-    Reactive -->|produces| Output
-
-    style TradState fill:#FFE0E0,color:#000000,stroke:#999
-    style R6State fill:#E0F0ED,color:#000000,stroke:#4CBB9D
-    style Input fill:#FFFFFF,color:#000000,stroke:#333
-    style Reactive fill:#FFFFFF,color:#000000,stroke:#333
-    style Output fill:#FFFFFF,color:#000000,stroke:#333
+    
+    UICall -.->|"wrong <code>id</code> passed"| ServerCall
+    
+    style UICall fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
+    style ServerCall fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
+    style Separate fill:#FFE0E0,color:#000000,stroke:#c0392b
+    
 ```
 
-The payoff here is ownership. When state is tied to an instance, you always know which object is responsible for a given value, so there's no guessing about where a reactive came from or who might have changed it. That makes the module easier to reason about as it grows, and it removes a whole category of bugs that come from shared or leaked state bleeding between parts of an app.
+Back in `app_server.R`, both get called with the same `id` argument—but they're completely independent; nothing ties them together except the developer's memory. If someone later calls `mod_inputs_ui("inputs")` in the UI but `mod_inputs_server("other_inputs")` in the server, Shiny won't complain. The UI and server end up in different namespaces, the module stops working, and no error gets raised. The bug is silent.
 
-I've hit this exact failure mode with traditional modules. Picture a dashboard with two filter panels built from the same module function, and imagine the selected ticker gets cached in a package-level variable (or any object living outside the module's server closure) instead of inside `reactiveValues`. Because both instances read and write that same variable, selecting `AAPL` in the first panel silently changes the second panel to `AAPL` too, even though the two are supposed to be independent. The state is shared without anyone intending it to be, and tracking down *why* the second panel keeps changing on its own can cost you an afternoon.
+`Rsixer` eliminates this category of error by bundling both UI and server into a single R6 class. `ModInputs$new("inputs")` creates one instance where the `id` is stored in `private$id` and used by both the `ui()` and `server()` methods. 
 
 ```{mermaid}
 %%| eval: true
 %%| fig-align: 'center'
-%%| fig-caption: 'Leaked State Between Module Instances'
+%%| fig-caption: 'Module Architecture: R6'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+
+flowchart TD
+    subgraph R6Based["R6 Class (Rsixer)"]
+        direction LR
+        New["ModInputs$new('inputs')"]
+        Instance["Single instance<br/>owns <code>id</code> & <code>ns</code>"]
+        UiM["$ui()"]
+        ServM["$server()"]
+    end
+
+    New -->|"binds <code>id</code>"| Instance
+    Instance -->|"uses <code>id</code>"| UiM
+    Instance -->|"uses <code>id</code>"| ServM
+
+    style New fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style Instance fill:#E0F0ED,color:#000000,stroke:#4CBB9D
+    style UiM fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style ServM fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    
+```
+
+They share the same namespace function (`private$ns`) internally, so a mismatch is impossible. The instance owns its state; you can't accidentally wire the UI and server to different namespaces because they're never separate in the first place.
+
+
+There's another difference that matters as complexity grows. In `tooltipexplorer`, state lives scattered across environments. The inputs module manages its own reactive list inside the `server()` closure, the outputs module has its own logic, and if you need shared state between modules (like a cached computation or a user preference), you either pass it through function arguments or store it in a variable at the app level. As the dashboard grows—more modules, more dependencies—tracking where state lives becomes harder. Did that cached value come from the inputs module or somewhere else? Is it being modified by multiple modules? The architecture doesn't prevent you from creating these tangles; it just assumes you'll avoid them.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'State Flow: Function-Based'
 %%| echo: false
 %%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
 
 flowchart TD
-    subgraph Panel1["<strong>Filter Panel 1</strong>"]
-        Select1["selectInput('AAPL')"]
+    subgraph FuncFlow["Function-Based Flow"]
+        FUI("<strong>mod_inputs_ui()</strong>")
+        FS("<strong>mod_inputs_server()</strong>")
+        FReact[/"reactive list"/]
+        FPass("<strong>mod_outputs_server()</strong>")
+        FWhere(["<em>State lives where?<br/>Inside closure or global?</em>"])
     end
-
-    subgraph Panel2["<strong>Filter Panel 2</strong>"]
-        Select2["selectInput('???')"]
-    end
-
-    subgraph Leak["Package-level variable"]
-        Shared[("<code>ticker_cache</code>")]
-    end
-
-    Select1 -->|"writes"| Shared
-    Shared -->|"overwrites"| Select2
-    Select2 -.->|"unexpected update"| Broken["Panel 2 now shows AAPL"]
-
-    style Panel1 fill:#FFFFFF,color:#000000,stroke:#999
-    style Panel2 fill:#FFFFFF,color:#000000,stroke:#999
-    style Shared fill:#FFE0E0,color:#000000,stroke:#c0392b
-    style Broken fill:#FFE0E0,color:#000000,stroke:#c0392b
+    
+    FUI --"collects inputs"--> FS --"returns"--> FReact --"pass to"--> FPass
+    FPass -.-> FWhere
+    
+    style FWhere fill:#FFE0E0,color:#000000,stroke:#c0392b
+    style FUI font-family:monospace
+    style FS font-family:monospace
+    style FPass font-family:monospace
+    
 ```
 
-Nothing in either panel's own code looks wrong. The bug lives in the space between them, in a variable neither module treats as its own.
+
+R6 modules make state ownership explicit. Each instance is responsible for its own private members. When `ModOutputs` needs data from `ModInputs`, it receives the reactive list returned by `ModInputs$server()` and consumes it as a parameter. Dependencies flow in one direction. Downstream modules receive what they need; they can't reach back and modify the upstream module's private state. The architecture itself prevents certain classes of bugs.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'State Flow: R6'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart TD
+
+    subgraph R6Flow["R6 Class Flow"]
+        MI["ModInputs$new()"]
+        MS["ModInputs$server()"]
+        MReact["returns reactive list"]
+        MPass["pass to ModOutputs"]
+        MOwn["State clearly owned<br/>by instance"]
+    end
+
+    MI --> MS --> MReact --> MPass
+    MPass --> MOwn
+
+    style MOwn fill:#E0F0ED,color:#000000,stroke:#4CBB9D
+    
+```
+
+The trade-off is complexity. Function-based modules are lighter weight. If your module is genuinely simple—a filter input, a summary statistic—wrapping it in an R6 class adds indirection without clear benefit. Rsixer's R6 classes make sense because each module manages nontrivial state: ModInputs handles date ranges, ticker selection, and rolling-window parameters; ModOutputs computes performance metrics and manages reactivity across those inputs. The added structure pays for itself. In a simpler app, you might never hit the ownership or namespace problems that R6 prevents, and the function-based approach keeps the code readable.
+
+Use function-based modules when modules are independent and state is simple. Use R6 when multiple modules need to coordinate state, when the same module might be instantiated multiple times in different parts of the app, or when you're building for a team where code clarity and prevention of accidental state leaks matter more than lightweight syntax.
 
 ## Defining an R6 Shiny Module
 
