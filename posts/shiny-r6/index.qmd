@@ -66,54 +66,63 @@ Access the code here: [mjfrigaard.github.io/tooltipexplorer](https://mjfrigaard.
 
 ![](img/tooltipexplorer.png){width='100%' fig-align='center'}
 
-I've included the `R/` folder tree below to help understand how this application is built.
+I've included the `R/` folder tree below to help understand how this application is built. Below are the application function (modules, master UI/server functions, theme helpers, and logging utilities).
 
 ```{verbatim}
 R/
 ├── app_server.R #<1>
 ├── app_set_log_threshold.R #<2>
 ├── app_ui.R #<3>
-├── compute_rolling_vol.R #<4>
-├── custom_head.R #<5>
-├── default_tickers.R #<6>
-├── get_ff3_factors.R #<7>
-├── get_stock_prices.R #<8>
-├── get_stock_returns.R #<9>
-├── launch.R #<10>
-├── mod_download.R #<11>
-├── mod_hoverinfo.R #<12>
-├── mod_inputs.R #<13>
-├── mod_outputs.R #<14>
-├── mod_tooltip.R #<15>
-├── setup_theme.R #<16>
-├── summarise_performance.R #<17>
-├── utils_operators.R #<18>
-├── utils_reactable_theme.R #<19>
-└── with_logging.R #<20>
+├── custom_head.R #<4>
+├── launch.R #<5>
+├── mod_download.R #<6>
+├── mod_hoverinfo.R #<7>
+├── mod_inputs.R #<8>
+├── mod_outputs.R #<9>
+├── mod_tooltip.R #<10>
+├── setup_theme.R #<11>
+├── utils_reactable_theme.R #<12>
+└── with_logging.R #<13>
 
-1 directory, 20 files
+1 directory, 13 files
 ```
 
-1. Wires together function-based modules by calling `mod_inputs_server("inputs")`, `mod_outputs_server("outputs", ...)`, `mod_download_server("download", ...)` sequentially; passes reactive values between them.
-2. Logging configuration setup (initializes `logger` threshold).
-3. Top-level UI function; calls `mod_inputs_ui()`, `mod_outputs_ui()`, `mod_download_ui()` to compose the page.
-4. Computes rolling volatility metric for stock analysis.
-5. Helper function for displaying data in a compact format.
-6. Exports default ticker symbols as a package constant.
-7. Fetches Fama-French 3-factor data from external source.
-8. Fetches historical stock price data from API.
-9. Calculates stock returns from price data.
-10. App entry point; calls `shinyApp(ui, server)`.
-11. Function-based download module; pairs `mod_download_ui()` and `mod_download_server(id)` in one file.
-12. Helper that wraps hover/tooltip text for `reactable` table cells.
-13. Function-based inputs module; contains `mod_inputs_ui(id)` and `mod_inputs_server(id)` returning reactive list.
-14. Function-based outputs module; consumes `inputs_r` and renders performance metrics.
-15. Tooltip icon helper component.
-16. Theme and styling configuration.
-17. Calculates performance summary metrics (returns, Sharpe ratio, etc.).
-18. Custom operators (`%>%`, `%||%`, etc.).
-19. `reactable` table theme utilities.
-20. Logging wrapper utility for side-effect tracking.
+1. Wires together function-based modules by calling `mod_inputs_server("inputs")`, `mod_outputs_server("outputs", ...)`, `mod_download_server("download", ...)` sequentially; passes reactive values between them    
+2. Logging configuration setup (initializes `logger` threshold)   
+3. Top-level UI function; calls `mod_inputs_ui()`, `mod_outputs_ui()`, `mod_download_ui()` to compose the page    
+4. Helper function for displaying data in a compact format    
+5. App entry point; calls `shinyApp(ui, server)`
+6. Function-based download module; pairs `mod_download_ui()` and `mod_download_server(id)` in one file    
+7. Helper that wraps hover/tooltip text for `reactable` table cells   
+8. Function-based inputs module; contains `mod_inputs_ui(id)` and `mod_inputs_server(id)` returning reactive list   
+9. Function-based outputs module; consumes `inputs_r` and renders performance metrics
+10. Tooltip icon helper component   
+11. Theme and styling configuration
+12. `reactable` table theme utilities   
+13. Logging wrapper utility for side-effect tracking
+
+The functions below deal specifically with the gathering and computations of the stock data displayed in the application.   
+
+```{verbatim}
+R/
+├── compute_rolling_vol.R #<1>
+├── default_tickers.R #<2>
+├── get_ff3_factors.R #<3>
+├── get_stock_prices.R #<4>
+├── get_stock_returns.R #<5>
+├── summarise_performance.R #<6>
+└── utils_operators.R #<7>
+
+1 directory, 7 files
+```
+
+1. Computes rolling volatility metric for stock analysis  
+2. Exports default ticker symbols as a package constant   
+3. Fetches Fama-French 3-factor data from external source   
+4. Fetches historical stock price data from API   
+5. Calculates stock returns from price data
+6. Calculates performance summary metrics (returns, Sharpe ratio, etc.)   
+7. Custom operators (`%>%`, `%||%`, etc.)   
 
 ## `R6` app-package
 
