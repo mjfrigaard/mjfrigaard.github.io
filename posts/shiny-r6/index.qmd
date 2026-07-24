@@ -57,10 +57,31 @@ In this post, we'll explore:
 2. Defining `R6` classes for Shiny modules (UI and server)
 3. Wiring `R6` objects into your app's reactive flow
 
+## What is R6?
 
-I've created two stock volatility apps to flesh out some of the differences between standard Shiny app-packges and R6 Shiny app-packages: 
+`R6` is an object-oriented system in R that creates reference-based objects. Unlike `S3` or `S4`, `R6` objects are mutable and support encapsulation (i.e., public and private members). `R6` objects feel familiar for Python or Java developers because they both include similar implementations.
 
-## Standard shiny app-package
+To create R6 objects, install the `R6` package: 
+
+```{r}
+#| eval: false 
+#| code-fold: false
+install.packages("R6")
+```
+
+`R6` is especially useful for:
+
+1. Bundling UI generation with business logic (module as a unified object)  
+2. Managing state tied to a user session or module instance
+3. Encapsulating dependencies and configuration
+
+In app-packages, `R6` objects can prevent us from scattering related logic across separate files. They also help avoid the need for global state or overly nested reactive functions.
+
+## R6 vs Traditional Shiny Modules
+
+I've created two stock volatility apps to flesh out some of the differences between standard Shiny app-packages and R6 Shiny app-packages: 
+
+### Standard shiny app-package
 
 Access the code here: [mjfrigaard.github.io/tooltipexplorer](https://mjfrigaard.github.io/tooltipexplorer/)
 
@@ -122,9 +143,9 @@ R/
 4. Fetches historical stock price data from API   
 5. Calculates stock returns from price data
 6. Calculates performance summary metrics (returns, Sharpe ratio, etc.)   
-7. Custom operators (`%>%`, `%||%`, etc.)   
+7. Custom operators (`%>%`, `%||%`, etc.)  
 
-## `R6` app-package
+### `R6` app-package
 
 Access the code here: [mjfrigaard.github.io/Rsixer](https://mjfrigaard.github.io/Rsixer/)
 
@@ -167,28 +188,6 @@ R/
 
 
 Notice there are 13 source files in `Rsixer` (vs. the 20 in `tooltipexplorer`). `R6` bundling eliminates the need for separate UI/server function pairs. We'll explore these benefits and more in the sections below. 
-
-## What is R6?
-
-`R6` is an object-oriented system in R that creates reference-based objects. Unlike `S3` or `S4`, `R6` objects are mutable and support encapsulation (i.e., public and private members). `R6` objects feel familiar for Python or Java developers because they both include similar implementations.
-
-To create R6 objects, install the `R6` package: 
-
-```{r}
-#| eval: false 
-#| code-fold: false
-install.packages("R6")
-```
-
-`R6` is especially useful for:
-
-1. Bundling UI generation with business logic (module as a unified object)  
-2. Managing state tied to a user session or module instance
-3. Encapsulating dependencies and configuration
-
-In app-packages, `R6` objects can prevent us from scattering related logic across separate files. They also help avoid the need for global state or overly nested reactive functions.
-
-## R6 vs Traditional Shiny Modules
 
 Both function-based and R6 module patterns work; the difference lies in how they organize code and protect against state leaks as your app grows.
 
