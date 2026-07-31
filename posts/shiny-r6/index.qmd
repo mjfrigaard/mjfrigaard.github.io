@@ -1,10 +1,10 @@
 ---
-title: "R6, Shiny, and R packages"
-subtitle: "Managing state and business logic with R6 classes in Shiny app-packages"
+title: "Shiny, R6, and R packages"
+subtitle: "Managing app state with R6 classes in Shiny app-packages"
 author: "Martin Frigaard"
 date: "2026-07-25"
 categories: [R6, Shiny]
-# image: "image.png"
+image: "image.png"
 toc: true
 toc-depth: 5
 toc-title: 'Contents'
@@ -49,13 +49,13 @@ library(ttdviewer)
 ```
 
 
-As your Shiny application grows, organizing code into modular, object-oriented pieces becomes crucial. While Shiny's reactive programming model is naturally functional, **`R6`** classes provide a powerful abstraction for encapsulating state, behavior, and business logic. If you're building a Shiny app-package, **`R6`** brings real benefits: clean separation of concerns, easier testing, and reusable module patterns that survive across projects.
+As Shiny applications grow, organizing code into modular, object-oriented pieces becomes crucial. While Shiny's reactive programming model is naturally functional, **`R6`** classes provide a powerful abstraction for encapsulating state, behavior, and business logic. If you're building a Shiny app-package, **`R6`** brings real benefits (clean separation of concerns, easier testing, reusable module patterns, etc.) that survive across projects.
 
 In this post, we'll explore:
 
 1. What **`R6`** is and why it shines in Shiny app-packages
 2. Defining **`R6`** classes for Shiny modules (UI and server)
-3. Wiring **`R6`** objects into your app's reactive flow
+3. Wiring **`R6`** objects into the app's reactive flow
 
 ## What is **`R6`**?
 
@@ -75,7 +75,7 @@ install.packages("R6")
 
 - **[`shinytest2`](https://github.com/rstudio/shinytest2/blob/main/R/app-driver.R)** uses **`R6`** for app testing objects; the `AppDriver` class bundles together UI selectors, server interactions, and assertions, making test code fluent and maintainable
 
-Even Shiny itself uses reactive objects (which are reference-based) to manage app state (so using **`R6`** objects in your app-package is a natural extension of that pattern).
+Even Shiny itself uses reactive objects (which are reference-based) to manage app state (so using **`R6`** objects in an app-package is a natural extension of that pattern).
 
 In Shiny app-packages, **`R6`** is especially useful for:
 
@@ -83,9 +83,9 @@ In Shiny app-packages, **`R6`** is especially useful for:
 2. Managing state tied to a user session or module instance
 3. Encapsulating dependencies and configuration
 
-## **`R6`** vs Standard Shiny Modules
+## **`R6`** vs standard shiny modules
 
-I've created two stock volatility apps to flesh out some of the differences between standard Shiny app-packages (`tooltipexplorer`) and **`R6`** Shiny app-packages (`rsixer`). I've displayed the `.R` source files in three categories below: application structure (modules, UI/server, launch), data/computation utilities, and helpers.
+I recently built `tooltipexplorer`, a stock volatility app to demonstrate various hover-info and tooltips. I've converted it into `rsixer`, an **`R6`** version of the same app to flesh out some of the differences between standard Shiny app-packages and **`R6`** Shiny app-packages. I've displayed the `.R` source files in three categories below: application structure (modules, UI/server, launch), data/computation utilities, and helpers.
 
 ### Standard 
 
@@ -93,7 +93,7 @@ Access the code here: [mjfrigaard.github.io/tooltipexplorer](https://mjfrigaard.
 
 ![](img/tooltipexplorer.png){width='100%' fig-align='center'}
 
-#### App Structure
+#### App structure
 
 I've included the Shiny app functions from the `R/` folder in the tree below to help understand how `tooltipexplorer` is built. 
 
@@ -167,9 +167,15 @@ Access the code here: [mjfrigaard.github.io/rsixer](https://mjfrigaard.github.io
 
 ![](img/rsixer.png){width='100%' fig-align='center'}
 
-If you're wondering why the applications look so similar, it's because the `rsixer` application is a direct conversion of the `tooltipexplorer` into the **`R6`** architecture. The file names are pretty similar; there are 19 files vs. 20 in `tooltipexplorer`. Using **`R6`** objects means bundling without the need for separate UI/server function pairs.
+The file names are pretty similar; there are 19 files vs. 20 in `tooltipexplorer`. Using **`R6`** objects means bundling without the need for separate UI/server function pairs.
 
-#### App Structure
+:::{.column-margin}
+
+If you're wondering why the applications look so similar, it's because the `rsixer` application is a direct conversion of the `tooltipexplorer` into the **`R6`** architecture. 
+
+:::
+
+#### App structure
 
 ```{verbatim}
 R/
@@ -231,15 +237,13 @@ R/
 3. Custom operators (`%>%`, `%||%`, etc.) (identical to `tooltipexplorer`)    
 4. `reactable` table theme utilities for consistent table styling (identical to `tooltipexplorer`)    
 
-
-
 ## Architecture
 
 Both `tooltipexplorer`'s function-based and `rsixer`s **`R6`** module patterns work, the difference is in how they organize the code and protect against state leaks as the app grows.
 
 ### Standard modules
 
-In `tooltipexplorer`, the modules are split into two independent functions living in the same file (i.e., `mod_inputs.R` contains both `mod_inputs_ui(id)` and `mod_inputs_server(id)`). The UI function returns HTML tags and the server function returns a reactive list. Both must receive the same `id` argument to share a namespace.
+In `tooltipexplorer`, the modules are split into two independent functions living in the same file (i.e., `mod_inputs.R` contains both `mod_inputs_ui(id)` and `mod_inputs_server(id)`). The UI function returns HTML tags and the server function returns a reactive list. 
 
 ```{mermaid}
 %%| eval: true
@@ -262,129 +266,11 @@ flowchart TD
 
 ```
 
-The responsibility for keeping UI and server in sync falls entirely on the developer. Both functions have an `id` parameter, so nothing in the architecture ties them together except the discipline of passing the same value to each.
+Both UI and server function must receive the same `id` argument to share a namespace. The responsibility for keeping UI and server in sync falls entirely on the developer. Both functions have an `id` parameter, so nothing in the architecture ties them together except the discipline of passing the same value to each.
 
 ### **`R6`** modules
 
-`rsixer` bundles both UI and server into a single **`R6`** class. `ModInputs$new("inputs")` creates one instance where the `id` is stored in `private$id` and automatically available to both the `ui()` and `server()` methods.
-
-```{mermaid}
-%%| eval: true
-%%| fig-align: 'center'
-%%| fig-caption: 'Module Architecture: R6'
-%%| echo: false
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
-
-
-flowchart TD
-    subgraph R6Based["<strong>R6 Class</strong>"]
-        New["<strong>ModInputs$new('inputs')</strong>"]
-        Instance["Single instance<br/>owns <code>id</code> & <code>ns</code>"]
-        UiM["<strong>$ui()</strong>"]
-        ServM["<strong>$server()</strong>"]
-    end
-
-    New -->|"binds <code>id</code>"| Instance
-    Instance -->|"uses <code>id</code>"| UiM
-    Instance -->|"uses <code>id</code>"| ServM
-
-    style New fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style Instance fill:#E0F0ED,color:#000000,stroke:#4CBB9D
-    style UiM fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style ServM fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-
-```
-
-The `id` is bound at instantiation and encapsulated in the object. Both methods access it from the same source, so namespace mismatches are architecturally impossible.
-
-## Application state
-
-There's another difference that matters as complexity grows. In `tooltipexplorer`, state lives scattered across environments. The inputs module manages its own reactive list inside the `server()` closure, the outputs module has its own logic, and if we need shared state between modules (like a cached computation or a user preference), we either pass it through function arguments or store it in a variable at the app level. 
-
-```{mermaid}
-%%| eval: true
-%%| fig-align: 'center'
-%%| fig-caption: 'State Flow: Function-Based'
-%%| echo: false
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
-
-flowchart TD
-    subgraph FuncFlow["<strong>Function-Based Flow<strong>"]
-        FUI("<strong>mod_inputs_ui()</strong>")
-        FS("<strong>mod_inputs_server()</strong>")
-        FReact[/"reactive list"/]
-        FPass("<strong>mod_outputs_server()</strong>")
-        FWhere(["<em>State lives where?<br/>Inside closure or global?</em>"])
-    end
-    
-    FUI --"collects inputs"--> FS --"returns"--> FReact --"pass to"--> FPass
-    FPass -.-> FWhere
-    
-    style FWhere fill:#FFE0E0,color:#000000,stroke:#c0392b
-    style FUI font-family:monospace
-    style FS font-family:monospace
-    style FPass font-family:monospace
-    
-```
-
-As our dashboard grows—more modules, more dependencies, tracking where state lives becomes harder. Did that cached value come from the inputs module or somewhere else? Is it being modified by multiple modules? The architecture doesn't prevent us from creating a tangled mess (it just assumes we'll avoid them). 
-
-
-**`R6`** modules make state ownership explicit. Each instance is responsible for its own private members. When `ModOutputs` needs data from `ModInputs`, it receives the reactive list returned by `ModInputs$server()` and consumes it as a parameter. 
-
-```{mermaid}
-%%| eval: true
-%%| fig-align: 'center'
-%%| fig-caption: 'State Flow: R6'
-%%| echo: false
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
-
-flowchart TD
-    subgraph R6Flow["<strong>R6 Class Flow</strong>"]
-        MI["<strong>ModInputs$new()</strong>"]
-        MS["<strong>ModInputs$server()</strong>"]
-        MReact[/"reactive list"/]
-        MPass["<strong>ModOutputs</strong>"]
-        MOwn(["<em>State clearly owned<br/>by instance</em>"])
-    end
-
-    MI --"collects inputs"--> MS --"returns"--> MReact --"pass to"--> MPass
-    MPass --> MOwn
-
-    style MI font-family:monospace
-    style MS font-family:monospace
-    style MPass font-family:monospace
-    style MOwn fill:#E0F0ED,color:#000000,stroke:#4CBB9D
-    
-```
-
-Dependencies flow in one direction. Downstream modules receive what they need; they can't reach back and modify the upstream module's private state. The architecture itself prevents certain classes of bugs.
-
-### Trade-offs
-
-The trade-off is complexity. Function-based modules are lighter weight. If our module is genuinely simple (a filter input, a summary statistic) wrapping it in an **`R6`** class adds indirection without clear benefit. 
-
-**`rsixer`'s `R6` classes make sense because each module manages nontrivial state**: `ModInputs` handles date ranges, ticker selection, and rolling-window parameters while `ModOutputs` computes performance metrics and manages reactivity across those inputs. The added structure pays for itself.
-
-In a simpler app, we might never hit the ownership or namespace problems that **`R6`** prevents, and the function-based approach keeps the code readable.
-
-```{r}
-#| label: co_box_rec
-#| echo: false
-#| results: asis
-#| eval: true
-co_box(color = "g", 
-  header = "Recommendation", 
-  fold = TRUE,
-  contents = "
-Use function-based modules when modules are independent and state is simple. Use **`R6`** when multiple modules need to coordinate state, when the same module might be instantiated multiple times in different parts of the app, or if building for a team where code clarity and prevention of accidental state leaks matter more than lightweight syntax.
-")
-```
-
-
-## Defining an **`R6`** Shiny Module
-
-When writing regular Shiny modules, both the UI and server function are included in a single file. **`R6`** modules wrap both the UI and server logic into a single *class*. Below is a simplified example from the `rsixer` (view the full version [on GitHub.](https://github.com/mjfrigaard/rsixer/blob/main/R/ModInputs.R)).
+When writing regular Shiny modules, both the UI and server function are included in a single file. **`R6`** modules wrap both the UI and server logic into a single **class**. Below is a simplified example from the `rsixer` (view the full version [on GitHub.](https://github.com/mjfrigaard/rsixer/blob/main/R/ModInputs.R)).
 
 ```{r}
 #| eval: false 
@@ -524,15 +410,45 @@ ModInputs <- R6::R6Class(
 10.  Reactive inputs list  
 11. `private` members hold internal state; can't be accessed from outside the object
 
-I'll dive into the differences between public and private methods below.
 
-### Public methods
+`rsixer` bundles both UI and server into a single **`R6`** class. `ModInputs$new("inputs")` creates one instance where the `id` is stored in `private$id` and automatically available to both the `ui()` and `server()` methods.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'Module Architecture: R6'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+
+flowchart TD
+    subgraph R6Based["<strong>R6 Class</strong>"]
+        New["<strong>ModInputs$new('inputs')</strong>"]
+        Instance["Single instance<br/>owns <code>id</code> & <code>ns</code>"]
+        UiM["<strong>$ui()</strong>"]
+        ServM["<strong>$server()</strong>"]
+    end
+
+    New -->|"binds <code>id</code>"| Instance
+    Instance -->|"uses <code>id</code>"| UiM
+    Instance -->|"uses <code>id</code>"| ServM
+
+    style New fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style Instance fill:#E0F0ED,color:#000000,stroke:#4CBB9D
+    style UiM fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style ServM fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+
+```
+
+The `id` is **bound at instantiation and encapsulated** in the object. Both methods access it from the same source, so namespace mismatches are architecturally impossible. I'll dive into the differences between public and private methods below.
+
+#### Public methods
 
 Public methods are functions defined in the `public` list that can be called from outside the **`R6`** object. In Shiny modules, `public` methods expose the behavior we want users to interact with (like building UI or running server-side logic). They have access to private members via `private$`, but callers cannot access or modify private state directly.
 
-#### `initialize`
+**`initialize`**:
 
-Initializes the module namespace by storing the ID (`private$id`) and creating a namespace function (`private$ns`) with element ID prefixes. Runs once when you instantiate the object with `$new()`.
+`initialize()` does just what it sounds like--it initializes the module namespace by storing the ID (`private$id`), creating a namespace function (`private$ns`) and adding element ID prefixes. This runs once when we instantiate the object with `$new()`.
 
 ```{r}
 #| eval: false
@@ -543,9 +459,9 @@ initialize = function(id = "inputs") {
 }
 ```
 
-#### `ui`
+**`ui`**:
 
-Constructs the module's UI components by wrapping HTML tags with the private namespace function. Returns HTML tags that get inserted into the app's main UI. All input IDs are namespaced via `private$ns()` to prevent conflicts.
+`ui()` constructs the module's UI components by wrapping HTML tags with the `private` namespace function. It also returns HTML tags that get inserted into the app's main UI. All the input IDs are namespaced via `private$ns()` to prevent conflicts.
 
 ```{r}
 #| eval: false
@@ -582,9 +498,9 @@ ui = function() {
 ```
 1. Returns: HTML sidebar with namespaced input IDs
 
-#### `server`
+**`server`**:
 
-Encapsulates reactive logic within the module's namespace via `moduleServer()`. Accesses reactives created inside this method and returns them for downstream modules to consume. The returned reactive value maintains isolation from parent and sibling modules.
+The `server()` encapsulates reactive logic within the module's namespace via `moduleServer()`,  accesses reactives created inside this method, then returns them for downstream modules to consume. The returned reactive value maintains isolation from parent and sibling modules.
 
 ```{r}
 #| eval: false
@@ -638,9 +554,9 @@ flowchart LR
 
 ```
 
-### Private methods
+#### Private methods
 
-The `private` method starts as list with `NULL` values for `id` and `ns`. These store the module's identifier and namespace function, providing internal state that is accessed by `public` methods to generate properly scoped element references.
+The `private` method starts as list with `NULL` values for `id` and `ns`. These store the module's identifier and namespace function, which is the **internal application state** that is accessed by `public` methods to generate properly scoped references.
 
 ```{mermaid}
 %%| eval: true 
@@ -667,7 +583,337 @@ flowchart TD
     
 ```
 
-## Using **`R6`** Modules
+## Application state {#sec-shared-state}
+
+Application state matters as complexity grows. In `tooltipexplorer`, the state is scattered across environments. The inputs module manages its own reactive list inside the `server()` closure, the outputs module has its own logic, and if we need shared state between modules (like a cached computation or a user preference), we either pass it through function arguments or store it in a variable at the app level. 
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'State Flow: Function-Based'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart TD
+    subgraph FuncFlow["<strong>Function-Based Flow<strong>"]
+        FUI("<strong>mod_inputs_ui()</strong>")
+        FS("<strong>mod_inputs_server()</strong>")
+        FReact[/"reactive list"/]
+        FPass("<strong>mod_outputs_server()</strong>")
+        FWhere(["<em>State lives where?<br/>Inside closure or global?</em>"])
+    end
+    
+    FUI --"collects inputs"--> FS --"returns"--> FReact --"pass to"--> FPass
+    FPass -.-> FWhere
+    
+    style FWhere fill:#FFE0E0,color:#000000,stroke:#c0392b
+    style FUI font-family:monospace
+    style FS font-family:monospace
+    style FPass font-family:monospace
+    
+```
+
+As our dashboard grows (more modules, more dependencies) tracking where the state lives becomes harder. *Did that cached value come from the inputs module or somewhere else?* *Is it being modified by multiple modules?* The architecture doesn't prevent us from creating a tangled mess (it just assumes we'll avoid them). 
+
+
+**`R6`** modules make state ownership explicit. Each instance is responsible for its own private members. When `ModOutputs` needs data from `ModInputs`, it receives the reactive list returned by `ModInputs$server()` and consumes it as a parameter. 
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'State Flow: R6'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart TD
+    subgraph R6Flow["<strong>R6 Class Flow</strong>"]
+        MI["<strong>ModInputs$new()</strong>"]
+        MS["<strong>ModInputs$server()</strong>"]
+        MReact[/"reactive list"/]
+        MPass["<strong>ModOutputs</strong>"]
+        MOwn(["<em>State clearly owned<br/>by instance</em>"])
+    end
+
+    MI --"collects inputs"--> MS --"returns"--> MReact --"pass to"--> MPass
+    MPass --> MOwn
+
+    style MI font-family:monospace
+    style MS font-family:monospace
+    style MPass font-family:monospace
+    style MOwn fill:#E0F0ED,color:#000000,stroke:#4CBB9D
+    
+```
+
+**`R6`** dependencies flow in one direction so the downstream modules receive what they need, and they can't reach back and modify the upstream module's private state. The **`R6`** architecture itself prevents certain classes of bugs.
+
+### Encapsulation in practice
+
+To see how encapsulation plays out at runtime, I've added some debugging output to both apps that inspects the reactive state. I've found these methods are helpful when I want to render the app state during development.
+
+#### Function-based inspection (`tooltipexplorer`)
+
+In `tooltipexplorer`, we add simple inspection of `input` values and the return value of the inputs module:
+
+```{r}
+#| eval: false
+#| code-fold: false
+
+# in R/app_ui.R
+tags$div(
+  tags$b(code("reactiveValuesToList")),
+  verbatimTextOutput(outputId = "vals"),
+  tags$b(code("inputs_r()")),
+  verbatimTextOutput(outputId = "dev")
+)
+
+# in R/app_server.R
+output$vals <- renderPrint({
+  vals <- reactiveValuesToList(x = input, all.names = TRUE)
+  str(vals)
+})
+output$dev <- renderPrint({
+  req(inputs_r)
+  str(inputs_r())
+})
+```
+
+At runtime, we see `input` contains namespaced IDs like `inputs-tickers`, `inputs-dates`, etc. The `inputs_r()` function returns a clean list of reactive values extracted from the module:
+
+```{verbatim}
+reactiveValuesToList (raw Shiny input values)
+List of 6
+ $ outputs-tabs     : chr "bslib"
+ $ inputs-fetch     : 'shinyActionButtonValue' int 0
+ $ inputs-tickers   : NULL
+ $ download-format  : chr "html"
+ $ inputs-dates     : Date[1:2], format: "2025-07-31" "2026-07-31"
+ $ inputs-vol_window: int 30
+```
+
+```{verbatim}
+inputs_r() (returned from mod_inputs_server)
+List of 5
+ $ tickers   : NULL
+ $ from      : Date[1:1], format: "2025-07-31"
+ $ to        : Date[1:1], format: "2026-07-31"
+ $ vol_window: int 30
+ $ fetch     : 'shinyActionButtonValue' int 0
+```
+
+The module function returns a reactive list that downstream code depends on. But there's no object to inspect. If we need to debug, we're looking at raw `input` values (or the return values). The namespace (`inputs`) is implicit in function names and parameter passing.
+
+#### **`R6`** object inspection (`rsixer`)
+
+In `rsixer`, we can inspect both the R6 object *and* its return value:
+
+```{r}
+#| eval: false
+#| code-fold: false
+
+# in R/app_ui.R
+tags$div(
+  tags$b(code("reactiveValuesToList")),
+  verbatimTextOutput(outputId = "vals"),
+  tags$b(code("inputs (R6 object)")),
+  verbatimTextOutput(outputId = "dev_inputs"),
+  tags$b(code("inputs_r()")),
+  verbatimTextOutput(outputId = "dev_inputs_r")
+)
+
+# in R/app_server.R
+output$vals <- renderPrint({
+  vals <- reactiveValuesToList(x = input, all.names = TRUE)
+  str(vals)
+})
+output$dev_inputs <- renderPrint({
+  req(inputs)
+  str(inputs)
+})
+output$dev_inputs_r <- renderPrint({
+  req(inputs_r)
+  str(inputs_r())
+})
+```
+
+The `reactiveValuesToList` output is nearly identical to the function-based version (Shiny's namespacing layer works the same):
+
+```{verbatim}
+reactiveValuesToList (raw Shiny input values)
+List of 6
+ $ outputs-tabs     : chr "bslib"
+ $ inputs-fetch     : 'shinyActionButtonValue' int 0
+ $ inputs-tickers   : NULL
+ $ inputs-format    : chr "html"
+ $ inputs-dates     : Date[1:2], format: "2025-07-31" "2026-07-31"
+ $ inputs-vol_window: int 30
+```
+
+But now we can inspect the `inputs` object itself (i.e., the actual **`R6`** instance):
+
+```{verbatim}
+inputs (R6 ModInputs object)
+Classes 'ModInputs', 'R6' <ModInputs>
+  Public:
+    clone: function (deep = FALSE)
+    initialize: function (id = "inputs")
+    server: function ()
+    ui: function ()
+  Private:
+    id: inputs
+    ns: function (id)
+```
+
+This output tells us immediately that the module owns: 
+
+1. an `id` (bound at instantiation)   
+2. a namespace function (`ns`)    
+3. has public methods for `ui()` and `server()` 
+
+Everything the module needs is **encapsulated** in one object (`inputs`). If we wanted to use a different namespace, we'd instantiate `ModInputs$new(id = "different")`, and both `ui()` and `server()` would automatically use that new ID.
+
+Finally, the `inputs_r()` output shows what the server method returns (6 fields, including `format`):
+
+```{verbatim}
+inputs_r() (returned from inputs$server())
+List of 6
+ $ tickers   : NULL
+ $ from      : Date[1:1], format: "2025-07-31"
+ $ to        : Date[1:1], format: "2026-07-31"
+ $ vol_window: int 30
+ $ fetch     : 'shinyActionButtonValue' int 0
+ $ format    : chr "html"
+```
+
+#### Why encapsulation matters
+
+The **`R6`** approach makes the module's identity and dependencies explicit. When we see `inputs$server()`, we know:
+
+1. `inputs` is a self-contained object with its own namespace
+2. The ID is bound to that object, so we can't accidentally call `ui()` with one ID and `server()` with another
+3. All state (`private$id`, `private$ns`) is managed internally
+
+With function-based modules (like those in `tooltipexplorer`), we have to remember to pass the same `id` to both `mod_inputs_ui()` and `mod_inputs_server()` every time. As we saw in @sec-shared-state, a single typo (`"input"` vs. `"inputs"`) causes a silent namespace mismatch. The UI and server lose sync, but Shiny raises no error.
+
+Here's a concrete example. Imagine we're building `tooltipexplorer`'s UI and accidentally pass the wrong ID to the server:
+
+```{r}
+#| eval: false 
+#| code-fold: show 
+#| code-summary: 'hide/show using function-based module approach'
+app_ui <- function() {
+  page_sidebar(
+    sidebar = mod_inputs_ui("inputs"),  #<1>
+    ...
+  )
+}
+
+app_server <- function(input, output, session) { 
+  inputs_r <- mod_inputs_server("input") #<2>
+  outputs_r <- mod_outputs_server("outputs", #<3>
+                                  inputs_r = inputs_r) #<3>
+}
+```
+1. Correct ID   
+2. Oops! wrong ID passed here     
+3. No errors (app works, but no inputs are passed)    
+
+The app will render and run without errors. The sidebar will work. But `inputs_r` will be empty because the UI and server are in different namespaces. The bug is silent and can take hours to track down.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'Function-Based Risk'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart TD
+    
+    subgraph FuncProblems["<strong>Function-Based Risk</strong>"]
+        UI1["<strong>mod_inputs_ui('inputs')</strong>"]
+        ServeWrong["<strong>mod_inputs_server('input')</strong>"]
+        BugSilent(["<em>Silent namespace mismatch (no error, app breaks)</em>"])
+    end
+
+
+    UI1 -->|"wrong ID"| ServeWrong
+    ServeWrong --> BugSilent
+
+    style BugSilent fill:#FFE0E0,color:#000000,stroke:#c0392b
+    style UI1 font-family:monospace
+    style ServeWrong font-family:monospace
+    
+```
+
+With **`R6`**, this class of bug is impossible:
+
+```{r}
+#| eval: false 
+#| code-fold: show 
+#| code-summary: 'hide/show using R6 module approach'
+app_server <- function(input, output, session) {
+  inputs <- ModInputs$new(id = "inputs") #<1>
+  inputs_r <- inputs$server()  #<2>
+}
+```
+1. Single instantiation, ID is bound to the object    
+2. Uses same ID internally    
+
+The instance owns both UI and server; they're locked together at creation time.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'R6 Protection'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart TD
+
+    subgraph R6Safe["<strong>R6 Protection</strong>"]
+        Instance["<strong>ModInputs$new('inputs')</strong>"]
+        Ui2["<strong>$ui()</strong>"]
+        Serve2["<strong>$server()</strong>"]
+        BugFree(["<em>Same ID throughout (impossible to mismatch)</em>"])
+    end
+    
+    Instance -->|"one ID"| Ui2
+    Instance -->|"same ID"| Serve2
+    Serve2 --> BugFree
+    
+    style BugFree fill:#E0F0ED,color:#000000,stroke:#4CBB9D
+    style Instance fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style Ui2 fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style Serve2 fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    
+```
+
+
+### Trade-offs
+
+The trade-off is complexity. Function-based modules are lighter weight. If our module is genuinely simple (a filter input, a summary statistic) wrapping it in an **`R6`** class adds indirection without clear benefit. 
+
+In `rsixer`'s, the `R6` classes make sense because each module manages nontrivial state.  `ModInputs` handles date ranges, ticker selection, and rolling-window parameters while `ModOutputs` computes performance metrics and manages reactivity across those inputs. The added structure pays for itself.
+
+In a simpler app, we might never hit the ownership or namespace problems that **`R6`** prevents, and the function-based approach keeps the code readable.
+
+```{r}
+#| label: co_box_rec
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "g", 
+  header = "Recommendation", 
+  fold = TRUE,
+  contents = "
+When to use each:
+
+- Use function-based modules for simple, independent modules (filters, info boxes) with minimal shared state. 
+
+- Use **`R6`** for complex modules that manage multiple inputs, outputs, or session-level state; when multiple developers work on the same app; or when you want to reuse the same module class across projects
+")
+```
+
+## Using **`R6`** modules
 
 In the app's UI, instantiate and call the `ui()` method:
 
@@ -703,11 +949,9 @@ app_server <- function(input, output, session) {
 2. Output module (consumes `input_r`)   
 3. Download module (consumes `inputs_r` and `perf_r`)     
 
-Each module is **instantiated fresh per session, so there's no global state.** Reactive dependencies flow naturally between them.
+Each module is **instantiated fresh per session, so there's no global state** (and the reactive dependencies flow naturally between them). 
 
-### Shared State Patterns
-
-The Shiny ecosystem uses two main patterns for building modules: traditional function-based modules and **`R6`** classes. Both work; the choice depends on the complexity of the app state (or how many developers will maintain the app).
+### App state patterns 
 
 Function-based modules (like those in the `tooltipexplorer` app) split UI and server into separate functions that both take an `id` argument:
 
@@ -758,7 +1002,6 @@ inputs_r <- inputs$server() #<6>
 5. Private methods (empty list)
 6. Implementation (creating `inputs` and `inputs_r`)
  
-
 Here's how the two patterns compare when wiring modules together:
 
 ```{mermaid}
@@ -814,94 +1057,7 @@ flowchart TD
     
 ```
 
-Both patterns pass reactive values downstream, but **`R6`** has a key advantage: encapsulation. When we instantiate `ModInputs$new()`, the instance owns its ID and namespace; they're stored in private members that every method can access. With function-based modules, the `id` is a parameter that must be passed to both `mod_inputs_ui()` and `mod_inputs_server()`. If they get called with different IDs by mistake, the UI and server stop talking to each other silently.
-
-Here's a concrete example. Imagine we're building `tooltipexplorer`'s UI and accidentally pass the wrong ID to the server:
-
-```{r}
-#| eval: false 
-#| code-fold: show 
-#| code-summary: 'hide/show using function-based module approach'
-app_ui <- function() {
-  page_sidebar(
-    sidebar = mod_inputs_ui("inputs"),  #<1>
-    ...
-  )
-}
-
-app_server <- function(input, output, session) { 
-  inputs_r <- mod_inputs_server("input") #<2>
-  outputs_r <- mod_outputs_server("outputs", #<3>
-                                  inputs_r = inputs_r) #<3>
-}
-```
-1. Correct ID   
-2. Oops! wrong ID passed here     
-3. No errors (app works, but no inputs are passed)    
-
-The app will render and run without errors. The sidebar will work. But `inputs_r` will be empty because the UI and server are in different namespaces. The bug is silent and can take hours to track down.
-
-With **`R6`**, this class of bug is impossible:
-
-```{r}
-#| eval: false 
-#| code-fold: show 
-#| code-summary: 'hide/show using R6 module approach'
-app_server <- function(input, output, session) {
-  inputs <- ModInputs$new(id = "inputs") #<1>
-  inputs_r <- inputs$server()  #<2>
-}
-```
-1. Single instantiation, ID is bound to the object    
-2. Uses same ID internally    
-
-The instance owns both UI and server; they're locked together at creation time.
-
-```{mermaid}
-%%| eval: true
-%%| fig-align: 'center'
-%%| fig-caption: 'Namespace Mismatch Prevention'
-%%| echo: false
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
-
-flowchart TD
-    subgraph R6Safe["<strong>R6 Protection</strong>"]
-        Instance["<strong>ModInputs$new('inputs')</strong>"]
-        Ui2["<strong>$ui()</strong>"]
-        Serve2["<strong>$server()</strong>"]
-        BugFree(["<em>Same ID throughout (impossible to mismatch)</em>"])
-    end
-    
-    subgraph FuncProblems["<strong>Function-Based Risk</strong>"]
-        UI1["<strong>mod_inputs_ui('inputs')</strong>"]
-        ServeWrong["<strong>mod_inputs_server('input')</strong>"]
-        BugSilent(["<em>Silent namespace mismatch (no error, app breaks)</em>"])
-    end
-
-
-    UI1 -->|"wrong ID"| ServeWrong
-    ServeWrong --> BugSilent
-
-    Instance -->|"one ID"| Ui2
-    Instance -->|"same ID"| Serve2
-    Serve2 --> BugFree
-
-    style BugSilent fill:#FFE0E0,color:#000000,stroke:#c0392b
-    style BugFree fill:#E0F0ED,color:#000000,stroke:#4CBB9D
-    
-    style UI1 font-family:monospace
-    style ServeWrong font-family:monospace
-    
-    style Instance fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style Ui2 fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style Serve2 fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    
-```
-
-When to use each:
-
-- Use function-based modules for simple, independent modules (filters, info boxes) with minimal shared state
-- Use **`R6`** for complex modules that manage multiple inputs, outputs, or session-level state; when multiple developers work on the same app; or when you want to reuse the same module class across projects
+We now know there are two main patterns for building Shiny modules: 1) traditional function-based modules, or 2) **`R6`** classes. Both patterns work, our choice should depend on the complexity of the app state (or how many developers will be maintain the source code).
 
 ### Reactivity 
 
@@ -950,29 +1106,171 @@ server = function(inputs_r) {
 
 This pattern keeps the dependency graph explicit and testable.
 
-## **`R6`** Classes in a Package
+## Documenting **`R6`** classes 
 
-Structure your **`R6`** classes for clarity and maintainability:
+As an app-package scales, teammates and users need to understand the module interfaces. Documenting **`R6`** classes with **[`roxygen2`](https://roxygen2.r-lib.org/)** makes `?ModInputs` a complete reference; without it, users have to read the source code. Modern `roxygen2` (7.0.0+) handles **`R6`** seamlessly by letting us document the class structure and each method inline.
 
-1. Place each class definition in `R/mod_*.R` (one file per module)
-2. Use `@export` roxygen tags to make classes available to package users
-3. Write tests with `testthat` that instantiate and call the class methods
-4. Never instantiate **`R6`** objects at package load time; only inside `app_server()` or module server functions
-5. Keep private members truly private; expose only what downstream modules need
+### Class-level documentation
 
-Example from rsixer's package structure:
+Start with roxygen comments above the `R6Class()` call:
+
+```{r}
+#| eval: false
+#| code-fold: show
+#| code-summary: 'hide/show ModInputs roxygen block'
+
+#' ModInputs: Shiny Input Module #<1>
+#'
+#' @description #<2>
+#' Encapsulates input controls for stock ticker selection, date range, and 
+#' analysis parameters.
+#'
+#' @details #<2>
+#' Bundles the UI and server logic for a reusable inputs module. Methods 
+#' handle namespace management automatically to prevent ID conflicts across
+#' module instances. The private fields `id` and `ns` are managed internally;
+#' callers interact only via public methods.
+#'
+#' @examples #<2>
+#' if (interactive()) {
+#'   inputs <- ModInputs$new(id = "inputs")
+#'   # Note: server() only runs inside moduleServer() or shinyApp()
+#' }
+#'
+#' @export #<2>
+ModInputs <- R6::R6Class(
+  "ModInputs",
+  # ...
+)
+```
+1. Title and class name
+2. `roxygen` tags; every line must follow a tag (no plain text intro allowed)
+
+### Method documentation
+
+Document each public method inline, right before the method definition. Methods get their own subsection in the generated help page.
+
+```{r}
+#| eval: false
+#| code-fold: show
+#| code-summary: 'hide/show ModInputs methods'
+
+public = list(
+
+  #' @description #<1>
+  #' Initialize the module with a namespace ID.
+  #' @param id Character scalar; the module's namespace identifier.
+  #' @return A new `ModInputs` object.
+  initialize = function(id = "inputs") {
+    private$id <- id
+    private$ns <- NS(id)
+  },
+
+  #' @description #<1>
+  #' Build the module's UI.
+  #' @return HTML tags with namespaced input elements.
+  ui = function() {
+    sidebar(
+      selectizeInput(
+        inputId = private$ns("tickers"),
+        label = "Tickers",
+        choices = default_tickers(),
+        multiple = TRUE
+      ),
+      # ...
+    )
+  },
+
+  #' @description #<1>
+  #' Start the server-side reactive logic.
+  #' @return A reactive list containing user selections.
+  server = function() {
+    moduleServer(private$id, function(input, output, session) {
+      reactive(list(
+        tickers = input$tickers,
+        dates = input$dates,
+        vol_window = input$vol_window
+      ))
+    })
+  }
+)
+```
+1. Each method starts with `@description`; remaining tags follow
+
+### **`R6`** help pages
+
+When we run `devtools::document()`, `roxygen2` parses the `#'` blocks and generates the `.Rd` files with separate subsections for the class description, each public method, and examples. The help page becomes the module's contract.
+
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: 'center'
+%%| fig-caption: 'roxygen2 Workflow for R6 Classes'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart TD
+    subgraph Source["<strong>R/ModInputs.R</strong>"]
+        ClassBlock["Class block<br/><code>@description @details @export</code>"]
+        MethodBlock["Inline method blocks<br/><code>@description @param @return</code>"]
+    end
+    Document(["<strong>devtools::document()</strong>"])
+    Rd["<strong>man/ModInputs.Rd</strong><br/><em>Methods section,<br/>one subsection per method</em>"]
+    Namespace["<strong>NAMESPACE</strong><br/><code>export(ModInputs)</code>"]
+    Help(["<strong>?ModInputs</strong><br/><em>and pkgdown site</em>"])
+
+    ClassBlock --> Document
+    MethodBlock --> Document
+    Document --> Rd
+    Document --> Namespace
+    Rd --> Help
+    Namespace --> Help
+
+    style ClassBlock fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
+    style MethodBlock fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
+    style Document fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style Rd fill:#FFFFFF,color:#000000,stroke:#333,font-family:monospace
+    style Namespace fill:#FFFFFF,color:#000000,stroke:#333,font-family:monospace
+    style Help fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+```
+
+### Packaging best practices
+
+File organization matters; I use `CamelCase` names for **`R6`** classes and `mod_*` names for helper functions. I also prefer to place each class in its own file, one per module.
+
+In `rsixer`, the module files contain only the **`R6`** class definition:
 
 ```{verbatim}
-R/
-  mod_inputs.R      # ModInputs class
-  mod_outputs.R     # ModOutputs class
-  mod_download.R    # ModDownload class
-  app_server.R      # Wires them together
-  app_ui.R          # Calls ui() methods
+R/ModInputs.R    # ModInputs class (one per file)
+R/ModOutputs.R   # ModOutputs class
+R/ModDownload.R  # ModDownload class
+R/app_server.R   # Wires modules together; instantiates objects
+R/app_ui.R       # Calls $ui() methods on each instance
 ```
+
+Export the classes with `@export` so package users can instantiate them. Only instantiate **`R6`** objects inside `app_server()` or module server functions; never at package load time.
+
+### Tests 
+
+Writing tests with `testthat` is especially valuable for **`R6`** modules. It's a good idea to test that instantiation works, the methods return expected types, and that passing different `id` values produces properly isolated namespaces:
+
+```{r}
+#| eval: false
+#| code-fold: false
+test_that("ModInputs instantiates with correct namespace", {
+  mod <- ModInputs$new(id = "test_inputs")
+  expect_equal(mod$.__enclos_env__$private$id, "test_inputs")
+  expect_is(mod$ui(), "shiny.tag")
+})
+```
+
+With `roxygen2` and **`R6`** together, teammates can run `?ModInputs` and immediately understand what the class does, the methods that are available, what parameters they accept, and what they return. That's the power of documentation over diving into the source `.R` file.
 
 ## Recap
 
-**`R6`** classes provide a clean, testable way to organize Shiny app-packages. By bundling UI generation and server logic into a single object, we gain encapsulation, reduce global state, and make dependencies explicit. It's a pattern that scales; the `rsixer` app uses **`R6`** modules for inputs, outputs, and downloads, each passing reactive values to the next in a clear data flow.
+**`R6`** classes provide a clean, testable way to organize Shiny app-packages. By bundling UI generation and server logic into a single object, we gain encapsulation, reduce global state, and make dependencies explicit. This is a pattern that can scale, too. I've shown that the `rsixer` app implements the same functionality of `tooltipexplorer` using **`R6`** modules for inputs, outputs, and downloads, each passing reactive values to the next in a clear data flow.
+
+Documenting **`R6`** classes with `roxygen2` transforms them from source code to a shareable API. Teammates can see the interface because the code itself is self-documenting, so the architecture scales with the size of the team.
 
 While not every Shiny app needs **`R6`**, it's worth learning if you're building production packages or multi-developer projects. It turns modules into reusable components that you (or your team) can confidently import into future apps.
+
+For working examples, see the source code and structure of **`rsixer`** ([mjfrigaard.github.io/rsixer](https://mjfrigaard.github.io/rsixer/)) and **`tooltipexplorer`** ([mjfrigaard.github.io/tooltipexplorer](https://mjfrigaard.github.io/tooltipexplorer/)) side-by-side.
