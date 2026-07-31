@@ -15,7 +15,7 @@ code-summary: 'show/hide'
 callout-icon: false
 image: "image.png"
 
-draft: true
+draft: false
 
 freeze: true
 
@@ -45,20 +45,22 @@ library(plumber)
 library(plumber2)
 ```
 
-If you've built APIs with **`plumber`** and recently upgraded to **`plumber2`**, you've probably noticed the syntax looks completely different. The good news is that the core job remains unchanged: turn R functions into HTTP endpoints. What changed is how you write handlers, wire them together, and manage requests and responses.
+I've been working through the exercises in Alex K Gold’s [DevOps for Data Science](https://do4ds.com/) and this week I finished the API labs. When the book was written, `plumber2` hadn't been released yet. I went ahead and completed the exercises using both `plumber` and `plumber2`.[^plumbers] 
 
-This post explores the main differences between **`plumber`** and **`plumber2`** using real examples from the **[DevOps for Data Science](https://do4ds.com/)** book, shows side-by-side comparisons, and explains why the migration is worth it.
+[^plumbers]: Read a full description of the lab solutions for [`plumber`](https://mjfrigaard.github.io/do4ds-labs/plumber.html) and [`plumber2`](https://mjfrigaard.github.io/do4ds-labs/plumber2.html) in my [DO4DS: Lab Solutions]().
 
 In this post, we'll explore:
 
 1. What **`plumber`** and **`plumber2`** do
-2. The syntax changes between versions
-3. A working example using the penguin prediction model
-4. Logging with both versions
+2. The syntax changes between versions (with side-by-side comparisons)
+3. A working example using a `penguin` prediction model
+4. Logging with both versions 
+5. Why the migration is worth it
+
 
 ## What is **`plumber`**?
 
-Both **`plumber`** and **`plumber2`** turn R functions into REST APIs. Write handlers that respond to HTTP requests, wire them into a router, and launch a server. Clients (Shiny apps, JavaScript frontends, Python scripts) make HTTP requests and get JSON responses back.
+Both **`plumber`** and **`plumber2`** turn R functions into REST APIs. We can also use them to write handlers that respond to HTTP requests, wire them into a router, and launch a server. Clients (Shiny apps, JavaScript frontends, Python scripts) make HTTP requests and get JSON responses back.
 
 ```{mermaid}
 %%| eval: true
@@ -124,7 +126,31 @@ The major differences between **`plumber`** and **`plumber2`** are syntactic. Th
 
 ### Parameter handling
 
-This is the biggest practical change. In **`plumber`**, all request data (query, body, path) mixes into function arguments. You parse the body manually.
+This is the biggest practical change. In **`plumber`**, all request data (query, body, path) mixes into function arguments. We parsed the body manually.
+
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: 'center'
+%%| fig-cap: 'Parameter Routing: plumber'
+%%{init: {'theme': 'base', 'themeVariables': {'fontFamily': 'monospace', 'darkMode': true}}}%%
+
+flowchart LR
+    subgraph Plumber["<strong><code>plumber</code></strong>"]
+        direction TB
+        ReqPlumb("HTTP Request")
+        ParsePlumb["<code>query</code>, <code>body</code>, <code>path</code> into function<br/>args"]
+        ManualPlumb(["<code>req$postBody</code><br/>+ jsonlite"])
+        ReqPlumb --> ParsePlumb
+        ParsePlumb --> ManualPlumb
+    end
+
+    style Plumber stroke:#999,color:#000000,rx:5,ry:5
+    style ReqPlumb fill:#FFFFFF,stroke:#333,color:#000000
+    style ParsePlumb fill:#FFF8E7,stroke:#999,color:#000000
+    style ManualPlumb fill:#FFE0E0,stroke:#c0392b,color:#000000
+    
+```
 
 In **`plumber2`**, they're separated:
 
@@ -137,35 +163,22 @@ In **`plumber2`**, they're separated:
 %%| eval: true
 %%| echo: false
 %%| fig-align: 'center'
-%%| fig-cap: 'Parameter Routing: plumber vs plumber2'
+%%| fig-cap: 'Parameter Routing: plumber2'
 %%{init: {'theme': 'base', 'themeVariables': {'fontFamily': 'monospace', 'darkMode': true}}}%%
 
 flowchart LR
-    subgraph Plumber["<strong>plumber</strong>"]
-        direction TB
-        ReqPlumb("HTTP Request")
-        ParsePlumb["All into<br/>Function Args"]
-        ManualPlumb(["req$postBody<br/>+ jsonlite"])
-        ReqPlumb --> ParsePlumb
-        ParsePlumb --> ManualPlumb
-    end
-
-    subgraph Plumber2["<strong>plumber2</strong>"]
+    subgraph Plumber2["<strong><code>plumber2<code></strong>"]
         direction TB
         ReqP2("HTTP Request")
-        PathP2(["path<br/>(named args)"])
-        QueryP2(["query<br/>(auto)"])
-        BodyP2(["body<br/>(auto-parsed)"])
+        PathP2(["<code>path</code><br/>(named args)"])
+        QueryP2(["<code>query</code><br/>(auto)"])
+        BodyP2(["<code>body</code><br/>(auto-parsed)"])
         ReqP2 --> PathP2
         ReqP2 --> QueryP2
         ReqP2 --> BodyP2
     end
 
-    style Plumber fill:#FFF8E7,stroke:#999,color:#000000,rx:5,ry:5
-    style Plumber2 fill:#E0F0ED,stroke:#4CBB9D,color:#000000,rx:5,ry:5
-    style ReqPlumb fill:#FFFFFF,stroke:#333,color:#000000
-    style ParsePlumb fill:#FFF8E7,stroke:#999,color:#000000
-    style ManualPlumb fill:#FFE0E0,stroke:#c0392b,color:#000000
+    style Plumber2 stroke:#999,color:#000000,rx:5,ry:5
     style ReqP2 fill:#FFFFFF,stroke:#333,color:#000000
     style PathP2 fill:#E0F0ED,stroke:#4CBB9D,color:#000000,rx:5,ry:5
     style QueryP2 fill:#E0F0ED,stroke:#4CBB9D,color:#000000,rx:5,ry:5
