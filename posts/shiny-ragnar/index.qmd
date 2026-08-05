@@ -1,0 +1,532 @@
+---
+title: "Use Ragnar To Build Chatbots For Your Quarto Book"
+subtitle: "Grounding an AI assistant in your documentation"
+author: "Martin Frigaard"
+date: "2026-08-05"
+categories: ["shiny", "ragnar", "rag", "ai", "llm"]
+toc: true
+toc-depth: 4
+toc-expand: true
+callout-icon: false
+code-block-bg: "#f8f8f8"
+code-block-border-left: "#e8e8e8"
+---
+
+```{r}
+#| label: setup
+#| eval: true
+#| echo: false
+#| include: false
+source("../_common.R")
+options(scipen = 999)
+```
+
+If you've published technical documentation with Quarto (like my [Shiny App-Packages book](https://mjfrigaard.github.io/shiny-app-pkgs/)) you've probably wished readers could ask it questions directly. A chatbot would be ideal; unfortunately, LLMs trained on public data might hallucinate when asked specific questions in reference to your documentation.[^1]
+
+[^1]: i.e., they might confidently describe a pattern from the documentation incorrectly, or even invent function arguments that don't exist.
+
+[Retrieval-Augmented Generation (RAG)](https://en.wikipedia.org/wiki/Retrieval-augmented_generation) solves this problem. Instead of relying on training data, RAG feeds *your* actual documentation into the LLM before generating a response. The result is a chatbot that answers accurately, cites the exact section it pulled from, and updates instantly as your book evolves.
+
+In this post I'll cover how to build a chatbot using `{ragnar}`, an R package that handles the entire RAG pipeline. I'll show two deployment paths: one using premier models (Anthropic Claude or OpenAI GPT), and one using local models via Ollama for privacy and cost control. We'll use the [`quartohelp` project](https://github.com/t-kalinowski/quartohelp) as our reference implementation.
+
+## What is RAG and why it matters
+
+RAG is a three-step process: 1) retrieve relevant excerpts from the documentation, 2) feed those excerpts to an LLM, and 3) let the LLM synthesize a response grounded in the *actual* content.
+
+Without RAG, an LLM responds based on what it learned during training. For specialized topics like the [Shiny App-Packages](https://mjfrigaard.github.io/shiny-app-pkgs/), this creates a reliability problem. The LLM might confidently describe module patterns from the book incorrectly because the training data was incomplete or conflicting.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'Traditional LLM'
+%%| echo: false
+%%{init: {'theme': 'neutral', 'themeVariables': { 'fontSize': '13px'}}}%%
+
+graph LR
+    subgraph traditional ["Traditional LLM"]
+        Q1(["User<br/>Query"]) -->|relies on| T[("Training Data")]
+        T --> A(["LLM Response<br/><em>(hallucination<br>risk)</em>"])
+        A -->|answer| Q1
+    end
+
+    style traditional fill:#fff
+    style Q1 fill:#dfdfde
+    style T fill:#b3cde0
+    style A fill:#ffcccc
+```
+
+With RAG, the LLM sees the *actual* text before responding. If we ask "*how do I use layout functions in a Shiny app-package?*", the retrieval step finds the exact section of the book that covers this, passes it to the LLM, and the LLM synthesizes an answer directly from that content. If the documentation updates, the chatbot reflects those changes immediately without retraining.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'RAG'
+%%| echo: false
+%%{init: {'theme': 'neutral', 'themeVariables': { 'fontSize': '13px'}}}%%
+
+graph LR
+    subgraph rag ["RAG Pipeline"]
+        Q2(["User<br/>Query"]) 
+        B[\"Your Documentation"\]
+        C(["LLM Response<br/><em>(grounded &<br>accurate)</em>"])
+        Q2 -->|"Retrieve relevant<br>excerpts"| B
+        B -->|feeds| C
+        C -->|answer| Q2
+    end
+    
+    style rag fill:#fff
+    style Q2 fill:#dfdfde
+    style C fill:#ccffcc
+    
+```
+
+The trade-off is complexity. RAG requires three additional components: a document chunking strategy, an embedding model to convert text to vectors, and a retrieval system to find relevant chunks. `{ragnar}` abstracts away most of this, but you'll need to understand the basic concepts.
+
+## The `{ragnar}` workflow
+
+`{ragnar}` implements RAG in seven sequential steps. Understanding this pipeline will you help configure it for your documentation.
+
+Here's what each step does:
+
+1.  **Document input**: `{ragnar}` accepts Quarto or Markdown files as input. For my Shiny App-Packages book, this means pointing `{ragnar}` at the `.qmd` files.
+
+2.  **Markdown conversion**: Files are converted to a consistent Markdown format, preserving structure and headings.
+
+3.  **Text chunking**: Long documents are split into smaller chunks. `{ragnar}` uses semantic chunking (breaking at logical section boundaries) rather than naive word-count splitting. This is important; if the documentation has small subsections, those become natural chunk boundaries, making retrieval more precise.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'ragnar Workflow'
+%%| echo: false
+%%{init: {'theme': 'neutral', 'themeVariables': { 'fontSize': '14px'}}}%%
+
+graph TD
+    A(["<strong>Document Input</strong><br><em><code>.qmd</code> files</em>"]) -->        B("<strong>Markdown Conversion</strong>")
+    B --> C("<strong>Text Chunking</strong><br><em>semantic boundaries</em>")
+    
+    style A fill:#b2e7cd
+    style B fill:#fff
+    style C fill:#fbd6c2
+    
+```
+
+4.  **Context augmentation**: Each chunk is tagged with its heading hierarchy, which preserves context. For example, when the retrieval step finds a chunk about documenting Shiny app functions, it knows it came from the "Documenting app functions" section of [Chapter 5.](https://mjfrigaard.github.io/shiny-app-pkgs/document.html#sec-document-app-functions)
+
+5.  **Embedding**: Chunks are converted to high-dimensional vector representations. This is where the embedding model (Claude, GPT, or local) enters the pipeline. Vectors capture meaning; similar chunks have similar vectors, even if they use different words.
+
+6.  **Storage**: Vectors and chunks are stored in a `{duckdb}` database. This is the retrieval index; it lives on disk and can be updated incrementally as the documentation evolves.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'ragnar Workflow'
+%%| echo: false
+%%{init: {'theme': 'neutral', 'themeVariables': { 'fontSize': '14px'}}}%%
+
+graph TD
+    C("<strong>Text Chunking</strong><br><em>semantic boundaries</em>") 
+    D("<strong>Context Augmentation</strong><br><em>heading hierarchy</em>")
+    C --> D
+    D --> E["<strong>Embeddings Vectors</strong><br><em>Claude or Ollama</em>"]
+    E --> F[("<strong>DuckDB Storage</strong><br><em>local index</em>")]
+    
+    style C fill:#b2e7cd
+    style D fill:#fff
+    style E fill:#fff
+    style F fill:#fbd6c2
+    
+```
+
+7.  **Retrieval and chat**: At runtime, user queries are embedded using the same model, then compared to stored vectors using cosine similarity (vector math for "*how similar are these concepts*"). `{ragnar}` also performs keyword matching as a fallback. Top results are passed to the LLM along with the user query.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'ragnar Workflow'
+%%| echo: false
+%%{init: {'theme': 'neutral', 'themeVariables': { 'fontSize': '14px'}}}%%
+
+graph TD
+    F[("<strong>DuckDB Storage<br></strong><em>local index</em>")]
+    F --> G("<strong>Retrieval<br></strong><em>semantic + keyword<br>cosine similarity</em>")
+    G --> H(["<strong>LLM Chat<br></strong><em>synthesis grounded<br>response</em>"])
+    
+    style F fill:#b2e7cd
+    style G fill:#fff
+    style H fill:#fbd6c2
+```
+
+Notice that the embeddings and retrieval happen *before* generation. The LLM never touches the raw documentation; it only sees the relevant excerpts that the retriever found.
+
+## Setting up `{ragnar}` with API Keys
+
+LLM Model providers (Claude from Anthropic or GPT from OpenAI) give the highest quality responses and the easiest setup. We just need an API key, but `{ragnar}` handles the rest.
+
+### Prerequisites
+
+Install `{ragnar}` and required dependencies:
+
+```{r}
+#| eval: false 
+#| code-fold: false
+install.packages(c("ragnar", "duckdb"))
+```
+
+```{r}
+#| eval: false 
+#| code-fold: false
+library(ragnar)
+library(duckdb)
+```
+
+We'll also need either an Anthropic API key (for Claude) or OpenAI key (for GPT). Set the API key as an environment variable before starting:
+
+```{bash}
+#| eval: false 
+#| code-fold: false
+export ANTHROPIC_API_KEY="your-key-here"
+```
+
+```{bash}
+#| eval: false 
+#| code-fold: false
+export OPENAI_API_KEY="your-key-here"
+```
+
+### Building a retrieval index
+
+The first time we set up `{ragnar}`, we'll ingest the book's `.qmd` files and build a retrieval index. This is a one-time setup step. After this, we only need to rebuild if the book content changes.
+
+```{r}
+#| label: co_box_req
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "r", 
+  header = "Requirement", 
+  fold = FALSE,
+  size = "1.10",
+  hsize = "1.15",
+  contents = "
+`{ragnar}` requires `{duckdb}` for storage; RSQLite and PostgreSQL are not supported alternatives. `{duckdb}` is chosen specifically for its vector similarity search capabilities, which power the retrieval step. If you need cloud storage instead of a local file, `{ragnar}` supports MotherDuck (cloud-hosted `{duckdb}`)."
+)
+```
+
+The code below ingests the `shiny-app-packages` book and builds an embedded index.
+
+```{r}
+#| eval: false 
+#| code-fold: false
+# build embedded index -----
+book_path <- "~/path/to/shiny-app-pkgs" #<1>
+
+chunks <- markdown_chunk( #<2>
+  dir = book_path,
+  pattern = "\\.qmd$"
+) #<2>
+
+embedded <- embed_anthropic( #<3>
+  chunks,
+  model = "claude-3-5-sonnet-20241022"
+) #<3>
+
+store <- ragnar_store_create( #<4>
+  embedded,
+  path = "shiny-book-index.duckdb"
+) #<4>
+```
+1.  Point to the book's `.qmd` files\
+2.  Finds all `.qmd` files in the book directory; converts them to chunks with heading context preserved.\
+3.  Sends chunks to Anthropic API for embedding (this costs a few cents for a typical book), gets back vectors.\
+4.  Creates a local `{duckdb}` file that serves as the retrieval index.
+
+The store is now ready. We can query it without additional API calls; only live chat with Claude requires the API.
+
+### Running the chatbot
+
+Once the index is built, we can launch an interactive chat session:
+
+```{r}
+#| eval: false 
+#| code-fold: false
+# run the chatbot --------------
+
+store <- ragnar_store_open("shiny-book-index.duckdb") #<1>
+
+chat <- ragnar_chat_create( #<2>
+  store = store,
+  model = "claude-3-5-sonnet-20241022",
+  provider = "anthropic"
+) #<2>
+
+
+response <- ragnar_chat_message( #<3>
+  chat,
+  "How do I structure file names for R6 class modules in a Shiny app-package?"
+) #<3>
+```
+
+1.  Load our stored index\
+2.  Start a chat session (creates a chat session bound to our index and Claude model)\
+3.  Ask a question. The query is embedded and compared to stored vectors; top matches feed into Claude along with the query.
+
+The contents of `response` include:
+
+```{r}
+#| eval: false 
+#| code-fold: false
+response$answer #<1>
+response$sources #<2>
+response$citations #<3>
+```
+1.  `$answer`: Claude's response grounded in your book\
+2.  `$sources`: List of chunks used to generate the response\
+3.  `$citations`: Links back to the `.qmd` files
+
+Claude generates a response grounded in our actual documentation, not training data.
+
+## Setting up `{ragnar}` locally
+
+For privacy-conscious deployments or when API costs matter, we can run embeddings and chat locally using Ollama. **This approach keeps the data on our machine and has no per-query costs.**
+
+```{r}
+#| label: co_box_trade_offs
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "b", 
+  header = "Trade-offs", 
+  fold = FALSE,
+  size = "1.10",
+  hsize = "1.15",
+  contents = "
+Local models are slower (seconds instead of milliseconds) and usually less capable at synthesis than premier models. Response quality is good but not exceptional. Use this when privacy or cost is the priority.")
+```
+
+### Installing Ollama
+
+Download and install Ollama from <https://ollama.ai/>. Then pull a model:
+
+Pull the [`nomic-embed-text` model](https://ollama.com/library/nomic-embed-text) (it's a capable open model for embeddings):
+
+```{bash}
+#| eval: false 
+#| code-fold: false
+ollama pull nomic-embed-text 
+```
+
+Pull a chat model (e.g., [`mistral`](https://ollama.com/library/mistral) or [`neural-chat`](https://ollama.com/library/neural-chat))
+
+```{bash}
+#| eval: false 
+#| code-fold: false
+ollama pull mistral
+```
+
+Start the Ollama server:
+
+```{bash}
+#| eval: false 
+#| code-fold: false
+ollama serve
+```
+
+Ollama listens on `localhost:11434` by default.
+
+### Building the index locally
+
+The setup is similar to the premier-model approach, but `{ragnar}` calls a local Ollama instance instead of Anthropic:
+
+```{r}
+#| eval: false 
+#| code-fold: false
+# Build the local index ----------------
+chunks <- markdown_chunk( #<1>
+  dir = "~/path/to/shiny-app-pkgs",
+  pattern = "\\.qmd$"
+) #<1>
+
+embedded <- embed_ollama( #<2>
+  chunks,
+  base_url = "http://localhost:11434", #<3>
+  model = "nomic-embed-text"
+) #<2>
+
+store <- ragnar_store_create( #<4>
+  embedded,
+  path = "shiny-book-local.duckdb"
+) #<4>
+```
+1. Chunk the book       
+2. Embed locally via Ollama   
+3. Ollama server URL; ensure `ollama serve` is running before this step  
+4. Store in `{duckdb}` (same as before)     
+
+This step is slower than cloud embeddings (several minutes for a typical book) but runs entirely on the local machine.
+
+### Running local chat
+
+Once the index is built, chat is just as simple:
+
+```{r}
+#| eval: false 
+#| code-fold: false
+# Run chat locally -----------
+store <- ragnar_store_open("shiny-book-local.duckdb") #<1>
+
+chat <- ragnar_chat_create( #<2>
+  store = store,
+  model = "mistral", #<3>
+  provider = "ollama",
+  base_url = "http://localhost:11434"
+) #<2>
+
+response <- ragnar_chat_message( #<4>
+  chat,
+  "Explain the difference between module-based and R6-based architecture in Shiny app-packages."
+) #<4>
+```
+1. Load locally stored index     
+2. Build `chat` from local `store` and specify `model`   
+3. You can swap `mistral` for another Ollama model (e.g., `neural-chat`, `llama2`)   
+4. Ask a question and store the `response`  
+
+We can view the `answer` in the `response`:
+
+```{r}
+#| eval: false 
+#| code-fold: false
+response$answer
+```
+
+
+The workflow is identical; only the model and provider change. No API keys, no cloud calls, and the documentation content never leaves our machine.
+
+## API Keys vs. Local models
+
+Here's a practical comparison:
+
+| Dimension          | API Key (Claude/GPT)            | Local (Ollama)       |
+|--------------------|---------------------------------|----------------------|
+| Setup              | API key + one command           | Download + server    |
+| Speed              | \~1 sec per query               | \~5-10 sec per query |
+| Quality            | Excellent                       | Good                 |
+| Cost               | \~\$0.01-0.05 per 1K embeddings | Free after setup     |
+| Privacy            | Data sent to provider           | All local            |
+| Hallucination risk | Low                             | Moderate             |
+| Maintenance        | None (provider manages)         | Keep Ollama updated  |
+
+
+<br>
+
+:::{layout="[50,50]" layout-valign="top"}
+
+### Use premier models when
+
+- Response quality matters most; i.e., publishing the chatbot publicly
+
+- Speed is important; users expect sub-second responses
+
+- Cost is not a concern (typical book: \$0.50 setup + \$0.001 per chat turn)
+
+- You're comfortable with cloud API calls
+
+### Use local models when
+
+- Privacy is mandatory; data cannot leave your network
+
+- You're testing or building an internal tool
+
+- You want zero per-query costs
+
+- You have hardware that can run Ollama (CPU is fine, GPU is better)
+
+:::
+
+For the `shiny-app-packages` book, I started with Claude. The setup was simple, quality was excellent, and costs are negligible for a published resource. Later, if I want to offer an offline or private version, Ollama provides a clear fallback.
+
+### Deployment architectures
+
+The two approaches differ in where computation happens and how data flows. Premier models send queries and receive responses from cloud APIs, but the index stays local.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'Model API'
+%%| echo: false
+%%{init: {'theme': 'neutral', 'themeVariables': {'fontSize': '13px'}}}%%
+
+graph LR
+    subgraph cloud ["Model API (Claude/GPT)"]
+        direction TB
+        U1(["Your Machine"])
+        B1[("duckdb Index<br/>with embeddings<br/>stored locally")]
+        U1 -->|"i. query"| B1
+        B1 -->|"ii. retrieve chunks<br/>similarity search"| U1
+        U1 -->|"iii. query + chunks"| C1{{"Anthropic/OpenAI<br/>Servers"}}
+        C1 -->|"iv. response"| U1
+    end
+    
+    style cloud fill:#fff
+    style C1 fill:#fff0e8
+    style B1 fill:#b3cde0
+    
+```
+
+Local models keep everything on our machine; Ollama never touches the internet:
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'Local Models'
+%%| echo: false
+%%{init: {'theme': 'neutral', 'themeVariables': {'fontSize': '13px'}}}%%
+
+graph LR
+    subgraph local ["Local Models (Ollama)"]
+        direction TB
+        U2(["Your Machine"])
+        B2[("duckdb Index<br/>with embeddings<br/>stored locally")]
+        U2 -->|"i. query"| B2
+        B2 -->|"ii. retrieve chunks<br/>similarity search"| U2
+        U2 -->|"iii. query + chunks"| O{{"Ollama Server<br/>localhost:11434"}}
+        O -->|"iv. response"| U2
+    end
+
+    
+    style local fill:#fff
+    style O fill:#f0f8e8
+    style B2 fill:#b3cde0
+
+```
+
+ 
+## Integrating with book site
+
+The `quartohelp` project shows a complete working example. It integrates `{ragnar}` into a Quarto site by:     
+1.  Building the index once during site build (embedding happens at author time, not reader time)     
+2.  Serving the index via a Quarto extension    
+3.  Embedding a chat widget in the site that queries the local index    
+
+We can adapt this pattern for the book site at <https://mjfrigaard.github.io/shiny-app-pkgs/>. The key is treating index building as a one-time author task, not a runtime operation.
+
+An alternative simpler approach is to publish the index as a static file with the site, and let readers query it via a Shiny app deployed separately. This keeps the chatbot decoupled from the static site build process.
+
+## Recap
+
+RAG grounds chatbots in actual documentation instead of training data, solving the hallucination problem: 
+
+* `{ragnar}` handles the entire pipeline; chunking, embedding, retrieval, and chat are all one function each    
+* We can choose between premier models (Claude, GPT) for quality or local Ollama for privacy and cost   
+* Building an index takes minutes; updating it as your documentation evolves can be done a single rebuild step    
+
+This approach transforms static documentation into an interactive resource without requiring us to retrain an LLM or manage complex infrastructure.
+
+## Related resources
+
+- `{ragnar}` documentation: <https://ragnar.tidyverse.org/>     
+- `quartohelp` project: <https://github.com/t-kalinowski/quartohelp> (working example)    
+- Ollama models: <https://ollama.ai/library> (list of available open models)    
+- Anthropic Claude API: <https://console.anthropic.com/> (API key setup)      
+- OpenAI Models: <https://platform.openai.com/> (alternative premier provider)      
