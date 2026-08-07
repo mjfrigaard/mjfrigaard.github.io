@@ -2,14 +2,27 @@
 title: "Use Ragnar To Build Chatbots For Your Quarto Book"
 subtitle: "Grounding an AI assistant in your documentation"
 author: "Martin Frigaard"
-date: "2026-08-05"
-categories: ["shiny", "ragnar", "rag", "ai", "llm"]
+date: "2026-08-07"
+categories: ["Shiny", "ragnar", "RAG", "AI", "LLM"]
 toc: true
+image: "image.png"
 toc-depth: 4
 toc-expand: true
 callout-icon: false
 code-block-bg: "#f8f8f8"
 code-block-border-left: "#e8e8e8"
+
+draft: false
+
+freeze: true
+
+knitr:
+  opts_chunk:
+    fig-dpi: 320
+    fig-width: 6
+    out-width: '85%'
+    fig-format: png
+    fig-align: 'center'
 ---
 
 ```{r}
@@ -27,13 +40,17 @@ If you've published technical documentation with Quarto (like my [Shiny App-Pack
 
 [Retrieval-Augmented Generation (RAG)](https://en.wikipedia.org/wiki/Retrieval-augmented_generation) solves this problem. Instead of relying on training data, RAG feeds *your* actual documentation into the LLM before generating a response. The result is a chatbot that answers accurately, cites the exact section it pulled from, and updates instantly as your book evolves.
 
-In this post I'll cover how to build a chatbot using `{ragnar}`, an R package that handles the entire RAG pipeline. I'll show two deployment paths: one using premier models (Anthropic Claude or OpenAI GPT), and one using local models via Ollama for privacy and cost control. We'll use the [`quartohelp` project](https://github.com/t-kalinowski/quartohelp) as our reference implementation.
+In this post I'll cover how to build a chatbot using [`{ragnar}`](https://ragnar.tidyverse.org/), an R package that handles the entire RAG pipeline. I'll show two deployment paths: one using a model API key (from Anthropic/Claude or OpenAI/GPT), and one using local models via [Ollama](https://ollama.com/) for privacy and cost control. We'll use the [`quartohelp` project](https://github.com/t-kalinowski/quartohelp) as our reference implementation.
 
-## What is RAG and why it matters
+## What is RAG 
 
 RAG is a three-step process: 1) retrieve relevant excerpts from the documentation, 2) feed those excerpts to an LLM, and 3) let the LLM synthesize a response grounded in the *actual* content.
 
-Without RAG, an LLM responds based on what it learned during training. For specialized topics like the [Shiny App-Packages](https://mjfrigaard.github.io/shiny-app-pkgs/), this creates a reliability problem. The LLM might confidently describe module patterns from the book incorrectly because the training data was incomplete or conflicting.
+###  Why this matters
+
+Without RAG, an LLM responds based on what it learned during training. For specialized topics like building Shiny apps as R packages[^sap], this creates a reliability problem. The LLM might confidently describe module patterns from the book incorrectly because the training data was incomplete or conflicting.
+
+[^sap]: In truth, this topic isn't so specialized that an LLM couldn't give best practices. [Mastering Shiny](https://mastering-shiny.org/) and [R Packages, 2e](https://r-pkgs.org/index.html) have almost certainly been included in the training data. And if they haven't, the [Shiny source code](https://github.com/rstudio/shiny) and [Writing R Extensions](https://cran.r-project.org/doc/manuals/r-devel/R-exts.html) definitely have. 
 
 ```{mermaid}
 %%| eval: true
@@ -55,7 +72,8 @@ graph LR
     style A fill:#ffcccc
 ```
 
-With RAG, the LLM sees the *actual* text before responding. If we ask "*how do I use layout functions in a Shiny app-package?*", the retrieval step finds the exact section of the book that covers this, passes it to the LLM, and the LLM synthesizes an answer directly from that content. If the documentation updates, the chatbot reflects those changes immediately without retraining.
+With RAG, the LLM sees the *actual* text before responding. If we ask *"where do I put external resources in my Shiny app/R package?"*, the retrieval step finds the exact section of the book that covers this, passes this to the LLM, and the LLM synthesizes an answer directly from that content. If/when the documentation updates, the chatbot reflects those changes immediately without retraining. 
+
 
 ```{mermaid}
 %%| eval: true
@@ -80,19 +98,22 @@ graph LR
     
 ```
 
+
 The trade-off is complexity. RAG requires three additional components: a document chunking strategy, an embedding model to convert text to vectors, and a retrieval system to find relevant chunks. `{ragnar}` abstracts away most of this, but you'll need to understand the basic concepts.
 
 ## The `{ragnar}` workflow
 
-`{ragnar}` implements RAG in seven sequential steps. Understanding this pipeline will you help configure it for your documentation.
+`{ragnar}` implements RAG in seven sequential steps. Understanding this pipeline helped me configure it for my documentation.[^ragnar-process]
+
+[^ragnar-process]: Read more in [Why RAG? The Hallucination Problem](https://ragnar.tidyverse.org/articles/ragnar.html#why-rag-the-hallucination-problem).
 
 Here's what each step does:
 
-1.  **Document input**: `{ragnar}` accepts Quarto or Markdown files as input. For my Shiny App-Packages book, this means pointing `{ragnar}` at the `.qmd` files.
+1.  **Document input**: `{ragnar}` accepts Quarto or Markdown files as input. For my [Shiny App-Packages book](https://github.com/mjfrigaard/shiny-app-pkgs), this means pointing `{ragnar}` at the `.qmd` files.
 
 2.  **Markdown conversion**: Files are converted to a consistent Markdown format, preserving structure and headings.
 
-3.  **Text chunking**: Long documents are split into smaller chunks. `{ragnar}` uses semantic chunking (breaking at logical section boundaries) rather than naive word-count splitting. This is important; if the documentation has small subsections, those become natural chunk boundaries, making retrieval more precise.
+3.  **Text chunking**: Long documents are split into smaller chunks. `{ragnar}` uses semantic chunking (breaking at logical section boundaries) rather than naive word-count splitting. This is important, because if the documentation has small subsections, those become natural chunk boundaries. Well-defined chunk boundaries are what makes the retrieval more precise.
 
 ```{mermaid}
 %%| eval: true
@@ -113,7 +134,7 @@ graph TD
 
 4.  **Context augmentation**: Each chunk is tagged with its heading hierarchy, which preserves context. For example, when the retrieval step finds a chunk about documenting Shiny app functions, it knows it came from the "Documenting app functions" section of [Chapter 5.](https://mjfrigaard.github.io/shiny-app-pkgs/document.html#sec-document-app-functions)
 
-5.  **Embedding**: Chunks are converted to high-dimensional vector representations. This is where the embedding model (Claude, GPT, or local) enters the pipeline. Vectors capture meaning; similar chunks have similar vectors, even if they use different words.
+5.  **Embedding**: Chunks are converted to high-dimensional vector representations. This is where the embedding model (Claude, GPT, or local) enters the pipeline. Vectors capture meaning, and similar chunks have similar vectors, even if they use different words.
 
 6.  **Storage**: Vectors and chunks are stored in a `{duckdb}` database. This is the retrieval index; it lives on disk and can be updated incrementally as the documentation evolves.
 
@@ -301,7 +322,7 @@ co_box(color = "b",
   size = "1.10",
   hsize = "1.15",
   contents = "
-Local models are slower (seconds instead of milliseconds) and usually less capable at synthesis than premier models. Response quality is good but not exceptional. Use this when privacy or cost is the priority.")
+Local models are slower (seconds instead of milliseconds) and usually less capable at synthesis than API model keys. Response quality is good but not exceptional. Use this when privacy or cost is the priority.")
 ```
 
 ### Installing Ollama
@@ -336,7 +357,7 @@ Ollama listens on `localhost:11434` by default.
 
 ### Building the index locally
 
-The setup is similar to the premier-model approach, but `{ragnar}` calls a local Ollama instance instead of Anthropic:
+The setup is similar to the API key approach, but `{ragnar}` calls a local Ollama instance instead of Anthropic:
 
 ```{r}
 #| eval: false 
@@ -422,7 +443,7 @@ Here's a practical comparison:
 
 :::{layout="[50,50]" layout-valign="top"}
 
-### Use premier models when
+### Use API model keys when
 
 - Response quality matters most; i.e., publishing the chatbot publicly
 
@@ -430,17 +451,17 @@ Here's a practical comparison:
 
 - Cost is not a concern (typical book: \$0.50 setup + \$0.001 per chat turn)
 
-- You're comfortable with cloud API calls
+- Cloud API calls aren't a concern
 
 ### Use local models when
 
-- Privacy is mandatory; data cannot leave your network
+- Privacy is mandatory; data cannot leave the network
 
-- You're testing or building an internal tool
+- Testing or building an internal tool
 
-- You want zero per-query costs
+- Cost is a concern (local models have zero per-query costs)
 
-- You have hardware that can run Ollama (CPU is fine, GPU is better)
+- The available server can run Ollama (CPU is fine, GPU is better)
 
 :::
 
@@ -448,7 +469,7 @@ For the `shiny-app-packages` book, I started with Claude. The setup was simple, 
 
 ### Deployment architectures
 
-The two approaches differ in where computation happens and how data flows. Premier models send queries and receive responses from cloud APIs, but the index stays local.
+The two approaches differ in where computation happens and how data flows. Model keys send queries and receive responses from cloud APIs, but the index stays local.
 
 ```{mermaid}
 %%| eval: true
@@ -504,21 +525,293 @@ graph LR
  
 ## Integrating with book site
 
-The `quartohelp` project shows a complete working example. It integrates `{ragnar}` into a Quarto site by:     
-1.  Building the index once during site build (embedding happens at author time, not reader time)     
-2.  Serving the index via a Quarto extension    
-3.  Embedding a chat widget in the site that queries the local index    
+The [`quartohelp` project](https://github.com/t-kalinowski/quartohelp) shows one complete working example: it builds the index during the site build, serves it through a Quarto extension, and embeds a chat widget directly in the rendered pages.
 
-We can adapt this pattern for the book site at <https://mjfrigaard.github.io/shiny-app-pkgs/>. The key is treating index building as a one-time author task, not a runtime operation.
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'quartohelp approach: integrated site build and chat'
+%%| echo: false
+%%{init: {'theme': 'neutral', 'themeVariables': { 'fontSize': '13px'}}}%%
 
-An alternative simpler approach is to publish the index as a static file with the site, and let readers query it via a Shiny app deployed separately. This keeps the chatbot decoupled from the static site build process.
+graph TD
+    author(["<strong>Author</strong><br/>Writes documentation"]) -->|"quarto render"| build("<strong>Site</strong><br>build process")
+    build -->|"Build index"| chunk("Chunk and embed<br/>during render")
+    chunk -->|"Create"| index[("<strong>Index</strong><br/>in memory")]
+    index -->|"Register"| ext("Quarto Extension")
+    ext -->|"Inject"| pages("Rendered HTML pages<br/>with chat widget")
+    pages -->|"Read + query"| reader(["Reader<br/>Uses chat widget<br/>on the page"])
+
+    style author fill:#dfdfde
+    style build fill:#fff
+    style chunk fill:#fff
+    style index fill:#b3cde0
+    style ext fill:#fbd6c2
+    style pages fill:#ccffcc
+    style reader fill:#dfdfde
+```
+
+This is an elegant approach, but it couples the chatbot to the site build, which means every render is also an embedding job and every change to the widget is a change to the book.
+
+I reached for a simpler approach: Publish the index as a static file alongside the site, then let a separately deployed Shiny app read that file and do the querying. This way, the book stays a book, and the chatbot stays an app. Division of labor. 
+
+### Why a decoupled index works
+
+The `{duckdb}` index is a single file. Once the embeddings are computed, these files are immutable until the documentation changes, so nothing about it needs a server. GitHub Pages (or Netlify, or S3) already serves static files well, and publishing the index costs nothing beyond the storage.
+
+Splitting the process into two pieces has three advantages:
+
+1.  **Decoupling**: Rendering the book never triggers an embedding run, so `quarto render` stays fast and stays free of API keys. Breaking the chat app never breaks the book.
+
+2.  **Simplicity**: There's no Quarto extension to maintain, no JavaScript bridge between the page and the index, and no per-reader retrieval running in the browser. The Shiny app is an ordinary Shiny app.
+
+3.  **Maintenance**: The index and the app version independently. We can redeploy the app with a new model or a nicer UI without rebuilding embeddings, and we can rebuild embeddings without redeploying the app.
+
+
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'Build-time workflow: author to published index'
+%%| echo: false
+%%{init: {'theme': 'neutral', 'themeVariables': { 'fontSize': '13px'}}}%%
+
+graph TD
+    author(["<strong>Author</strong><br/>Local Machine"]) -->|"i. Build Index"| chunk("Chunk documentation<br/>Embed via Claude/Ollama")
+    chunk -->|"ii. Create file"| duckdb[("<strong>shiny-book-index.duckdb</strong>")]
+    duckdb -->|"iii. Commit to repo"| repo("Git<br/>Repository")
+    repo -->|"iv. Site build"| build("Quarto/Hugo<br/>build process")
+    build -->|"v. Publish"| publish[("<strong>Published Index</strong><br/>https://site.com/assets/index.duckdb")]
+
+    style author fill:#dfdfde
+    style chunk fill:#fff
+    style duckdb fill:#b3cde0
+    style repo fill:#fff
+    style build fill:#fff
+    style publish fill:#fbd6c2
+```
+
+The **Published Index** is a hyperlink: `https://site.com/assets/index.duckdb`
+
+The trade-off? Readers leave the book to use the chatbot, or interact with it through an embedded iframe rather than a native widget. For most documentation sites, that's a fair price.
+
+### Publishing the index with the site
+
+To build the index locally as mentioned above, we can write it into a directory that Quarto will publish. I put mine under `assets/` at the book root.
+
+```bash
+shiny-app-pkgs/
+├── _quarto.yml
+├── index.qmd
+├── document.qmd
+├── assets/
+│   ├── shiny-book-index.duckdb
+│   └── index-version.txt
+└── ...
+```
+
+Quarto copies all the files it doesn't render, but being explicit avoids surprises. So we add the directory to the `resources` key in `_quarto.yml`:
+
+```yaml
+project:
+  type: book
+  resources:
+    - assets/shiny-book-index.duckdb
+    - assets/index-version.txt
+```
+
+The `index-version.txt` file holds a timestamp or commit SHA written at build time. The app uses it to decide whether its cached copy is stale.
+
+```{r}
+#| eval: false
+#| code-fold: false
+# rebuild index ----
+chunks <- markdown_chunk(dir = ".", pattern = "\\.qmd$")
+
+embedded <- embed_anthropic(chunks, model = "claude-3-5-sonnet-20241022")
+
+store <- ragnar_store_create(embedded, path = "assets/shiny-book-index.duckdb")
+
+writeLines(format(Sys.time(), "%Y%m%d%H%M%S"), "assets/index-version.txt")
+```
+
+Commit both files, push, and publish the site. The index is now a URL:
+
+```{verbatim}
+https://mjfrigaard.github.io/shiny-app-pkgs/assets/shiny-book-index.duckdb
+```
+
+```{r}
+#| label: co_box_file_size
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "o",
+  header = "Watch the file size",
+  fold = FALSE,
+  size = "1.10",
+  hsize = "1.15",
+  contents = "
+Embeddings are dense; a book-sized index can run tens of megabytes, and GitHub warns above 50 MB and rejects files above 100 MB. If the index outgrows the repo, store it with [Git LFS](https://git-lfs.com/) or attach it to a GitHub Release and point the app at the release asset URL instead. The rest of the workflow is unchanged."
+)
+```
+
+### Querying the index from Shiny
+
+With the Shiny method, the app downloads the published file once at startup, opens it read only, and passes the store to a module. We can put the download in `global.R` (or `app.R` above `ui`), so it runs once per process rather than once per user session.
+
+```{r}
+#| eval: false
+#| code-fold: false
+# global.R ----
+library(shiny)
+library(ragnar)
+
+base_url <- "https://mjfrigaard.github.io/shiny-app-pkgs/assets"
+index_path <- file.path(tempdir(), "shiny-book-index.duckdb") #<1>
+
+remote_version <- readLines(file.path(base_url, "index-version.txt"))[1] #<2>
+cached_version <- file.path(tempdir(), "index-version.txt")
+
+stale <- !file.exists(index_path) ||
+  !identical(remote_version, readLines(cached_version)[1]) #<3>
+
+if (stale) {
+  curl::curl_download(file.path(base_url, "shiny-book-index.duckdb"), index_path)
+  writeLines(remote_version, cached_version)
+}
+
+store <- ragnar_store_open(index_path, read_only = TRUE) #<4>
+```
+1.  `{duckdb}` needs a file on disk, so the app writes to its own temp directory\
+2.  One small HTTP request tells us whether the published index has moved\
+3.  Download only when the cached copy is missing or out of date\
+4.  Opening read only means every user session can share this connection safely
+
+The data flow is short because we're building locally, committing, publishing the data with the site, downloading once at app startup, and querying in memory from then on. Readers never touch the book repo, and the app never writes back to the index.
+
+The module handles the query itself. Each user gets their own chat session so conversation history doesn't leak between readers, but they all read from the same `store`.
+
+```{r}
+#| eval: false
+#| code-fold: true
+#| code-summary: 'show/hide chat module'
+# R/mod_ragnar_chat.R ----
+mod_ragnar_chat_ui <- function(id) {
+  ns <- NS(id)
+  tagList(
+    textAreaInput(ns("query"), "Ask the book a question", width = "100%", rows = 3),
+    actionButton(ns("ask"), "Ask", class = "btn-primary"),
+    uiOutput(ns("answer")),
+    uiOutput(ns("sources"))
+  )
+}
+
+mod_ragnar_chat_server <- function(id, store) {
+  moduleServer(id, function(input, output, session) {
+
+    chat <- ragnar_chat_create( #<1>
+      store = store,
+      model = "claude-3-5-sonnet-20241022",
+      provider = "anthropic"
+    ) #<1>
+
+    response <- eventReactive(input$ask, { #<2>
+      req(nzchar(input$query))
+      ragnar_chat_message(chat, input$query)
+    }) #<2>
+
+    output$answer <- renderUI({
+      markdown(response()$answer)
+    })
+
+    output$sources <- renderUI({ #<3>
+      tags$ul(
+        lapply(response()$citations, \(cite) tags$li(tags$a(href = cite, cite)))
+      )
+    }) #<3>
+  })
+}
+```
+1.  Created inside `moduleServer()`, so the session is per user\
+2.  `eventReactive()` keeps the app from calling the API on every keystroke\
+3.  Citations are the payoff of RAG; always show the reader where the answer came from
+
+We can wire it up in an unremarkable app interface:
+
+```{r}
+#| eval: false
+#| code-fold: false
+ui <- fluidPage(
+  titlePanel("Ask Shiny App-Packages"),
+  mod_ragnar_chat_ui("chat")
+)
+
+server <- function(input, output, session) {
+  mod_ragnar_chat_server("chat", store = store)
+}
+
+shinyApp(ui, server)
+```
+
+For deployment, use the [`{rsconnect}`](https://rstudio.github.io/rsconnect/) package to deploy to Posit Connect or Connect Cloud. Run the following:
+
+```{r}
+#| eval: false
+#| code-fold: false
+rsconnect::deployApp()
+```
+
+Before deploying, set an `ANTHROPIC_API_KEY` environment variable in the deployment platform's secrets manager (not in the code). On Connect Cloud, this goes in the app's Environment Variables settings on the dashboard. Link to the deployed app from the book's navbar (or embed it in a page with an `<iframe>`).
+
+
+```{r}
+#| label: co_box_shinyappsio
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "o", 
+  header = "shinyapps.io migration to Posit Connect Cloud", 
+  fold = FALSE,
+  size = "1.10",
+  hsize = "1.15",
+  contents = "
+Note: shinyapps.io is transitioning to Posit Cloud as of 2027; Posit provides a self-serve migration tool to test your apps on the new platform.")
+```
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'Runtime workflow: Shiny app queries published index'
+%%| echo: false
+%%{init: {'theme': 'neutral', 'themeVariables': { 'fontSize': '13px'}}}%%
+
+graph TD
+    reader(["<strong>Reader</strong><br/>Opens Shiny App"]) -->|"i. Load index"| fetch("Shiny app fetches<br/>published <code>.duckdb</code> file")
+    fetch --> index[("<strong>Index in Memory</strong><br/>embeddings + chunks")]
+    index -->|"ii. User query"| embed("Embed query<br/>locally")
+    embed -->|"iii. Retrieve"| search("Cosine similarity search<br/>find top chunks")
+    search -->|"iv. Send"| llm{{"Claude/GPT API<br/>or Ollama"}}
+    llm -->|"v. Response"| response(["<strong>Chat Response</strong><br/>grounded in docs"])
+
+    style reader fill:#dfdfde
+    style fetch fill:#fff
+    style index fill:#b3cde0
+    style embed fill:#fff
+    style search fill:#fff
+    style llm fill:#fff0e8
+    style response fill:#ccffcc
+    
+```
+
+When the documentation changes, rebuild the index, commit it, and republish the book. The app picks up the new file the next time it cold starts, or immediately if it's restarted. That's the whole update story (no coordinated release, no rebuilt site extension).
 
 ## Recap
 
 RAG grounds chatbots in actual documentation instead of training data, solving the hallucination problem: 
 
 * `{ragnar}` handles the entire pipeline; chunking, embedding, retrieval, and chat are all one function each    
-* We can choose between premier models (Claude, GPT) for quality or local Ollama for privacy and cost   
+* We can choose between API model keys (Claude, GPT) for quality or local Ollama for privacy and cost   
 * Building an index takes minutes; updating it as your documentation evolves can be done a single rebuild step    
 
 This approach transforms static documentation into an interactive resource without requiring us to retrain an LLM or manage complex infrastructure.
@@ -529,4 +822,4 @@ This approach transforms static documentation into an interactive resource witho
 - `quartohelp` project: <https://github.com/t-kalinowski/quartohelp> (working example)    
 - Ollama models: <https://ollama.ai/library> (list of available open models)    
 - Anthropic Claude API: <https://console.anthropic.com/> (API key setup)      
-- OpenAI Models: <https://platform.openai.com/> (alternative premier provider)      
+- OpenAI Models: <https://platform.openai.com/> (alternative model provider)      
