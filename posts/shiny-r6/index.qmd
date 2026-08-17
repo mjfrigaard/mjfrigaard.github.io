@@ -232,14 +232,61 @@ R/
 └── utils_reactable_theme.R #<4>
 
 ```
-1. Exports default ticker symbols as a package constant (identical to `tooltipexplorer`)    
-2. Theme and styling configuration for the app (identical to `tooltipexplorer`)   
-3. Custom operators (`%>%`, `%||%`, etc.) (identical to `tooltipexplorer`)    
-4. `reactable` table theme utilities for consistent table styling (identical to `tooltipexplorer`)    
+1. Exports default ticker symbols as a package constant (identical to `tooltipexplorer`)
+2. Theme and styling configuration for the app (identical to `tooltipexplorer`)
+3. Custom operators (`%>%`, `%||%`, etc.) (identical to `tooltipexplorer`)
+4. `reactable` table theme utilities for consistent table styling (identical to `tooltipexplorer`)
+
+### Hybrid: **`R6`** for business logic
+
+Access the code here: [mjfrigaard.github.io/movexplR6](https://mjfrigaard.github.io/movexplR6/)
+
+![](img/movexplR6.png){width='100%' fig-align='center'}
+
+`movexplR6` takes a different approach: it keeps Shiny modules function-based (like `tooltipexplorer`) but uses **`R6`** for business logic and data management. Rather than wrapping each module in a class, it reserves **`R6`** for stateful, reusable concerns (database connections, API clients, complex filtering logic).
+
+#### App structure
+
+The [original app](https://github.com/rstudio/shiny-examples/tree/main/051-movie-explorer) was built with the following structure: 
+
+```{verbatim}
+051-movie-explorer/
+├── DESCRIPTION
+├── global.R
+├── movies.db
+├── README.md
+├── server.R
+└── ui.R
+
+1 directory, 6 files
+``` 
+
+
+```{verbatim}
+R/
+├── launch_app.R #<1>
+├── movies_server.R #<2>
+├── movies_ui.R #<3>
+├── MovieData.R #<4>
+├── mod_filters.R #<5>
+├── mod_plot.R #<6>
+└── utils.R #<7>
+
+```
+
+1. App entry point; launches the Shiny app
+2. Main server function; instantiates `MovieData` and wires modules together
+3. Top-level UI function; calls `mod_filters_ui()` and `mod_plot_ui()`
+4. **R6 class managing SQLite database connection, data loading, and filtering logic (separates data concerns from UI/server)**
+5. Function-based filter inputs module; returns reactive list of filter/axis selections
+6. Function-based plot display module; consumes reactive movies and filters
+7. Utility functions (theme, constants, helpers)
+
+This structure shows that R6 isn't limited to module wrappers. When your app needs to manage resources (database connections, API clients, complex state machines), R6 shines as a layer between business logic and the reactive UI.
 
 ## Architecture
 
-Both `tooltipexplorer`'s function-based and `rsixer`s **`R6`** module patterns work, the difference is in how they organize the code and protect against state leaks as the app grows.
+Both `tooltipexplorer`'s function-based and `rsixer`'s **`R6`** module patterns work; the difference is in how they organize the code and protect against state leaks as the app grows.
 
 ### Standard modules
 
@@ -266,7 +313,7 @@ flowchart TD
 
 ```
 
-Both UI and server function must receive the same `id` argument to share a namespace. The responsibility for keeping UI and server in sync falls entirely on the developer. Both functions have an `id` parameter, so nothing in the architecture ties them together except the discipline of passing the same value to each.
+Both UI and server functions must receive the same `id` argument to share a namespace. The responsibility for keeping UI and server in sync falls entirely on the developer. Both functions have an `id` parameter, so nothing in the architecture ties them together except the discipline of passing the same value to each.
 
 ### **`R6`** modules
 
@@ -441,6 +488,68 @@ flowchart TD
 ```
 
 The `id` is **bound at instantiation and encapsulated** in the object. Both methods access it from the same source, so namespace mismatches are architecturally impossible. I'll dive into the differences between public and private methods below.
+
+### Hybrid: R6 for state management
+
+`movexplR6` shows a third pattern: use **`R6`** for resources and business logic while keeping Shiny modules function-based. This cleanly separates concerns: stateful data access in R6, stateless UI/reactivity in functions.
+
+The `MovieData` class in `movexplR6` manages a SQLite connection and filtering logic:
+
+```{r}
+#| eval: false
+#| code-fold: true
+#| code-summary: 'hide/show MovieData class'
+MovieData <- R6::R6Class(
+  "MovieData",
+  public = list(
+    con = NULL,
+    all_movies = NULL,
+    initialize = function(db_path) { #<1>
+      self$con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
+      self$all_movies <- private$load_data()
+    }, #<1>
+    filter = function(reviews = 10, oscars = 0, year = c(1940, 2014),
+                      boxoffice = c(0, 800), genre = "All",
+                      director = "", cast = "") { #<2>
+      self$all_movies |>
+        dplyr::filter(Reviews >= reviews, Oscars >= oscars)
+    }, #<2>
+    disconnect = function() { #<3>
+      DBI::dbDisconnect(self$con)
+    } #<3>
+  ),
+  private = list(
+    load_data = function() { # joins and collects query results
+    }
+  )
+)
+```
+1. Open connection and load data on initialization
+2. Public `$filter()` method accepts filter parameters
+3. Explicit `$disconnect()` method for cleanup (private `load_data()` helper joins tables)
+
+Then in `movies_server()`, you instantiate it once and pass it to function-based modules:
+
+```{r}
+#| eval: false
+#| code-fold: false
+movies_server <- function(input, output, session) {
+  movie_data <- MovieData$new("movies.db")
+  shiny::onStop(function() movie_data$disconnect())
+
+  filters <- mod_filters_server("filters")
+  movies <- shiny::reactive({
+    movie_data$filter(
+      reviews = filters()$reviews,
+      oscars = filters()$oscars,
+      # ... other filter params
+    )
+  })
+  mod_plot_server("plot", movies, filters)
+}
+```
+
+This hybrid approach works well when your app has complex data operations, external connections, or shared state that doesn't fit naturally into Shiny's reactive model. You keep the UI/server modules lightweight and function-based while R6 handles the heavy lifting.
 
 #### Public methods
 
@@ -884,32 +993,118 @@ flowchart TD
     style Instance fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
     style Ui2 fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
     style Serve2 fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    
+
 ```
 
+#### Hybrid encapsulation (`movexplR6`)
+
+In `movexplR6`, encapsulation works differently. The function-based modules (`mod_filters`, `mod_plot`) don't enforce state ownership through R6; instead, the `MovieData` R6 class encapsulates the data layer. This separates concerns: UI modules handle input/output, the R6 class handles data access and filtering logic.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'Hybrid: Function Modules Consume R6 Data Layer'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart TD
+    subgraph R6Layer["<strong>R6 Data Layer</strong>"]
+        Filter["<strong>$filter()</strong><br>method"]
+        Con[("Database")]
+    end
+
+    subgraph FuncLayer["<strong>Function-Based Modules</strong>"]
+        ModFilters["<strong>mod_filters_server()</strong>"]
+        ModPlot["<strong>mod_plot_server()</strong>"]
+        Reactive["Reactive<br>parameters"]
+    end
+
+    ModFilters -->|"returns"| Reactive
+    Reactive -->|"calls"| Filter
+    Filter -->|"queries"| Con
+    ModPlot -->|"consumes"| Reactive
+
+    style Filter fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style Con fill:#B3CDE0,color:#000000,stroke:#333,font-family:monospace
+    style ModFilters fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
+    style ModPlot fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
+    style Reactive fill:#FFFFFF,color:#000000,stroke:#999
+```
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'Hybrid: R6 Manages Resource Lifecycle'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart TD
+
+    subgraph R6Layer["<strong>R6 Data Layer</strong>"]
+        New["<strong>MovieData$new()</strong>"]
+        Con[("Connection")]
+        Cleanup["<strong>$disconnect()</strong>"]
+    end
+    
+    subgraph Lifecycle["<strong>Session Lifecycle</strong>"]
+        Init["Initialize"]
+        Active["Session<br>active"]
+        Stop["Session<br>ends"]
+    end
+
+    Init -->|"creates"| New
+    New -->|"opens"| Con
+    Con -.->|"available"| Active
+    Stop -->|"onStop()"| Cleanup
+    Cleanup -->|"closes"| Con
+
+    style Init fill:#E0F0ED,color:#000000,stroke:#4CBB9D
+    style Active fill:#E0F0ED,color:#000000,stroke:#4CBB9D
+    style Stop fill:#FFE0E0,color:#000000,stroke:#c0392b
+    style New fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style Con fill:#B3CDE0,color:#000000,stroke:#333,font-family:monospace
+    style Cleanup fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+```
+
+The benefit is that `MovieData` owns its connection lifecycle:
+
+```{r}
+#| eval: false
+#| code-fold: false
+movie_data <- MovieData$new(db_path)
+shiny::onStop(function() movie_data$disconnect())
+```
+
+The R6 object ensures the database connection opens on initialization and closes when the session ends. The function-based modules don't need to know about this; they just call `movie_data$filter(...)` with the current filter parameters.
+
+This pattern works well when you need strong encapsulation of *stateful resources* (databases, API clients, file handles) but don't need R6-based module structure. You get the benefits of explicit lifecycle management and private state without wrapping every UI/server pair in a class.
 
 ### Trade-offs
 
-The trade-off is complexity. Function-based modules are lighter weight. If our module is genuinely simple (a filter input, a summary statistic) wrapping it in an **`R6`** class adds indirection without clear benefit. 
+There are three approaches, each with different trade-offs.
 
-In `rsixer`'s, the `R6` classes make sense because each module manages nontrivial state.  `ModInputs` handles date ranges, ticker selection, and rolling-window parameters while `ModOutputs` computes performance metrics and manages reactivity across those inputs. The added structure pays for itself.
+**Function-based modules** (`tooltipexplorer`) are lightweight. If your module is genuinely simple (a filter input, a summary statistic), wrapping it in R6 adds indirection without benefit. The risk is namespace mismatches and scattered state as the app grows.
 
-In a simpler app, we might never hit the ownership or namespace problems that **`R6`** prevents, and the function-based approach keeps the code readable.
+**Full R6 modules** (`rsixer`) add structure at the cost of complexity. Each module is an R6 class with `$ui()` and `$server()` methods. This makes sense when modules manage nontrivial state. `ModInputs` handles date ranges, ticker selection, and rolling-window parameters; `ModOutputs` computes performance metrics. The added structure pays for itself.
+
+**Hybrid R6 + functions** (`movexplR6`) keeps modules lightweight while using R6 for stateful, reusable concerns (databases, API clients, complex computations). This works well when your app has a clear separation between UI/reactivity (which fits functions) and data/business logic (which fits R6).
 
 ```{r}
 #| label: co_box_rec
 #| echo: false
 #| results: asis
 #| eval: true
-co_box(color = "g", 
-  header = "Recommendation", 
+co_box(color = "g",
+  header = "Recommendation",
   fold = TRUE,
   contents = "
 When to use each:
 
-- Use function-based modules for simple, independent modules (filters, info boxes) with minimal shared state. 
+- **Function-based modules**: Simple, independent modules with minimal interdependencies. Good for quick prototypes.
 
-- Use **`R6`** for complex modules that manage multiple inputs, outputs, or session-level state; when multiple developers work on the same app; or when you want to reuse the same module class across projects
+- **Full `R6` modules**: Complex modules that manage multiple inputs, outputs, or session-level state. Useful when multiple developers work on the same app or you want to reuse module classes across projects.
+
+- **Hybrid approach**: Keep UI/server modules function-based for simplicity, but use **`R6`** for stateful resources (database connections, API clients, caches) and business logic. Best for apps with clear separation of concerns.
 ")
 ```
 
@@ -1057,7 +1252,39 @@ flowchart TD
     
 ```
 
-We now know there are two main patterns for building Shiny modules: 1) traditional function-based modules, or 2) **`R6`** classes. Both patterns work, our choice should depend on the complexity of the app state (or how many developers will be maintain the source code).
+We now know there are two main patterns for building Shiny modules: 1) traditional function-based modules, or 2) **`R6`** classes. Both patterns work; our choice should depend on the complexity of the app state and how many developers will maintain the source code.
+
+But there's a third option: keep modules function-based while using R6 for business logic. In `movexplR6`, the `MovieData` R6 class handles database operations, and function-based modules consume it:
+
+```{r}
+#| eval: false
+#| code-fold: false
+movies_server <- function(input, output, session) {
+  # Instantiate R6 data layer
+  movie_data <- MovieData$new("movies.db") #<1>
+  shiny::onStop(function() movie_data$disconnect())
+
+  # Use function-based modules
+  filters <- mod_filters_server("filters") #<2>
+
+  # Wire R6 object to reactive pipeline
+  movies <- shiny::reactive({
+    movie_data$filter( #<3>
+      reviews = filters()$reviews,
+      oscars = filters()$oscars,
+      year = filters()$year
+    )
+  })
+
+  mod_plot_server("plot", movies, filters) #<4>
+}
+```
+1. Initialize R6 object managing database lifecycle
+2. Keep UI modules function-based
+3. Call R6 methods from reactive expressions
+4. Pass reactive results to UI modules
+
+This pattern shines when your app has clear separation of concerns: stateless UI/reactivity (functions) and stateful data/business logic (R6). It's lighter than full R6 modules but more structured than pure function-based apps.
 
 ### Reactivity 
 
@@ -1233,11 +1460,71 @@ flowchart TD
     style Help fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
 ```
 
+### Documenting business logic classes
+
+When R6 is used for data/business logic (like `MovieData`), documentation should focus on public methods and lifecycle. Here's an example from `movexplR6`:
+
+```{r}
+#| eval: false
+#| code-fold: show
+#| code-summary: 'hide/show MovieData roxygen block'
+
+#' Movie Database Manager #<1>
+#'
+#' @description #<2>
+#' Manages a SQLite database connection, loads a joined dataset from the
+#' `omdb` and `tomatoes` tables, and applies filter logic derived from
+#' Shiny input values.
+#'
+#' @details #<2>
+#' On initialization the class opens a connection to the SQLite database at
+#' `db_path`, joins the two tables via `inner_join()`, collects the result
+#' into memory, and stores it in `$all_movies`. Call `$filter()` to obtain a
+#' filtered data frame for rendering. Call `$disconnect()` to close the
+#' connection explicitly; the private `finalize()` method also calls it when
+#' the object is garbage collected.
+#'
+#' @export #<2>
+MovieData <- R6::R6Class(
+  "MovieData",
+  public = list(
+    con = NULL,
+    all_movies = NULL,
+
+    #' @description Connect to the SQLite database and load all movie data.
+    #' @param db_path Path to the SQLite database file.
+    #' @return The initialized `MovieData` object invisibly.
+    initialize = function(db_path) { # ... },
+
+    #' @description Filter the in-memory data frame using input values.
+    #' @param reviews Minimum number of reviews.
+    #' @param oscars Minimum number of Oscar wins.
+    #' @param year Integer vector of length 2: `c(min_year, max_year)`.
+    #' @param boxoffice Numeric vector of length 2: box-office range in millions.
+    #' @param genre Genre string; `"All"` disables the filter.
+    #' @param director Partial director name; empty string disables the filter.
+    #' @param cast Partial cast name; empty string disables the filter.
+    #' @return A filtered data frame.
+    filter = function(reviews = 10, oscars = 0, year = c(1940, 2014),
+                      boxoffice = c(0, 800), genre = "All",
+                      director = "", cast = "") { # ... },
+
+    #' @description Explicitly close the database connection.
+    #' @return Returns `NULL` invisibly; called for side effects.
+    disconnect = function() { # ... }
+  )
+)
+```
+1. Class title
+2. roxygen tags for class and methods
+
+The key difference: business logic classes focus on method parameters, return types, and lifecycle (initialization, connection management, cleanup) rather than UI/namespace concerns.
+
 ### Packaging best practices
 
-File organization matters; I use `CamelCase` names for **`R6`** classes and `mod_*` names for helper functions. I also prefer to place each class in its own file, one per module.
+File organization depends on which pattern you're using.
 
-In `rsixer`, the module files contain only the **`R6`** class definition:
+For full **`R6`** module patterns (like `rsixer`), use `CamelCase` names for classes and place each in its own file:
 
 ```{verbatim}
 R/ModInputs.R    # ModInputs class (one per file)
@@ -1247,7 +1534,19 @@ R/app_server.R   # Wires modules together; instantiates objects
 R/app_ui.R       # Calls $ui() methods on each instance
 ```
 
-Export the classes with `@export` so package users can instantiate them. Only instantiate **`R6`** objects inside `app_server()` or module server functions; never at package load time.
+For hybrid patterns (like `movexplR6`), separate business logic classes from modules:
+
+```{verbatim}
+R/MovieData.R      # Business logic R6 class
+R/mod_filters.R    # Function-based UI/server modules
+R/mod_plot.R       # Function-based UI/server modules
+R/movies_server.R  # Wires modules and R6 objects together
+R/movies_ui.R      # Composes UI from modules
+```
+
+In both cases, export **`R6`** classes with `@export` so package users can instantiate them. Never instantiate objects at package load time; always do it inside `app_server()` or module server functions to ensure one instance per session.
+
+Apply the principle of one class per file for clarity, regardless of whether the class wraps a module or implements business logic.
 
 ### Tests 
 
@@ -1267,10 +1566,16 @@ With `roxygen2` and **`R6`** together, teammates can run `?ModInputs` and immedi
 
 ## Recap
 
-**`R6`** classes provide a clean, testable way to organize Shiny app-packages. By bundling UI generation and server logic into a single object, we gain encapsulation, reduce global state, and make dependencies explicit. This is a pattern that can scale, too. I've shown that the `rsixer` app implements the same functionality of `tooltipexplorer` using **`R6`** modules for inputs, outputs, and downloads, each passing reactive values to the next in a clear data flow.
+I've shown three approaches to structuring Shiny app-packages, each with different trade-offs:
 
-Documenting **`R6`** classes with `roxygen2` transforms them from source code to a shareable API. Teammates can see the interface because the code itself is self-documenting, so the architecture scales with the size of the team.
+1. **Function-based modules** (`tooltipexplorer`): Lightweight, minimal overhead, but namespace mismatches and scattered state become liabilities as the app grows.
 
-While not every Shiny app needs **`R6`**, it's worth learning if you're building production packages or multi-developer projects. It turns modules into reusable components that you (or your team) can confidently import into future apps.
+2. **Full R6 modules** (`rsixer`): Every module is an R6 class with `$ui()` and `$server()` methods. State ownership is explicit, namespace isolation is enforced, and the architecture scales with team size.
 
-For working examples, see the source code and structure of **`rsixer`** ([mjfrigaard.github.io/rsixer](https://mjfrigaard.github.io/rsixer/)) and **`tooltipexplorer`** ([mjfrigaard.github.io/tooltipexplorer](https://mjfrigaard.github.io/tooltipexplorer/)) side-by-side.
+3. **Hybrid R6 + functions** (`movexplR6`): Keep modules function-based for simplicity; use R6 for stateful, reusable concerns like database connections or API clients. Clean separation of concerns without the overhead of wrapping every module.
+
+**`R6`** classes provide a clean, testable way to organize complex state. Documenting them with `roxygen2` transforms code into a shareable API; teammates can run `?ModInputs` or `?MovieData` instead of reading source files. The architecture scales with the size of the team.
+
+While not every app needs **`R6`**, it's worth learning if you're building production packages or multi-developer projects. Pick the pattern that fits: full modules if state is complex and intertwined, hybrid if you have clear separation between data and UI, or pure functions for simple apps.
+
+For working examples, explore **`rsixer`** ([mjfrigaard.github.io/rsixer](https://mjfrigaard.github.io/rsixer/)), **`movexplR6`** ([mjfrigaard.github.io/movexplR6](https://mjfrigaard.github.io/movexplR6/)), and **`tooltipexplorer`** ([mjfrigaard.github.io/tooltipexplorer](https://mjfrigaard.github.io/tooltipexplorer/)) side-by-side to see how each pattern plays out in practice.
