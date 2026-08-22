@@ -1,12 +1,8 @@
 project:
   type: website
   
-navbar:
-  bg: primary       # paint the bar with $primary (Teal)
-  type: dark        # use light text for contrast on the Teal bar
-
 website:
-  title: '@mjfrigaard'
+  title: 'mjfrigaard'
   image: profile.png
   site-url: "https://mjfrigaard.github.io/"
   repo-url: https://github.com/mjfrigaard/mjfrigaard.github.io
@@ -15,6 +11,9 @@ website:
     location: navbar
     type: textbox
   navbar:
+    title: "&#64;mjfrigaard"
+    bg: primary       # paint the bar with $primary (Teal)
+    type: dark        # use light text for contrast on the Teal bar
     right:
       - icon: github
         href: https://github.com/mjfrigaard
