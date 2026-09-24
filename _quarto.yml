@@ -12,14 +12,17 @@ website:
     type: textbox
   navbar:
     title: "&#64;mjfrigaard"
-    bg: primary       # paint the bar with $primary (Teal)
-    type: dark        # use light text for contrast on the Teal bar
     right:
       - icon: github
         href: https://github.com/mjfrigaard
       - icon: twitter
         href: https://twitter.com/mjfrigaard
-    left:
+  sidebar:
+    style: docked
+    search: false
+    contents:
+      - text: "Home"
+        file: index.qmd
       - text: "About"
         file: about.qmd
       - text: "All Posts"
@@ -35,12 +38,12 @@ website:
       - text: "Code"
         file: code.qmd
 
-        
 format:
   html:
     embed-resources: true
-    theme:
-      light: [cosmo, custom.scss]
+    theme: [darkly, custom.scss]
+    highlight-style: github-dark
+    include-after-body: _stars.html
     dpi: 320
     lightbox: true
     fig-format: retina

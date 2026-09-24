@@ -1,13 +1,128 @@
 /*-- scss:defaults --*/
 /*-- https://github.com/twbs/bootstrap/blob/main/scss/_variables.scss -- */
 /*-- https://github.com/twbs/bootstrap/blob/cdcb503b88a6d3ddcc870022a740b996af0034d3/scss/_variables.scss#L1729 -- */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;600&display=swap');
+
 $small-font-size:             .85rem !default;
 $code-font-size:              .80em !default;
-/*$primary:                     #198c19 !default;*/
+
+$page-bg:        #090b10;
+$panel-bg:       #0d1017;
+$panel-border:   #6b7280;
+$accent-teal:    #5eead4;
+$accent-orange:  #fdba74;
+$accent-rose:    #fda4af;
+$accent-cyan:    #67e8f9;
+$term-green:     #4ade80;
+
+$body-bg:              $page-bg;
+$body-color:           #e4e4e7;
+$primary:              $accent-teal;
+$link-color:           $accent-cyan;
+$font-family-sans-serif: "Geist", system-ui, sans-serif;
+$font-family-monospace:  "Geist Mono", ui-monospace, monospace;
+$navbar-bg:            $panel-bg;
+$navbar-fg:            #e4e4e7;
+$navbar-hl:            $accent-orange;
+$sidebar-bg:           $panel-bg;
+$sidebar-fg:           #d4d4d8;
+$sidebar-hl:           $accent-rose;
+$code-color:           $accent-cyan;
+$code-block-bg:        #11151f;
 
 /*-- scss:rules --*/
 
-
 code {
-  color: #02577A;
+  color: $accent-cyan;
+  background-color: #1f2430;
+}
+
+/* star background sits behind every panel */
+#stars-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#quarto-header,
+#quarto-content,
+footer.footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* bordered terminal panels with per-panel hover accents */
+.navbar {
+  border: 1px solid $panel-border;
+  opacity: .95;
+  transition: border-color .2s;
+  &:hover { border-color: $accent-orange; }
+}
+
+.navbar-title {
+  font-family: $font-family-monospace;
+  font-weight: 600;
+  color: $term-green !important;
+  &::before {
+    content: "> ";
+    color: $body-color;
+  }
+}
+
+#quarto-sidebar {
+  border: 1px solid $panel-border;
+  opacity: .95;
+  transition: border-color .2s;
+  &:hover { border-color: $accent-rose; }
+
+  .sidebar-item-text {
+    display: block;
+    width: 100%;
+    padding: .3rem .75rem;
+    border: 1px solid $panel-border;
+    border-radius: .4rem;
+  }
+  .sidebar-link.active .sidebar-item-text {
+    color: #9ca3af;
+    border-color: #3f3f46;
+  }
+}
+
+main.content {
+  background: rgba($panel-bg, .95);
+  border: 1px solid $panel-border;
+  padding: 1rem 1.5rem;
+  transition: border-color .2s;
+  &:hover { border-color: $accent-teal; }
+}
+
+.quarto-title-banner {
+  background: $panel-bg;
+  border-bottom: 1px solid $panel-border;
+}
+
+/* listings as terminal cards */
+.quarto-listing-default .quarto-post {
+  border-bottom: 1px dashed #3f3f46;
+  .listing-title { font-family: $font-family-monospace; }
+  .listing-date { color: $term-green; }
+}
+
+/* home page whoami block */
+.whoami {
+  font-family: $font-family-monospace;
+  white-space: pre-wrap;
+  background: transparent;
+  border: 0;
+  color: $body-color;
+  .prompt { color: $term-green; font-weight: 600; }
+  .name { color: $accent-cyan; font-weight: 600; }
+}
+
+/* mermaid uses the light 'neutral' theme, so give it a light card */
+pre.mermaid-js svg {
+  background: #e4e4e7;
+  border-radius: .5rem;
+  padding: .5rem;
 }
