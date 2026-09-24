@@ -20,3 +20,28 @@ aliases:
 execute:
   freeze: auto
 ---
+
+```{=html}
+<pre class="whoami"><span class="prompt">$</span> <span id="whoami-cmd"></span></pre>
+<pre class="whoami" id="whoami-out" hidden>Hi! I'm <span class="name">Martin Frigaard</span>.
+
+I'm a Senior Application Developer at BioMarin Pharmaceutical. I like to
+develop Shiny applications, R packages, and create training materials and
+workshops on data management, visualizations, and reproducible research.
+
+This is my personal blog where I write about projects I'm currently working
+on (or topics I'm thinking about). Thanks for visiting!</pre>
+<script>
+(() => {
+  const cmd = "whoami", el = document.getElementById("whoami-cmd");
+  let i = 0;
+  const t = setInterval(() => {
+    el.textContent = cmd.slice(0, ++i);
+    if (i === cmd.length) {
+      clearInterval(t);
+      setTimeout(() => { document.getElementById("whoami-out").hidden = false; }, 200);
+    }
+  }, 160);
+})();
+</script>
+```
