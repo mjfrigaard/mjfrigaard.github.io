@@ -10,19 +10,28 @@ toc: false
 
 :::{style='font-size: 1.1em;'}
 
+* [**stackcallr**](https://mjfrigaard.github.io/stackcallr/): static-analysis utilities for Shiny applications. The flagship function, `call_stack()`, parses R source files in a directory and prints a plain-text call tree showing how functions relate to one another — with no need to run the app. [[**Repo**](https://github.com/mjfrigaard/stackcallr)]
+
 * [**shinypak**](https://mjfrigaard.github.io/shinypak/): Quickly access the Shiny applications in the [Shiny App-Packages (book)](https://mjfrigaard.github.io/shiny-app-pkgs/)  [[**Repo**](https://github.com/mjfrigaard/shinypak)]
 
 * [**ghreadme**](https://mjfrigaard.github.io/ghreadme/): Create a GitHub README.md file using R [[**Repo**](https://github.com/mjfrigaard/ghreadme)]
 
 * [**glockr**](https://mjfrigaard.github.io/glockr/): R package wrapper for [`scc`](https://github.com/boyter/scc) (Sloc, Cloc and Code) for counting blank lines, comment lines, and physical lines of source code. Written in pure Go [[**Repo**](https://github.com/mjfrigaard/glockr)]
 
-* [**shooters**](https://mjfrigaard.github.io/shooters/): static-analysis utilities for Shiny applications. The flagship function, `ns_tree()`, parses R source files in a directory and prints a plain-text call tree showing how functions relate to one another — with no need to run the app. [[**Repo**](https://github.com/mjfrigaard/shooters)]
-
 * [**dopingdata**](https://mjfrigaard.github.io/dopingdata/): Contains data from the [United States Anti-Doping Agency](https://en.wikipedia.org/wiki/United_States_Anti-Doping_Agency) for exploration, modeling, and visualizations. The datasets in this package are derived from the [USADA website](https://www.usada.org/) and the [World Anti-Doping Agency (WADA) banned substances list](https://www.wada-ama.org/en/prohibited-list?q=) [[**Repo**](https://github.com/mjfrigaard/dopingdata)]
 
 * **G**ood **e**nough **R** **p**ractices ([**gerp**](https://mjfrigaard.github.io/gerp/)). [[**Repo**](https://github.com/mjfrigaard/gerp)]
 
 :::
+
+## Sites
+
+:::{style='font-size: 1.1em;'}
+
+* [**Shiny Frameworks**](https://mjfrigaard.github.io/sfw/): Shiny app demos with three popular frameworks (`golem`, `leprechaun`, and `rhino`) [[**Repo**](https://github.com/mjfrigaard/sfw)]
+
+:::
+
 
 
 ## Shiny Apps/Packages
@@ -31,7 +40,9 @@ toc: false
 
 * [**ttdviewer**](https://mjfrigaard.github.io/ttdviewer/): Shiny app-package with downloadable [#TidyTuesday](https://github.com/rfordatascience/tidytuesday) dataset and reports [[**Repo**](https://github.com/mjfrigaard/ttdviewer)]
 
-* [**tooltipexplorer**](https://mjfrigaard.github.io/tooltipexplorer/): Shiny app-package for demonstrating tool-tip/hover info options [[**Repo**](https://github.com/mjfrigaard/tooltipexplorer)]
+* [**stocktipr**](https://mjfrigaard.github.io/stocktipr/): Shiny app-package for demonstrating tool-tip/hover info options [[**Repo**](https://github.com/mjfrigaard/stocktipr)]
+
+* [**stocktipr6**](https://mjfrigaard.github.io/stocktipr6/): Similar to `stocktipr`, but this Shiny app-package uses `R6` objects to demonstrate various tool-tip/hover info options [[**Repo**](https://github.com/mjfrigaard/stocktipr6)]
 
 :::
 
@@ -60,12 +71,5 @@ These are Shiny app-packages I've developed for various testing patterns. All us
 
 :::
 
-## Sites
-
-:::{style='font-size: 1.1em;'}
-
-* [**Shiny Frameworks**](https://mjfrigaard.github.io/sfw/): Shiny app demos with three popular frameworks (`golem`, `leprechaun`, and `rhino`) [[**Repo**](https://github.com/mjfrigaard/sfw)]
-
-:::
 
 
