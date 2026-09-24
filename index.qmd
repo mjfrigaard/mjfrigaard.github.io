@@ -22,26 +22,59 @@ execute:
 ---
 
 ```{=html}
-<pre class="whoami"><span class="prompt">$</span> <span id="whoami-cmd"></span></pre>
-<pre class="whoami" id="whoami-out" hidden>Hi! I'm <span class="name">Martin Frigaard</span>.
-
-I'm a Senior Application Developer at BioMarin Pharmaceutical. I like to
-develop Shiny applications, R packages, and create training materials and
-workshops on data management, visualizations, and reproducible research.
-
-This is my personal blog where I write about projects I'm currently working
-on (or topics I'm thinking about). Thanks for visiting!</pre>
+<div class="term">
+<div class="term-bar"><span></span><span></span><span></span><em>mjfrigaard@blog: ~</em></div>
+<div class="term-body">
+<p><span class="prompt">$</span> <span id="whoami-cmd"></span><span class="cursor" id="whoami-cursor"></span></p>
+<div id="whoami-out">
+<p>Hi! I'm <span class="name">Martin Frigaard</span>.</p>
+<p>I'm a Senior Application Developer at BioMarin Pharmaceutical. I like to develop Shiny applications, R packages, data visualizations and Linux admin tools.</p>
+<p>This is my blog where I write about projects I'm currently working on (or topics I'm thinking about). Thanks for visiting!</p>
+<p><span class="prompt">$</span> <span class="cursor"></span></p>
+</div>
+</div>
+</div>
 <script>
 (() => {
-  const cmd = "whoami", el = document.getElementById("whoami-cmd");
-  let i = 0;
-  const t = setInterval(() => {
-    el.textContent = cmd.slice(0, ++i);
-    if (i === cmd.length) {
-      clearInterval(t);
-      setTimeout(() => { document.getElementById("whoami-out").hidden = false; }, 200);
+  const cursor = document.getElementById("whoami-cursor");
+  const cmd = document.getElementById("whoami-cmd");
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    cmd.textContent = "whoami";
+    cursor.remove();
+    return;
+  }
+  const lines = [...document.querySelectorAll("#whoami-out > p")];
+  const last = lines.pop();
+  last.querySelector(".cursor").remove();
+  last.hidden = true;
+  const queue = [{ node: cmd.appendChild(document.createTextNode("")), text: "whoami", speed: 180 }];
+  for (const p of lines) {
+    const w = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (w.nextNode()) nodes.push(w.currentNode);
+    nodes.forEach((node, k) => {
+      queue.push({ node, text: node.textContent, speed: 40, line: k === 0 ? p : null });
+      node.textContent = "";
+    });
+    p.hidden = true;
+  }
+  let q = 0, i = 0;
+  function tick() {
+    if (q === queue.length) { last.hidden = false; last.append(cursor); return; }
+    const item = queue[q];
+    if (i === 0) {
+      if (item.line) item.line.hidden = false;
+      item.node.after(cursor);
     }
-  }, 160);
+    item.node.textContent = item.text.slice(0, ++i);
+    if (i >= item.text.length) {
+      q++; i = 0;
+      const next = queue[q];
+      return setTimeout(tick, !next || next.line ? 700 : item.speed);
+    }
+    setTimeout(tick, item.speed);
+  }
+  setTimeout(tick, 600);
 })();
 </script>
 ```
