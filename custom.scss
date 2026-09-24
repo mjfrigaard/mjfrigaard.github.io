@@ -110,14 +110,51 @@ main.content {
 }
 
 /* home page whoami block */
-.whoami {
+.term {
   font-family: $font-family-monospace;
-  white-space: pre-wrap;
-  background: transparent;
-  border: 0;
-  color: $body-color;
+  font-size: .9rem;
+  border: 1px solid $panel-border;
+  border-radius: .5rem;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  .term-bar {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .45rem .75rem;
+    background: #1f2430;
+    border-bottom: 1px solid $panel-border;
+    span { width: .7rem; height: .7rem; border-radius: 50%; background: $accent-rose; }
+    span:nth-child(2) { background: $accent-orange; }
+    span:nth-child(3) { background: $term-green; }
+    em { font-style: normal; color: #9ca3af; font-size: .8rem; margin-left: .5rem; }
+  }
+  .term-body {
+    background: #05070b;
+    padding: 1rem;
+    p { margin: 0 0 .75rem; overflow-wrap: anywhere; }
+    p:last-child { margin-bottom: 0; }
+  }
   .prompt { color: $term-green; font-weight: 600; }
   .name { color: $accent-cyan; font-weight: 600; }
+  .cursor {
+    display: inline-block;
+    width: .55em;
+    height: 1.1em;
+    vertical-align: text-bottom;
+    background: $body-color;
+    animation: blink 1s steps(1) infinite;
+  }
+  @media (max-width: 576px) {
+    font-size: .8rem;
+    .term-body { padding: .75rem; }
+  }
+}
+
+@keyframes blink { 50% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .term .cursor { animation: none; }
 }
 
 /* mermaid uses the light 'neutral' theme, so give it a light card */
