@@ -620,17 +620,7 @@
     "href": "code.html#r-packages",
     "title": "mjfrigaard",
     "section": "R Packages",
-    "text": "R Packages\n\n\nshinypak: Quickly access the Shiny applications in the Shiny App-Packages (book) [Repo]\nghreadme: Create a GitHub README.md file using R [Repo]\nglockr: R package wrapper for scc (Sloc, Cloc and Code) for counting blank lines, comment lines, and physical lines of source code. Written in pure Go [Repo]\nshooters: static-analysis utilities for Shiny applications. The flagship function, ns_tree(), parses R source files in a directory and prints a plain-text call tree showing how functions relate to one another — with no need to run the app. [Repo]\ndopingdata: Contains data from the United States Anti-Doping Agency for exploration, modeling, and visualizations. The datasets in this package are derived from the USADA website and the World Anti-Doping Agency (WADA) banned substances list [Repo]\nGood enough R practices (gerp). [Repo]",
-    "crumbs": [
-      "Code"
-    ]
-  },
-  {
-    "objectID": "code.html#shiny-appspackages",
-    "href": "code.html#shiny-appspackages",
-    "title": "mjfrigaard",
-    "section": "Shiny Apps/Packages",
-    "text": "Shiny Apps/Packages\n\n\nttdviewer: Shiny app-package with downloadable #TidyTuesday dataset and reports [Repo]\ntooltipexplorer: Shiny app-package for demonstrating tool-tip/hover info options [Repo]\n\n\n\nApps/packages for testing\n\n\nnoap Testing a Shiny app (not in an R package) with testthat [Repo]\nutap Unit testing app package: Unit testing Shiny app-package for demonstrating shiny utility function unit testing with testthat [Repo]\ntsap testServer() app package: Shiny app-package for demonstrating integration tests with shiny’s testServer() function [Repo]\n\n\n\n\nMastering Shiny App-Packages (for testing)\n\nThese are Shiny app-packages I’ve developed for various testing patterns. All use the code/apps covered in Mastering Shiny.\n\nMastering Shiny testServer() app-package (mstsap) is a collection of tests using testthat and shiny::testServer() The modules and application in mstsap come from the Shiny modules chapter of Mastering Shiny [Repo]\nMastering Shiny shinytest2 app-package (msst2ap) demonstrates how to test a Shiny app-package using testthat and shinytest2. All examples come from the Modules chapter of Mastering Shiny. [Repo]",
+    "text": "R Packages\n\n\nstackcallr: static-analysis utilities for Shiny applications. The flagship function, call_stack(), parses R source files in a directory and prints a plain-text call tree showing how functions relate to one another — with no need to run the app. [Repo]\nshinypak: Quickly access the Shiny applications in the Shiny App-Packages (book) [Repo]\nghreadme: Create a GitHub README.md file using R [Repo]\nglockr: R package wrapper for scc (Sloc, Cloc and Code) for counting blank lines, comment lines, and physical lines of source code. Written in pure Go [Repo]\ndopingdata: Contains data from the United States Anti-Doping Agency for exploration, modeling, and visualizations. The datasets in this package are derived from the USADA website and the World Anti-Doping Agency (WADA) banned substances list [Repo]\nGood enough R practices (gerp). [Repo]",
     "crumbs": [
       "Code"
     ]
@@ -641,6 +631,16 @@
     "title": "mjfrigaard",
     "section": "Sites",
     "text": "Sites\n\n\nShiny Frameworks: Shiny app demos with three popular frameworks (golem, leprechaun, and rhino) [Repo]",
+    "crumbs": [
+      "Code"
+    ]
+  },
+  {
+    "objectID": "code.html#shiny-appspackages",
+    "href": "code.html#shiny-appspackages",
+    "title": "mjfrigaard",
+    "section": "Shiny Apps/Packages",
+    "text": "Shiny Apps/Packages\n\n\nttdviewer: Shiny app-package with downloadable #TidyTuesday dataset and reports [Repo]\nstocktipr: Shiny app-package for demonstrating tool-tip/hover info options [Repo]\nstocktipr6: Similar to stocktipr, but this Shiny app-package uses R6 objects to demonstrate various tool-tip/hover info options [Repo]\n\n\n\nApps/packages for testing\n\n\nnoap Testing a Shiny app (not in an R package) with testthat [Repo]\nutap Unit testing app package: Unit testing Shiny app-package for demonstrating shiny utility function unit testing with testthat [Repo]\ntsap testServer() app package: Shiny app-package for demonstrating integration tests with shiny’s testServer() function [Repo]\n\n\n\n\nMastering Shiny App-Packages (for testing)\n\nThese are Shiny app-packages I’ve developed for various testing patterns. All use the code/apps covered in Mastering Shiny.\n\nMastering Shiny testServer() app-package (mstsap) is a collection of tests using testthat and shiny::testServer() The modules and application in mstsap come from the Shiny modules chapter of Mastering Shiny [Repo]\nMastering Shiny shinytest2 app-package (msst2ap) demonstrates how to test a Shiny app-package using testthat and shinytest2. All examples come from the Modules chapter of Mastering Shiny. [Repo]",
     "crumbs": [
       "Code"
     ]
