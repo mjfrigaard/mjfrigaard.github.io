@@ -10,17 +10,17 @@ toc: false
 
 :::{style='font-size: 1.1em;'}
 
-* [**stackcallr**](https://mjfrigaard.github.io/stackcallr/): static-analysis utilities for Shiny applications. The flagship function, `call_stack()`, parses R source files in a directory and prints a plain-text call tree showing how functions relate to one another — with no need to run the app. [[**Repo**](https://github.com/mjfrigaard/stackcallr)]
+* [**stackcallr**](https://mjfrigaard.github.io/stackcallr/): This package contains a few static-analysis utilities for Shiny applications and R packages. The primary function, `call_stack()`, parses functions and prints a plain-text call tree showing how functions relate to one another — with no need to run the app. I've found this helps when writing documentation or submitting issues. [[**Repo**](https://github.com/mjfrigaard/stackcallr)]
+
+* [**glockr**](https://mjfrigaard.github.io/glockr/): R package wrapper for [`scc`](https://github.com/boyter/scc) (Sloc, Cloc and Code) for counting blank lines, comment lines, and physical lines of source code. Written in pure Go [[**Repo**](https://github.com/mjfrigaard/glockr)]
 
 * [**shinypak**](https://mjfrigaard.github.io/shinypak/): Quickly access the Shiny applications in the [Shiny App-Packages (book)](https://mjfrigaard.github.io/shiny-app-pkgs/)  [[**Repo**](https://github.com/mjfrigaard/shinypak)]
 
 * [**ghreadme**](https://mjfrigaard.github.io/ghreadme/): Create a GitHub README.md file using R [[**Repo**](https://github.com/mjfrigaard/ghreadme)]
 
-* [**glockr**](https://mjfrigaard.github.io/glockr/): R package wrapper for [`scc`](https://github.com/boyter/scc) (Sloc, Cloc and Code) for counting blank lines, comment lines, and physical lines of source code. Written in pure Go [[**Repo**](https://github.com/mjfrigaard/glockr)]
-
 * [**dopingdata**](https://mjfrigaard.github.io/dopingdata/): Contains data from the [United States Anti-Doping Agency](https://en.wikipedia.org/wiki/United_States_Anti-Doping_Agency) for exploration, modeling, and visualizations. The datasets in this package are derived from the [USADA website](https://www.usada.org/) and the [World Anti-Doping Agency (WADA) banned substances list](https://www.wada-ama.org/en/prohibited-list?q=) [[**Repo**](https://github.com/mjfrigaard/dopingdata)]
 
-* **G**ood **e**nough **R** **p**ractices ([**gerp**](https://mjfrigaard.github.io/gerp/)). [[**Repo**](https://github.com/mjfrigaard/gerp)]
+* [**gerp**](https://mjfrigaard.github.io/gerp/): A teaching package for 'Good Enough R Practices', based on the excellent paper [Good Enough Practices in Scientific Computing](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005510). Includes functions for project setup, file/folder naming, and literate programming. [[**Repo**](https://github.com/mjfrigaard/gerp)]
 
 :::
 
@@ -38,11 +38,14 @@ toc: false
 
 :::{style='font-size: 1.1em;'}
 
-* [**ttdviewer**](https://mjfrigaard.github.io/ttdviewer/): Shiny app-package with downloadable [#TidyTuesday](https://github.com/rfordatascience/tidytuesday) dataset and reports [[**Repo**](https://github.com/mjfrigaard/ttdviewer)]
+* [**dfdiffs**](https://mjfrigaard.github.io/dfdiffs/): R package/Shiny app that implements SAS `proc compare`. Compares two datasets and tells you 1) what rows are here now that weren’t here before? 2) What rows were here before that aren’t here now?
+and 3) What values have been changed? [[**Repo**](https://github.com/mjfrigaard/dfdiffs)]
 
 * [**stocktipr**](https://mjfrigaard.github.io/stocktipr/): Shiny app-package for demonstrating tool-tip/hover info options [[**Repo**](https://github.com/mjfrigaard/stocktipr)]
 
 * [**stocktipr6**](https://mjfrigaard.github.io/stocktipr6/): Similar to `stocktipr`, but this Shiny app-package uses `R6` objects to demonstrate various tool-tip/hover info options [[**Repo**](https://github.com/mjfrigaard/stocktipr6)]
+
+* [**ttdviewer**](https://mjfrigaard.github.io/ttdviewer/): Shiny app-package with downloadable [#TidyTuesday](https://github.com/rfordatascience/tidytuesday) dataset and reports [[**Repo**](https://github.com/mjfrigaard/ttdviewer)]
 
 :::
 
