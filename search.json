@@ -620,17 +620,27 @@
     "href": "code.html#r-packages",
     "title": "mjfrigaard",
     "section": "R Packages",
-    "text": "R Packages\n\n\nstackcallr: This package contains a few static-analysis utilities for Shiny applications and R packages. The primary function, call_stack(), parses functions and prints a plain-text call tree showing how functions relate to one another — with no need to run the app. I’ve found this helps when writing documentation or submitting issues. [Repo]\nglockr: R package wrapper for scc (Sloc, Cloc and Code) for counting blank lines, comment lines, and physical lines of source code. Written in pure Go [Repo]\nshinypak: Quickly access the Shiny applications in the Shiny App-Packages (book) [Repo]\nghreadme: Create a GitHub README.md file using R [Repo]\ndopingdata: Contains data from the United States Anti-Doping Agency for exploration, modeling, and visualizations. The datasets in this package are derived from the USADA website and the World Anti-Doping Agency (WADA) banned substances list [Repo]\ngerp: A teaching package for ‘Good Enough R Practices’, based on the excellent paper Good Enough Practices in Scientific Computing. Includes functions for project setup, file/folder naming, and literate programming. [Repo]",
+    "text": "R Packages\n\n\nstackcallr: This package contains a few static-analysis utilities for Shiny applications and R packages. The primary function, call_stack(), parses functions and prints a plain-text call tree showing how functions relate to one another — with no need to run the app. I’ve found this helps when writing documentation or submitting issues. [Repo]\nglockr: R package wrapper for scc (Sloc, Cloc and Code) for counting blank lines, comment lines, and physical lines of source code. Written in pure Go [Repo]\nshinypak: Quickly access the Shiny applications in the Shiny App-Packages (book) [Repo]\nghreadme: Create a GitHub README.md file using R [Repo]\ndopingdata: Contains data from the United States Anti-Doping Agency for exploration, modeling, and visualizations. The datasets in this package are derived from the USADA website and the World Anti-Doping Agency (WADA) banned substances list [Repo]\nfmggp2: Support package for ggplot2: field manual. Holds the late 90s themed ggplot2 themes (theme_toysrus(), theme_netscape(), theme_freshprince(), etc.) and the helper functions used throughout the book, so every chapter loads the same tested code. [Repo]\ngerp: A teaching package for ‘Good Enough R Practices’, based on the excellent paper Good Enough Practices in Scientific Computing. Includes functions for project setup, file/folder naming, and literate programming. [Repo]",
     "crumbs": [
       "Code"
     ]
   },
   {
-    "objectID": "code.html#sites",
-    "href": "code.html#sites",
+    "objectID": "code.html#python-packages",
+    "href": "code.html#python-packages",
     "title": "mjfrigaard",
-    "section": "Sites",
-    "text": "Sites\n\n\nShiny Frameworks: Shiny app demos with three popular frameworks (golem, leprechaun, and rhino) [Repo]",
+    "section": "Python Packages",
+    "text": "Python Packages\n\n\nbaseball-trajectory: Shiny for Python app-package for visualizing a baseball player’s career arc on a single metric (OPS, OBP, SLG, AVG, HR, or ISO for batters; ERA, WHIP, K/9, BB/9, or HR/9 for pitchers). Per-season stats come from the MLB Stats API, and the app fits a weighted quadratic aging curve with a 95% confidence band and a marked peak age. [Repo]\nnostalgia_index: Python package and Shiny for Python app that measures which childhood toys, games, and athletes people are still looking up on Wikipedia. Pageviews from the Wikimedia REST API are normalized by total Wikipedia traffic, smoothed with a rolling median, and scaled so each article’s first 12 months equal 100. Includes a nostalgia command line interface (nostalgia fetch and nostalgia run). [Repo]",
+    "crumbs": [
+      "Code"
+    ]
+  },
+  {
+    "objectID": "code.html#books-sites",
+    "href": "code.html#books-sites",
+    "title": "mjfrigaard",
+    "section": "Books & Sites",
+    "text": "Books & Sites\n\n\nDevOps for Data Science: Lab Solutions: Twelve labs covering the infrastructure and deployment side of data science: versioning models with vetiver, building APIs with FastAPI and plumber2, logging, CI/CD with GitHub Actions, Docker, AWS, SSH, Linux user management, instance sizing, and accessibility. [Repo]\nggplot2: field manual: A field manual for building common (and less common) graphs with ggplot2. Every example uses simulated data with a 90s throwback and a matching theme from fmggp2. [Repo]\nShiny for Python App-Packages: A book on building Shiny for Python applications as Python packages. [Repo]\nShiny Frameworks: Shiny app demos with three popular frameworks (golem, leprechaun, and rhino) [Repo]",
     "crumbs": [
       "Code"
     ]
