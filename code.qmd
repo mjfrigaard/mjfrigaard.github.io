@@ -20,13 +20,31 @@ toc: false
 
 * [**dopingdata**](https://mjfrigaard.github.io/dopingdata/): Contains data from the [United States Anti-Doping Agency](https://en.wikipedia.org/wiki/United_States_Anti-Doping_Agency) for exploration, modeling, and visualizations. The datasets in this package are derived from the [USADA website](https://www.usada.org/) and the [World Anti-Doping Agency (WADA) banned substances list](https://www.wada-ama.org/en/prohibited-list?q=) [[**Repo**](https://github.com/mjfrigaard/dopingdata)]
 
+* [**fmggp2**](https://mjfrigaard.github.io/fmggp2/): Support package for [ggplot2: field manual](https://mjfrigaard.github.io/fm-ggp2/). Holds the late 90s themed `ggplot2` themes (`theme_toysrus()`, `theme_netscape()`, `theme_freshprince()`, etc.) and the helper functions used throughout the book, so every chapter loads the same tested code. [[**Repo**](https://github.com/mjfrigaard/fmggp2)]
+
 * [**gerp**](https://mjfrigaard.github.io/gerp/): A teaching package for 'Good Enough R Practices', based on the excellent paper [Good Enough Practices in Scientific Computing](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005510). Includes functions for project setup, file/folder naming, and literate programming. [[**Repo**](https://github.com/mjfrigaard/gerp)]
 
 :::
 
-## Sites
+## Python Packages
 
 :::{style='font-size: 1.1em;'}
+
+* [**baseball-trajectory**](https://mjfrigaard.github.io/baseball-trajectory/): Shiny for Python app-package for visualizing a baseball player's career arc on a single metric (OPS, OBP, SLG, AVG, HR, or ISO for batters; ERA, WHIP, K/9, BB/9, or HR/9 for pitchers). Per-season stats come from the MLB Stats API, and the app fits a weighted quadratic aging curve with a 95% confidence band and a marked peak age. [[**Repo**](https://github.com/mjfrigaard/baseball-trajectory)]
+
+* [**nostalgia_index**](https://mjfrigaard.github.io/nostalgia_index/): Python package and Shiny for Python app that measures which childhood toys, games, and athletes people are still looking up on Wikipedia. Pageviews from the Wikimedia REST API are normalized by total Wikipedia traffic, smoothed with a rolling median, and scaled so each article's first 12 months equal 100. Includes a `nostalgia` command line interface (`nostalgia fetch` and `nostalgia run`). [[**Repo**](https://github.com/mjfrigaard/nostalgia_index)]
+
+:::
+
+## Books & Sites
+
+:::{style='font-size: 1.1em;'}
+
+* [**DevOps for Data Science: Lab Solutions**](https://mjfrigaard.github.io/do4ds-labs/): Twelve labs covering the infrastructure and deployment side of data science: versioning models with `vetiver`, building APIs with FastAPI and `plumber2`, logging, CI/CD with GitHub Actions, Docker, AWS, SSH, Linux user management, instance sizing, and accessibility. [[**Repo**](https://github.com/mjfrigaard/do4ds-labs)]
+
+* [**ggplot2: field manual**](https://mjfrigaard.github.io/fm-ggp2/): A field manual for building common (and less common) graphs with `ggplot2`. Every example uses simulated data with a 90s throwback and a matching theme from [`fmggp2`](https://mjfrigaard.github.io/fmggp2/). [[**Repo**](https://github.com/mjfrigaard/fm-ggp2)]
+
+* [**Shiny for Python App-Packages**](https://mjfrigaard.github.io/shiny-py-pkgs/): A book on building Shiny for Python applications as Python packages. [[**Repo**](https://github.com/mjfrigaard/shiny-py-pkgs)]
 
 * [**Shiny Frameworks**](https://mjfrigaard.github.io/sfw/): Shiny app demos with three popular frameworks (`golem`, `leprechaun`, and `rhino`) [[**Repo**](https://github.com/mjfrigaard/sfw)]
 
