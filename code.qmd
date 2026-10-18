@@ -32,6 +32,8 @@ toc: false
 
 * [**baseball-trajectory**](https://mjfrigaard.github.io/baseball-trajectory/): Shiny for Python app-package for visualizing a baseball player's career arc on a single metric (OPS, OBP, SLG, AVG, HR, or ISO for batters; ERA, WHIP, K/9, BB/9, or HR/9 for pitchers). Per-season stats come from the MLB Stats API, and the app fits a weighted quadratic aging curve with a 95% confidence band and a marked peak age. [[**Repo**](https://github.com/mjfrigaard/baseball-trajectory)]
 
+* [**pyap**](https://github.com/mjfrigaard/pyap): A collection of **P**ython Shiny **A**pp-**P**ackages with the code examples for [Shiny for Python App-Packages](https://mjfrigaard.github.io/shiny-py-pkgs/). Each branch holds the app at a specific stage of development, using [`uv`](https://docs.astral.sh/uv/) for environment management and [`pytest`](https://docs.pytest.org/) for testing. [[**Repo**](https://github.com/mjfrigaard/pyap)]
+
 * [**nostalgia_index**](https://mjfrigaard.github.io/nostalgia_index/): Python package and Shiny for Python app that measures which childhood toys, games, and athletes people are still looking up on Wikipedia. Pageviews from the Wikimedia REST API are normalized by total Wikipedia traffic, smoothed with a rolling median, and scaled so each article's first 12 months equal 100. Includes a `nostalgia` command line interface (`nostalgia fetch` and `nostalgia run`). [[**Repo**](https://github.com/mjfrigaard/nostalgia_index)]
 
 :::
@@ -44,7 +46,7 @@ toc: false
 
 * [**ggplot2: field manual**](https://mjfrigaard.github.io/fm-ggp2/): A field manual for building common (and less common) graphs with `ggplot2`. Every example uses simulated data with a 90s throwback and a matching theme from [`fmggp2`](https://mjfrigaard.github.io/fmggp2/). [[**Repo**](https://github.com/mjfrigaard/fm-ggp2)]
 
-* [**Shiny for Python App-Packages**](https://mjfrigaard.github.io/shiny-py-pkgs/): A book on building Shiny for Python applications as Python packages. [[**Repo**](https://github.com/mjfrigaard/shiny-py-pkgs)]
+* [**Shiny for Python App-Packages**](https://mjfrigaard.github.io/shiny-py-pkgs/): A book on building Shiny for Python applications as Python packages. Covers flat and src layouts, dependencies, data, documentation, testing with `pytest` (modules, system tests, and test suites), debugging, logging, GitHub Actions, Docker, and deploying to shinyapps.io and PyPI. The code examples are in [`pyap`](https://github.com/mjfrigaard/pyap). [[**Repo**](https://github.com/mjfrigaard/shiny-py-pkgs)]
 
 * [**Shiny Frameworks**](https://mjfrigaard.github.io/sfw/): Shiny app demos with three popular frameworks (`golem`, `leprechaun`, and `rhino`) [[**Repo**](https://github.com/mjfrigaard/sfw)]
 
