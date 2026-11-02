@@ -49,9 +49,9 @@ library(ttdviewer)
 ```
 
 
-As a Shiny app-package grows, I've found it's easy to end up with state scattered across reactives, observers, and module arguments. Shiny's reactive model is naturally functional, but `R6` classes let us bundle state, behavior, and business logic into a single object. In an app-package, `{R6}` offers clean separation of concerns, enforced namespace isolation, and business logic we can test outside the app.
+As your Shiny app grows, I've found the application's state becomes nebulously defined and scattered across reactives, observers, and module arguments. Shiny's reactive model allows for this to be functional, but `R6` classes let us bundle state, behavior, and business logic into a single object. In Shiny app-packages, `{R6}` offers clean separation of concerns, enforced namespace isolation, and business logic we can test outside the app.
 
-But `{R6}` in Shiny can take different forms. In this post, we'll compare two patterns:
+Using `{R6}` objects in Shiny apps can take different forms, and in this post, we'll compare two patterns I've used:
 
 1. **`{R6}` for modules** ([`stocktipr6`](https://mjfrigaard.github.io/stocktipr6/)): Wrap every module in an `R6` class with `$ui()` and `$server()` methods
 2. **`{R6}` for Business Logic** ([`movexplR6`](https://mjfrigaard.github.io/movexplR6/)): Keep modules function-based; use `{R6}` for stateful business logic
@@ -595,7 +595,47 @@ Dependencies flow in one direction: downstream modules receive what they need fr
 
 ### `{R6}` for Business Logic (`movexplR6`)
 
-In `movexplR6`, the `R6` layer manages resources and data, while function-based modules handle the UI/reactivity. We covered the architecture earlier; now let's see what happens when we inspect the state at runtime and compare it across both patterns.
+In `movexplR6`, the `R6` layer manages resources and data, while function-based modules handle the UI/reactivity. Here, `movies_server()` creates one `MovieData` object per session, and the modules never hold state of their own.
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%| fig-caption: 'State Flow: R6 Business Logic (movexplR6)'
+%%| echo: false
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+
+flowchart TD
+    subgraph R6Data["<strong>R6 Data Layer</strong>"]
+        MD["<strong>MovieData$new()</strong>"]
+        DOwn(["<em>State: owned by<br/>MovieData object<br/>(<code>con</code>, <code>all_movies</code>)</em>"])
+    end
+
+    subgraph FnFlow["<strong>Function Module Flow</strong>"]
+        MF["<strong>mod_filters_server()</strong>"]
+        FReact[/"<code>filters()</code>"/]
+        Movies("<code>movies()</code><br/>calls <code>movie_data$filter()</code>")
+        MP["<strong>mod_plot_server()</strong>"]
+    end
+
+    MD -->|"i. opens connection,<br/>loads data"| DOwn
+    MF -->|"ii. returns"| FReact
+    FReact -->|"iii. parameters"| Movies
+    DOwn -->|"iii. filtered by"| Movies
+    Movies -->|"iv. consumed by"| MP
+    FReact -.->|"iv. consumed by"| MP
+
+    style MD fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style MF fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
+    style MP fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
+    style Movies fill:#FFFFFF,color:#000000,stroke:#333,font-family:monospace
+    style DOwn fill:#E0F0ED,color:#000000,stroke:#4CBB9D
+
+```
+
+The diagram above shows where the state lives. `MovieData$new()` opens the database connection and loads the movies once, so the `MovieData` object owns `con` and `all_movies`. `mod_filters_server()` returns the `filters()` reactive, and the `movies()` reactive passes those values to `movie_data$filter()`. `mod_plot_server()` receives both reactives as arguments, but it never touches the connection or the full data set.
+
+This flips the ownership we saw in `stocktipr6`. The modules are interchangeable pieces of reactive plumbing, and the single `MovieData` object holds everything worth protecting. We covered the architecture earlier; now let's see what happens when we inspect the state at runtime and compare it across both patterns.
+
 
 ## Debugging and Inspection
 
@@ -727,8 +767,10 @@ The `R6` object ensures the database connection opens on initialization and clos
 flowchart TD
     subgraph R6Layer["<strong>R6 Data Layer</strong>"]
         New["<strong>MovieData$new()</strong>"]
+        Con[("Database<br/><code>movies.db</code>")]
+        All[("<code>all_movies</code><br/>in-memory data frame")]
         Filter["<strong>$filter()</strong>"]
-        Con[("Database")]
+        Disc["<strong>$disconnect()</strong>"]
     end
 
     subgraph FuncLayer["<strong>Function Modules</strong>"]
@@ -736,14 +778,19 @@ flowchart TD
         ModPlot["<strong>mod_plot_server()</strong>"]
     end
 
-    New -->|"opens"| Con
-    ModFilters -->|"returns params"| Filter
-    Filter -->|"queries"| Con
-    Filter -->|"returns"| ModPlot
+    New -->|"i. opens"| Con
+    Con -->|"ii. load_data() joins<br/>and collects once"| All
+    ModFilters -->|"iii. filters()"| Filter
+    Filter -->|"iv. subsets"| All
+    Filter -->|"v. movies()"| ModPlot
+    ModFilters -.->|"v. filters()"| ModPlot
+    Disc -->|"vi. onStop() closes"| Con
 
     style New fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
     style Filter fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style Disc fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
     style Con fill:#B3CDE0,color:#000000,stroke:#333,font-family:monospace
+    style All fill:#B3CDE0,color:#000000,stroke:#333,font-family:monospace
     style ModFilters fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
     style ModPlot fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
 ```
