@@ -38,6 +38,9 @@ website:
       - text: "Code"
         file: code.qmd
 
+execute:
+  freeze: auto
+
 format:
   html:
     embed-resources: true
