@@ -41,8 +41,12 @@ website:
 format:
   html:
     embed-resources: true
-    theme: [darkly, custom.scss]
-    highlight-style: github-dark
+    theme:
+      dark: [darkly, custom.scss]
+      light: [cosmo, custom.scss, light.scss]
+    highlight-style:
+      dark: github-dark
+      light: github
     include-after-body: _stars.html
     dpi: 320
     lightbox: true
