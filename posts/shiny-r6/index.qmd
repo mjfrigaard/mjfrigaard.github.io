@@ -53,8 +53,8 @@ As a Shiny app-package grows, I've found it's easy to end up with state scattere
 
 But `{R6}` in Shiny can take different forms. In this post, we'll compare two patterns:
 
-1. **`{R6}` for modules** (`stocktipr6`): Wrap every module in an `R6` class with `$ui()` and `$server()` methods
-2. **`{R6}` for Business Logic** (`movexplR6`): Keep modules function-based; use `{R6}` for stateful business logic
+1. **`{R6}` for modules** ([`stocktipr6`](https://mjfrigaard.github.io/stocktipr6/)): Wrap every module in an `R6` class with `$ui()` and `$server()` methods
+2. **`{R6}` for Business Logic** ([`movexplR6`](https://mjfrigaard.github.io/movexplR6/)): Keep modules function-based; use `{R6}` for stateful business logic
 
 We'll explore what each pattern buys you, when to use each, and how they compare in practice.
 

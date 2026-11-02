@@ -1,0 +1,33 @@
+/*-- scss:defaults --*/
+
+$page-bg:        #f6f8fa;
+$panel-bg:       #ffffff;
+$panel-border:   #d0d7de;
+$accent-teal:    #0f766e;
+$accent-orange:  #c2410c;
+$accent-rose:    #be123c;
+$accent-cyan:    #0e7490;
+$term-green:     #15803d;
+
+$body-color:     #1f2328;
+$navbar-fg:      #1f2328;
+$sidebar-fg:     #1f2328;
+$code-block-bg:  #f6f8fa;
+
+/*-- scss:rules --*/
+
+code { background-color: #eaeef2; }
+
+#quarto-sidebar .sidebar-link.active .sidebar-item-text {
+  color: #57606a;
+  border-color: #d0d7de;
+}
+
+.quarto-listing-default .quarto-post { border-bottom-color: #d0d7de; }
+
+.term {
+  .term-bar { background: #eaeef2; em { color: #57606a; } }
+  .term-body { background: #ffffff; }
+}
+
+pre.mermaid-js svg { background: transparent; }

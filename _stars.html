@@ -21,7 +21,8 @@
 
   function step() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    ctx.fillStyle = document.body.classList.contains("quarto-light")
+      ? "rgba(31,35,40,0.35)" : "rgba(255,255,255,0.8)";
     for (const s of stars) {
       const dx = mouse.x - s.x, dy = mouse.y - s.y;
       const d2 = dx * dx + dy * dy;
