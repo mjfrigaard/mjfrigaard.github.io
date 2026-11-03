@@ -48,58 +48,68 @@ library(R6)
 library(ttdviewer)
 ```
 
+As a Shiny app grows, I've found its state gets scattered across reactives, observers, and module arguments. Shiny's reactive model keeps the app working, but it doesn't tell you who owns what. `R6` classes give that state an owner: one object that bundles the data, the behavior, and the business logic.
 
-As your Shiny app grows, I've found the application's state becomes nebulously defined and scattered across reactives, observers, and module arguments. Shiny's reactive model allows for this to be functional, but `R6` classes let us bundle state, behavior, and business logic into a single object. In Shiny app-packages, `{R6}` offers clean separation of concerns, enforced namespace isolation, and business logic we can test outside the app.
+In this post I'll walk through two Shiny app-packages that use `{R6}` in different places:
 
-Using `{R6}` objects in Shiny apps can take different forms, and in this post, we'll compare two patterns I've used:
+1. [`stocktipr6`](https://mjfrigaard.github.io/stocktipr6/) wraps every module in an `R6` class.
+2. [`movexplR6`](https://mjfrigaard.github.io/movexplR6/) keeps its modules as functions and uses `R6` for the data layer.
 
-1. **`{R6}` for modules** ([`stocktipr6`](https://mjfrigaard.github.io/stocktipr6/)): Wrap every module in an `R6` class with `$ui()` and `$server()` methods
-2. **`{R6}` for Business Logic** ([`movexplR6`](https://mjfrigaard.github.io/movexplR6/)): Keep modules function-based; use `{R6}` for stateful business logic
-
-We'll explore what each pattern buys you, when to use each, and how they compare in practice.
+I'll describe each app first, then compare the two designs, and finish with documentation and packaging practices that apply to both.
 
 ## What is `{R6}`?
 
-`{R6}` is an object-oriented system in R that creates reference-based objects. Unlike `S3` or `S4`, `R6` objects are mutable and support encapsulation (i.e., public and private members). If you've written classes in Python or Java, `R6` will feel familiar; methods belong to the object, and the object is modified in place (i.e., reference semantics).
-
-To create `R6` objects, install the `{R6}` package:
+`{R6}` is an object-oriented system that creates reference-based objects. Unlike `S3` or `S4` objects, `R6` objects are mutable and modified in place. They also support encapsulation, which means each class has public members (callable from outside the object) and private members (only reachable from inside it). If you've written classes in Python or Java, `R6` will feel familiar.
 
 ```{r}
-#| eval: false 
+#| eval: false
 #| code-fold: false
 install.packages("R6")
 ```
 
-`R6` objects are used throughout the R ecosystem:
+You've probably used `R6` objects without knowing it. [`shinytest2`](https://github.com/rstudio/shinytest2/blob/main/R/app-driver.R) builds its `AppDriver` with `R6`, and [`plumber2`](https://github.com/posit-dev/plumber2/blob/main/R/Plumber2.R) uses it to organize routers. Shiny's own session object is an `R6` class, so using `R6` in an app-package extends a pattern Shiny already relies on.
 
-- **[`plumber2`](https://github.com/posit-dev/plumber2/blob/main/R/Plumber2.R)** uses `{R6}` to organize REST API routers and middleware; each route handler is a method bound to an `R6` object, making routing logic reusable and testable
+The diagram below shows the parts of an `R6` class that matter for the rest of this post.
 
-- **[`shinytest2`](https://github.com/rstudio/shinytest2/blob/main/R/app-driver.R)** uses `{R6}` for app testing objects; the `AppDriver` class bundles together UI selectors, server interactions, and assertions, making test code fluent and maintainable
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: 'center'
+%%| fig-cap: 'Anatomy of an R6 class'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
 
-Shiny itself is built on `{R6}` (reactive values and observers are `R6` classes under the hood), so using `R6` objects in an app-package extends a pattern Shiny already relies on.
+flowchart TD
+    Gen(["<code>MyClass &lt;- R6::R6Class()</code>"])
+    New("<code>MyClass$new()</code><br/>runs <code>initialize()</code>")
+    subgraph Obj["<strong>One object</strong>"]
+        Pub("<strong>public</strong><br/>fields and methods<br/>callers can use")
+        Priv("<strong>private</strong><br/>fields and methods<br/>only the object can use")
+    end
 
-In Shiny app-packages, `R6` objects are especially useful for:
+    Gen -->|"defines"| New
+    New -->|"creates"| Obj
+    Pub -->|"reads and writes"| Priv
 
-1. Bundling UI generation with business logic (i.e., making the module a unified object)    
-2. Managing state tied to a user session or module instance   
-3. Encapsulating dependencies and configuration   
+    style Gen fill:#dfdfde,color:#000000
+    style New fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Pub fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Priv fill:#FFFFFF,color:#000000,stroke:#333
+    style Obj fill:#FFFFFF,color:#000000,stroke:#333,stroke-width:1px,rx:10,ry:10
+```
 
-## Two Approaches to `{R6}` in Shiny
+The class generator defines the members, and `$new()` creates an object from it. Public methods are the object's interface; private members hold whatever the object needs to remember between calls.
 
-To compare the two patterns, I've built two apps:
+## `stocktipr6`: `R6` Modules
 
-1. **`stocktipr6`**: A stock volatility dashboard where each module is an `R6` class
-2. **`movexplR6`**: A movie database explorer where modules stay function-based, but business logic lives in `{R6}`
-
-Let's start with `stocktipr6` (`R6` modules) to see the architecture:
-
-### `{R6}` for Modules 
+`stocktipr6` is a stock dashboard. Users choose tickers and a date range, fetch prices from [`tidyquant`](https://business-science.github.io/tidyquant/), and compare performance across five tabs of tooltip, popover, help modal, and alert examples. A sidebar card downloads the results as an HTML or PDF report.
 
 Access the code here: [mjfrigaard.github.io/stocktipr6](https://mjfrigaard.github.io/stocktipr6/)
 
 ![](img/stocktipr6.png){width='100%' fig-align='center'}
 
-#### App structure
+### App structure
+
+Each module lives in a single file that holds one `R6` class. The tree below shows the key files; utility functions like `get_stock_prices()` and `summarise_performance()` live in their own files. The function-based version of this app ([`stocktipr`](https://mjfrigaard.github.io/stocktipr/)) splits each module into `mod_*_ui()` and `mod_*_server()` functions instead.
 
 ```{verbatim}
 R/
@@ -110,30 +120,153 @@ R/
 ├── ModInputs.R #<5>
 ├── ModOutputs.R #<6>
 ├── mod_hoverinfo.R #<7>
-└── mod_tooltip.R #<8>
+├── mod_tooltip.R #<8>
+└── ... utility functions
+```
+1. Creates the module objects and connects their `$server()` methods
+2. Creates the module objects and calls their `$ui()` methods
+3. App entry point; calls `shinyApp()`
+4. `R6` class for the report download card and its download handler
+5. `R6` class for the sidebar inputs; returns a reactive list
+6. `R6` class for the value boxes, tabs, and table
+7. Hover text helper for `reactable` cells
+8. Tooltip icon helper used in input labels
 
+### Module anatomy
+
+Every module in `stocktipr6` has the same shape. `initialize()` stores the module's `id` and builds a namespace function from it. Both values go into `private`, where `$ui()` and `$server()` read them.
+
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: 'center'
+%%| fig-cap: 'An R6 module in stocktipr6'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
+
+flowchart TD
+    New(["<code>ModInputs$new(id = 'inputs')</code>"])
+    subgraph Mod["<strong>ModInputs object</strong>"]
+        Init("<code>initialize()</code>")
+        subgraph Private["<strong>private</strong>"]
+            Id[("<code>id</code><br/>'inputs'")]
+            Ns[("<code>ns()</code><br/><code>NS('inputs')</code>")]
+        end
+        UI("<code>$ui()</code><br/>input IDs from <code>ns()</code>")
+        Server("<code>$server()</code><br/><code>moduleServer(id)</code>")
+    end
+
+    New --> Init
+    Init -->|"stores"| Id
+    Init -->|"builds"| Ns
+    Ns --> UI
+    Id --> Server
+
+    style New fill:#dfdfde,color:#000000
+    style Init fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style UI fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Server fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Id fill:#b3cde0,color:#000000
+    style Ns fill:#b3cde0,color:#000000
+    style Mod fill:#FFFFFF,color:#000000,stroke:#333,stroke-width:1px,rx:10,ry:10
+    style Private fill:#E0F0ED,color:#000000,stroke:#4CBB9D
 ```
 
-1. Instantiates `R6` module classes (`ModInputs$new("inputs")`, `ModOutputs$new("outputs")`, `ModDownload$new("download")`) and calls their `$server()` methods sequentially; passes reactive values downstream     
-2. Top-level UI function; calls `$ui()` method on each `R6` instance to compose the page      
-3. App entry point; calls `shinyApp(ui, server)`      
-4. **`R6` class bundling download UI and server logic; its `$ui()` card is placed in the `ModInputs` sidebar (equivalent to `mod_download.R` in `stocktipr`)**    
-5. **`R6` class bundling inputs UI and server logic; returns reactive list from `$server()` method (equivalent to `mod_inputs.R` in `stocktipr`)**   
-6. **`R6` class bundling outputs UI and server logic; consumes reactive inputs from `ModInputs` (equivalent to `mod_outputs.R` in `stocktipr`)**    
-7. Helper that wraps hover/tooltip text for `reactable` table cells (identical to `stocktipr`)    
-8. Tooltip icon helper component used in module labels (identical to `stocktipr`)     
+The `id` is set once, when the object is created. Inside an object, the UI and server can't disagree about the namespace because they read it from the same place. The skeleton below shows how little code this takes (view the full class [on GitHub](https://github.com/mjfrigaard/stocktipr6/blob/main/R/ModInputs.R)).
 
-Key difference from function-based modules: **each module is a class**. Instead of separate `mod_inputs_ui.R` and `mod_inputs_server.R` functions, there's a single `ModInputs.R` file containing one `R6` class with `$ui()` and `$server()` methods. This ensures the namespace ID is bound once at instantiation and shared by both methods.
+```{r}
+#| eval: false
+#| code-fold: false
+ModInputs <- R6::R6Class(
+  "ModInputs",
+  public = list(
+    initialize = function(id = "inputs") {
+      private$id <- id
+      private$ns <- shiny::NS(id)
+    },
+    ui = function(...) {
+      bslib::sidebar(
+        shiny::selectizeInput(private$ns("tickers"), "Tickers", choices = default_tickers),
+        # ... dates, vol window, fetch button
+        ...
+      )
+    },
+    server = function() {
+      shiny::moduleServer(private$id, function(input, output, session) {
+        shiny::reactive(list(tickers = input$tickers, fetch = input$fetch))
+      })
+    }
+  ),
+  private = list(id = NULL, ns = NULL)
+)
+```
 
-### `{R6}` for Business Logic 
+The `...` in `$ui()` lets another module's UI sit inside this sidebar. `app_ui()` uses it to place the download card under the inputs.
+
+### How the modules connect
+
+`app_ui()` and `app_server()` each create their own three module objects. The UI side calls `$ui()` on each one to build the page. The server side calls `$server()` and passes each module's return value to the next.
+
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: 'center'
+%%| fig-cap: 'Data flow in stocktipr6'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
+
+flowchart TD
+    User(["User"])
+    subgraph Inputs["<strong>ModInputs</strong>"]
+        In("tickers, dates,<br/>vol window, fetch")
+    end
+    InR[/"<code>inputs_r()</code>"/]
+    subgraph Outputs["<strong>ModOutputs</strong>"]
+        Prices("<code>prices_r()</code><br/><code>get_stock_prices()</code>")
+        Returns("<code>returns_r()</code><br/><code>get_stock_returns()</code>")
+        Perf("<code>perf_r()</code><br/><code>summarise_performance()</code>")
+        Render("value boxes, tooltip<br/>tabs, <code>reactable</code>")
+    end
+    PerfR[/"<code>perf_r()</code>"/]
+    subgraph Download["<strong>ModDownload</strong>"]
+        Report("<code>downloadHandler()</code><br/>HTML or PDF report")
+    end
+
+    User --> In
+    In -->|"i. returns"| InR
+    InR -->|"ii. fetch triggers"| Prices
+    Prices --> Returns
+    Returns --> Perf
+    Perf --> Render
+    Perf -->|"iii. returns"| PerfR
+    InR -->|"iv."| Report
+    PerfR -->|"iv."| Report
+
+    style User fill:#dfdfde,color:#000000
+    style In fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Prices fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Returns fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Perf fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Render fill:#FFFFFF,color:#000000,stroke:#333
+    style Report fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style InR fill:#fff0e8,color:#000000
+    style PerfR fill:#fff0e8,color:#000000
+    style Inputs fill:#FFFFFF,color:#000000,stroke:#333,rx:10,ry:10
+    style Outputs fill:#FFFFFF,color:#000000,stroke:#333,rx:10,ry:10
+    style Download fill:#FFFFFF,color:#000000,stroke:#333,rx:10,ry:10
+```
+
+Reactives only flow downstream. `ModOutputs` reads `inputs_r()` but can't change the inputs, and `ModDownload` reads both reactives without touching the private state of either upstream object. Most of the app's logic lives inside the `$server()` methods, so each module carries its own share of the work.
+
+## `movexplR6`: `R6` Business Logic
+
+`movexplR6` is a movie explorer built on the [Shiny Movie Explorer example](https://shiny.posit.co/r/gallery/start-simple/movie-explorer/). Users filter films by reviews, Oscars, year, box office, genre, director, and cast, then plot any two variables against each other.
 
 Access the code here: [mjfrigaard.github.io/movexplR6](https://mjfrigaard.github.io/movexplR6/)
 
 ![](img/movexplR6.png){width='100%' fig-align='center'}
 
-`movexplR6` takes a different approach: it keeps Shiny modules **function-based** but uses `{R6}` for business logic and data management. Rather than wrapping each module in a class, it reserves `{R6}` for stateful, reusable concerns (database connections, data loading, filtering logic).
+### App structure
 
-#### App structure
+`movexplR6` keeps its Shiny modules as ordinary functions. Its one `R6` class, `MovieData`, owns the database connection and the filtering logic.
 
 ```{verbatim}
 R/
@@ -144,520 +277,287 @@ R/
 ├── mod_filters.R #<5>
 ├── mod_plot.R #<6>
 └── utils.R #<7>
-
 ```
-1. App entry point; launches the Shiny app
-2. Main server function; instantiates `MovieData` and wires modules together
-3. Top-level UI function; calls `mod_filters_ui()` and `mod_plot_ui()`
-4. **`R6` class managing SQLite database connection, data loading, and filtering logic**
-5. Function-based filter inputs module; returns reactive list of filter/axis selections
-6. Function-based plot display module; consumes reactive movies and filters
-7. Utility functions (theme, constants, helpers)
+1. App entry point; calls `shinyApp()`
+2. Creates the `MovieData` object and connects the modules to it
+3. Places `mod_filters_ui()` in the sidebar and `mod_plot_ui()` in the body
+4. `R6` class for the SQLite connection, data loading, and filtering
+5. Function-based filters module; returns a reactive list of selections
+6. Function-based plot module; draws the scatter plot and movie count
+7. Axis variables and other constants
 
-**Key difference**: Modules stay function-based (`mod_filters.R`, `mod_plot.R` each contain UI and server functions), but the data layer is encapsulated in an `R6` class (`MovieData`). This separates UI/reactivity concerns from resource management.
+### Class anatomy
 
-## Architectures
-
-Both patterns work, but they solve different problems. `stocktipr6` enforces architecture at the module level; `movexplR6` enforces it at the business logic layer. The choice depends on where your app's complexity lives.
-
-### `R6` Modules 
-
-In `stocktipr6`, each *module* is an `R6` class. When writing `R6` modules, both the UI and server logic are wrapped into a single **class**. Below is a simplified example from `stocktipr6` (view the full version [on GitHub.](https://github.com/mjfrigaard/stocktipr6/blob/main/R/ModInputs.R)).
-
-```{r}
-#| eval: false 
-#| code-fold: true 
-#| code-summary: 'hide/show ModInputs'
-ModInputs <- R6::R6Class(
-  "ModInputs",
-  public = list(
-    initialize = function(id = "inputs") { #<1>
-      private$id <- id
-      private$ns <- shiny::NS(id)
-    }, #<1>
-    ui = function() { #<2>
-      bslib::sidebar(
-        width = 280,
-        bg = "#f8f9fa",
-        shiny::selectizeInput( #<3>
-          inputId = private$ns("tickers"),
-          label = shiny::tags$span(
-            "Tickers",
-            mod_tooltip(
-              trigger = bsicons::bs_icon("info-circle"),
-              type = "bslib",
-              contents = "Enter one or more stock ticker symbols (e.g. AAPL, MSFT).",
-              size = "0.85rem",
-              style = "color:#6c757d"
-            )
-          ),
-          choices = default_tickers,
-          selected = c("AAPL", "MSFT", "GOOGL"),
-          multiple = TRUE,
-          options = list(
-            plugins = list("remove_button"),
-            placeholder = "Add a ticker\u2026",
-            create = TRUE
-          )
-        ), #<3>
-        shiny::dateRangeInput( #<4>
-          inputId = private$ns("dates"),
-          label = "Date range",
-          start = Sys.Date() - 365,
-          end = Sys.Date(),
-          min = "2000-01-01",
-          max = Sys.Date()
-        ), #<4>
-        shiny::sliderInput( #<5>
-          inputId = private$ns("vol_window"),
-          label = shiny::tags$span(
-            "Rolling vol window (days)",
-            mod_tooltip(
-              trigger = bsicons::bs_icon("info-circle"),
-              type = "bslib",
-              contents = "Number of trading days used for the rolling volatility calculation.",
-              size = "0.85rem",
-              style = "color:#6c757d"
-            )
-          ),
-          min = 5L,
-          max = 120L,
-          value = 30L,
-          step = 5L
-        ), #<5>
-        shiny::actionButton( #<6>
-          inputId = private$ns("fetch"),
-          label = "Fetch data",
-          icon = shiny::icon("download"),
-          class = "btn-primary w-100"
-        ), #<6>
-        bslib::card( #<7>
-          bslib::card_header(
-            bsicons::bs_icon("file-earmark-arrow-down"), " Download Report"
-          ),
-          bslib::card_body(
-            shiny::selectInput(
-              inputId = private$ns("format"),
-              label = "Report format",
-              choices = c("HTML" = "html", "PDF" = "pdf"),
-              selected = "html"
-            ),
-            shiny::downloadButton(
-              outputId = private$ns("download"),
-              label = "Download",
-              icon = shiny::icon("download"),
-              class = "btn-outline-primary w-100"
-            )
-          )
-        ) #<7>
-      )
-    }, #<2>
-    
-    server = function() { #<8>
-      shiny::moduleServer(private$id, function(input, output, session) {
-        shiny::observe({ #<9>
-          shiny::req(input$fetch)
-          if (length(input$tickers) == 0) {
-            shiny::showNotification(
-              "Please select at least one ticker.",
-              type = "warning"
-            )
-          }
-        }) #<9>
-        shiny::reactive({ #<10>
-          with_logging(
-            context = "ModInputs / reactive list",
-            ns = "stocktipr6/inputs",
-            {
-              inp <- list(
-                tickers = input$tickers,
-                from = input$dates[1],
-                to = input$dates[2],
-                vol_window = input$vol_window,
-                fetch = input$fetch,
-                format = input$format
-              )
-              inp
-            }
-          )
-        }) #<10>
-      })
-    }
-  ), #<8>
-  private = list( #<11>
-    id = NULL,
-    ns = NULL
-  ) #<11>
-)
-```
-1. `initialize()` stores the module's namespace ID and creates a namespace function
-2. `ui()` is a public method that builds UI tags; it uses `private$ns()` to namespace inputs  
-3. Stock ticker picker 
-4. Date range input  
-5. Rolling-vol window   
-6. Fetch stock data 
-7. Report download (placeholder) 
-8. `server()` wraps the module server logic and returns a reactive expression
-9. Fetch button observer   
-10.  Reactive inputs list  
-11. `private` members hold internal state; can't be accessed from outside the object
-
-
-Before going further, it's worth comparing how `R6` modules and function-based modules handle the namespace `id`.
-
-#### `R6` Modules vs. standard functions
-
-`stocktipr6` bundles both UI and server into a single `R6` class. `ModInputs$new("inputs")` creates one instance where the `id` is stored in `private$id` and automatically available to both the `ui()` and `server()` methods.
+`MovieData` has nothing to do with the UI. Its public members are the connection, the full data set, and two methods. Its private members load the data and clean up after the object.
 
 ```{mermaid}
 %%| eval: true
-%%| fig-align: 'center'
-%%| fig-caption: 'Module Architecture: R6'
 %%| echo: false
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
-
+%%| fig-align: 'center'
+%%| fig-cap: 'The MovieData class in movexplR6'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
 
 flowchart TD
-    subgraph R6Based["<strong>R6 Class</strong>"]
-        New["<strong>ModInputs$new('inputs')</strong>"]
-        Instance["Single instance<br/>owns <code>id</code> & <code>ns</code>"]
-        UiM["<strong>$ui()</strong>"]
-        ServM["<strong>$server()</strong>"]
+    New(["<code>MovieData$new(db_path)</code>"])
+    DB[("<code>movies.db</code><br/>omdb + tomatoes")]
+    subgraph Obj["<strong>MovieData object</strong>"]
+        subgraph Public["<strong>public</strong>"]
+            Con[("<code>con</code><br/>DBI connection")]
+            All[("<code>all_movies</code><br/>data frame")]
+            Filter("<code>$filter()</code>")
+            Disc("<code>$disconnect()</code>")
+        end
+        subgraph Private["<strong>private</strong>"]
+            Load[["<code>load_data()</code>"]]
+            Fin[["<code>finalize()</code>"]]
+        end
     end
 
-    New -->|"binds <code>id</code>"| Instance
-    Instance -->|"uses <code>id</code>"| UiM
-    Instance -->|"uses <code>id</code>"| ServM
+    New -->|"i. connects"| Con
+    Con --- DB
+    New -->|"ii. calls"| Load
+    Load -->|"joins and collects"| All
+    Filter -->|"subsets"| All
+    Fin -->|"calls"| Disc
+    Disc -->|"closes"| Con
 
-    style New fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style Instance fill:#E0F0ED,color:#000000,stroke:#4CBB9D
-    style UiM fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style ServM fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-
+    style New fill:#dfdfde,color:#000000
+    style DB fill:#b3cde0,color:#000000
+    style Con fill:#b3cde0,color:#000000
+    style All fill:#b3cde0,color:#000000
+    style Filter fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Disc fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Load fill:#FFFFFF,color:#000000,stroke:#333
+    style Fin fill:#FFFFFF,color:#000000,stroke:#333
+    style Obj fill:#FFFFFF,color:#000000,stroke:#333,stroke-width:1px,rx:10,ry:10
+    style Public fill:#E0F0ED,color:#000000,stroke:#4CBB9D
+    style Private fill:#FFF8E7,color:#000000,stroke:#999
 ```
 
-The `id` is **bound at instantiation and encapsulated** in the object. Both `$ui()` and `$server()` methods access it from the same source, so within an instance, the UI and server namespaces can't drift out of sync.
+The database is read once. `load_data()` joins the `omdb` and `tomatoes` tables, keeps movies with at least 10 reviews, and collects the result into `all_movies`, so every call to `$filter()` subsets data that's already in memory. The private `finalize()` method closes the connection if the object is garbage collected before `$disconnect()` runs.
 
-In function-based modules, both UI and server functions must receive the same `id` argument to share a namespace.
+### How the modules connect
+
+`movies_server()` creates one `MovieData` object per session and registers `$disconnect()` with `shiny::onStop()`. The modules never see the object. A reactive in `movies_server()` passes the filter values to `$filter()`, and the plot module receives the result.
 
 ```{mermaid}
 %%| eval: true
-%%| fig-align: 'center'
-%%| fig-caption: 'Function-Based Pattern (No Encapsulation)'
 %%| echo: false
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+%%| fig-align: 'center'
+%%| fig-cap: 'Data flow in movexplR6'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
 
 flowchart TD
-    subgraph FuncBased["<strong>Function-Based</strong>"]
-        direction LR
-        UICall("mod_inputs_ui('inputs')")
-        ServerCall("mod_inputs_server('inputs')")
-        Separate(("<em>Two separate<br/>function calls<br/>same ID by convention</em>"))
-    end
-
-    style UICall fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
-    style ServerCall fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
-    style Separate fill:#FFE0E0,color:#000000,stroke:#c0392b
-
-```
-
-The responsibility for keeping them in sync falls on the developer.
-
-### `{R6}` for Business Logic
-
-`movexplR6` shows a different pattern; it uses `{R6}` for resources and business logic and keeps the Shiny modules function-based. This cleanly separates concerns: stateful data access in `{R6}`, stateless UI/reactivity in functions.
-
-The `MovieData` class in `movexplR6` manages a SQLite connection and filtering logic:
-
-```{r}
-#| eval: false
-#| code-fold: true
-#| code-summary: 'hide/show MovieData class'
-MovieData <- R6::R6Class(
-  "MovieData",
-  public = list(
-    con = NULL,
-    all_movies = NULL,
-    initialize = function(db_path) { #<1>
-      self$con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
-      self$all_movies <- private$load_data()
-    }, #<1>
-    filter = function(reviews = 10, oscars = 0, year = c(1940, 2014),
-                      boxoffice = c(0, 800), genre = "All",
-                      director = "", cast = "") { #<2>
-      self$all_movies |>
-        dplyr::filter(Reviews >= reviews, Oscars >= oscars)
-    }, #<2>
-    disconnect = function() { #<3>
-      DBI::dbDisconnect(self$con)
-    } #<3>
-  ),
-  private = list(
-    load_data = function() { # joins and collects query results
-    }
-  )
-)
-```
-1. Open connection and load data on initialization
-2. Public `$filter()` method; no UI concern here, just business logic
-3. Explicit `$disconnect()` method for cleanup
-
-Meanwhile, the UI modules stay function-based and lightweight. In `movies_server()`, you instantiate the `R6` object once and wire it into the reactive pipeline:
-
-```{r}
-#| eval: false
-#| code-fold: false
-movies_server <- function(input, output, session) {
-  movie_data <- MovieData$new("movies.db")
-  shiny::onStop(function() movie_data$disconnect())
-
-  filters <- mod_filters_server("filters")
-  movies <- shiny::reactive({
-    movie_data$filter(
-      reviews = filters()$reviews,
-      oscars = filters()$oscars,
-      # ... other filter params
-    )
-  })
-  mod_plot_server("plot", movies, filters)
-}
-```
-
-This hybrid approach works well when your app has complex data operations, external connections, or shared state that doesn't fit naturally into Shiny's reactive model. You keep the UI/server modules lightweight and function-based while `{R6}` handles the heavy lifting.
-
-## Comparison: stocktipr6 vs movexplR6
-
-Both apps need to manage state, but they organize it differently.
-
-### Public and Private Members
-
-In `{R6}`, `public` methods are callable from outside the object; `private` members are internal. With full `R6` modules (`stocktipr6`):
-
-- **Public methods** (`$ui()`, `$server()`) build the interface and run reactive logic
-- **Private members** (`private$id`, `private$ns`) store namespace information that both methods share
-
-This sharing is the key benefit: the `id` is set once at instantiation and automatically available to both methods.
-
-**Initialization:**
-
-```{r}
-#| eval: false
-#| code-fold: false 
-initialize = function(id = "inputs") {
-  private$id <- id
-  private$ns <- NS(id)
-}
-```
-
-**UI method:**
-
-```{r}
-#| eval: false
-#| code-fold: false 
-ui = function() {
-  sidebar(
-    selectizeInput(
-      inputId = private$ns("tickers"),  # <-- uses private namespace
-      label = "Tickers",
-      # ...
-    ),
-    # ... more inputs
-  )
-}
-```
-
-**Server method:**
-
-```{r}
-#| eval: false
-#| code-fold: false 
-server = function() {
-  moduleServer(private$id, function(input, output, session) {  # <-- same ID
-    reactive({
-      list(
-        tickers = input$tickers,
-        from = input$dates[1],
-        to = input$dates[2],
-        vol_window = input$vol_window
-      )
-    })
-  })
-}
-```
-
-The `id` and `ns` are shared across methods, so they're always in sync.
-
-### Lifecycle
-
-The lifecycle flows like this:
-
-1. `ModInputs$new(id = "inputs")` runs `initialize()`, binding the ID
-2. `ModInputs$ui()` is called in `app_ui()`, using `private$ns()` for namespacing
-3. `ModInputs$server()` is called in `app_server()`, using `private$id` for module scope
-
-Both methods share the same private state.
-
-```{mermaid}
-%%| eval: true
-%%| fig-align: 'center'
-%%| fig-caption: 'R6 Module Lifecycle (stocktipr6)'
-%%| echo: false
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
-
-flowchart LR
-    subgraph "<strong>R6 Module Lifecycle</strong>"
-        Init["<strong>ModInputs$new(id)</strong><br><em>Runs initialize()</em>"]
-        Id("<strong>private$id</strong>")
-        Ns("<strong>private$ns()</strong>")
-        UI["<strong>$ui()</strong><br/><em>Called in<br>app_ui()</em>"]
-        Server["<strong>$server()</strong><br><em>Called in app_server()</em>"]
-    end
-
-    Init -->|"stores"| Id
-    Init -->|"creates"| Ns
-    UI -->|"uses"| Ns
-    Server -->|"uses"| Id
-
-    style Init fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style Id fill:#FFFFFF,color:#000000,stroke:#333,font-family:monospace
-    style Ns fill:#FFFFFF,color:#000000,stroke:#333,font-family:monospace
-    style UI fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style Server fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-
-```
-
-### Private Members
-
-The `private` list holds internal state (`id` and `ns`). These are accessed by public methods, but they aren't part of the public interface (tests can still reach them through `.__enclos_env__`, as shown below).
-
-```{mermaid}
-%%| eval: true 
-%%| echo: false 
-%%| fig-align: 'center' 
-%%| fig-caption: 'Namespace Isolation'
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
-
-flowchart TD
-    subgraph "<strong>Namespace Isolation</strong>"
-        Ns(["<strong>ns()</strong>"])
-        IDs("input/output IDs")
-        Prefix("Prefixed IDs<br><code>ns-input</code>")
-    end
-
-    Ns -->|prefixes| IDs
-    IDs -->|creates| Prefix
-    Prefix -->|prevents| Conflicts(["<em>ID conflicts<br>across modules</em>"])
-
-    style Ns fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace,text-align:'center'
-    style IDs fill:#FFFFFF,color:#000000,stroke:#333
-    style Prefix fill:#FFFFFF,color:#000000,stroke:#333
-    style Conflicts fill:#FFE0E0,color:#000000,stroke:#c0392b
-    
-```
-
-## State Management: Two Approaches
-
-State ownership differs between the two patterns.
-
-### Full `R6` Modules (`stocktipr6`)
-
-In `stocktipr6`, each module is an instance with its own private state. When `ModOutputs` needs data from `ModInputs`, it receives the reactive list returned by `ModInputs$server()` and consumes it as a parameter. 
-
-```{mermaid}
-%%| eval: true
-%%| fig-align: 'center'
-%%| fig-caption: 'State Flow: R6 Modules (stocktipr6)'
-%%| echo: false
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
-
-flowchart TD
-    subgraph R6Flow["<strong>R6 Module Flow</strong>"]
-        MI["<strong>ModInputs$new()</strong>"]
-        MS["<strong>ModInputs$server()</strong>"]
-        MReact[/"reactive list"/]
-        MPass["<strong>ModOutputs$server()</strong>"]
-        MOwn(["<em>State: owned by<br/>module instance</em>"])
-    end
-
-    MI -->|"creates instance"| MS
-    MS -->|"returns"| MReact
-    MReact -->|"consumed by"| MPass
-    MPass --> MOwn
-
-    style MI fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style MS fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style MPass fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style MOwn fill:#E0F0ED,color:#000000,stroke:#4CBB9D
-    
-```
-
-Dependencies flow in one direction: downstream modules receive what they need from upstream instances, and can't modify the upstream module's private state. This one-way flow means a downstream module can't accidentally overwrite an upstream module's inputs.
-
-### `{R6}` for Business Logic (`movexplR6`)
-
-In `movexplR6`, the `R6` layer manages resources and data, while function-based modules handle the UI/reactivity. Here, `movies_server()` creates one `MovieData` object per session, and the modules never hold state of their own.
-
-```{mermaid}
-%%| eval: true
-%%| fig-align: 'center'
-%%| fig-caption: 'State Flow: R6 Business Logic (movexplR6)'
-%%| echo: false
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
-
-flowchart TD
-    subgraph R6Data["<strong>R6 Data Layer</strong>"]
-        MD["<strong>MovieData$new()</strong>"]
-        DOwn(["<em>State: owned by<br/>MovieData object<br/>(<code>con</code>, <code>all_movies</code>)</em>"])
-    end
-
-    subgraph FnFlow["<strong>Function Module Flow</strong>"]
-        MF["<strong>mod_filters_server()</strong>"]
-        FReact[/"<code>filters()</code>"/]
+    User(["User"])
+    subgraph Server["<strong>movies_server()</strong>"]
+        MD("<code>MovieData$new()</code>")
+        subgraph Filters["<strong>mod_filters_server()</strong>"]
+            FIn("reviews, oscars, year,<br/>box office, genre,<br/>director, cast, axes")
+        end
+        FR[/"<code>filters()</code>"/]
         Movies("<code>movies()</code><br/>calls <code>movie_data$filter()</code>")
-        MP["<strong>mod_plot_server()</strong>"]
+        subgraph Plot["<strong>mod_plot_server()</strong>"]
+            Scatter("scatter plot and<br/>movie count")
+        end
+        Stop("<code>onStop()</code><br/>calls <code>$disconnect()</code>")
     end
 
-    MD -->|"i. opens connection,<br/>loads data"| DOwn
-    MF -->|"ii. returns"| FReact
-    FReact -->|"iii. parameters"| Movies
-    DOwn -->|"iii. filtered by"| Movies
-    Movies -->|"iv. consumed by"| MP
-    FReact -.->|"iv. consumed by"| MP
+    User --> FIn
+    FIn -->|"i. returns"| FR
+    FR -->|"ii. filter values"| Movies
+    MD -->|"ii. data"| Movies
+    Movies -->|"iii."| Scatter
+    FR -.->|"iii. axes"| Scatter
+    MD -.->|"iv. session ends"| Stop
 
-    style MD fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style MF fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
-    style MP fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
-    style Movies fill:#FFFFFF,color:#000000,stroke:#333,font-family:monospace
-    style DOwn fill:#E0F0ED,color:#000000,stroke:#4CBB9D
+    style User fill:#dfdfde,color:#000000
+    style MD fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style FIn fill:#FFF8E7,color:#000000,stroke:#999
+    style Scatter fill:#FFF8E7,color:#000000,stroke:#999
+    style Movies fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Stop fill:#FFFFFF,color:#000000,stroke:#333
+    style FR fill:#fff0e8,color:#000000
+    style Server fill:#FFFFFF,color:#000000,stroke:#333,rx:10,ry:10
+    style Filters fill:#FFFFFF,color:#000000,stroke:#999
+    style Plot fill:#FFFFFF,color:#000000,stroke:#999
+```
+
+The modules here are thin. `mod_filters_server()` returns the current selections, and `mod_plot_server()` draws whatever data it's given. Neither one knows a database exists.
+
+## Comparing the Two Apps
+
+Both apps use `R6` to give state an owner. They differ in which layer that owner sits in, and that choice shapes how each app handles namespaces, state, and debugging.
+
+### Where does `R6` live?
+
+The diagram below lines up the layers of each app. In `stocktipr6`, the `R6` classes are the modules. In `movexplR6`, the modules are functions and the `R6` class sits underneath them as the data layer.
+
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: 'center'
+%%| fig-cap: 'Where R6 sits in each app'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
+
+flowchart TD
+    subgraph S["<strong>stocktipr6</strong>"]
+        direction TB
+        SApp("<code>app_ui()</code> + <code>app_server()</code>")
+        SMod("<strong>R6 modules</strong><br/><code>ModInputs</code>, <code>ModOutputs</code>,<br/><code>ModDownload</code>")
+        SFun[["utility functions<br/><code>get_stock_prices()</code>, etc."]]
+        SApp --> SMod --> SFun
+    end
+    subgraph M["<strong>movexplR6</strong>"]
+        direction TB
+        MApp("<code>movies_ui()</code> + <code>movies_server()</code>")
+        MMod("function modules<br/><code>mod_filters</code>, <code>mod_plot</code>")
+        MData("<strong>R6 data layer</strong><br/><code>MovieData</code>")
+        MApp --> MMod
+        MApp --> MData
+    end
+
+    style SMod fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style MData fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style SApp fill:#FFFFFF,color:#000000,stroke:#333
+    style MApp fill:#FFFFFF,color:#000000,stroke:#333
+    style SFun fill:#FFFFFF,color:#000000,stroke:#333
+    style MMod fill:#FFF8E7,color:#000000,stroke:#999
+    style S fill:#FFFFFF,color:#000000,stroke:#333,rx:10,ry:10
+    style M fill:#FFFFFF,color:#000000,stroke:#333,rx:10,ry:10
+```
+
+`stocktipr6` puts the structure around the Shiny code. `movexplR6` puts it around the data, and leaves the Shiny code as plain functions.
+
+### Namespaces
+
+A Shiny module only works when its UI and server use the same namespace `id`. The two apps make that match in different ways.
+
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: 'center'
+%%| fig-cap: 'How R6 module patterns matches the UI and server namespace'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
+
+flowchart TD
+    subgraph R6["<strong>R6 module</strong>"]
+        RNew(["<code>ModInputs$new('inputs')</code>"])
+        RId[("<code>private$id</code>")]
+        RUI("<code>$ui()</code>")
+        RSrv("<code>$server()</code>")
+        RNew --> RId
+        RId --> RUI
+        RId --> RSrv
+    end
+
+    style RNew fill:#dfdfde,color:#000000
+    style RId fill:#b3cde0,color:#000000
+    style RUI fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style RSrv fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style R6 fill:#FFFFFF,color:#000000,stroke:#333,rx:10,ry:10
 
 ```
 
-The diagram above shows where the state lives. `MovieData$new()` opens the database connection and loads the movies once, so the `MovieData` object owns `con` and `all_movies`. `mod_filters_server()` returns the `filters()` reactive, and the `movies()` reactive passes those values to `movie_data$filter()`. `mod_plot_server()` receives both reactives as arguments, but it never touches the connection or the full data set.
+In an `R6` module, both methods read the `id` from one private field. 
 
-This flips the ownership we saw in `stocktipr6`. The modules are interchangeable pieces of reactive plumbing, and the single `MovieData` object holds everything worth protecting. We covered the architecture earlier; now let's see what happens when we inspect the state at runtime and compare it across both patterns.
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: 'center'
+%%| fig-cap: 'How function module patterns matche the UI and server namespace'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
+
+flowchart TD
+    subgraph Fn["<strong>Function module</strong>"]
+        FUI("<code>mod_filters_ui('filters')</code>")
+        FSrv("<code>mod_filters_server('filters')</code>")
+        Match{"same string<br/>typed twice?"}
+        FUI --> Match
+        FSrv --> Match
+    end
 
 
-## Debugging and Inspection
-
-When something breaks, the first thing I want to know is what state a module is holding. Each pattern answers that question differently.
-
-### `R6` Objects (`stocktipr6`)
-
-The full `R6` approach lets us inspect the module object directly at runtime:
-
-```{r}
-#| eval: false
-#| code-fold: false
-
-# in R/app_server.R
-inputs <- ModInputs$new(id = "inputs")
-inputs_r <- inputs$server()
-
-# Inspect the object
-str(inputs)  # Shows the R6 class structure
+    style FUI fill:#FFF8E7,color:#000000,stroke:#999
+    style FSrv fill:#FFF8E7,color:#000000,stroke:#999
+    style Match fill:#FFE0E0,color:#000000,stroke:#c0392b
+    style Fn fill:#FFFFFF,color:#000000,stroke:#333,rx:10,ry:10
 ```
 
-Output:
+In a function module, the developer types the same string twice. A typo like `"filter"` instead of `"filters"` doesn't throw an error; the app launches, but the inputs never reach the server.
+
+The `R6` guarantee has a limit, though. `app_ui()` and `app_server()` each create their own `ModInputs` object, so the two `"inputs"` strings in those files still have to match by convention. The guarantee holds inside one object, not across the whole app.
+
+### State
+
+The two apps also differ in who holds the state that matters. The diagram below shows where each app keeps its most important state.
+
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: 'center'
+%%| fig-cap: 'Where state lives in stocktipr6'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
+
+flowchart TD
+    subgraph S["<strong>stocktipr6</strong>"]
+        SI("<code>ModInputs</code><br/><code>id</code>, <code>ns</code>")
+        SO("<code>ModOutputs</code><br/><code>id</code>, <code>ns</code>")
+        SD("<code>ModDownload</code><br/><code>id</code>, <code>ns</code>")
+        SI -->|"<code>inputs_r()</code>"| SO
+        SO -->|"<code>perf_r()</code>"| SD
+        SI -->|"<code>inputs_r()</code>"| SD
+    end
+
+    style SI fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style SO fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style SD fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style S fill:#FFFFFF,color:#000000,stroke:#333,rx:10,ry:10
+
+```
+
+In `stocktipr6`, state is spread across the modules. Each object holds only its own namespace. The reactives for prices, returns, and performance are created inside `ModOutputs$server()`, so they live in the Shiny session, not in the object.
+
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: 'center'
+%%| fig-cap: 'Where state lives in movexplR6'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
+
+flowchart TD
+    subgraph M["<strong>movexplR6</strong>"]
+        MF("<code>mod_filters</code><br/>no state")
+        MD[("<code>MovieData</code><br/><code>con</code>, <code>all_movies</code>")]
+        MP("<code>mod_plot</code><br/>no state")
+        MF -->|"<code>filters()</code>"| MD
+        MD -->|"<code>movies()</code>"| MP
+    end
+
+
+    style MF fill:#FFF8E7,color:#000000,stroke:#999
+    style MP fill:#FFF8E7,color:#000000,stroke:#999
+    style MD fill:#b3cde0,color:#000000
+    style M fill:#FFFFFF,color:#000000,stroke:#333,rx:10,ry:10
+
+```
+
+In `movexplR6`, the modules hold nothing, and the one `MovieData` object holds everything worth protecting: the open connection and the full data set.
+
+### Reactivity
+
+`R6` objects aren't reactive on their own. They're containers for state and methods, and Shiny doesn't know when their fields change.
+
+Both apps handle this the same way: the reactivity stays in Shiny. `stocktipr6` builds its reactives inside each `$server()` method and returns them. `movexplR6` wraps the `$filter()` call in a `reactive()`, so Shiny re-runs it whenever `filters()` changes.
+
+The practical rule is to read `R6` fields from inside reactives and keep reactive values out of `R6` fields. If an `R6` field changes and nothing reactive depends on it, the UI won't update.
+
+### Debugging
+
+When something breaks, the first thing I want to know is what state the app is holding. In both apps, printing the `R6` object answers that question.
+
+In `stocktipr6`, `str(inputs)` shows a module's methods and private namespace:
+
+::: {style="font-style: italic;"}
 
 ```{verbatim}
 Classes 'ModInputs', 'R6' <ModInputs>
@@ -665,557 +565,287 @@ Classes 'ModInputs', 'R6' <ModInputs>
     clone: function (deep = FALSE)
     initialize: function (id = "inputs")
     server: function ()
-    ui: function ()
+    ui: function (...)
   Private:
     id: inputs
     ns: function (id)
 ```
 
-This tells us immediately that the module owns an `id` (bound at instantiation), a namespace function, and public methods for UI and server. Everything is encapsulated in one object.
+:::
 
-### Function-Based Modules (`movexplR6`)
+In `movexplR6`, `str(movie_data)` shows the data layer instead:
 
-In `movexplR6`, modules stay function-based, so there's no object to inspect. But the `R6` data layer (`MovieData`) is directly inspectable:
-
-```{r}
-#| eval: false
-#| code-fold: false
-
-# in R/movies_server.R
-movie_data <- MovieData$new("movies.db")
-
-# Inspect the object
-str(movie_data)  # Shows the R6 class structure
-```
-
-Output:
+::: {style="font-style: italic;"}
 
 ```{verbatim}
 Classes 'MovieData', 'R6' <MovieData>
   Public:
-    all_movies: data.frame (1000 obs, 15 vars)
+    all_movies: tbl_df, tbl, data.frame
     clone: function (deep = FALSE)
     con: SQLiteConnection
     disconnect: function ()
-    filter: function (reviews = 10, oscars = 0, ...)
+    filter: function (reviews = 10, oscars = 0, year = c(1940, 2014), 
+        boxoffice = c(0, 800), genre = "All", director = "", cast = "")
     initialize: function (db_path)
   Private:
+    finalize: function ()
     load_data: function ()
 ```
 
-This tells us the data layer's state (the `con` connection and the `all_movies` data frame), methods, and lifecycle. The modules themselves remain lightweight.
+:::
 
-## Why Encapsulation Matters
+The `movexplR6` modules have no object to inspect. That's usually fine, because they hold no state; to debug them, I inspect the reactives they return.
 
-The `R6` approach (whether full modules or business logic layer) makes state ownership explicit. With full `R6` modules (`stocktipr6`):
+### Trade-offs
 
-- The module's identity and dependencies are clear: `inputs$server()` uses the same ID as `inputs$ui()`
-- The UI and server namespaces can't drift apart; the ID is bound at instantiation
+The table below sums up the differences.
 
-With the hybrid approach (`movexplR6`):
+| | `stocktipr6` (`R6` modules) | `movexplR6` (`R6` business logic) |
+|---|---|---|
+| Modules | `R6` classes with `$ui()` and `$server()` | Functions: `mod_*_ui()` and `mod_*_server()` |
+| `R6` holds | Namespace `id` and `ns()` per module | Database connection and data |
+| Namespace match | Inside each object; by convention across `app_ui()` and `app_server()` | By convention in every call |
+| Code per module | More: `initialize()`, `ui()`, and `server()` | Less: two functions |
+| Cleanup | Nothing to close | `onStop()` and `finalize()` close the connection |
+| Easiest to test | Each module's UI and namespace | The data layer, with no Shiny session |
+| Reuse | Modules can be exported as classes | `MovieData` can be used outside Shiny |
 
-- Business logic is centralized in one object that manages resources
-- Modules remain simple and stateless
-- The connection lifecycle and data access are clear and testable
+### Which should you choose?
 
-Without encapsulation (pure function-based), a typo like passing `"input"` instead of `"inputs"` to `mod_inputs_server()` creates a silent namespace mismatch. The app still launches, but the inputs never reach the server.
+The choice depends on where your app's complexity lives.
 
-## Business Logic vs UI Encapsulation
+I'd use `R6` modules (the `stocktipr6` pattern) when the app has many modules that pass reactives between them. The same goes for modules that will be reused across apps, or a codebase that several people work on. The class gives every module the same shape, and the shape is easy to review.
 
-The key difference between the two patterns:
+I'd use an `R6` data layer (the `movexplR6` pattern) when the hard part of the app is the data. Database connections, API clients, and caches all need setup and cleanup, and a class gives that work one home. The modules stay small, and the data layer can be tested and used without Shiny at all.
 
-- **stocktipr6 (full `R6` modules)**: Encapsulates UI/server logic. Each module is a self-contained unit.
-- **movexplR6 (hybrid)**: Encapsulates business logic. Modules stay simple; complexity lives in the data layer.
+The two patterns also combine. Nothing stops an app from using `R6` modules that receive an `R6` data object as an argument.
 
-In `movexplR6`, the data layer owns the connection lifecycle:
+## Documentation and Best Practices
 
-```{r}
-#| eval: false
-#| code-fold: false
-movies_server <- function(input, output, session) {
-  # Initialize R6 data layer
-  movie_data <- MovieData$new("movies.db")  #<1>
-  shiny::onStop(function() movie_data$disconnect())  #<2>
+Both patterns need the same care once they're inside a package. This section covers documenting `R6` classes, organizing files, creating objects, and testing.
 
-  # Use function-based modules
-  filters <- mod_filters_server("filters")
-  
-  # Wire R6 to reactive pipeline
-  movies <- shiny::reactive({
-    movie_data$filter(  #<3>
-      reviews = filters()$reviews,
-      oscars = filters()$oscars
-    )
-  })
-  
-  mod_plot_server("plot", movies, filters)
-}
-```
-1. Initialize the data layer once per session
-2. Register cleanup on session end
-3. Call `R6` methods from reactive expressions
+### Documenting `R6` classes
 
-The `R6` object ensures the database connection opens on initialization and closes when the session ends. Function-based modules stay lightweight; they don't need to know about connection management. They just consume filtered data from the reactive expression.
-
-```{mermaid}
-%%| eval: true
-%%| fig-align: 'center'
-%%| fig-caption: 'Hybrid: R6 Data Layer + Function Modules'
-%%| echo: false
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
-
-flowchart TD
-    subgraph R6Layer["<strong>R6 Data Layer</strong>"]
-        New["<strong>MovieData$new()</strong>"]
-        Con[("Database<br/><code>movies.db</code>")]
-        All[("<code>all_movies</code><br/>in-memory data frame")]
-        Filter["<strong>$filter()</strong>"]
-        Disc["<strong>$disconnect()</strong>"]
-    end
-
-    subgraph FuncLayer["<strong>Function Modules</strong>"]
-        ModFilters["<strong>mod_filters_server()</strong>"]
-        ModPlot["<strong>mod_plot_server()</strong>"]
-    end
-
-    New -->|"i. opens"| Con
-    Con -->|"ii. load_data() joins<br/>and collects once"| All
-    ModFilters -->|"iii. filters()"| Filter
-    Filter -->|"iv. subsets"| All
-    Filter -->|"v. movies()"| ModPlot
-    ModFilters -.->|"v. filters()"| ModPlot
-    Disc -->|"vi. onStop() closes"| Con
-
-    style New fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style Filter fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style Disc fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style Con fill:#B3CDE0,color:#000000,stroke:#333,font-family:monospace
-    style All fill:#B3CDE0,color:#000000,stroke:#333,font-family:monospace
-    style ModFilters fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
-    style ModPlot fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
-```
-
-## Trade-offs: stocktipr6 vs movexplR6
-
-Both patterns solve encapsulation problems, but they apply `{R6}` at different layers.
-
-| Aspect | **stocktipr6 (Full `{R6}`)** | **movexplR6 (Hybrid)** |
-|--------|----------------------|----------------------|
-| **Module structure** | Each module is an `R6` class (`ModInputs`, `ModOutputs`, etc.) | Modules stay function-based (`mod_filters`, `mod_plot`) |
-| **Where state lives** | Private members in each `R6` instance (`private$id`, `private$ns`) | `R6` class manages data/resources (`MovieData$all_movies`, `MovieData$con`) |
-| **Complexity per module** | Higher (must define `initialize()`, `ui()`, `server()`) | Lower (just `mod_*_ui()` and `mod_*_server()` functions) |
-| **Namespace safety** | Guaranteed; ID is bound at instantiation | Developer's responsibility; functions must receive same ID |
-| **Resource lifecycle** | Each module owns its own data | Central `R6` object owns resources; modules consume them |
-| **When to use** | Apps with complex module interdependencies; multi-developer projects | Apps with clear UI/data separation; heavy resource management needs |
-| **Testing** | Modules are self-contained objects; easier to unit test | `R6` layer is testable; modules tested via integration tests |
-| **Code reuse** | Modules can be exported and reused as package API | Business logic (`{R6}`) is reusable; UI modules are app-specific |
-
-Both patterns are valid. The choice depends on where your complexity lives:
-
-- **Choose stocktipr6 pattern** if:
-  - You have many interdependent modules
-  - You want to reuse modules across apps (export them as a package)
-  - Your team is large or you want to enforce architectural constraints
-  - Namespace safety is critical
-
-- **Choose movexplR6 pattern** if:
-  - Your app has a clear data layer (database, API, cache)
-  - Modules are mostly independent and simple
-  - You want lightweight, straightforward code for UI/reactivity
-  - Business logic is complex but UI is simple
-
-## Using `R6` Modules (stocktipr6)
-
-In the app's UI, instantiate the `R6` objects and call their `$ui()` methods. The server creates its own instances with the same `id` values, so both sides share the same namespace:
-
-```{r}
-#| eval: false 
-#| code-fold: false 
-app_ui <- function() {
-  inputs <- ModInputs$new(id = "inputs")
-  outputs <- ModOutputs$new(id = "outputs")
-  download <- ModDownload$new(id = "download")
-  bslib::page_sidebar(
-    sidebar = inputs$ui(download$ui()),
-    outputs$ui()
-  )
-}
-```
-
-In the app's server, instantiate `R6` objects and wire their `$server()` methods together:
-
-```{r}
-#| eval: false 
-#| code-fold: false 
-app_server <- function(input, output, session) {
-  
-  inputs <- ModInputs$new(id = "inputs") #<1>
-  inputs_r <- inputs$server()
-
-  outputs <- ModOutputs$new(id = "outputs") #<2>
-  perf_r <- outputs$server(inputs_r = inputs_r)
-
-  download <- ModDownload$new(id = "download") #<3>
-  download$server(inputs_r = inputs_r, perf_r = perf_r)
-}
-```
-1. Instantiate input module; its `$server()` returns a reactive list
-2. Instantiate output module; consume `inputs_r` from step 1
-3. Instantiate download module; consume both `inputs_r` and `perf_r`
-
-Each module is instantiated fresh per session. There's no global state, and reactive dependencies flow naturally between instances.
-
-## Using Hybrid `{R6}` (movexplR6)
-
-In a hybrid app, the server function instantiates the `R6` data layer once and wires function-based modules to it:
-
-```{r}
-#| eval: false
-#| code-fold: false
-movies_server <- function(input, output, session) {
-  # R6 data layer (instantiated once per session)
-  movie_data <- MovieData$new("movies.db")
-  shiny::onStop(function() movie_data$disconnect())
-
-  # Function-based modules (stateless, simple)
-  filters <- mod_filters_server("filters")
-  
-  # Reactive wrapper around R6 business logic
-  movies <- shiny::reactive({
-    movie_data$filter(
-      reviews = filters()$reviews,
-      oscars = filters()$oscars,
-      year = filters()$year,
-      boxoffice = filters()$boxoffice,
-      genre = filters()$genre,
-      director = filters()$director,
-      cast = filters()$cast
-    )
-  })
-
-  # Pass results to next module
-  mod_plot_server("plot", movies, filters)
-}
-```
-
-The `R6` object owns the resource lifecycle; modules are simple and stateless.
-
-## Reactivity
-
-`R6` objects themselves are not reactive; they're just containers for logic and state. To make an `R6` module respond to user input, the `server()` method must return reactive expressions.
-
-In `stocktipr6`'s `ModInputs`, the `server()` method returns a reactive list:
-
-```{r}
-#| eval: false 
-#| code-fold: false
-server = function() {
-  moduleServer(private$id, function(input, output, session) {
-    reactive({
-      list(
-        tickers = input$tickers,
-        from = input$dates[1],
-        to = input$dates[2],
-        vol_window = input$vol_window
-      )
-    })
-  })
-}
-```
-
-This reactive list is consumed by downstream modules:
-
-```{r}
-#| eval: false 
-#| code-fold: false
-# In ModOutputs$server()
-server = function(inputs_r) {
-  moduleServer(private$id, function(input, output, session) {
-    prices_r <- eventReactive(inputs_r()$fetch, {
-      inp <- inputs_r()
-      get_stock_prices(
-        tickers = inp$tickers,
-        from = inp$from,
-        to = inp$to
-      )
-    })
-  })
-}
-```
-
-The dependency graph is explicit: downstream modules depend on upstream reactives.
-
-In `movexplR6`, the pattern is similar; the `R6` data layer is called from reactive expressions:
-
-```{r}
-#| eval: false
-#| code-fold: false
-movies <- shiny::reactive({
-  movie_data$filter(
-    reviews = filters()$reviews,
-    oscars = filters()$oscars,
-    year = filters()$year
-  )
-})
-```
-
-When filter inputs change, `movies()` re-evaluates and calls `movie_data$filter()` with new parameters.
-
-## Documenting `R6` Classes
-
-As your app-package scales, teammates and users need to understand module and class interfaces. Documenting `R6` classes with **[`roxygen2`](https://roxygen2.r-lib.org/)** makes `?ModInputs` or `?MovieData` complete references. `roxygen2` has supported `R6` classes since version 7.0.0.
-
-### Class-level documentation
-
-Start with roxygen comments above the `R6Class()` call:
-
-```{r}
-#| eval: false
-#| code-fold: show
-#| code-summary: 'hide/show ModInputs roxygen block'
-
-#' ModInputs: Shiny Input Module #<1>
-#'
-#' @description #<2>
-#' Encapsulates input controls for stock ticker selection, date range, and 
-#' analysis parameters.
-#'
-#' @details #<2>
-#' Bundles the UI and server logic for a reusable inputs module. Methods 
-#' handle namespace management automatically to prevent ID conflicts across
-#' module instances. The private fields `id` and `ns` are managed internally;
-#' callers interact only via public methods.
-#'
-#' @examples #<2>
-#' if (interactive()) {
-#'   inputs <- ModInputs$new(id = "inputs")
-#'   # Note: server() only runs inside moduleServer() or shinyApp()
-#' }
-#'
-#' @export #<2>
-ModInputs <- R6::R6Class(
-  "ModInputs",
-  # ...
-)
-```
-1. Title and class name
-2. `roxygen` tags; every line must follow a tag (no plain text intro allowed)
-
-### Method documentation
-
-Document each public method inline, right before the method definition. Methods get their own subsection in the generated help page.
-
-```{r}
-#| eval: false
-#| code-fold: show
-#| code-summary: 'hide/show ModInputs methods'
-
-public = list(
-
-  #' @description #<1>
-  #' Initialize the module with a namespace ID.
-  #' @param id Character scalar; the module's namespace identifier.
-  #' @return A new `ModInputs` object.
-  initialize = function(id = "inputs") {
-    private$id <- id
-    private$ns <- NS(id)
-  },
-
-  #' @description #<1>
-  #' Build the module's UI.
-  #' @return HTML tags with namespaced input elements.
-  ui = function() {
-    sidebar(
-      selectizeInput(
-        inputId = private$ns("tickers"),
-        label = "Tickers",
-        choices = default_tickers(),
-        multiple = TRUE
-      ),
-      # ...
-    )
-  },
-
-  #' @description #<1>
-  #' Start the server-side reactive logic.
-  #' @return A reactive list containing user selections.
-  server = function() {
-    moduleServer(private$id, function(input, output, session) {
-      reactive(list(
-        tickers = input$tickers,
-        dates = input$dates,
-        vol_window = input$vol_window
-      ))
-    })
-  }
-)
-```
-1. Each method starts with `@description`; remaining tags follow
-
-### `R6` help pages
-
-When we run `devtools::document()`, `roxygen2` parses the `#'` blocks and generates the `.Rd` files with separate subsections for the class description, each public method, and examples. The help page becomes the module's contract.
-
-With `roxygen2` and `{R6}` together, teammates can run `?ModInputs` and immediately understand what the class does, the methods that are available, what parameters they accept, and what they return. This is much faster than reading through `R/ModInputs.R`.
+[`roxygen2`](https://roxygen2.r-lib.org/) has supported `R6` classes since version 7.0.0. The class gets a roxygen block like any function, and each public method gets its own block inline, right above its definition.
 
 ```{mermaid}
 %%| eval: true
 %%| echo: false
 %%| fig-align: 'center'
-%%| fig-caption: 'roxygen2 Workflow for R6 Classes'
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}}%%
+%%| fig-cap: 'roxygen2 workflow for R6 classes'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
 
 flowchart TD
     subgraph Source["<strong>R/ModInputs.R</strong>"]
-        ClassBlock["Class block<br/><code>@description @details @export</code>"]
-        MethodBlock["Inline method blocks<br/><code>@description @param @return</code>"]
+        ClassBlock("class block<br/><code>@description @details @export</code>")
+        FieldBlock("field blocks<br/><code>@field</code>")
+        MethodBlock("method blocks<br/><code>@description @param @return</code>")
     end
-    Document(["<strong>devtools::document()</strong>"])
-    Rd["<strong>man/ModInputs.Rd</strong><br/><em>Methods section,<br/>one subsection per method</em>"]
-    Namespace["<strong>NAMESPACE</strong><br/><code>export(ModInputs)</code>"]
-    Help(["<strong>?ModInputs</strong><br/><em>and pkgdown site</em>"])
+    Document(["<code>devtools::document()</code>"])
+    Rd[\"<code>man/ModInputs.Rd</code><br/>one subsection per method"\]
+    Namespace[\"<code>NAMESPACE</code><br/><code>export(ModInputs)</code>"\]
+    Help(["<code>?ModInputs</code><br/>and the pkgdown site"])
 
     ClassBlock --> Document
+    FieldBlock --> Document
     MethodBlock --> Document
     Document --> Rd
     Document --> Namespace
     Rd --> Help
-    Namespace --> Help
 
-    style ClassBlock fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
-    style MethodBlock fill:#FFF8E7,color:#000000,stroke:#999,font-family:monospace
-    style Document fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
-    style Rd fill:#FFFFFF,color:#000000,stroke:#333,font-family:monospace
-    style Namespace fill:#FFFFFF,color:#000000,stroke:#333,font-family:monospace
-    style Help fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5,font-family:monospace
+    style ClassBlock fill:#FFF8E7,color:#000000,stroke:#999
+    style FieldBlock fill:#FFF8E7,color:#000000,stroke:#999
+    style MethodBlock fill:#FFF8E7,color:#000000,stroke:#999
+    style Document fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Rd fill:#FFFFFF,color:#000000,stroke:#333
+    style Namespace fill:#FFFFFF,color:#000000,stroke:#333
+    style Help fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Source fill:#FFFFFF,color:#000000,stroke:#333,rx:10,ry:10
 ```
 
-### Documenting Business Logic Classes
+The method blocks are what make `R6` documentation useful. Each one becomes a subsection of the help page, so `?ModInputs` lists every method with its arguments and return value. That's much faster than reading through `R/ModInputs.R`.
 
-When `{R6}` is used for data/business logic (like `MovieData` in `movexplR6`), focus documentation on public methods and lifecycle:
+The code below shows the pattern for `MovieData`. Public fields use `@field`, and every method block starts with `@description`.
 
 ```{r}
 #| eval: false
 #| code-fold: show
-#| code-summary: 'hide/show MovieData roxygen block'
-
-#' Movie Database Manager #<1>
+#| code-summary: 'show/hide MovieData roxygen blocks'
+#' MovieData R6 class
 #'
-#' @description #<2>
-#' Manages a SQLite database connection, loads a joined dataset from the
-#' `omdb` and `tomatoes` tables, and applies filter logic derived from
+#' @description
+#' Manages a SQLite database connection for movie data, loads a joined dataset
+#' from the `omdb` and `tomatoes` tables, and applies filter logic derived from
 #' Shiny input values.
 #'
-#' @details #<2>
-#' On initialization the class opens a connection to the SQLite database at
-#' `db_path`, joins the two tables via `inner_join()`, collects the result
-#' into memory, and stores it in `$all_movies`. Call `$filter()` to obtain a
-#' filtered data frame for rendering. Call `$disconnect()` to close the
-#' connection explicitly; the private `finalize()` method also calls it when
-#' the object is garbage collected.
-#'
-#' @export #<2>
+#' @export
 MovieData <- R6::R6Class(
-  "MovieData",
+  classname = "MovieData",
   public = list(
+    #' @field con Active `DBI` database connection.
     con = NULL,
+    #' @field all_movies Full joined and collected data frame.
     all_movies = NULL,
 
     #' @description Connect to the SQLite database and load all movie data.
-    #' @param db_path Path to the SQLite database file.
-    #' @return The initialized `MovieData` object invisibly.
-    initialize = function(db_path) { # ... },
+    #' @param db_path Path to the `movies.db` SQLite file.
+    initialize = function(db_path) {
+      # ...
+    },
 
     #' @description Filter the in-memory data frame using input values.
-    #' @param reviews Minimum number of reviews.
+    #' @param reviews Minimum number of Rotten Tomatoes reviews.
     #' @param oscars Minimum number of Oscar wins.
-    #' @param year Integer vector of length 2: `c(min_year, max_year)`.
-    #' @param boxoffice Numeric vector of length 2: box-office range in millions.
-    #' @param genre Genre string; `"All"` disables the filter.
-    #' @param director Partial director name; empty string disables the filter.
-    #' @param cast Partial cast name; empty string disables the filter.
-    #' @return A filtered data frame.
+    # ... @param tags for year, boxoffice, genre, director, and cast
+    #' @return A filtered data frame with an added `has_oscar` column.
     filter = function(reviews = 10, oscars = 0, year = c(1940, 2014),
                       boxoffice = c(0, 800), genre = "All",
-                      director = "", cast = "") { # ... },
-
-    #' @description Explicitly close the database connection.
-    #' @return Returns `NULL` invisibly; called for side effects.
-    disconnect = function() { # ... }
+                      director = "", cast = "") {
+      # ...
+    }
   )
 )
 ```
-1. Class title
-2. roxygen tags for class and methods
 
-The key difference: business logic classes focus on method parameters, return types, and lifecycle (initialization, connection management, cleanup) rather than UI/namespace concerns.
+What goes in the documentation depends on the pattern. For an `R6` module, describe what the UI contains, what `$server()` returns, and which reactives it expects as arguments. For a data class, describe the lifecycle: what `initialize()` opens, what each method returns, and how the object cleans up.
 
-### Packaging best practices
+### Organizing files
 
-File organization depends on which pattern you're using.
+Give each class its own file, named after the class in `CamelCase`. The `CamelCase` names make classes easy to tell apart from the `snake_case` functions around them.
 
-For full `R6` module patterns (like `stocktipr6`), use `CamelCase` names for classes and place each in its own file:
+::: {style="font-style: italic;"}
 
 ```{verbatim}
-R/ModInputs.R    # ModInputs class (one per file)
-R/ModOutputs.R   # ModOutputs class
-R/ModDownload.R  # ModDownload class
-R/app_server.R   # Wires modules together; instantiates objects
-R/app_ui.R       # Calls $ui() methods on each instance
+# stocktipr6
+R/ModInputs.R      # one R6 module class
+R/ModOutputs.R     # one R6 module class
+R/ModDownload.R    # one R6 module class
+R/app_ui.R         # calls $ui() on each object
+R/app_server.R     # connects the $server() methods
+
+# movexplR6
+R/MovieData.R      # the R6 data class
+R/mod_filters.R    # function module
+R/mod_plot.R       # function module
+R/movies_ui.R      # places the module UIs
+R/movies_server.R  # creates MovieData and connects the modules
 ```
 
-For hybrid patterns (like `movexplR6`), separate business logic classes from modules:
+:::
 
-```{verbatim}
-R/MovieData.R      # Business logic R6 class
-R/mod_filters.R    # Function-based UI/server modules
-R/mod_plot.R       # Function-based UI/server modules
-R/movies_server.R  # Wires modules and R6 objects together
-R/movies_ui.R      # Composes UI from modules
+Export the classes with `@export` so users and other packages can create objects from them. Tests don't need the export; `devtools::load_all()` makes internal classes available too.
+
+### Creating objects
+
+Create `R6` objects inside `app_ui()`, `app_server()`, or a server function, never at the top level of a package file. Because `R6` objects are modified in place, an object created when the package loads is shared by every user session.
+
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: 'center'
+%%| fig-cap: 'Where to create R6 objects'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
+
+flowchart TD
+    Where{"Where is<br/><code>$new()</code> called?"}
+    Top("top level of an <code>R/</code> file")
+    Fun("inside <code>app_server()</code><br/>or <code>movies_server()</code>")
+    Shared(["one object shared<br/>by every session"])
+    Own(["one object per session"])
+
+    Where --> Top
+    Where --> Fun
+    Top --> Shared
+    Fun --> Own
+
+    style Where fill:#FFFFFF,color:#000000,stroke:#333
+    style Top fill:#FFE0E0,color:#000000,stroke:#c0392b
+    style Shared fill:#FFE0E0,color:#000000,stroke:#c0392b
+    style Fun fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Own fill:#ccffcc,color:#000000
 ```
 
-In both cases, export `R6` classes with `@export` so package users can instantiate them. Never instantiate objects at package load time; always do it inside `app_ui()`, `app_server()`, or module server functions to ensure one instance per session.
+A shared object is a quiet bug. One user's filters or connection leaks into another user's session, and nothing errors. If the object holds a resource, register its cleanup in the same function that creates it, the way `movies_server()` pairs `MovieData$new()` with `onStop()`.
 
-### Tests 
+### Testing
 
-Writing tests with `testthat` is especially valuable for `R6` modules. I've found it's worth testing that instantiation works, the methods return expected types, and that passing different `id` values produces properly isolated namespaces:
+Each pattern makes a different layer easy to test. With `R6` modules, I've found it's worth testing that two objects with different `id` values produce separate namespaces. The test below comes from `stocktipr6`:
 
 ```{r}
 #| eval: false
 #| code-fold: false
-test_that("ModInputs instantiates with correct namespace", {
-  mod <- ModInputs$new(id = "test_inputs")
-  expect_equal(mod$.__enclos_env__$private$id, "test_inputs")
-  expect_is(mod$ui(), "shiny.tag")
+test_that("ModInputs namespace isolation prevents ID conflicts", {
+  inputs1 <- ModInputs$new(id = "inputs1")
+  inputs2 <- ModInputs$new(id = "inputs2")
+
+  ui1 <- as.character(bslib::layout_sidebar(sidebar = inputs1$ui()))
+  ui2 <- as.character(bslib::layout_sidebar(sidebar = inputs2$ui()))
+
+  expect_match(ui1, "inputs1-tickers")
+  expect_match(ui2, "inputs2-tickers")
+  expect_no_match(ui1, "inputs2")
 })
+```
+
+The server side uses `shiny::testServer()`. `stocktipr6` also checks that the IDs in `ModDownload$ui()` match `session$ns()` inside `ModDownload$server()`, which catches the kind of namespace bug described above.
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: 'center'
+%%| fig-cap: 'What to test in the R6 module pattern'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
+
+flowchart TD
+    subgraph S["<strong>R6 modules</strong>"]
+        S1("<code>$new()</code> returns an R6 object")
+        S2("<code>$ui()</code> IDs use the namespace")
+        S3("<code>$server()</code> returns the<br/>expected reactive<br/>(<code>testServer()</code>)")
+        S1 --> S2 --> S3
+    end
+
+    style S1 fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style S2 fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style S3 fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style S fill:#FFFFFF,color:#000000,stroke:#333,rx:10,ry:10
+
+```
+
+With an `R6` data layer, most tests don't need Shiny at all. `movexplR6` creates a `MovieData` object, calls `$filter()` with different arguments, and checks the rows that come back. It also checks that calling `$disconnect()` twice doesn't error. The function modules get lighter `testServer()` tests that confirm what they return.
+
+
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: 'center'
+%%| fig-cap: 'What to test in the R6 data layer pattern'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":true}}}%%
+
+flowchart TD
+    subgraph M["<strong>R6 data layer</strong>"]
+        M1("<code>$new()</code> loads data")
+        M2("<code>$filter()</code> returns<br/>the right rows")
+        M3("<code>$disconnect()</code> is safe<br/>to call twice")
+        M1 --> M2 --> M3
+    end
+
+
+    style M1 fill:#b3cde0,color:#000000
+    style M2 fill:#b3cde0,color:#000000
+    style M3 fill:#b3cde0,color:#000000
+    style M fill:#FFFFFF,color:#000000,stroke:#333,rx:10,ry:10
+
 ```
 
 ## Recap
 
-I've compared two approaches to using `{R6}` in Shiny app-packages:
+Both apps use `R6` to give app state a clear owner, but at different layers:
 
-**`stocktipr6` (Full `R6` Modules)**   
+1. `stocktipr6` makes each module an `R6` class. The namespace `id` is stored once per object, so the UI and server can't disagree inside a module, and every module has the same reviewable shape.
+2. `movexplR6` keeps the modules as functions and puts `R6` in the data layer. One `MovieData` object per session owns the connection and the data, and it can be tested without Shiny.
 
-* Each module is an `R6` class with `$ui()` and `$server()` methods    
-* State (namespace ID) is private and shared across methods   
-* The UI and server share one `id`, so their namespaces stay in sync   
-* Good for apps with complex module interdependencies     
-* Modules are reusable units; can be exported as a package API    
+Neither pattern is better in general. Put `R6` where your app's complexity lives, create the objects once per session, and document each public method so `?ClassName` explains the class.
 
-**`movexplR6` (Hybrid `{R6}` + Functions)**
+For the working examples, explore:
 
-* Modules stay function-based and lightweight    
-* `{R6}` encapsulates business logic and resource management (database, API, caching)    
-* Developer must remember to pass the same `id` to UI and server functions    
-* Good for apps with clear separation between UI and data layers    
-* `R6` layer is testable and reusable; modules are app-specific    
-
-Both patterns solve real problems:     
-* `R6` modules enforce architecture and prevent namespace bugs    
-* `R6` business logic layers centralize resource management and complex state    
-
-Neither is universally better. Choose based on where your complexity lives and how you want to organize your codebase.
-
-**For working examples**, explore:    
-* **stocktipr6**: [mjfrigaard.github.io/stocktipr6](https://mjfrigaard.github.io/stocktipr6/)    
-* **movexplR6**: [mjfrigaard.github.io/movexplR6](https://mjfrigaard.github.io/movexplR6/)    
+* `stocktipr6`: [mjfrigaard.github.io/stocktipr6](https://mjfrigaard.github.io/stocktipr6/)
+* `movexplR6`: [mjfrigaard.github.io/movexplR6](https://mjfrigaard.github.io/movexplR6/)
