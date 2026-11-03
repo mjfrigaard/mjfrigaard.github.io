@@ -163,3 +163,8 @@ pre.mermaid-js svg {
   border-radius: .5rem;
   padding: .5rem;
 }
+
+/* co_box() hard-codes a dark body color; follow the theme instead */
+.callout div[style*="#282b2d"] {
+  color: $body-color !important;
+}
