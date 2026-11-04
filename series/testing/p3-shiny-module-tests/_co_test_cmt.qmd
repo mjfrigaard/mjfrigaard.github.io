@@ -17,7 +17,7 @@ execute:
 #| eval: true 
 #| echo: false 
 #| include: false
-# source("https://raw.githubusercontent.com/mjfrigaard/mstsap/main/tests/testthat/helper.R")
+# source("https://raw.githubusercontent.com/mjfrigaard/modsquad/main/R/utils.R")
 # source("../_common.R")
 options(scipen = 999)
 library(shiny)
@@ -32,7 +32,7 @@ library(palmerpenguins)
 
 ::: {style='font-size: 1.10em;'}
 
-The `testServer()` documentation has [examples](https://shiny.posit.co/r/articles/improve/server-function-testing/) of using `cat()` to create custom messages. I put a function for creating `testServer()` messages (`test_cmt()`) in the [`helper.R`](https://github.com/mjfrigaard/mstsap/blob/main/tests/testthat/helper.R) file ([read more about test helpers here](https://r-pkgs.org/testing-advanced.html)). 
+The `testServer()` documentation has [examples](https://shiny.posit.co/r/articles/improve/server-function-testing/) of using `cat()` to create custom messages. I put a function for creating `testServer()` messages (`test_cmt()`) in the [`R/utils.R`](https://github.com/mjfrigaard/modsquad/blob/main/R/utils.R) file of `modsquad` (it started as a [test helper](https://r-pkgs.org/testing-advanced.html)). 
 
 It has two arguments (`test` and `msg`), and makes it easy to print messages to the console while I'm developing tests.
 
