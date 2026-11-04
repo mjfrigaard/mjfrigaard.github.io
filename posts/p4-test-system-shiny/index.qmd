@@ -30,7 +30,7 @@ execute:
 #| eval: true
 #| echo: false
 #| include: false
-source("https://raw.githubusercontent.com/mjfrigaard/sapkgs/mstsap/tests/testthat/helper.R")
+source("https://raw.githubusercontent.com/mjfrigaard/modsquad/main/R/utils.R")
 source("../_common.R")
 options(scipen = 999)
 library(shiny)
@@ -67,20 +67,20 @@ In this post, we'll be covering testing Shiny applications using `testthat` and 
 
 ## App-Packages
 
-In the previous post, we stored the modules and applications from the [Shiny modules chapter](https://mastering-shiny.org/scaling-modules.html) of Mastering Shiny in the [`mstsap`](https://mjfrigaard.github.io/mstsap/) package. The [`msst2ap`](https://mjfrigaard.github.io/msst2ap/) package contains `shinytest2` tests for the Shiny apps in Mastering Shiny (hence the name: **M**astering **S**hiny **s**hiny**t**est**2** **a**pp-**p**ackage).
+In the previous post, we tested the modules and applications from the [Shiny modules chapter](https://mastering-shiny.org/scaling-modules.html) of Mastering Shiny with `testServer()` in the [`modsquad`](https://mjfrigaard.github.io/modsquad/) app-package. `modsquad` also contains the `shinytest2` tests for these apps (it combines the earlier `mstsap` and `msst2ap` app-packages).
 
-You can install `msst2ap` using the following:
+You can install `modsquad` using the following:
 
 ```{r}
 #| code-fold: false
 #| eval: false
 install.packages("remotes")
 remotes::install_github(
-  "https://github.com/mjfrigaard/msst2ap"
+  "https://github.com/mjfrigaard/modsquad"
 )
 ```
 
-I've stored development versions of the applications in the [`inst/dev/` folder](https://github.com/mjfrigaard/msst2ap/tree/main/inst/dev) of `msst2ap`:
+I've stored development versions of the applications in the [`inst/dev/` folder](https://github.com/mjfrigaard/modsquad/tree/main/inst/dev) of `modsquad`:
 
 ```{verbatim}
 #| eval: false
@@ -123,14 +123,14 @@ inst
 
 ### Using [`system.file()`]{style="font-size: 1.10em; font-weight: bold;"}
 
-The apps stored in the `inst/dev/` directory of `msst2ap` can be passed to the `app_dir` argument of `AppDriver$new()` with `system.file()`:
+The apps stored in the `inst/dev/` directory of `modsquad` can be passed to the `app_dir` argument of `AppDriver$new()` with `system.file()`:
 
 ```{r}
 #| eval: false
 #| code-fold: false
 test_that("{shinytest2}: datasetApp", {
   app <- AppDriver$new(app_dir = system.file("dev", "datasetApp",
-                                             package = "msst2ap"),
+                                             package = "modsquad"),
                        height = 600,
                        width = 800)
   app$view()
@@ -149,9 +149,9 @@ The first things we'll check is changing the `dataset-dataset` input from `abili
 #| eval: false
 #| echo: true
 #| code-fold: false
-test_that("mstsap::datasetApp", {
+test_that("modsquad::datasetApp", {
   app <- AppDriver$new(app_dir = system.file("dev", "datasetApp",
-                                             package = "msst2ap"),
+                                             package = "modsquad"),
                        height = 600,
                        width = 800)
   app$set_inputs(`dataset-dataset` = "attitude")
@@ -181,7 +181,7 @@ We can capture values in a list *inside* the test by including a call to `app$ge
 #| code-fold: false
 test_that("{shinytest2}: datasetApp", {
   app <- AppDriver$new(app_dir = system.file("dev", "datasetApp",
-                                             package = "msst2ap"),
+                                             package = "modsquad"),
                        height = 600,
                        width = 800)
   app$set_inputs(`dataset-dataset` = "attitude")
@@ -238,7 +238,7 @@ waldo::compare(
 #| code-fold: false
 test_that("{shinytest2}: datasetApp", {
   app <- AppDriver$new(app_dir = system.file("dev", "datasetApp",
-                                             package = "msst2ap"),
+                                             package = "modsquad"),
                        height = 600,
                        width = 800)
   app$set_inputs(`dataset-dataset` = "attitude")
@@ -259,7 +259,7 @@ At the end of the test, I'll add a call [`app$stop()`](https://rstudio.github.io
 #| code-fold: false
 test_that("{shinytest2}: datasetApp", {
   app <- AppDriver$new(app_dir = system.file("dev", "datasetApp",
-                                             package = "msst2ap"),
+                                             package = "modsquad"),
                        height = 600,
                        width = 800)
   app$set_inputs(`dataset-dataset` = "attitude")
@@ -281,7 +281,7 @@ The `shinytest2` documentation repeatedly[^export-test-vals-rec-01] recommends[^
 
 [^export-test-vals-rec-02]: "*It cannot be recommended enough to use `exportTestValues()` to test your Shiny app’s reactive values.*" -  [`shinytest2` documentation](https://rstudio.github.io/shinytest2/articles/robust.html#exported-values)
 
-The application in the `inst/dev/selectVarApp/` folder of `msst2ap` includes a call to `exportTestValues()` and the `test.mode` option set to `TRUE` in the call to `shinyApp()`.[^export-test-values]
+The application in the `inst/dev/selectVarApp/` folder of `modsquad` includes a call to `exportTestValues()` and the `test.mode` option set to `TRUE` in the call to `shinyApp()`.[^export-test-values]
 
 [^export-test-values]: Read more about exporting test values [here](https://shiny.posit.co/r/reference/shiny/1.0.2/exporttestvalues).
 
@@ -318,7 +318,7 @@ The test for this application contains the same `system.file()` call to create t
 #| code-fold: false
 testthat::test_that("{shinytest2}: selectVarApp", {
   app <- AppDriver$new(app_dir = system.file("dev", "selectVarApp",
-                                             package = "msst2ap"),
+                                             package = "modsquad"),
                        height = 1200, width = 1000)
 })
 ```
@@ -354,7 +354,7 @@ In our test file, we'll use `app$set_values()` to change the ```` $`data-dataset
 #| code-fold: false
 testthat::test_that("{shinytest2}: selectVarApp", {
   app <- AppDriver$new(app_dir = system.file("dev", "selectVarApp",
-                                             package = "msst2ap"),
+                                             package = "modsquad"),
                        height = 1200, width = 1000)
   
   app$set_inputs(`data-dataset` = "mtcars") # <1>
@@ -370,7 +370,7 @@ We'll also change the variable input from `mpg` to `wt` and verify the output in
 #| code-fold: false
 testthat::test_that("{shinytest2}: selectVarApp", {
   app <- AppDriver$new(app_dir = system.file("dev", "selectVarApp",
-                                             package = "msst2ap"),
+                                             package = "modsquad"),
                        height = 1200, width = 1000)
   
   app$set_inputs(`data-dataset` = "mtcars") # <1>
@@ -404,7 +404,7 @@ We'll use `app$get_values()` to store the exported `input`, `output`, and `expor
 #| code-fold: false
 testthat::test_that("{shinytest2}: selectVarApp", {
   app <- AppDriver$new(app_dir = system.file("dev", "selectVarApp",
-                                             package = "msst2ap"),
+                                             package = "modsquad"),
                        height = 1200, width = 1000)
 
   app$set_inputs(`data-dataset` = "mtcars") # <1>
@@ -464,10 +464,10 @@ Once again, we end the test with a call to `app$stop()`. The completed test for 
 #| eval: false
 #| echo: true
 #| code-fold: true
-#| code-summary: 'show/hide mstsap::selectVarApp test'
+#| code-summary: 'show/hide modsquad::selectVarApp test'
 testthat::test_that("{shinytest2}: selectVarApp", {
   app <- AppDriver$new(app_dir = system.file("dev", "selectVarApp",
-                                             package = "msst2ap"),
+                                             package = "modsquad"),
                        height = 1200, width = 1000)
 
   app$set_inputs(`data-dataset` = "mtcars")
@@ -487,7 +487,7 @@ testthat::test_that("{shinytest2}: selectVarApp", {
 
 ## Testing complex outputs 
 
-`msst2ap` has the [`histogramApp()` from Mastering Shiny](https://mastering-shiny.org/scaling-modules.html#case-study-histogram) in `inst/dev/histogramApp/`, and a `ggplot2` version of the `histogramApp()` in the `inst/dev/ggHistApp/` folder:
+`modsquad` has the [`histogramApp()` from Mastering Shiny](https://mastering-shiny.org/scaling-modules.html#case-study-histogram) in `inst/dev/histogramApp/`, and a `ggplot2` version of the `histogramApp()` in the `inst/dev/gghistApp/` folder:
 
 ```{bash}
 #| eval: false
@@ -495,7 +495,7 @@ testthat::test_that("{shinytest2}: selectVarApp", {
 #| code-fold: false 
 inst
 └── dev
-    ├── ggHistApp
+    ├── gghistApp
     │   ├── DESCRIPTION
     │   ├── R
     │   │   └── modules.R
@@ -556,7 +556,7 @@ Both of these are reactive values, but they aren't treated like returned values 
 ```{r}
 #| eval: false
 #| code-fold: show
-#| code-summary: 'show/hide msst2ap::histogramApp() server'
+#| code-summary: 'show/hide modsquad::histogramApp() server'
 server <- function(input, output, session) {
   data <- datasetServer("data")
   x <- selectVarServer("var", data)
@@ -579,7 +579,7 @@ In the test for `histogramApp()`, we'll create the app with `AppDriver$new()` an
 #| code-fold: false
 test_that("{shinytest2}: histogramApp", {
   app <- AppDriver$new(system.file("dev", "histogramApp",
-                                  package = "msst2ap"),
+                                  package = "modsquad"),
                        height = 750,
                        width = 1200)
   app$set_inputs(`data-dataset` = "attitude")
@@ -601,7 +601,7 @@ We'll test is these are reactive functions by combining `rlang::is_function()` a
 #| code-fold: false
 test_that("{shinytest2}: histogramApp", {
   app <- AppDriver$new(system.file("dev", "histogramApp",
-                                  package = "msst2ap"),
+                                  package = "modsquad"),
                        height = 750,
                        width = 1200)
   app$set_inputs(`data-dataset` = "attitude")
@@ -627,7 +627,7 @@ test_that("{shinytest2}: histogramApp", {
 #| code-fold: false
 test_that("{shinytest2}: histogramApp", {
   app <- AppDriver$new(system.file("dev", "histogramApp",
-                                  package = "msst2ap"),
+                                  package = "modsquad"),
                        height = 750,
                        width = 1200)
   app$set_inputs(`data-dataset` = "attitude")
@@ -656,7 +656,7 @@ After changing the three inputs with `set_inputs()`, we can check the output to 
 #| code-fold: false
 test_that("{shinytest2}: histogramApp", {
   app <- AppDriver$new(system.file("dev", "histogramApp",
-                                  package = "msst2ap"),
+                                  package = "modsquad"),
                        height = 750,
                        width = 1200)
   app$set_inputs(`data-dataset` = "attitude")
@@ -741,7 +741,7 @@ ggHistServer <- function(id, x, title = reactive("Histogram")) {
 2. Render plot  
 3. Export bins, `x()` and `title()`
 
-The version of `ggHistServer()` above replaces the `ggHistServer()` used in the standalone app function).[^load-modules-from-inst] The remaining modules from `mstsap` are explicitly namespaced. The code below identifies the location of each module in `ggHistApp()`: [^load-app-from-inst]
+The version of `ggHistServer()` above replaces the `ggHistServer()` used in the standalone app function).[^load-modules-from-inst] The remaining modules from `modsquad` are explicitly namespaced. The code below identifies the location of each module in `ggHistApp()`: [^load-app-from-inst]
 
 [^load-modules-from-inst]: This version is loaded from a `inst/dev/histogramApp/R/modules.R` file.
 
@@ -756,8 +756,8 @@ ggHistApp <- function() {
   ui <- fluidPage(
     sidebarLayout(
       sidebarPanel(
-        mstsap::datasetInput("data", is.data.frame),
-        mstsap::selectVarInput("var"),
+        modsquad::datasetInput("data", is.data.frame),
+        modsquad::selectVarInput("var"),
       ),
       mainPanel(
         histogramOutput("hist"), # <1>
@@ -768,7 +768,7 @@ ggHistApp <- function() {
   )
 
   server <- function(input, output, session) {
-    data <- mstsap::datasetServer("data")
+    data <- modsquad::datasetServer("data")
     x <- ggSelectVarServer("var", data) # <2>
     ggHistServer("hist", x) # <3>
 
@@ -792,10 +792,10 @@ ggHistApp()
 ```
 1. From `R/histogramOutput.R`  
 2. From `R/ggSelectVarServer.R`  
-3. From `inst/dev/ggHistApp/R/modules.R`
+3. From `inst/dev/gghistApp/R/modules.R`
 4. Exported test values 
 
-In the `test-shinytest2-ggHistApp.R` test file, I'll verify the [`vdiffr` package](https://vdiffr.r-lib.org/) is installed, then create the `AppDriver` object with a call to `system.file()` and set the `height` and `width`:
+In the `test-shinytest2-gghistApp.R` test file, I'll verify the [`vdiffr` package](https://vdiffr.r-lib.org/) is installed, then create the `AppDriver` object with a call to `system.file()` and set the `height` and `width`:
 
 ```{r}
 #| eval: false
@@ -803,8 +803,8 @@ In the `test-shinytest2-ggHistApp.R` test file, I'll verify the [`vdiffr` packag
 #| code-fold: false
 test_that("{shinytest2}: ggHistApp", {
   skip_if_not_installed("vdiffr")
-  app_pth <- system.file("dev", "ggHistApp",
-                                  package = "msst2ap")
+  app_pth <- system.file("dev", "gghistApp",
+                                  package = "modsquad")
   app <- AppDriver$new(app_pth,
                        height = 750, width = 1200)
 })
@@ -840,7 +840,7 @@ testthat::test_that("{shinytest2}: gghistApp", {
   testthat::skip_if_not_installed("vdiffr")
 
   app <- AppDriver$new(app_dir = system.file("dev", "gghistApp",
-                                             package = "msst2ap"),
+                                             package = "modsquad"),
                        height = 750, width = 1200)
 
   app_init_data <- app$get_value(input = "data-dataset") # <1>
@@ -871,7 +871,7 @@ testthat::test_that("{shinytest2}: gghistApp", {
   testthat::skip_if_not_installed("vdiffr")
 
   app <- AppDriver$new(app_dir = system.file("dev", "gghistApp",
-                                             package = "msst2ap"),
+                                             package = "modsquad"),
                        height = 750, width = 1200)
 
   app_init_data <- app$get_value(input = "data-dataset") # <1>
@@ -930,7 +930,7 @@ testthat::test_that("{shinytest2}: gghistApp", {
   testthat::skip_if_not_installed("vdiffr")
 
   app <- AppDriver$new(app_dir = system.file("dev", "gghistApp",
-                                             package = "msst2ap"),
+                                             package = "modsquad"),
                        height = 750, width = 1200)
 
   app_init_data <- app$get_value(input = "data-dataset") # <1>
@@ -1128,7 +1128,7 @@ tests/testthat/_snaps/shinytest2-gghistApp
     
 ### Results 
 
-The final results of `devtools::test()`  in `msst2ap` are below:
+The final results of `devtools::test()`  in `modsquad` are below:
 
 ```{r}
 #| eval: false
@@ -1140,7 +1140,7 @@ devtools::test()
 ```{verbatim}
 ==> devtools::test()
 
-ℹ Testing msst2ap
+ℹ Testing modsquad
 ✔ | F W  S  OK | Context
 ✔ |          1 | shinytest2-datasetApp [4.8s]                                                   
 ⠼ |          5 | shinytest2-gghistApp       

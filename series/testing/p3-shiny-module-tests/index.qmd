@@ -30,7 +30,7 @@ execute:
 #| eval: true 
 #| echo: false 
 #| include: false
-source("https://raw.githubusercontent.com/mjfrigaard/sapkgs/mstsap/tests/testthat/helper.R")
+source("https://raw.githubusercontent.com/mjfrigaard/modsquad/main/R/utils.R")
 source("../../_common.R")
 options(scipen = 999)
 library(shiny)
@@ -83,9 +83,9 @@ The `shiny` package doesn't provide a direct, built-in way to test modules, but 
 
 ## A Shiny App-Package
 
-`testthat` is designed to work within an R package, and the [`mstsap`](https://github.com/mjfrigaard/sapkgs/tree/mstsap) branch of `sapkgs` has a **M**astering **S**hiny **t**est**S**erver **a**pp-**p**ackage to demonstrate writing tests with `testServer()`. 
+`testthat` is designed to work within an R package, and [`modsquad`](https://mjfrigaard.github.io/modsquad/) is a Shiny app-package for demonstrating tests with `testServer()` (this post) and `shinytest2` (the next post). It combines two earlier app-packages: `mstsap` (**M**astering **S**hiny **t**est**S**erver **a**pp-**p**ackage) and `msst2ap` (**M**astering **S**hiny **s**hiny**t**est**2** **a**pp-**p**ackage). 
 
-The functions, modules, and applications in `mstsap` come from the [Shiny Modules chapter](https://mastering-shiny.org/scaling-modules.html) of Mastering Shiny.[^mastering-shiny-section] If you haven't read this chapter--start there. 
+The functions, modules, and applications in `modsquad` come from the [Shiny Modules chapter](https://mastering-shiny.org/scaling-modules.html) of Mastering Shiny.[^mastering-shiny-section] If you haven't read this chapter--start there. 
 
 [^mastering-shiny-section]: Specifically, the applications come from sections [19.3](https://mastering-shiny.org/scaling-modules.html#inputs-and-outputs) through [19.3.4](https://mastering-shiny.org/scaling-modules.html#modules-inside-of-modules). 
 
@@ -96,9 +96,9 @@ The functions, modules, and applications in `mstsap` come from the [Shiny Module
 #| warning: false 
 #| results: hide
 #| code-fold: false
-# to get the mstsap package used in this post:
+# to get the modsquad package used in this post:
 devtools::load_all()
-library(mstsap)
+library(modsquad)
 ```
 
 
@@ -119,7 +119,7 @@ Shiny modules can also be broken into discrete 'units of work' with expected 'en
 However, the 'unit of work' for a Shiny module might be accomplished with a combination of a module UI and server functions, *and* a helper/utility function.
 
 
-`mstsap` contains three modules: `dataset`, `selectVar`, and `selectDataVar`. If you're like more information on these modules, click on the links below.  
+`modsquad` contains three modules: `dataset`, `selectVar`, and `selectDataVar`. If you're like more information on these modules, click on the links below.  
 
 ### 1) Dataset input module
 
@@ -207,7 +207,7 @@ When `data()` changes, the output from `find_vars()` updates the choices in the 
 
 ## Standalone App Functions
 
-`mstsap` contains three [standalone functions](https://mastering-shiny.org/scaling-packaging.html#converting-an-existing-app) for running each set of module functions. 
+`modsquad` contains three [standalone functions](https://mastering-shiny.org/scaling-packaging.html#converting-an-existing-app) for running each set of module functions. 
 
 I've made a small change to each standalone app function--each app has a call to `reactiveValuesToList()` that displays in the UI. 
 
@@ -284,7 +284,7 @@ As we can see, the `data` output from the `dataset` module is used to generate t
 
 ![](selectDataVarApp.png){fig-align="center" width=100%}
 
-The final app in `mstsap` is `selectDataVarApp()`. Here the inputs from `dataset` and `selectVar` have been moved into the `sidebarPanel()`, and the output is rendered in the `mainPanel()`.
+The final app in `modsquad` is `selectDataVarApp()`. Here the inputs from `dataset` and `selectVar` have been moved into the `sidebarPanel()`, and the output is rendered in the `mainPanel()`.
 
 ::::
 
@@ -369,14 +369,14 @@ testServer(app = datasetServer, expr = {
     #| eval: false
     #| code-fold: false
     devtools::load_all()
-    ℹ Loading mstsap
+    ℹ Loading modsquad
     devtools::document()
-    ℹ Updating mstsap documentation
-    ℹ Loading mstsap
+    ℹ Updating modsquad documentation
+    ℹ Loading modsquad
     
     Restarting R session...
     
-    library(mstsap)
+    library(modsquad)
     ```
     
     -   And run the test with `testthat::test_file()`:
@@ -537,7 +537,7 @@ I'll stop a moment here to address what's happening in each module:
 
 3. *Inside* `selectVarServer()`, two `stopifnot()` functions evaluate the reactivity of `data` and `filter` with `shiny::is.reactive()`
 
-In `datasetServer()`, the return object is [wrapped in the `reactive()` function](https://github.com/mjfrigaard/mstsap/blob/f10e497df195cfa188afd031e7d082ed1466989d/R/datasetServer.R#L20), so the items `args = list()` also need to be wrapped in `reactive()`. 
+In `datasetServer()`, the return object is [wrapped in the `reactive()` function](https://github.com/mjfrigaard/modsquad/blob/main/R/dataset.R#L46), so the items `args = list()` also need to be wrapped in `reactive()`. 
 
 I'll re-write the test above to a more basic test using `is.reactive()`: 
 
@@ -682,7 +682,7 @@ To verify that the returned object from `selectVarServer()` is the selected colu
 
 ### Module outputs
 
-Rendered outputs can be accessed in `testServer()` just like inputs (i.e., with `output$outputId`). But the modules in `mstsap` don't have outputs--these are included in the standalone app functions (`datasetApp()`, `selectVarApp()`, and `selectDaraVarApp()`). 
+Rendered outputs can be accessed in `testServer()` just like inputs (i.e., with `output$outputId`). But the modules in `modsquad` don't have outputs--these are included in the standalone app functions (`datasetApp()`, `selectVarApp()`, and `selectDaraVarApp()`). 
 
 Fortunately, app functions can also be passed to the `app` argument of `testServer()`. I'll use `datasetApp()` to demonstrate.
 

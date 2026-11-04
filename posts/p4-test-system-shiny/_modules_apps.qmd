@@ -70,7 +70,7 @@ library(stringr)
 
 ### Modules & apps 
 
-The modules in `msst2ap` are from the [Modules chapter of Mastering Shiny](https://mastering-shiny.org/scaling-modules.html), with a few minor adjustments. These modules create namespaces for their inputs and outputs with the `shiny::NS()` function, which appends a second `id` string to each `inputId`/`outputId`.
+The modules in `modsquad` are from the [Modules chapter of Mastering Shiny](https://mastering-shiny.org/scaling-modules.html), with a few minor adjustments. These modules create namespaces for their inputs and outputs with the `shiny::NS()` function, which appends a second `id` string to each `inputId`/`outputId`.
 
 Each standalone app also includes the output from `shiny::reactiveValuesToList()`:
 
@@ -168,7 +168,7 @@ datasetApp <- function(filter = NULL) {
 
 ![`datasetApp()`](datasetApp.png){#fig-datasetApp fig-align="center" width=100%}
 
-`datasetApp()` in `msst2ap`
+`datasetApp()` in `modsquad`
 :::
 
 ::::
@@ -308,7 +308,7 @@ selectVarApp <- function(filter = is.numeric) {
 
 ![`selectVarApp()`](selectVarApp.png){#fig-selectVarApp fig-align="center" width=100%}
 
-`selectVarApp()` in `msst2ap`
+`selectVarApp()` in `modsquad`
 :::
 
 ::::
@@ -429,7 +429,7 @@ selectDataVarApp <- function(filter = is.numeric) {
 
 ![`selectDataVarApp()`](selectDataVarApp.png){#fig-selectDataVarApp fig-align="center" width=100%}
 
-`selectDataVarApp()` in `msst2ap`
+`selectDataVarApp()` in `modsquad`
 :::
 
 ::::
@@ -618,7 +618,7 @@ histogramApp <- function() {
 
 ![`histogramApp()`](histogramApp.png){#fig-dataStrApp fig-align="center" width=100%}
 
-`histogramApp()` in `msst2ap`
+`histogramApp()` in `modsquad`
 :::
 
 ::::
