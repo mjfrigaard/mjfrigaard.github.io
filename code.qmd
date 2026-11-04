@@ -3,8 +3,42 @@ toc: false
 ---
 
 <center>
-## Code Projects 
+## Code
 </center>
+
+## Books & Companion Packages
+
+:::{style='font-size: 1.1em;'}
+
+* [**Shiny App-Packages**](https://mjfrigaard.github.io/shiny-app-pkgs/): A book on building Shiny applications as R packages. [[**Repo**](https://github.com/mjfrigaard/shiny-app-pkgs)]
+
+    * [**sap**](https://mjfrigaard.github.io/sap/): The code examples for the book and the [Developing & Testing Your Shiny Application](https://mjfrigaard.github.io/dev-test-shiny/) workshop (R in Pharma, 2023). Each branch holds the app at a different stage of development. [[**Repo**](https://github.com/mjfrigaard/sap)]
+
+    * [**shinypak**](https://mjfrigaard.github.io/shinypak/): Quickly access the Shiny applications in the book. [[**Repo**](https://github.com/mjfrigaard/shinypak)]
+
+    * **btwsap**: The app-package from the [`btw` chapter](https://mjfrigaard.github.io/shiny-app-pkgs/btw.html), which connects a Shiny app-package to LLMs with [`btw`](https://posit-dev.github.io/btw/) and [`ellmer`](https://ellmer.tidyverse.org/). [[**Repo**](https://github.com/mjfrigaard/btwsap)]
+
+    * **shragnar**: Instructions for building a retrieval augmented generation (RAG) chatbot grounded in the book's content with [`ragnar`](https://ragnar.tidyverse.org/) and `duckdb`. [[**Repo**](https://github.com/mjfrigaard/shragnar)]
+
+* [**Shiny for Python App-Packages**](https://mjfrigaard.github.io/shiny-py-pkgs/): A book on building Shiny for Python applications as Python packages. Covers flat and src layouts, dependencies, data, documentation, testing with `pytest` (modules, system tests, and test suites), debugging, logging, GitHub Actions, Docker, and deploying to shinyapps.io and PyPI. [[**Repo**](https://github.com/mjfrigaard/shiny-py-pkgs)]
+
+    * [**pyap**](https://github.com/mjfrigaard/pyap): A collection of **P**ython Shiny **A**pp-**P**ackages with the code examples for the book. Each branch holds the app at a specific stage of development, using [`uv`](https://docs.astral.sh/uv/) for environment management and [`pytest`](https://docs.pytest.org/) for testing. [[**Repo**](https://github.com/mjfrigaard/pyap)]
+
+* [**Personal Finance: a field manual**](https://mjfrigaard.github.io/fm-finance/): A working reference for the day to day decisions that shape your financial life: budgeting, savings, borrowing, investing, taxes, insurance, and planning. Code examples use both R and Python. [[**Repo**](https://github.com/mjfrigaard/fm-finance)]
+
+    * [**perfinr**](https://mjfrigaard.github.io/perfinr/): The tested, documented versions of the R functions in the book, so you can use them without copying code out of a chapter. [[**Repo**](https://github.com/mjfrigaard/perfinr)]
+
+    * [**perfinpy**](https://mjfrigaard.github.io/perfinpy/): The Python counterpart to `perfinr`. The functions keep the book's names, arguments, and defaults, so code from a chapter runs unchanged. [[**Repo**](https://github.com/mjfrigaard/perfinpy)]
+
+* [**ggplot2: field manual**](https://mjfrigaard.github.io/fm-ggp2/): A field manual for building common (and less common) graphs with `ggplot2`. Every example uses simulated data with a 90s throwback and a matching theme. [[**Repo**](https://github.com/mjfrigaard/fm-ggp2)]
+
+    * [**fmggp2**](https://mjfrigaard.github.io/fmggp2/): Holds the late 90s themed `ggplot2` themes (`theme_toysrus()`, `theme_netscape()`, `theme_freshprince()`, etc.) and the helper functions used throughout the book, so every chapter loads the same tested code. [[**Repo**](https://github.com/mjfrigaard/fmggp2)]
+
+* [**DevOps for Data Science: Lab Solutions**](https://mjfrigaard.github.io/do4ds-labs/): Twelve labs covering the infrastructure and deployment side of data science: versioning models with `vetiver`, building APIs with FastAPI and `plumber2`, logging, CI/CD with GitHub Actions, Docker, AWS, SSH, Linux user management, instance sizing, and accessibility. [[**Repo**](https://github.com/mjfrigaard/do4ds-labs)]
+
+* [**Shiny Frameworks**](https://mjfrigaard.github.io/sfw/): Shiny app demos with three popular frameworks (`golem`, `leprechaun`, and `rhino`) [[**Repo**](https://github.com/mjfrigaard/sfw)]
+
+:::
 
 ## R Packages
 
@@ -14,52 +48,27 @@ toc: false
 
 * [**glockr**](https://mjfrigaard.github.io/glockr/): R package wrapper for [`scc`](https://github.com/boyter/scc) (Sloc, Cloc and Code) for counting blank lines, comment lines, and physical lines of source code. Written in pure Go [[**Repo**](https://github.com/mjfrigaard/glockr)]
 
-* [**shinypak**](https://mjfrigaard.github.io/shinypak/): Quickly access the Shiny applications in the [Shiny App-Packages (book)](https://mjfrigaard.github.io/shiny-app-pkgs/)  [[**Repo**](https://github.com/mjfrigaard/shinypak)]
-
 * [**ghreadme**](https://mjfrigaard.github.io/ghreadme/): Create a GitHub README.md file using R [[**Repo**](https://github.com/mjfrigaard/ghreadme)]
-
-* [**dopingdata**](https://mjfrigaard.github.io/dopingdata/): Contains data from the [United States Anti-Doping Agency](https://en.wikipedia.org/wiki/United_States_Anti-Doping_Agency) for exploration, modeling, and visualizations. The datasets in this package are derived from the [USADA website](https://www.usada.org/) and the [World Anti-Doping Agency (WADA) banned substances list](https://www.wada-ama.org/en/prohibited-list?q=) [[**Repo**](https://github.com/mjfrigaard/dopingdata)]
-
-* [**fmggp2**](https://mjfrigaard.github.io/fmggp2/): Support package for [ggplot2: field manual](https://mjfrigaard.github.io/fm-ggp2/). Holds the late 90s themed `ggplot2` themes (`theme_toysrus()`, `theme_netscape()`, `theme_freshprince()`, etc.) and the helper functions used throughout the book, so every chapter loads the same tested code. [[**Repo**](https://github.com/mjfrigaard/fmggp2)]
 
 * [**gerp**](https://mjfrigaard.github.io/gerp/): A teaching package for 'Good Enough R Practices', based on the excellent paper [Good Enough Practices in Scientific Computing](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005510). Includes functions for project setup, file/folder naming, and literate programming. [[**Repo**](https://github.com/mjfrigaard/gerp)]
 
 :::
 
-## Python Packages
+## Data
 
 :::{style='font-size: 1.1em;'}
 
-* [**baseball-trajectory**](https://mjfrigaard.github.io/baseball-trajectory/): Shiny for Python app-package for visualizing a baseball player's career arc on a single metric (OPS, OBP, SLG, AVG, HR, or ISO for batters; ERA, WHIP, K/9, BB/9, or HR/9 for pitchers). Per-season stats come from the MLB Stats API, and the app fits a weighted quadratic aging curve with a 95% confidence band and a marked peak age. [[**Repo**](https://github.com/mjfrigaard/baseball-trajectory)]
+* [**wikimill**](https://mjfrigaard.github.io/wikimill/): A Quarto website that scrapes Wikipedia "List of" pages and categories, then cleans and visualizes the data. It covers topics that shaped the millennial generation (recessions, wage stagnation, platforms that came and went) and Y2K era internet nostalgia (early browsers, worms, instant messengers). The scraping and cleaning code is in R and Python, side by side in tabs. [[**Repo**](https://github.com/mjfrigaard/wikimill)]
 
-* [**pyap**](https://github.com/mjfrigaard/pyap): A collection of **P**ython Shiny **A**pp-**P**ackages with the code examples for [Shiny for Python App-Packages](https://mjfrigaard.github.io/shiny-py-pkgs/). Each branch holds the app at a specific stage of development, using [`uv`](https://docs.astral.sh/uv/) for environment management and [`pytest`](https://docs.pytest.org/) for testing. [[**Repo**](https://github.com/mjfrigaard/pyap)]
-
-* [**nostalgia_index**](https://mjfrigaard.github.io/nostalgia_index/): Python package and Shiny for Python app that measures which childhood toys, games, and athletes people are still looking up on Wikipedia. Pageviews from the Wikimedia REST API are normalized by total Wikipedia traffic, smoothed with a rolling median, and scaled so each article's first 12 months equal 100. Includes a `nostalgia` command line interface (`nostalgia fetch` and `nostalgia run`). [[**Repo**](https://github.com/mjfrigaard/nostalgia_index)]
+* [**dopingdata**](https://mjfrigaard.github.io/dopingdata/): Contains data from the [United States Anti-Doping Agency](https://en.wikipedia.org/wiki/United_States_Anti-Doping_Agency) for exploration, modeling, and visualizations. The datasets in this package are derived from the [USADA website](https://www.usada.org/) and the [World Anti-Doping Agency (WADA) banned substances list](https://www.wada-ama.org/en/prohibited-list?q=) [[**Repo**](https://github.com/mjfrigaard/dopingdata)]
 
 :::
 
-## Books & Sites
+## Shiny Apps/Packages (R)
 
 :::{style='font-size: 1.1em;'}
 
-* [**DevOps for Data Science: Lab Solutions**](https://mjfrigaard.github.io/do4ds-labs/): Twelve labs covering the infrastructure and deployment side of data science: versioning models with `vetiver`, building APIs with FastAPI and `plumber2`, logging, CI/CD with GitHub Actions, Docker, AWS, SSH, Linux user management, instance sizing, and accessibility. [[**Repo**](https://github.com/mjfrigaard/do4ds-labs)]
-
-* [**ggplot2: field manual**](https://mjfrigaard.github.io/fm-ggp2/): A field manual for building common (and less common) graphs with `ggplot2`. Every example uses simulated data with a 90s throwback and a matching theme from [`fmggp2`](https://mjfrigaard.github.io/fmggp2/). [[**Repo**](https://github.com/mjfrigaard/fm-ggp2)]
-
-* [**Shiny for Python App-Packages**](https://mjfrigaard.github.io/shiny-py-pkgs/): A book on building Shiny for Python applications as Python packages. Covers flat and src layouts, dependencies, data, documentation, testing with `pytest` (modules, system tests, and test suites), debugging, logging, GitHub Actions, Docker, and deploying to shinyapps.io and PyPI. The code examples are in [`pyap`](https://github.com/mjfrigaard/pyap). [[**Repo**](https://github.com/mjfrigaard/shiny-py-pkgs)]
-
-* [**Shiny Frameworks**](https://mjfrigaard.github.io/sfw/): Shiny app demos with three popular frameworks (`golem`, `leprechaun`, and `rhino`) [[**Repo**](https://github.com/mjfrigaard/sfw)]
-
-:::
-
-
-
-## Shiny Apps/Packages
-
-:::{style='font-size: 1.1em;'}
-
-* [**dfdiffs**](https://mjfrigaard.github.io/dfdiffs/): R package/Shiny app that implements SAS `proc compare`. Compares two datasets and tells you 1) what rows are here now that weren’t here before? 2) What rows were here before that aren’t here now?
-and 3) What values have been changed? [[**Repo**](https://github.com/mjfrigaard/dfdiffs)]
+* [**movexplR6**](https://mjfrigaard.github.io/movexplR6/): Shiny app-package demonstrating [`R6` objects](https://r6.r-lib.org/index.html) in a Shiny app-package. [[**Repo**](https://github.com/mjfrigaard/movexplR6)]
 
 * [**stocktipr**](https://mjfrigaard.github.io/stocktipr/): Shiny app-package for demonstrating tool-tip/hover info options [[**Repo**](https://github.com/mjfrigaard/stocktipr)]
 
@@ -67,32 +76,33 @@ and 3) What values have been changed? [[**Repo**](https://github.com/mjfrigaard/
 
 * [**ttdviewer**](https://mjfrigaard.github.io/ttdviewer/): Shiny app-package with downloadable [#TidyTuesday](https://github.com/rfordatascience/tidytuesday) dataset and reports [[**Repo**](https://github.com/mjfrigaard/ttdviewer)]
 
+* [**dfdiffs**](https://mjfrigaard.github.io/dfdiffs/): R package/Shiny app that implements SAS `proc compare`. Compares two datasets and tells you 1) what rows are here now that weren’t here before? 2) What rows were here before that aren’t here now?
+and 3) What values have been changed? [[**Repo**](https://github.com/mjfrigaard/dfdiffs)]
+
 :::
 
-### Apps/packages for testing
+## Shiny Apps/Packages (Python)
 
 :::{style='font-size: 1.1em;'}
 
-* [**noap**](https://mjfrigaard.github.io/utap/) Testing a Shiny app (not in an R package) with `testthat` [[**Repo**](https://github.com/mjfrigaard/noap)]
+* [**nostalgia_index**](https://mjfrigaard.github.io/nostalgia_index/): Python package and Shiny for Python app that measures which childhood toys, games, and athletes people are still looking up on Wikipedia. Pageviews from the Wikimedia REST API are normalized by total Wikipedia traffic, smoothed with a rolling median, and scaled so each article's first 12 months equal 100. Includes a `nostalgia` command line interface (`nostalgia fetch` and `nostalgia run`). [[**Repo**](https://github.com/mjfrigaard/nostalgia_index)]
+
+* [**daily-dose**](https://mjfrigaard.github.io/daily-dose/): Shiny for Python app for browsing my personal workout log (2020 to 2024), converted from its original R Markdown site. Pick a random workout from the whole history, or see every workout logged on today's date across all years. [[**Repo**](https://github.com/mjfrigaard/daily-dose)]
+
+* [**baseball-trajectory**](https://mjfrigaard.github.io/baseball-trajectory/): Shiny for Python app-package for visualizing a baseball player's career arc on a single metric (OPS, OBP, SLG, AVG, HR, or ISO for batters; ERA, WHIP, K/9, BB/9, or HR/9 for pitchers). Per-season stats come from the MLB Stats API, and the app fits a weighted quadratic aging curve with a 95% confidence band and a marked peak age. [[**Repo**](https://github.com/mjfrigaard/baseball-trajectory)]
+
+:::
+
+## Testing Shiny
+
+:::{style='font-size: 1.1em;'}
+
+* [**modsquad**](https://mjfrigaard.github.io/modsquad/): Tests the modules from the [Modules chapter](https://mastering-shiny.org/scaling-modules.html) of [Mastering Shiny](https://mastering-shiny.org/) with [`testthat`](https://testthat.r-lib.org/), [`shiny::testServer()`](https://shiny.posit.co/r/reference/shiny/latest/testserver.html), and [`shinytest2`](https://rstudio.github.io/shinytest2/). Combines two earlier app-packages, `mstsap` (`testServer()` tests) and `msst2ap` (`shinytest2` tests). [[**Repo**](https://github.com/mjfrigaard/modsquad)]
 
 * [**utap**](https://mjfrigaard.github.io/utap/) **U**nit **t**esting **a**pp **p**ackage: Unit testing Shiny app-package for demonstrating `shiny` utility function unit testing with `testthat` [[**Repo**](https://github.com/mjfrigaard/utap)]
 
 * [**tsap**](https://mjfrigaard.github.io/tsap/) **t**`estServer()` **a**pp **p**ackage: Shiny app-package for demonstrating integration tests with shiny's `testServer()` function [[**Repo**](https://github.com/mjfrigaard/tsap)]
 
-:::
-
-### Mastering Shiny App-Packages (for testing)
-
-:::{style='font-size: 1.1em;'}
-
-These are Shiny app-packages I've developed for various testing patterns. All use the code/apps covered in [Mastering Shiny](https://mastering-shiny.org/). 
-
-* **M**astering **S**hiny **t**`est`**S**`erver()` **a**pp-**p**ackage ([**mstsap**](https://mjfrigaard.github.io/mstsap/)) is a collection of tests using [`testthat`](https://testthat.r-lib.org/) and
-[`shiny::testServer()`](https://search.r-project.org/CRAN/refmans/shiny/html/testServer.html) The modules and application in `mstsap` come from the [Shiny modules chapter](https://mastering-shiny.org/scaling-modules.html) of [Mastering Shiny](https://mastering-shiny.org/index.html) [[**Repo**](https://github.com/mjfrigaard/mstsap)]
-
-* **M**astering **S**hiny **s**hiny**t**est**2** **a**pp-**p**ackage ([**msst2ap**](https://mjfrigaard.github.io/msst2ap/)) demonstrates how to test a Shiny app-package using [`testthat`](https://testthat.r-lib.org/) and [`shinytest2`](https://rstudio.github.io/shinytest2/). All examples come from the [Modules chapter of Mastering Shiny.](https://mastering-shiny.org/scaling-modules.html) [[**Repo**](https://github.com/mjfrigaard/msst2ap)]
+* **noap**: Testing a Shiny app (not in an R package) with `testthat` [[**Repo**](https://github.com/mjfrigaard/noap)]
 
 :::
-
-
-
