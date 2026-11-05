@@ -1,0 +1,1245 @@
+---
+title: "It's getting hot in here <- My MacBook"
+subtitle: "macOS maintenance with a few shell scripts"
+author: "Martin Frigaard"
+date: "2026-09-20"
+categories: [macOS, bash]
+draft: false
+toc: true
+toc-depth: 3
+toc-title: 'Contents'
+toc-location: right
+engine: knitr
+---
+
+```{r}
+#| label: setup
+#| eval: true 
+#| echo: false 
+#| include: false
+source("../_common.R")
+```
+
+I have an older MacBook (and I've been reluctant to replace it lately), so I've been curious about regular maintenance to keep it running. Products like [CleanMyMac]() offer things like cleaning up disk space, optimizing memory, removing duplicate files, malware scans and more.  
+
+I was curious if I could do the same thing using tools that already ship with macOS. In this post I'll cover eight shell scripts for macOS maintenance and what I learned from the first run.
+
+## Why shell scripts? 
+
+I chose to write shell scripts because they're durable. I started reading [Black Hat Bash](https://nostarch.com/black-hat-bash) by Dolev Farhi and Nick Aleks as a System Admin, and I'll admit, I've grown to love them. If you're interested in writing shell scripts, I also strongly recommend reading the [Google Bash Style Guide](https://google.github.io/styleguide/shellguide.html).
+
+## One rule for every script
+
+Every script follows the same rule: report by default, change nothing without a `mode` argument. When I pass it a `mode` (verbs like `apply`, `trash`, `run`, `purge`, or `reindex`), the script performs the action. 
+
+```{r}
+#| label: co_box_trash
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(color = "r", 
+  header = "`Deleted files`", 
+  contents = "If a script deletes files, it sends them to the Trash through Finder, so 'Put Back' still works.")
+```
+
+The diagram below shows this pattern.
+
+```{mermaid}
+%%| fig-width: 6
+%%| fig-align: 'center'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":false}}}%%
+flowchart TD
+    Run(["Run a script"])
+    Report[\"Report<br>(nothing changed)"\]
+    Review{"Anything worth<br>acting on?"}
+    Done(["Stop"])
+    Mode("Run again<br>with a mode")
+    Trash("Finder moves files<br>to the Trash")
+    Back(["Put Back<br>if needed"])
+
+    Run --> Report
+    Report --> Review
+    Review -->|"no"| Done
+    Review -->|"yes"| Mode
+    Mode --> Trash
+    Trash -.-> Back
+
+    style Run fill:#FFFFFF,color:#000000,stroke:#333
+    style Report fill:#FFFFFF,color:#000000,stroke:#333
+    style Review fill:#4CBB9D,color:#FFFFFF
+    style Done fill:#FFFFFF,color:#000000,stroke:#333
+    style Mode fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Trash fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Back fill:#FFFFFF,color:#000000,stroke:#333
+```
+
+I put these scripts in `~/mac-care/`:
+
+| Function | Script |
+|---|---|
+| Free disk space, find large and old files | `clean-disk.sh` |
+| Check memory pressure and top processes | `memory.sh` |
+| Find duplicate files | `dupes.sh` |
+| Check for malware | `malware-check.sh` |
+| Health report and routine maintenance | `maintenance.sh` |
+| Find files left behind by deleted apps | `leftovers.sh` |
+| Monitor battery and CPU temperature | `battery.sh`, `cpu-temp.sh` |
+
+## Disk space
+
+`clean-disk.sh` reports how much space each cache and junk folder holds. The `apply` mode removes the items marked `[clean]`:
+
+```{bash}
+#| label: clean-disk
+#| eval: false
+#| code-fold: true
+#| code-summary: 'show/hide clean-disk.sh'
+#| echo: true
+#!/bin/bash
+# Free disk space: caches, logs, Trash, developer caches, plus reports on
+# large and old files.
+#
+# Usage (no sudo needed):
+#   bash ~/mac-care/clean-disk.sh          # report sizes, changes nothing
+#   bash ~/mac-care/clean-disk.sh apply    # clean the items marked [clean]
+#
+# What "apply" removes
+#   ~/Library/Caches files not modified in 7+ days (skips org.R-project.R,
+#   which holds the renv cache that project libraries link into)
+#   ~/Library/Logs files older than 7 days
+#   Trash (emptied through Finder)
+#   Xcode DerivedData and CoreSimulator caches, unavailable simulators
+#   Homebrew (brew cleanup -s), npm, pip and conda caches
+#
+# Report only (never removed): R/renv cache, Docker, iOS backups,
+# Time Machine local snapshots, files over 1GB in ~, Downloads older than 90 days.
+#
+# History
+#   2026-10-29  Created.
+
+set -u
+mode=${1:-report}
+age=7
+
+kb() { du -sk "$@" 2>/dev/null | awk '{s+=$1} END{print s+0}'; }
+hr() { awk -v k="$1" 'BEGIN{ if (k>=1048576) printf "%.1fG", k/1048576; else if (k>=1024) printf "%.0fM", k/1024; else printf "%dK", k }'; }
+row() { printf "  %-8s %-7s %s\n" "$(hr "$2")" "$1" "$3"; }
+old_kb() { find "$1" -type f -mtime +$age ! -path "${2:-/none}" -print0 2>/dev/null | xargs -0 du -k 2>/dev/null | awk '{s+=$1} END{print s+0}'; }
+have() { command -v "$1" >/dev/null 2>&1; }
+
+caches="$HOME/Library/Caches"
+rcache="$caches/org.R-project.R"
+dd="$HOME/Library/Developer/Xcode/DerivedData"
+sim="$HOME/Library/Developer/CoreSimulator/Caches"
+
+echo "== Cleanable [clean]"
+row clean "$(old_kb "$caches" "$rcache/*")" "~/Library/Caches (files older than $age days, R excluded)"
+row clean "$(old_kb "$HOME/Library/Logs")" "~/Library/Logs (older than $age days)"
+row clean "$(kb "$dd")" "Xcode DerivedData"
+row clean "$(kb "$sim")" "CoreSimulator caches"
+have brew && row clean "$(kb "$(brew --cache)")" "Homebrew cache"
+row clean "$(kb "$HOME/.npm/_cacache")" "npm cache"
+have conda && row clean "$(kb "$(conda info --base 2>/dev/null)/pkgs")" "conda pkgs (total; most are in use by envs, apply removes only unused)"
+trash=$(osascript -e 'tell application "Finder" to count items of trash' 2>/dev/null)
+printf "  %-8s %-7s %s\n" "${trash:-?} items" clean "Trash"
+
+echo "== Review by hand [report]"
+row report "$(kb "$rcache")" "R cache (renv/pak; clean with renv::clean() per project)"
+row report "$(kb "$HOME/Library/Application Support/MobileSync/Backup")" "iOS device backups"
+row report "$(kb "$HOME/Library/Developer/Xcode/iOS DeviceSupport" "$HOME/Library/Developer/Xcode/Archives")" "Xcode DeviceSupport + Archives"
+if have docker && docker info >/dev/null 2>&1; then
+  docker system df | sed 's/^/  docker: /'
+else
+  echo "  docker not running (disk image: $(hr "$(kb "$HOME/Library/Containers/com.docker.docker/Data")"))"
+fi
+snaps=$(tmutil listlocalsnapshots / 2>/dev/null | grep -c com.apple)
+echo "  Time Machine local snapshots: $snaps (thin with mac-care/maintenance.sh)"
+dl=$(find "$HOME/Downloads" -type f -mtime +90 2>/dev/null | wc -l | tr -d ' ')
+row report "$(find "$HOME/Downloads" -type f -mtime +90 -print0 2>/dev/null | xargs -0 du -k 2>/dev/null | awk '{s+=$1} END{print s+0}')" "~/Downloads, $dl files older than 90 days"
+
+echo "== Files over 1GB in ~ (Library excluded, via Spotlight)"
+mdfind -onlyin "$HOME" 'kMDItemFSSize > 1073741824' 2>/dev/null | grep -v "^$HOME/Library/" | tr '\n' '\0' \
+  | xargs -0 stat -f '%z %N' 2>/dev/null | sort -rn | head -15 \
+  | awk '{s=$1; $1=""; printf "  %5.1fG %s\n", s/1073741824, substr($0,2)}'
+
+echo "== Free: $(df -h / | awk 'NR==2{print $4}')"
+[ "$mode" = apply ] || { echo "Report only. Run with 'apply' to clean the [clean] items."; exit 0; }
+
+echo "== Cleaning"
+find "$caches" -mindepth 1 -type f -mtime +$age ! -path "$rcache/*" -delete 2>/dev/null
+find "$caches" -mindepth 2 -type d -empty ! -path "$rcache/*" -delete 2>/dev/null
+find "$HOME/Library/Logs" -type f -mtime +$age -delete 2>/dev/null
+rm -rf "$dd"/* "$sim"/* 2>/dev/null
+have xcrun && xcrun simctl delete unavailable 2>/dev/null
+have brew && HOMEBREW_NO_ENV_HINTS=1 brew cleanup -s --prune=all >/dev/null 2>&1
+have npm && npm cache clean --force >/dev/null 2>&1
+have python3 && python3 -m pip cache purge >/dev/null 2>&1
+have conda && conda clean --all -y >/dev/null 2>&1
+osascript -e 'tell application "Finder" to empty trash' >/dev/null 2>&1
+echo "  done. Free: $(df -h / | awk 'NR==2{print $4}')"
+```
+
+```{bash}
+#| eval: false
+#| code-fold: false
+#| echo: true
+bash ~/mac-care/clean-disk.sh          # report sizes
+bash ~/mac-care/clean-disk.sh apply    # clean the [clean] items
+```
+
+The cleanable items are caches and logs older than seven days, Xcode build caches, the Homebrew, `npm`, pip and `conda` caches, and the Trash.
+
+Other folders are reported but never deleted. The R cache is one example: it holds the `renv` cache that project libraries link into, so I clean it per project with `renv::clean()`. Docker images, iOS backups, Time Machine snapshots, and old downloads are also report only.
+
+To find files over 1GB, the script asks Spotlight instead of running `find`. Spotlight answers in seconds; `find` over my home folder took more than five minutes.
+
+## Memory
+
+`memory.sh` shows memory pressure, swap, and the top processes by memory and CPU. If pressure is "normal" and swap is near zero, RAM isn't the slowdown.
+
+```{bash}
+#| label: memory
+#| eval: false
+#| code-fold: true
+#| code-summary: 'show/hide memory.sh'
+#| echo: true
+#!/bin/bash
+# Memory and CPU check.
+#
+# Usage:
+#   bash ~/mac-care/memory.sh          # report pressure, swap, top processes
+#   sudo bash ~/mac-care/memory.sh purge   # also flush inactive/file cache
+#
+# About "purge": macOS uses free RAM as file cache on purpose and gives it
+# back on demand. purge empties that
+# cache, so the number looks better but apps reload from disk afterward. It
+# only helps right after quitting something huge. The real fix for pressure
+# is quitting the top processes listed here. Pressure "normal" and swap near
+# 0 means memory is not the slowdown.
+#
+# History
+#   2026-10-29  Created.
+
+set -u
+mode=${1:-report}
+
+echo "== Memory pressure"
+memory_pressure 2>/dev/null | awk '/System-wide memory free percentage/{print "  free: " $NF}'
+sysctl -n kern.memorystatus_vm_pressure_level 2>/dev/null \
+  | awk '{l=($1==1)?"normal":($1==2)?"WARN":($1==4)?"CRITICAL":$1; print "  level: " l}'
+echo "  swap: $(sysctl -n vm.swapusage | awk '{print $6 " used of " $3}')"
+pg=$(sysctl -n hw.pagesize)
+vm_stat | awk -v pg="$pg" '
+  /Pages active/{a=$3} /Pages wired/{w=$4} /occupied by compressor/{c=$5}
+  END{g=pg/1073741824; printf "  app %.1fG  wired %.1fG  compressed %.1fG\n", a*g, w*g, c*g}'
+
+echo "== Top 10 by memory"
+ps -axo rss=,comm= | sort -rn | head -10 \
+  | awk '{r=$1; $1=""; n=split($0,p,"/"); printf "  %6.0fM %s\n", r/1024, p[n]}'
+
+echo "== Top 5 by CPU"
+ps -axo %cpu=,comm= | sort -rn | head -5 \
+  | awk '{c=$1; $1=""; n=split($0,p,"/"); printf "  %5.1f%% %s\n", c, p[n]}'
+
+echo "== Thermal"
+pmset -g therm | awk '/CPU_Speed_Limit/{print "  CPU speed limit: " $3 "% (100 = not throttled)"}'
+uptime | sed 's/^.*up/  up/'
+
+if [ "$mode" = purge ]; then
+  [ "$(id -u)" -eq 0 ] || { echo "purge needs sudo"; exit 1; }
+  purge && echo "== purged. free now: $(memory_pressure | awk '/free percentage/{print $NF}')"
+fi
+```
+
+```{bash}
+#| eval: false
+#| code-fold: false
+#| echo: true
+bash ~/mac-care/memory.sh               # report
+sudo bash ~/mac-care/memory.sh purge    # also flush the file cache
+```
+
+The `purge` mode empties the file cache, so free memory looks higher. But macOS uses that cache on purpose, and apps reload from disk afterward. Quitting the top processes is the real fix.
+
+```{verbatim}
+== Memory pressure
+  free: 69%
+  level: normal
+  swap: 6994.00M used of 8192.00M
+  app 5.5G  wired 3.8G  compressed 1.1G
+== Top 10 by memory
+     579M com.apple.WebKit.WebContent
+     547M Positron Helper (Renderer)
+     446M Code Helper (Renderer)
+     419M deno
+     348M mds_stores
+     294M Code Helper (Plugin)
+     269M Obsidian Helper (Renderer)
+     262M com.apple.WebKit.WebContent
+     262M Positron Helper (Renderer)
+     161M R
+== Top 5 by CPU
+   96.4% deleted
+   39.8% WindowServer
+   21.5% opendirectoryd
+   20.1% iTerm2
+   12.2% com.apple.WebKit.WebContent
+== Thermal
+  CPU speed limit: 100% (100 = not throttled)
+  up  4:11, 6 users, load averages: 6.51 7.24 6.02
+== purged. free now: 69%
+```
+
+## Duplicates
+
+`dupes.sh` finds files with identical content. It compares SHA-256 hashes, but it only hashes files that share a size with another file. That one filter makes it fast, because most files have a unique size.
+
+```{bash}
+#| label: dupes
+#| eval: false
+#| code-fold: true
+#| code-summary: 'show/hide dupes.sh'
+#| echo: true
+#!/bin/bash
+# Find duplicate files by content (SHA-256).
+#
+# Usage:
+#   bash ~/mac-care/dupes.sh [dir] [min_MB]          # report (default: ~ and 1MB)
+#   bash ~/mac-care/dupes.sh ~/Pictures 5 trash      # move duplicates to Trash
+#
+# Only files with the same size are hashed, so it's fast on most folders.
+# In each group the OLDEST file (by modification time) is kept; the rest are
+# "dup". "trash" moves dups to the Trash through Finder, so "Put Back" works.
+# Review the report before using trash.
+#
+# Skipped: ~/Library, hidden files and folders, .git, node_modules,
+# renv/library (these duplicate on purpose).
+# Report saved to ~/mac-care/reports/dupes-<date>.txt
+#
+# History
+#   2026-10-29  Created.
+
+set -u
+dir=${1:-$HOME}
+min=$(( ${2:-1} * 1048576 ))
+mode=${3:-report}
+out="$HOME/mac-care/reports/dupes-$(date +%Y-%m-%d).txt"
+mkdir -p "${out%/*}"
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+echo "Scanning $dir for files over ${2:-1}MB..."
+find "$dir" -type f -size +"$min"c ! -path '*/.*' ! -path "$HOME/Library/*" \
+  ! -path '*/node_modules/*' ! -path '*/renv/library/*' -print0 2>/dev/null \
+  | xargs -0 stat -f '%z%t%N' 2>/dev/null \
+  | awk -F'\t' '{n[$1]++; l[NR]=$0; s[NR]=$1} END{for(i=1;i<=NR;i++) if(n[s[i]]>1) print l[i]}' \
+  | cut -f2- | tr '\n' '\0' \
+  | xargs -0 shasum -a 256 2>/dev/null \
+  | awk '{h=substr($0,1,64); f=substr($0,67); n[h]++; H[NR]=h; F[NR]=f}
+         END{for(i=1;i<=NR;i++) if(n[H[i]]>1) print H[i] "\t" F[i]}' > "$tmp/hits"
+
+while IFS=$'\t' read -r h f; do
+  printf '%s\t%s\t%s\t%s\n' "$h" "$(stat -f %m "$f")" "$(stat -f %z "$f")" "$f"
+done < "$tmp/hits" | sort -t$'\t' -k1,1 -k2,2n > "$tmp/sorted"
+
+awk -F'\t' '$1!=p{print ""; print "keep " $4; p=$1; g++; next}
+            {print "dup  " $4; w+=$3; d++}
+            END{printf "\n%d groups, %d duplicates, %.1f MB reclaimable\n", g, d, w/1048576}' \
+  "$tmp/sorted" | tee "$out"
+echo "Report: $out"
+
+[ "$mode" = trash ] || exit 0
+awk -F'\t' '$1==p{print $4} {p=$1}' "$tmp/sorted" | while IFS= read -r f; do
+  osascript -e 'on run a' -e 'tell application "Finder" to delete (POSIX file (item 1 of a) as alias)' \
+    -e 'end run' "$f" >/dev/null && echo "trashed $f"
+done
+```
+
+```{mermaid}
+%%| fig-width: 6
+%%| fig-align: 'center'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":false}}}%%
+flowchart TD
+    Find("find files over<br>the size limit")
+    Size{"Another file<br>the same size?"}
+    Skip(["Skip"])
+    Hash[["shasum -a 256"]]
+    Group("Group by hash")
+    Keep("Oldest file: keep<br>the rest: dup")
+    Rpt[("reports/dupes-date.txt")]
+
+    Find --> Size
+    Size -->|"no"| Skip
+    Size -->|"yes"| Hash
+    Hash --> Group
+    Group --> Keep
+    Keep --> Rpt
+
+    style Find fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Size fill:#4CBB9D,color:#FFFFFF
+    style Skip fill:#FFFFFF,color:#000000,stroke:#333
+    style Hash fill:#4CBB9D,color:#FFFFFF
+    style Group fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Keep fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Rpt fill:#FFFFFF,color:#000000,stroke:#333
+```
+
+In each group, the oldest file is marked `keep` and the rest `dup`. The script saves the report, and I read it before running `trash`:
+
+```{bash}
+#| eval: false
+#| code-fold: false
+#| echo: true
+bash ~/mac-care/dupes.sh ~/Pictures 5         # files over 5MB
+bash ~/mac-care/dupes.sh ~/Pictures 5 trash   # move dups to the Trash
+```
+
+It skips `~/Library`, hidden files, `.git`, `node_modules`, and `renv/library`. Those folders hold duplicates on purpose.
+
+## Malware
+
+`malware-check.sh` uses built-in macOS tools and never removes anything. Lines marked `!!` need a look. It checks:
+
+* Security settings: SIP, Gatekeeper, the firewall, FileVault, and XProtect
+* Configuration profiles: adware uses these to lock browser settings
+* Launch agents and daemons: every non-Apple one, with its code signer
+* Apps: each one in `/Applications` through `spctl`
+* Extensions and shared folders: kernel and system extensions, plus executables in `/Users/Shared` and `/tmp`
+
+```{bash}
+#| label: malware-check
+#| eval: false
+#| code-fold: true
+#| code-summary: 'show/hide malware-check.sh'
+#| echo: true
+#!/bin/bash
+# Security and malware check with built-in macOS tools.
+#
+# Usage:
+#   bash ~/mac-care/malware-check.sh        # most checks
+#   sudo bash ~/mac-care/malware-check.sh   # also reads root-only launchd plists
+#
+# Reports only; never removes anything. Look at lines marked "!!".
+#   1. Protections: SIP, Gatekeeper, firewall, FileVault, XProtect version
+#   2. Configuration profiles (adware often installs one to lock browser settings)
+#   3. Launch agents/daemons: program path and code signer for every non-Apple
+#      item. "!!" = unsigned, invalid signature, or program in a temp/shared folder
+#   4. Apps that fail Gatekeeper (not signed or not notarized)
+#   5. Kernel and system extensions that aren't Apple's
+#   6. Executables in /Users/Shared and /tmp
+#   7. Chrome extensions
+# Removing something found here: unload and move its plist,
+# then delete the program and run ~/mac-care/leftovers.sh <name>.
+# For a GUI view of the same persistence items: brew install --cask knockknock
+# (prebuilt, free, from Objective-See).
+#
+# History
+#   2026-10-29  Created.
+
+set -u
+user=${SUDO_USER:-$USER}
+home=$(eval echo "~$user")
+pb() { /usr/libexec/PlistBuddy -c "Print :$1" "$2" 2>/dev/null; }
+flag=0
+warn() { echo "  !! $*"; flag=1; }
+
+echo "== Protections"
+csrutil status | grep -q enabled && echo "  SIP on" || warn "SIP off"
+spctl --status 2>/dev/null | grep -q enabled && echo "  Gatekeeper on" || warn "Gatekeeper off"
+/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate | grep -q enabled \
+  && echo "  Firewall on" || echo "  Firewall off (System Settings > Network > Firewall)"
+fdesetup status | sed 's/^/  /'
+echo "  XProtect $(xprotect version 2>/dev/null | head -1)"
+
+echo "== Configuration profiles"
+p=$(profiles list 2>/dev/null | grep -v 'There are no')
+[ -n "$p" ] && { warn "profiles installed:"; echo "$p" | sed 's/^/     /'; } || echo "  none"
+
+echo "== Launch agents and daemons (non-Apple)"
+for d in /Library/LaunchAgents /Library/LaunchDaemons "$home/Library/LaunchAgents"; do
+  for f in "$d"/*.plist; do
+    [ -e "$f" ] || continue
+    case "${f##*/}" in com.apple.*) continue ;; esac
+    label=$(pb Label "$f")
+    prog=$(pb Program "$f" || pb ProgramArguments:0 "$f")
+    if [ -z "$label" ]; then echo "  ?  ${f##*/} (unreadable, rerun with sudo)"; continue; fi
+    if [ -z "$prog" ] || [ ! -e "$prog" ]; then echo "  -  $label (no program; orphan plist)"; continue; fi
+    team=$(codesign -dv "$prog" 2>&1 | awk -F= '/^TeamIdentifier/{print $2}')
+    case "$prog" in /tmp/*|/private/*|/Users/Shared/*|*/.*) warn "$label runs from odd path: $prog"; continue ;; esac
+    if codesign --verify "$prog" 2>/dev/null; then
+      echo "  ok $label  [${team:-adhoc}]"
+    else
+      warn "$label unsigned or invalid: $prog"
+    fi
+  done
+done
+
+echo "== Apps failing Gatekeeper"
+n=0
+for a in /Applications/*.app /Applications/*/*.app "$home"/Applications/*.app; do
+  [ -d "$a" ] || continue
+  spctl -a -t exec "$a" 2>/dev/null || { warn "${a#/Applications/}: $(spctl -a -t exec "$a" 2>&1 | tail -1)"; n=1; }
+done
+[ $n -eq 1 ] || echo "  none"
+
+echo "== Kernel and system extensions (non-Apple)"
+kmutil showloaded --list-only 2>/dev/null | grep -v com.apple | awk '{print "  kext " $6}' | grep -v 'kext $'
+systemextensionsctl list 2>/dev/null | grep -E '\[activated' | awk -F'\t' '{print "  sysext " $4 " " $NF}'
+
+echo "== Executables in shared/temp folders"
+x=$(find /Users/Shared /private/tmp /private/var/tmp -maxdepth 3 -type f -perm -u+x 2>/dev/null)
+[ -n "$x" ] && { warn "found:"; echo "$x" | sed 's/^/     /'; } || echo "  none"
+
+echo "== Chrome extensions"
+for m in "$home"/Library/Application\ Support/Google/Chrome/*/Extensions/*/*/manifest.json; do
+  [ -e "$m" ] || continue
+  name=$(plutil -extract name raw "$m" 2>/dev/null)
+  id=$(echo "$m" | awk -F/ '{print $(NF-2)}')
+  case "$name" in __MSG_*) name="(localized) $id" ;; esac
+  echo "  $name"
+done | sort -u
+
+[ $flag -eq 0 ] && echo "== Nothing flagged" || echo "== Review the !! lines above"
+```
+
+The app check makes a full run take about five minutes. I've found it's best not to edit the script while it runs. Bash reads a script as it goes, so an edit mid run makes it skip sections.
+
+## Maintenance and leftovers
+
+`maintenance.sh` prints a health report: free disk, SMART status, battery cycles, swap, and pending updates. Its `run` mode flushes the DNS cache, thins local snapshots, removes old system logs, and verifies the startup disk. I left out "repair disk permissions" on purpose; macOS dropped it in 10.11.
+
+```{bash}
+#| label: maintenance
+#| eval: false
+#| code-fold: true
+#| code-summary: 'show/hide maintenance.sh'
+#| echo: true
+#!/bin/bash
+# System maintenance and health report.
+#
+# Usage:
+#   bash ~/mac-care/maintenance.sh             # health report only
+#   sudo bash ~/mac-care/maintenance.sh run    # report + maintenance tasks
+#   sudo bash ~/mac-care/maintenance.sh reindex  # rebuild Spotlight index
+#
+# "run" does: flush DNS cache, thin Time Machine local snapshots, verify
+# the startup disk, clear old system logs (*.gz older than 30 days in
+# /private/var/log).
+# "reindex" erases and rebuilds Spotlight for /. Only use it when search is
+# broken; mds runs hard for an hour or more afterward.
+# Not included: "repair disk permissions" (gone since macOS 10.11) and
+# periodic scripts (removed from macOS).
+#
+# History
+#   2026-10-29  Created.
+
+set -u
+mode=${1:-report}
+
+echo "== Health"
+echo "  macOS $(sw_vers -productVersion), up $(uptime | sed 's/.*up \([^,]*\),.*/\1/')"
+df -h / | awk 'NR==2{print "  disk: " $4 " free of " $2 " (" $5 " used)"}'
+diskutil info disk0 | awk -F: '/SMART Status/{gsub(/^ +/,"",$2); print "  SMART: " $2}'
+system_profiler SPPowerDataType 2>/dev/null | awk -F': ' '
+  /Cycle Count/{c=$2} /Condition/{k=$2}
+  END{print "  battery: " c " cycles, " k}'
+pmset -g therm | awk '/CPU_Speed_Limit/{print "  CPU speed limit: " $3 "%"}'
+echo "  swap: $(sysctl -n vm.swapusage | awk '{print $6}')"
+echo "  Time Machine local snapshots: $(tmutil listlocalsnapshots / 2>/dev/null | grep -c com.apple)"
+echo "  macOS updates:"
+softwareupdate -l 2>&1 | grep -E '^\s*\*|No new' | sed 's/^/    /'
+
+case "$mode" in
+  run)
+    [ "$(id -u)" -eq 0 ] || { echo "run needs sudo"; exit 1; }
+    echo "== Maintenance"
+    dscacheutil -flushcache && killall -HUP mDNSResponder && echo "  DNS cache flushed"
+    tmutil thinlocalsnapshots / 999999999999 4 >/dev/null 2>&1 && echo "  local snapshots thinned"
+    find /private/var/log -name '*.gz' -mtime +30 -delete 2>/dev/null && echo "  old system logs removed"
+    echo "  verifying startup disk (a few minutes)..."
+    diskutil verifyVolume / 2>&1 | tail -2 | sed 's/^/    /'
+    ;;
+  reindex)
+    [ "$(id -u)" -eq 0 ] || { echo "reindex needs sudo"; exit 1; }
+    mdutil -E / && echo "  Spotlight rebuilding (check: mdutil -s /)"
+    ;;
+  *) echo "Report only. 'sudo ... run' for maintenance." ;;
+esac
+```
+
+`leftovers.sh` finds the files an app leaves behind after you delete it. Use a specific search term (`us.zoom`, not `zoom`) so it doesn't match other apps. Files you own go to the Trash. Files owned by root are printed with the `sudo` commands to remove them yourself.
+
+```{bash}
+#| label: leftovers
+#| eval: false
+#| code-fold: true
+#| code-summary: 'show/hide leftovers.sh'
+#| echo: true
+#!/bin/bash
+# Find files an app leaves behind.
+#
+# Usage:
+#   bash ~/mac-care/leftovers.sh zoom              # list matches (name or bundle id)
+#   bash ~/mac-care/leftovers.sh us.zoom trash     # move your own matches to Trash
+#
+# Searches the usual Library folders (yours and /Library) for names
+# containing the term, case-insensitive, plus installer receipts
+# (pkgutil). Use a specific term ("us.zoom", not "zoom") so it
+# doesn't catch other apps. "trash" moves matches you own to the Trash
+# through Finder ("Put Back" works). Root-owned matches are printed with the
+# sudo commands to remove them. Quit the app (and delete it) first.
+# Some ~/Library/Containers folders are protected by macOS and can't be
+# removed even with sudo. Their size shows as "-": reading inside another
+# app's container makes macOS ask for permission and hang the script.
+#
+# History
+#   2026-10-29  Created.
+
+set -u
+term=${1:?usage: leftovers.sh <name or bundle id> [trash]}
+mode=${2:-report}
+L=Library
+
+dirs="$HOME/$L/Application Support
+$HOME/$L/Caches
+$HOME/$L/Preferences
+$HOME/$L/Logs
+$HOME/$L/Containers
+$HOME/$L/Group Containers
+$HOME/$L/Saved Application State
+$HOME/$L/HTTPStorages
+$HOME/$L/WebKit
+$HOME/$L/Cookies
+$HOME/$L/LaunchAgents
+$HOME/$L/Application Scripts
+/$L/Application Support
+/$L/Caches
+/$L/Preferences
+/$L/LaunchAgents
+/$L/LaunchDaemons
+/$L/PrivilegedHelperTools
+/$L/Extensions
+/$L/Logs
+/Applications"
+
+hits=$(echo "$dirs" | while IFS= read -r d; do
+  find "$d" -maxdepth 1 -iname "*$term*" 2>/dev/null
+done)
+
+if [ -z "$hits" ]; then echo "No files matching '$term'."; else
+  echo "$hits" | while IFS= read -r f; do
+    case "$f" in */Containers/*) s="-" ;; *) s=$(du -sh "$f" 2>/dev/null | cut -f1) ;; esac
+    printf "  %6s  %s\n" "$s" "$f"
+  done
+fi
+
+pk=$(pkgutil --pkgs | grep -i "$term")
+[ -n "$pk" ] && echo "Installer receipts (remove with sudo pkgutil --forget <id>):" && echo "$pk" | sed 's/^/  /'
+
+[ "$mode" = trash ] && [ -n "$hits" ] || exit 0
+echo "$hits" | while IFS= read -r f; do
+  case "$f" in /Library/*/com.apple.*|/Applications/*) echo "  skipped $f (delete apps yourself)"; continue ;; esac
+  if [ -O "$f" ]; then
+    osascript -e 'on run a' -e 'tell application "Finder" to delete (POSIX file (item 1 of a) as alias)' \
+      -e 'end run' "$f" >/dev/null && echo "  trashed $f"
+  else
+    echo "  root-owned: sudo launchctl bootout system \"$f\" 2>/dev/null; sudo rm -rf \"$f\""
+  fi
+done
+```
+
+## Heat
+
+`battery.sh` reads battery temperature, charge, and health from `ioreg`, with no `sudo`. `cpu-temp.sh` reads CPU temperature, fan speed, and throttling from `powermetrics`, which needs `sudo`. With no arguments, each script prints one reading:
+
+```{bash}
+#| label: battery
+#| eval: false
+#| code-fold: true
+#| code-summary: 'show/hide battery.sh'
+#| echo: true
+#!/bin/bash
+#
+# Battery temperature and health. No sudo needed.
+#
+# Usage:
+#   bash ~/mac-care/battery.sh                 # one reading
+#   bash ~/mac-care/battery.sh watch           # every 30s (Ctrl+C to stop)
+#   bash ~/mac-care/battery.sh watch 2         # every 2s
+#   bash ~/mac-care/battery.sh csv             # one reading, saved
+#   bash ~/mac-care/battery.sh watch csv       # every 30s, saved
+#   bash ~/mac-care/battery.sh watch 2 csv ~/x.csv  # every 2s, to ~/x.csv
+#
+# Arguments can come in any order; the file path goes right after csv.
+# csv appends one row per reading (header written once) to the file, or
+# to ~/mac-care/reports/battery-YYYY-MM-DD.csv if none is given.
+# Columns:
+#   time,temp_c,status,charge_pct,power,cycles,health_pct
+#
+# Reads AppleSmartBattery from ioreg. Temperature is reported in hundredths
+# of a degree C (3087 = 30.9C). Rough guide for the battery itself:
+#   under 35C normal, 35-40C warm (under load or charging),
+#   over 40C hot: unplug, close heavy apps, keep vents clear.
+# Heat speeds up battery wear and makes macOS throttle the CPU
+# (see CPU_Speed_Limit in memory.sh / maintenance.sh).
+# Health = full charge capacity / design capacity.
+#
+# History
+#   2026-10-30  Created.
+#   2026-11-05  Added csv mode for tidy logs (one row per reading).
+#   2026-11-05  Restyled to the Google Shell Style Guide.
+#   2026-11-05  csv is now an option: works alone or with watch, and takes
+#               an output file.
+
+set -u
+
+readonly NUMBER='^[0-9]+([.][0-9]+)?$'
+readonly CSV_HEADER="time,temp_c,status,charge_pct,power,cycles,health_pct"
+
+#######################################
+# Print an error message with a timestamp.
+# Arguments:
+#   Message to print.
+# Outputs:
+#   Writes the message to stderr.
+#######################################
+err() {
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
+}
+
+#######################################
+# Print one battery reading from ioreg.
+# Arguments:
+#   Output format: "csv" for a CSV row, anything else for a readable line.
+# Outputs:
+#   Writes the reading to stdout.
+#######################################
+reading() {
+  local fmt="${1:-}"
+  local now
+  local ts
+  now="$(date +%H:%M:%S)"
+  ts="$(date +%Y-%m-%dT%H:%M:%S)"
+
+  ioreg -rn AppleSmartBattery \
+    | awk -F' = ' -v now="${now}" -v ts="${ts}" -v fmt="${fmt}" '
+      /"Temperature" =/             { t = $2 }
+      /"CycleCount" =/              { c = $2 }
+      /"DesignCapacity" =/          { d = $2 }
+      /"AppleRawMaxCapacity" =/     { m = $2 }
+      /"AppleRawCurrentCapacity" =/ { n = $2 }
+      /"IsCharging" =/              { ch = $2 }
+      /"ExternalConnected" =/       { ac = $2 }
+      END {
+        temp = t / 100
+        s = (temp > 40) ? "HOT" : (temp >= 35) ? "warm" : "normal"
+        if (ac == "Yes") {
+          p = (ch == "Yes") ? "charging" : "plugged in, not charging"
+        } else {
+          p = "on battery"
+        }
+        if (fmt == "csv") {
+          printf "%s,%.1f,%s,%d,\"%s\",%d,%d\n",
+            ts, temp, s, n / m * 100, p, c, m / d * 100
+        } else {
+          printf "%s  %.1fC (%s)  %d%% charge, %s  |  ",
+            now, temp, s, n / m * 100, p
+          printf "%d cycles, health %d%%\n", c, m / d * 100
+        }
+      }'
+}
+
+#######################################
+# Read the arguments into the mode settings.
+# Globals:
+#   WATCH, EVERY, CSV, FILE
+# Arguments:
+#   Any of: watch, a number of seconds, csv, a file path after csv.
+# Returns:
+#   1 if an argument isn't recognized.
+#######################################
+parse_args() {
+  while (( $# > 0 )); do
+    case "$1" in
+      watch)
+        WATCH=true
+        ;;
+      csv)
+        CSV=true
+        if [[ $# -gt 1 && "$2" != "watch" && ! "$2" =~ ${NUMBER} ]]; then
+          FILE="$2"
+          shift
+        fi
+        ;;
+      *)
+        if [[ ! "$1" =~ ${NUMBER} ]]; then
+          err "unknown argument: $1 (see the usage at the top of the script)"
+          return 1
+        fi
+        EVERY="$1"
+        ;;
+    esac
+    shift
+  done
+}
+
+#######################################
+# Write the CSV header if the file is new or empty.
+# Globals:
+#   CSV_HEADER, FILE
+# Outputs:
+#   Writes the log location to stdout.
+# Returns:
+#   1 if the file can't be created.
+#######################################
+init_csv() {
+  if ! mkdir -p "$(dirname "${FILE}")"; then
+    err "Unable to create the folder for ${FILE}"
+    return 1
+  fi
+  if [[ ! -s "${FILE}" ]] && ! echo "${CSV_HEADER}" > "${FILE}"; then
+    err "Unable to write ${FILE}"
+    return 1
+  fi
+  echo "logging to ${FILE}"
+}
+
+#######################################
+# Print one reading, and append it to the CSV file in csv mode.
+# Globals:
+#   CSV, FILE
+# Outputs:
+#   Writes the reading to stdout.
+#######################################
+one_reading() {
+  if [[ "${CSV}" == true ]]; then
+    reading csv | tee -a "${FILE}"
+  else
+    reading
+  fi
+}
+
+main() {
+  WATCH=false
+  EVERY="30"
+  CSV=false
+  FILE="${HOME}/mac-care/reports/battery-$(date +%F).csv"
+  parse_args "$@" || exit 1
+  readonly WATCH EVERY CSV FILE
+
+  if [[ "${CSV}" == true ]]; then
+    init_csv || exit 1
+  fi
+  if [[ "${WATCH}" == true ]]; then
+    while true; do
+      one_reading
+      sleep "${EVERY}"
+    done
+  fi
+
+  one_reading
+  if [[ "${CSV}" == false ]]; then
+    pmset -g therm | awk '/CPU_Speed_Limit/ {
+      print "CPU speed limit: " $3 "% (100 = not throttled)"
+    }'
+  fi
+}
+
+main "$@"
+```
+
+```{bash}
+#| label: cpu-temp
+#| eval: false
+#| code-fold: true
+#| code-summary: 'show/hide cpu-temp.sh'
+#| echo: true
+#!/bin/bash
+#
+# CPU temperature, fan speed and throttling. Needs sudo (powermetrics).
+#
+# Usage:
+#   sudo bash ~/mac-care/cpu-temp.sh                 # one reading
+#   sudo bash ~/mac-care/cpu-temp.sh watch           # every 5s (Ctrl+C to stop)
+#   sudo bash ~/mac-care/cpu-temp.sh watch 2         # every 2s
+#   sudo bash ~/mac-care/cpu-temp.sh csv             # one reading, saved
+#   sudo bash ~/mac-care/cpu-temp.sh watch csv       # every 5s, saved
+#   sudo bash ~/mac-care/cpu-temp.sh watch 2 csv ~/x.csv  # every 2s, to ~/x.csv
+#
+# Arguments can come in any order; the file path goes right after csv.
+# csv appends one row per reading (header written once) to the file, or
+# to ~/mac-care/reports/cpu-temp-YYYY-MM-DD.csv if none is given.
+# The file is handed back to your user so it isn't owned by root.
+# Blank cells = NA. Columns:
+#   time,cpu_c,status,gpu_c,fan_rpm,freq_pct,plimit,thermal_level,prochots
+#
+# Reads the SMC and CPU power samplers of powermetrics (Intel Macs).
+# Intel laptop CPUs throttle near 100C (Tjmax). Rough guide for the CPU die:
+#   under 60C idle/light use, 60-80C busy, 80-95C hot (fans at full),
+#   over 95C throttling. Freq is the average clock as a % of the base
+#   clock; well under 100% while busy and hot means it is being throttled.
+# Plimit = how much the CPU's power is being capped; 0.00 = no cap, anything
+# above 0 means it is being slowed to stay cool (an early throttling sign).
+# Prochots = times the CPU hit its heat limit since the last sample.
+# GPU = the discrete GPU, on Macs that have one.
+# If the output is empty, run: sudo powermetrics --samplers smc -n 1
+# and compare the field names with the awk patterns below.
+# Battery temperature (no sudo): ~/mac-care/battery.sh
+#
+# History
+#   2026-10-30  Created.
+#   2026-11-05  Added csv mode for tidy logs (one row per reading).
+#   2026-11-05  Restyled to the Google Shell Style Guide.
+#   2026-11-05  csv is now an option: works alone or with watch, and takes
+#               an output file.
+
+set -u
+
+readonly NUMBER='^[0-9]+([.][0-9]+)?$'
+readonly CSV_HEADER="time,cpu_c,status,gpu_c,fan_rpm,freq_pct,plimit,\
+thermal_level,prochots"
+
+#######################################
+# Print an error message with a timestamp.
+# Arguments:
+#   Message to print.
+# Outputs:
+#   Writes the message to stderr.
+#######################################
+err() {
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
+}
+
+#######################################
+# Print one CPU reading from powermetrics.
+# Arguments:
+#   Output format: "csv" for a CSV row, anything else for a readable line.
+# Outputs:
+#   Writes the reading to stdout, or a message to stderr if there is none.
+# Returns:
+#   1 if powermetrics reported no CPU temperature.
+#######################################
+reading() {
+  local fmt="${1:-}"
+  local now
+  local ts
+  now="$(date +%H:%M:%S)"
+  ts="$(date +%Y-%m-%dT%H:%M:%S)"
+
+  powermetrics --samplers smc,cpu_power -n 1 -i 1000 2>/dev/null \
+    | awk -v now="${now}" -v ts="${ts}" -v fmt="${fmt}" '
+      /CPU die temperature/               { t = $4 }
+      /GPU die temperature/               { g = $4 }
+      /CPU Plimit/                        { pl = $3 }
+      /^Fan:/                             { f = $2 }
+      /CPU Thermal level/                 { l = $4 }
+      /Number of prochots/                { p = $4 }
+      /CPU Average frequency as fraction/ { q = $8 }
+      END {
+        if (t == "") {
+          print "no reading (see header comments)" > "/dev/stderr"
+          exit 1
+        }
+        s = (t > 95) ? "THROTTLING" : (t >= 80) ? "hot" \
+          : (t >= 60) ? "busy" : "normal"
+        if (fmt == "csv") {
+          sub(/%/, "", q)
+          printf "%s,%.1f,%s,%s,%s,%s,%s,%s,%s\n",
+            ts, t, s, g, f, q, pl, l, p
+          exit
+        }
+        printf "%s  CPU %.1fC (%s)  GPU %sC  fan %d rpm  freq %s  ",
+          now, t, s, (g == "" ? "?" : g), f, (q == "" ? "?" : q)
+        printf "plimit %s  thermal level %s  prochots %s\n",
+          (pl == "" ? "?" : pl), (l == "" ? "?" : l), (p == "" ? "?" : p)
+      }'
+}
+
+#######################################
+# Read the arguments into the mode settings.
+# Globals:
+#   WATCH, EVERY, CSV, FILE
+# Arguments:
+#   Any of: watch, a number of seconds, csv, a file path after csv.
+# Returns:
+#   1 if an argument isn't recognized.
+#######################################
+parse_args() {
+  while (( $# > 0 )); do
+    case "$1" in
+      watch)
+        WATCH=true
+        ;;
+      csv)
+        CSV=true
+        if [[ $# -gt 1 && "$2" != "watch" && ! "$2" =~ ${NUMBER} ]]; then
+          FILE="$2"
+          shift
+        fi
+        ;;
+      *)
+        if [[ ! "$1" =~ ${NUMBER} ]]; then
+          err "unknown argument: $1 (see the usage at the top of the script)"
+          return 1
+        fi
+        EVERY="$1"
+        ;;
+    esac
+    shift
+  done
+}
+
+#######################################
+# Write the CSV header if the file is new or empty.
+# Globals:
+#   CSV_HEADER, FILE, SUDO_USER
+# Outputs:
+#   Writes the log location to stdout.
+# Returns:
+#   1 if the file can't be created.
+#######################################
+init_csv() {
+  if ! mkdir -p "$(dirname "${FILE}")"; then
+    err "Unable to create the folder for ${FILE}"
+    return 1
+  fi
+  if [[ ! -s "${FILE}" ]] && ! echo "${CSV_HEADER}" > "${FILE}"; then
+    err "Unable to write ${FILE}"
+    return 1
+  fi
+  if [[ -n "${SUDO_USER:-}" ]] && ! chown "${SUDO_USER}" "${FILE}"; then
+    err "Unable to give ${FILE} back to ${SUDO_USER}"
+  fi
+  echo "logging to ${FILE}"
+}
+
+#######################################
+# Print one reading, and append it to the CSV file in csv mode.
+# Globals:
+#   CSV, FILE
+# Outputs:
+#   Writes the reading to stdout.
+#######################################
+one_reading() {
+  if [[ "${CSV}" == true ]]; then
+    reading csv | tee -a "${FILE}"
+  else
+    reading
+  fi
+}
+
+main() {
+  if [[ "$(id -u)" -ne 0 ]]; then
+    err "run with sudo"
+    exit 1
+  fi
+
+  WATCH=false
+  EVERY="5"
+  CSV=false
+  FILE="${HOME}/mac-care/reports/cpu-temp-$(date +%F).csv"
+  parse_args "$@" || exit 1
+  readonly WATCH EVERY CSV FILE
+
+  if [[ "${CSV}" == true ]]; then
+    init_csv || exit 1
+  fi
+  if [[ "${WATCH}" == true ]]; then
+    while true; do
+      one_reading
+      sleep "${EVERY}"
+    done
+  fi
+
+  one_reading
+  if [[ "${CSV}" == false ]]; then
+    pmset -g therm | awk '/CPU_Speed_Limit/ {
+      print "CPU speed limit: " $3 "% (100 = not throttled)"
+    }'
+    ps -axo %cpu=,comm= | sort -rn | head -3 \
+      | awk '{
+          c = $1
+          $1 = ""
+          n = split($0, a, "/")
+          printf "  %5.1f%% %s\n", c, a[n]
+        }'
+  fi
+}
+
+main "$@"
+```
+
+```{bash}
+#| eval: false
+#| code-fold: false
+#| echo: true
+bash ~/mac-care/battery.sh
+```
+
+::: {style="font-style: italic;"}
+
+```{verbatim}
+07:51:27  30.9C (normal)  74% charge, plugged in, not charging  |  550 cycles, health 82%
+CPU speed limit: 100% (100 = not throttled)
+```
+
+:::
+
+Both scripts also have a `watch` mode that takes a reading every few seconds (every 30 for the battery, every 5 for the CPU). Adding `csv` saves each reading as a row in a CSV file. That lets me plot the readings from a heavy job, like a Quarto render, afterward. The file path goes right after `csv`:
+
+```{bash}
+#| eval: false
+#| code-fold: false
+#| echo: true
+bash ~/mac-care/battery.sh watch 2 csv ~/batt.csv
+```
+
+::: {style="font-style: italic;"}
+
+```{verbatim}
+logging to /Users/mjfrigaard/batt.csv
+2026-11-05T07:39:21,30.8,normal,75,"plugged in, not charging",551,81
+2026-11-05T07:39:23,30.8,normal,75,"plugged in, not charging",551,81
+2026-11-05T07:39:25,30.8,normal,75,"plugged in, not charging",551,81
+```
+
+:::
+
+The header (`time,temp_c,status,charge_pct,power,cycles,health_pct`) is written once, and later runs append to the same file. Without a path, rows go to a dated file in `~/mac-care/reports/`. `cpu-temp.sh` works the same way under `sudo`, and it hands the file back to your user so it isn't owned by root.
+
+I ran both scripts in `watch` mode during a normal stretch of work and imported the two CSV files into R:
+
+```{r}
+#| label: import-clean
+#| code-fold: true
+#| message: false
+#| warning: false
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+batt <- read_csv(here::here("_assets", "battery-2026-11-05.csv"),
+  show_col_types = FALSE)
+cpu <- read_csv(here::here("_assets", "cpu-temp-2026-11-05.csv"),
+  show_col_types = FALSE) |>
+  mutate(minutes = as.numeric(difftime(time, min(time),
+    units = "mins")))
+
+temps <- cpu |>
+  select(minutes, CPU = cpu_c, GPU = gpu_c) |>
+  pivot_longer(-minutes, names_to = "sensor", values_to = "temp_c")
+
+run_min <- round(max(cpu$minutes))
+```
+
+The run lasted `r run_min` minutes total. The battery barely moved (`r min(batt$temp_c)`C to `r max(batt$temp_c)`C), so the plots below leave it out and focus on the CPU.
+
+### Temperature
+
+```{r}
+#| label: heat-temps
+#| code-fold: true
+#| fig-align: center
+#| fig-width: 7
+#| fig-height: 4
+ends <- temps |> slice_max(minutes, by = sensor)
+
+ggplot(temps, aes(minutes, temp_c, color = sensor)) +
+  geom_hline(yintercept = c(80, 95), linetype = "dashed",
+    color = "grey60") +
+  annotate("text", x = c(0, 14.5), y = c(96.5, 78.3),
+    label = c("throttling (95C)", "hot (80C)"), hjust = c(0, 0.5),
+    size = 3.2, color = "grey40") +
+  geom_line(linewidth = 0.6) +
+  geom_text(data = ends, aes(label = sensor), hjust = 0,
+    nudge_x = 0.4, size = 3.8, fontface = "bold") +
+  scale_color_manual(values = c(CPU = "#D55E00", GPU = "#0072B2")) +
+  scale_x_continuous(expand = expansion(mult = c(0.01, 0.08))) +
+  labs(
+    title = "The CPU ran hot and crossed the throttling line once",
+    x = "Minutes", y = "Temperature (C)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    legend.position = "none",
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot"
+  )
+```
+
+The CPU averaged `r round(mean(cpu$cpu_c))`C and spent `r round(100 * mean(cpu$cpu_c >= 80))`% of the run at or above 80C. It peaked at `r max(cpu$cpu_c)`C, and `r sum(cpu$cpu_c > 95)` reading went over 95C. The GPU stayed between `r min(cpu$gpu_c)`C and `r max(cpu$gpu_c)`C.
+
+### Does the fan keep up?
+
+If the fan were chasing the CPU, faster fan speeds would line up with higher temperatures. The scatter plot below shows they don't:
+
+```{r}
+#| label: heat-fan
+#| code-fold: true
+#| fig-align: center
+#| fig-width: 7
+#| fig-height: 4.5
+ggplot(cpu, aes(fan_rpm, cpu_c, color = minutes)) +
+  geom_point(size = 1.8, alpha = 0.7) +
+  scale_color_viridis_c(option = "plasma", end = 0.9,
+    name = "Minutes\ninto run") +
+  scale_x_continuous(labels = scales::label_comma()) +
+  labs(
+    title = "Fan speed followed time, not CPU temperature",
+    x = "Fan speed (rpm)", y = "CPU die temperature (C)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot"
+  )
+```
+
+The early readings (dark points) sit on the right, meaning the fan ran near `r scales::comma(max(cpu$fan_rpm))` rpm while the CPU was around 80C. Later, the fan settled closer to `r scales::comma(round(median(cpu$fan_rpm[cpu$minutes > 10]), -1))` rpm, even as the CPU climbed. **The fan isn't responding to the die temperature from moment to moment.** Its speed moves almost exactly with the `thermal_level` column. We can even check the correlation between fan speed (`fan_rpm`) and thermal level (`thermal_level`): `r round(cor(cpu$fan_rpm, cpu$thermal_level), 3)`
+
+We have to check this against whether the CPU had to slow down, so the last plot shows clock speed:
+
+```{r}
+#| label: heat-clock
+#| code-fold: true
+#| fig-align: center
+#| fig-width: 7
+#| fig-height: 3.5
+ggplot(cpu, aes(minutes, freq_pct)) +
+  geom_hline(yintercept = 100, linetype = "dashed", color = "grey60") +
+  annotate("text", x = 0, y = 102, label = "base clock (2.6GHz)",
+    hjust = 0, size = 3.2, color = "grey40") +
+  geom_line(linewidth = 0.6, color = "#D55E00") +
+  scale_y_continuous(labels = scales::label_percent(scale = 1)) +
+  coord_cartesian(ylim = c(90, NA)) +
+  labs(
+    title = "The clock never dropped below its base speed",
+    x = "Minutes", y = "Clock (% of base)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot"
+  )
+```
+
+So yes, the fan keeps up. The clock stayed between `r round(min(cpu$freq_pct))`% and `r round(max(cpu$freq_pct))`% of base the whole time, the power limit stayed at `r max(cpu$plimit)`, and the CPU never hit its heat limit (`r sum(cpu$prochots)` prochots). But it never had a break: the fan ran between `r scales::comma(round(min(cpu$fan_rpm), -1))` and `r scales::comma(round(max(cpu$fan_rpm), -1))` rpm for the entire run.
+
+These two scripts found my real problem. My 2019 MacBook Pro sat near 79C with almost no load. A connected external display was the likely cause. On this model, any external display keeps the discrete GPU running, and the GPU shares heat pipes with the CPU. The test is simple: unplug the display, charge from the right side, wait 10 minutes, and read again.
+
+## Recap
+
+This post covers eight short scripts that provide maintenance checks on an older MacBook. Each one reports first and only changes something when it's passed a `mode` argument. For reference, my first run freed about 700MB, told me my firewall was off, and pointed to heat as the slowdown.
+
+Here's how often I run each script now:
+
+| When | Run |
+|---|---|
+| The Mac feels slow, or under 30GB free | `clean-disk.sh` and `memory.sh` |
+| Monthly | `malware-check.sh` and `maintenance.sh` |
+| As needed | `dupes.sh`, `leftovers.sh`, and the heat scripts |
+
+* [Apple: Mac security features](https://support.apple.com/guide/security/welcome/web)
+* [iFixit: MacBook Pro 16-inch 2019](https://www.ifixit.com/Device/MacBook_Pro_16%22_2019)
+* [Objective-See KnockKnock](https://objective-see.org/products/knockknock.html)
