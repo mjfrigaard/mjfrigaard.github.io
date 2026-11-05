@@ -1,6 +1,6 @@
 ---
-title: "The Daily Dose"
-subtitle: "Turning an old workout log into a Shiny for Python app"
+title: "Turning 1,001 workouts into a Shiny app"
+subtitle: "processing text and image data with Python"
 author: "Martin Frigaard"
 date: "2026-08-05"
 categories: [Python, Shiny]
@@ -19,8 +19,6 @@ toc-location: right
 #| include: false
 source("../_common.R")
 ```
-
-<br>
 
 I started storing my daily workouts on GitHub in 2020, and continued until about 2024. I logged almost every workout I did (1,001 total). In this post I'll cover how that log became [`daily-dose`](https://github.com/mjfrigaard/daily-dose), a small Shiny for Python app. We'll walk through the app's history, its architecture, and some design choices I made to keep it small.
 
