@@ -105,6 +105,14 @@ As I mentioned above, the workouts were stored as markdown text and images. Belo
 
 I could've have kept the markdown entries and photos in two collections, but I decided every workout would just be one record with a `date` and a `kind` (`"text"` or `"image"`). Both core functions work on a flat list without caring what the record holds. Only `workout_card()` checks `kind`, because only the card has to draw it.
 
+::: {layout-ncol=2}
+
+![A photo workout (2020-04-17)](photo-workout.png){fig-alt="The app showing a whiteboard photo of an EMOM workout dated 2020-04-17"}
+
+![A markdown workout (2022-02-10)](text-workout.png){fig-alt="The app showing a typed workout dated 2022-02-10 with a checked box and a list of exercises"}
+
+:::
+
 ### Text wins on shared dates
 
 Some of the 2020 workouts had *both* a photo *and* a typed entry for the same session (don't ask me how). Keeping both would show one workout twice under **On This Day**. It would also give those dates double the odds in a random pick. I decided to preferentially write the build script to keep the typed entry, since these usually recorded the sets and reps (and the photo didn't).
