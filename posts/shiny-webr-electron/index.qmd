@@ -4,7 +4,7 @@ subtitle: "New `webR` and `shinyelectron` chapters in Shiny App-Packages"
 author: "Martin Frigaard"
 date: "2026-10-15"
 categories: [Shiny, webR, Deployment]
-draft: true
+draft: false
 toc: true
 toc-depth: 3
 toc-title: 'Contents'
@@ -19,11 +19,16 @@ toc-location: right
 source("../_common.R")
 ```
 
-I've added two chapters to [Shiny App-Packages](https://mjfrigaard.github.io/shiny-app-pkgs/) that cover deployments without a server running R. The [webR chapter](https://mjfrigaard.github.io/shiny-app-pkgs/webr.html) runs the app in the user's browser, and the [shinyelectron chapter](https://mjfrigaard.github.io/shiny-app-pkgs/shinyelectron.html) packages it as a desktop installer. In this post I'll cover what each chapter does with `sap` (the book's app-package), and the problems I ran into along the way.
+I've finally added [`webR`](https://docs.r-wasm.org/webr/latest/) and [`shinyelectron`](https://r-pkg.thecoatlessprofessor.com/shinyelectron/) chapters to my [Shiny App-Packages](https://mjfrigaard.github.io/shiny-app-pkgs/) text (under the [Deploy section](https://mjfrigaard.github.io/shiny-app-pkgs/deploy.html)). 
 
-## Three places to run an app
+* [webR chapter](https://mjfrigaard.github.io/shiny-app-pkgs/webr.html) runs the app in the user's browser
+* [shinyelectron chapter](https://mjfrigaard.github.io/shiny-app-pkgs/shinyelectron.html) packages it as a desktop installer
 
-Every deployment in the earlier chapters (Connect Cloud, Docker, GitHub Actions) needs a server. The new chapters move R onto the user's computer.
+In this post I'll cover what each chapter does with `sap` (the book's app-package), and a few of the problems I encountered along the way.
+
+## Where does the app run?
+
+Every deployment in the earlier book chapters (Connect Cloud, Docker, GitHub Actions) needs a server. These two chapters move R (and the app) onto the user's computer.
 
 The diagram below shows where R runs in each case:
 
@@ -61,22 +66,22 @@ flowchart TD
     style EL fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
 ```
 
-The two chapters build on each other. The desktop chapter reuses the launcher from the browser chapter, and its Linux build depends on the `WebAssembly` binary we set up for the browser.
+The chapters build on each other: The `shinyelectron` desktop chapter reuses the launcher from the `webR` browser chapter, and the Linux build depends on the `WebAssembly` binary we set up for the browser.
 
-## webR: the app in a browser tab
+## `webR`: the app in a browser tab
 
 [`webR`](https://docs.r-wasm.org/webr/latest/) is R compiled to [WebAssembly](https://webassembly.org/), a binary format that modern browsers run at near native speed. [`shinylive`](https://posit-dev.github.io/r-shinylive/) bundles a Shiny app, `webR`, and the app's packages into a folder of static files. A static file host is just a web server that hands out files without running any code. GitHub Pages or Netlify can serve the app.
 
 After the first download, every click stays in the browser.
 
-### What the browser can't do
+### What the browser doesnt't do
 
-The browser takes on the server's job, and it can't do all of it. I've found these trade-offs matter most:
+The browser takes on the server's job, but it can't do *all* of it. In my opinion, these trade-offs matter most:
 
-* First load: the browser downloads `webR` and every package before the app appears.
-* Visible code: all the code and data go to the browser, so never include credentials.
-* No system tools or downloads: `system()` calls fail, and `sass::font_google()` needs `local = FALSE`.
-* Temporary files: logs disappear when the tab closes.
+* The first time the app loads, the browser downloads `webR` and every package before the app appears.
+* All the code and data go to the browser, so never include credentials.
+* You can't call on system tools or downloads (i.e., `system()` calls fail, `sass::font_google()` needs `local = FALSE`)  
+* Temporary files like logs will disappear when the tab closes  
 
 ### Every package needs a binary
 
@@ -128,7 +133,7 @@ shinyApp(
 )
 ```
 
-The launcher returns a Shiny app object instead of calling `launch_app()`. `launch_app()` calls `shiny::runApp()`, which starts a server and blocks the R session. The `library(sap)` call does a second job: `shinylive` scans `app.R` for `library()` calls to decide which binaries to bundle.
+The launcher returns a Shiny app object instead of calling the standalone app function (`launch_app()`). We use `shinyApp()` in `inst/webr/app.R` because `shiny::runApp()` starts a server and blocks the R session. The `library(sap)` call above is also important because `shinylive` scans `app.R` for `library()` calls to decide which binaries to bundle.
 
 Exporting and previewing take two lines:
 
@@ -141,7 +146,7 @@ httpuv::runStaticServer("_site")
 
 Opening `_site/index.html` directly won't work, because `webR` needs its files served over HTTP.
 
-## shinyelectron: the app as a desktop program
+## `shinyelectron`: the app as a desktop program
 
 Some users need the app as a program they install. They might work offline, or their organization might block unknown websites. [Electron](https://www.electronjs.org/) is a framework for desktop programs built with web technologies; an Electron app is just a web browser with a single page. [`shinyelectron`](https://r-pkg.thecoatlessprofessor.com/shinyelectron/) wraps a Shiny app in Electron, so the user never sees a browser or a URL.
 
@@ -193,9 +198,9 @@ For Windows, a GitHub Actions matrix runs [`shiny-to-electron`](https://github.c
 
 ### Building the `.deb`
 
-The Linux build took the most work. I use Pop!_OS, and `shinyelectron` only builds an `.AppImage` on Linux. `bundled` isn't an option either, because there's no portable R for Linux.
+The Linux build took the most work. I use Pop!_OS (an Ubuntu-flavored Linux distro), and `shinyelectron` will only build an `.AppImage` on Linux. `bundled` isn't an option either, because there's no portable R for Linux.
 
-The fix combines both chapters. The `shinylive` strategy runs `sap` with `webR` inside the Electron window, which uses the R-universe binary from the webR chapter. `export()` builds the `.AppImage` and leaves an Electron project behind. The build script then edits that project's `package.json` and rebuilds it with `electron-builder`:
+I found a fix by combining both chapters: The `shinylive` strategy runs `sap` with `webR` inside the Electron window, which uses the R-universe binary from the `webR` chapter. `export()` builds the `.AppImage` and leaves an Electron project behind. The build script then edits that project's `package.json` and rebuilds it with `electron-builder`:
 
 ```{mermaid}
 %%| fig-width: 6
@@ -243,7 +248,7 @@ After `sudo dpkg -i`, the 183 MB `.deb` adds **Movie Reviews** to the Applicatio
 
 The two chapters take `sap` off the server. `webR` and `shinylive` run it in the browser, with a slower first load and code that every user can see. `shinyelectron` turns it into an installer, with `bundled` R on macOS and Windows and `webR` on Linux. Both start from the same launcher `app.R`, and neither changes the package itself.
 
-* [webR chapter](https://mjfrigaard.github.io/shiny-app-pkgs/webr.html)
-* [shinyelectron chapter](https://mjfrigaard.github.io/shiny-app-pkgs/shinyelectron.html)
+* [`webR` chapter](https://mjfrigaard.github.io/shiny-app-pkgs/webr.html)
+* [`shinyelectron` chapter](https://mjfrigaard.github.io/shiny-app-pkgs/shinyelectron.html)
 * [`sap` repo](https://github.com/mjfrigaard/sap) (branches `22_webr`, `23.1_shinyelectron`, `23.2_shinyelectron-dmg`, and `23.3_shinyelectron-deb`)
 * [`shinyelectron` docs](https://r-pkg.thecoatlessprofessor.com/shinyelectron/)
