@@ -75,13 +75,13 @@ The chapters build on each other: The `shinyelectron` desktop chapter reuses the
 
 After the first download, every click stays in the browser.
 
-### What the browser doesnt't do
+### What the browser doesn't do
 
 The browser takes on the server's job, but it can't do *all* of it. In my opinion, these trade-offs matter most:
 
 * The first time the app loads, the browser downloads `webR` and every package before the app appears.
 * All the code and data go to the browser, so never include credentials.
-* You can't call on system tools or downloads (i.e., `system()` calls fail, `sass::font_google()` needs `local = FALSE`)  
+* You can't call on system tools or downloads (e.g., `system()` calls fail, `sass::font_google()` needs `local = FALSE`)  
 * Temporary files like logs will disappear when the tab closes  
 
 ### Every package needs a binary
@@ -212,7 +212,7 @@ flowchart TD
     Export("<code>export()</code> converts the app<br>to shinylive and builds Electron")
     AppImage[/".AppImage"/]
     Project[("<code>electron-app/</code><br>Electron project")]
-    Edit("Add the <code>deb</code> target,<br>homepage, and maintainer")
+    Edit("Add the <code>deb</code> target,<br>homepage, maintainer,<br>and description")
     Builder("<code>electron-builder</code><br>packages the project")
     Deb[/".deb"/]
 
@@ -229,7 +229,7 @@ flowchart TD
     style Builder fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
 ```
 
-The edit adds three fields, because `electron-builder` refuses to build a `.deb` without a homepage and a maintainer:
+The edit adds four fields. `electron-builder` refuses to build a `.deb` without a homepage and a maintainer, and without a description the package manager lists the app as "sap - Shiny Electron App":
 
 ```{r}
 #| eval: false
@@ -238,12 +238,44 @@ pkg <- jsonlite::read_json(pkg_json)
 pkg$homepage <- "https://github.com/mjfrigaard/sap"
 pkg$build$linux$target <- list("AppImage", "deb")
 pkg$build$linux$maintainer <- "Martin Frigaard <mjfrigaard@pm.me>"
+pkg$description <- "Movie Reviews: the Shiny App-Packages example app"
 jsonlite::write_json(pkg, pkg_json, auto_unbox = TRUE, pretty = TRUE)
 ```
 
 Pop!_OS ships Node.js 18, which is too old. `install_nodejs()` installs a newer version, and `withr::with_path()` puts it ahead of the system version before calling `electron-builder`.
 
-After `sudo dpkg -i`, the 183 MB `.deb` adds **Movie Reviews** to the Applications launcher.
+The result is a 175 MB `.deb`. I install it with `apt` instead of `dpkg -i`, because `apt` also installs any missing system libraries the package depends on:
+
+```{bash}
+#| eval: false
+#| code-fold: false
+#| echo: true
+sudo apt install ./<app>.deb
+```
+
+The install adds **Movie Reviews** to the Applications launcher, a command in `/usr/bin`, and an AppArmor profile. Ubuntu-based systems restrict the user namespaces Electron's sandbox needs, and the profile is what lets the app start without `--no-sandbox`.
+
+```{r}
+#| label: co_box_deb_remove
+#| echo: false
+#| results: asis
+#| eval: true
+co_box(
+  color = "b",
+  header = "Removing the app",
+  contents = "`sudo apt remove` deletes the app, but not its settings and cache. Electron keeps those in a folder named after the package (`sap`, not **Movie Reviews**) under `~/.config/` on Linux, `~/Library/Application Support/` on macOS, and `%APPDATA%` on Windows.")
+```
+
+### Testing installers without the hardware
+
+I only have a Linux machine, so I can't open the `.dmg` or `.exe` myself. GitHub's macOS and Windows runners can, though. I added a smoke test workflow to [`shypermaid`](https://github.com/mjfrigaard/shypermaid) (a Shiny for Python app built with the same `shinyelectron` setup) that downloads the release installers, installs them, and drives the app:
+
+1. Install the app (`hdiutil attach` and copy to `/Applications` on macOS, the installer's silent `/S` flag on Windows).
+2. Launch it with `--remote-debugging-port=9333`, which exposes the Electron window the same way Chrome exposes a tab.
+3. Connect a browser automation tool to that port, render a diagram, and check the result.
+4. Confirm the settings folder exists where the docs say it does.
+
+The runners also confirmed the settings paths in the callout above. They can't replace a real machine, however: runners skip the Gatekeeper and SmartScreen warnings an unsigned app shows on first launch.
 
 ## Recap
 
@@ -253,3 +285,4 @@ The two chapters take `sap` off the server. `webR` and `shinylive` run it in the
 * [`shinyelectron` chapter](https://mjfrigaard.github.io/shiny-app-pkgs/shinyelectron.html)
 * [`sap` repo](https://github.com/mjfrigaard/sap) (branches `22_webr`, `23.1_shinyelectron`, `23.2_shinyelectron-dmg`, and `23.3_shinyelectron-deb`)
 * [`shinyelectron` docs](https://r-pkg.thecoatlessprofessor.com/shinyelectron/)
+* [`shypermaid` repo](https://github.com/mjfrigaard/shypermaid) (`.github/workflows/smoke-installers.yml` for the installer smoke test)
