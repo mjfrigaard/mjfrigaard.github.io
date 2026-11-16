@@ -1,5 +1,7 @@
 project:
   type: website
+  resources:
+    - resume/mjfrigaard-resume.pdf
   
 website:
   title: 'mjfrigaard'
@@ -37,6 +39,8 @@ website:
         file: series.qmd
       - text: "Code"
         file: code.qmd
+      - text: "Résumé/CV"
+        file: resume.qmd
 
 execute:
   freeze: auto
