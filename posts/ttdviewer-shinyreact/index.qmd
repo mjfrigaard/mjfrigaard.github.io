@@ -1,9 +1,10 @@
 ---
-title: "From bslib to shinyreact"
-subtitle: "Converting the `ttdviewer` app-package to a React client"
+title: "Converting to `shinyreact`"
+subtitle: "Converting a Shiny app-package to a React client"
 author: "Martin Frigaard"
 date: "2026-11-15"
 categories: [Shiny, React, Packages]
+image: "image.png"
 draft: false
 toc: true
 toc-depth: 3
@@ -19,7 +20,9 @@ toc-location: right
 source("../_common.R")
 ```
 
-[`ttdviewer`](https://mjfrigaard.github.io/ttdviewer/) is a Shiny app-package for browsing #TidyTuesday datasets. Users pick a dataset title, view the files in List, Summary, and Graphs tabs, and download the data as CSV, parquet, or in its original format. The UI was built with `bslib` (`page_sidebar()`, `sidebar()`, and `navset_tab()`).
+I saw the Posit's blog post anouncing the new `shinyreact` package and was curious what all the excitement was about. I've worked on a few [Next.js](https://nextjs.org/) apps, but couldn't really wrap my head around how Shiny + [React](https://react.dev/) R package would work.
+
+I built a Shiny app-package for browsing #TidyTuesday datasets: [`ttdviewer`](https://mjfrigaard.github.io/ttdviewer/). I can pick a dataset title, view the files in List, Summary, and Graphs (from [`inspectdf`](https://alastairrushworth.com/inspectdf/)). I can also download each dataset as a CSV, `parquet`, or in its original format. I originally built app with `bslib` (`page_sidebar()`, `sidebar()`, and `navset_tab()`).
 
 In this post I'll cover converting the UI to [`shinyreact`](https://posit-dev.github.io/shinyreact/), the parts of the conversion the documentation doesn't cover, and the few surprises I hit along the way.
 
@@ -27,7 +30,7 @@ In this post I'll cover converting the UI to [`shinyreact`](https://posit-dev.gi
 
 `shinyreact` moves the UI out of R. The server still holds the reactive graph (`input`, `reactive()`, `req()`, and `bindEvent()` all behave as usual), but the page is a React client we write ourselves. The package supplies the plumbing between the two and no UI components.
 
-The R package is version 0.1.0, the documentation calls it pre-release, and it's not on CRAN:
+`shinyreact` is pretty new (version 0.1.0), and the documentation calls it a pre-release, so it's not on CRAN:
 
 ```{r}
 #| eval: false
@@ -205,14 +208,8 @@ The namespace strings on the client have to match the module ids in `app_server(
 %%| fig-width: 6
 %%| fig-align: 'center'
 %%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":false}}}%%
+
 flowchart LR
-    subgraph Srv["<strong>app_server()</strong>"]
-        MI[["<code>mod_input_server('input')</code>"]]
-        MD[["<code>mod_download_server('download')</code>"]]
-        ML[["<code>mod_list_server('listviewerlite')</code>"]]
-        MS[["<code>mod_summary_server('summary')</code>"]]
-        MP[["<code>mod_plot_server('viz')</code>"]]
-    end
     subgraph Cli["<strong>ui.tsx</strong>"]
         CI("<code>TitleInput</code>")
         CD("<code>Download</code>")
@@ -220,11 +217,18 @@ flowchart LR
         CS("<code>SummaryTab</code>")
         CP("<code>GraphsTab</code>")
     end
-    MI <-.->|"input"| CI
-    MD <-.->|"download"| CD
-    ML <-.->|"listviewerlite"| CL
-    MS <-.->|"summary"| CS
-    MP <-.->|"viz"| CP
+    subgraph Srv["<strong>app_server()</strong>"]
+        MI[["<code>mod_input_server('input')</code>"]]
+        MD[["<code>mod_download_server('download')</code>"]]
+        ML[["<code>mod_list_server('listviewerlite')</code>"]]
+        MS[["<code>mod_summary_server('summary')</code>"]]
+        MP[["<code>mod_plot_server('viz')</code>"]]
+    end
+    CI <-.->|"input"| MI
+    CD <-.->|"download"| MD
+    CL <-.->|"listviewerlite"| ML
+    CS <-.->|"summary"| MS
+    CP <-.->|"viz"| MP
 
     style Srv fill:#FFFFFF,color:#000000,stroke:#333,stroke-width:1px,rx:10,ry:10
     style Cli fill:#FFFFFF,color:#000000,stroke:#333,stroke-width:1px,rx:10,ry:10
