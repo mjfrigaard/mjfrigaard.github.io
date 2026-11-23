@@ -20,15 +20,15 @@ toc-location: right
 source("../_common.R")
 ```
 
-I saw the Posit's blog post anouncing the new `shinyreact` package and was curious what all the excitement was about. I've worked on a few [Next.js](https://nextjs.org/) apps, but couldn't really wrap my head around how Shiny + [React](https://react.dev/) R package would work.
+I saw the [Posit's blog post](https://opensource.posit.co/blog/2026-09-30_introducing-shinyreact/) anouncing the `shinyreact` package and was curious what all the excitement was about. I've worked on a few [Next.js](https://nextjs.org/) apps, but couldn't really wrap my head around how Shiny + [React](https://react.dev/) R package would work.
 
-I built a Shiny app-package for browsing #TidyTuesday datasets: [`ttdviewer`](https://mjfrigaard.github.io/ttdviewer/). I can pick a dataset title, view the files in List, Summary, and Graphs (from [`inspectdf`](https://alastairrushworth.com/inspectdf/)). I can also download each dataset as a CSV, `parquet`, or in its original format. I originally built app with `bslib` (`page_sidebar()`, `sidebar()`, and `navset_tab()`).
+I recently built a Shiny app-package for browsing [#TidyTuesday](https://github.com/rfordatascience/tidytuesday) datasets: [`ttdviewer`](https://mjfrigaard.github.io/ttdviewer/). I designed the UI so I could pick a dataset title, view the files in List, Summary, and Graphs (from [`inspectdf`](https://alastairrushworth.com/inspectdf/)). I can also download each dataset as a CSV, `parquet`, or in its original format. 
 
-In this post I'll cover converting the UI to [`shinyreact`](https://posit-dev.github.io/shinyreact/), the parts of the conversion the documentation doesn't cover, and the few surprises I hit along the way.
+`ttdviewer` uses `bslib` (`page_sidebar()`, `sidebar()`, and `navset_tab()`). In this post I'll cover converting the UI to [`shinyreact`](https://posit-dev.github.io/shinyreact/), the parts of the conversion the documentation doesn't cover, and the few surprises I hit along the way.
 
 ## What is `shinyreact`?
 
-`shinyreact` moves the UI out of R. The server still holds the reactive graph (`input`, `reactive()`, `req()`, and `bindEvent()` all behave as usual), but the page is a React client we write ourselves. The package supplies the plumbing between the two and no UI components.
+`shinyreact` moves the UI *out* of R. The server still holds the reactive graph (`input`, `reactive()`, `req()`, and `bindEvent()` all behave as usual), but the page is a React client we write ourselves. The package supplies the plumbing between the two and no UI components.
 
 `shinyreact` is pretty new (version 0.1.0), and the documentation calls it a pre-release, so it's not on CRAN:
 
@@ -154,6 +154,30 @@ app_ui <- function() {
 `bs_theme(version = 5)` keeps Bootstrap on the page, so the React components can use the same classes (`form-select`, `nav-tabs`, `card`) the `bslib` UI used.
 
 ## The conversion
+
+The conversion lives on its own branch, so `main` keeps the `bslib` app. The spike was built outside the repo, so the branch starts with the full conversion in one commit (`0dbf03e`). The graph below shows how the two branches relate:
+
+```{mermaid}
+%%| fig-width: 6
+%%| fig-align: 'center'
+%%{init: {'theme': 'base', 'gitGraph': {'mainBranchName': 'main', 'showCommitLabel': true, 'rotateCommitLabel': false}, 'themeVariables': { 'fontFamily': 'monospace', "darkMode":false, 'git0': '#4CBB9D', 'git1': '#E83E8C', 'gitBranchLabel0': '#FFFFFF', 'gitBranchLabel1': '#FFFFFF', 'commitLabelFontSize': '12px'}}}%%
+
+gitGraph LR:
+    commit id: "91bc354: zip support, 2026 data"
+    commit id: "d3f3d7b: report and tables"
+    commit id: "ab7a2e3: TidyTuesday date"
+    commit id: "7202318: data vignette"
+    branch shinyreact
+    checkout shinyreact
+    commit id: "0dbf03e: convert UI to shinyreact" type: HIGHLIGHT
+    commit id: "796b3b7: conversion vignette"
+    checkout main
+    commit id: "c03fa33: tab order (bslib)"
+    checkout shinyreact
+    commit id: "5f4a1df: tab order (React)"
+```
+
+The branches don't share UI code anymore, so a UI change has to be made twice. Reordering the tabs (Summary, Graphs, List) took one commit on `main` (`R/app_ui.R`) and another on `shinyreact` (`js/src/ui.tsx`, then a rebuilt `inst/www/ui.js`).
 
 ### The client
 
