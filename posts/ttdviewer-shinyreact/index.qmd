@@ -20,15 +20,62 @@ toc-location: right
 source("../_common.R")
 ```
 
-I saw the [Posit's blog post](https://opensource.posit.co/blog/2026-09-30_introducing-shinyreact/) anouncing the `shinyreact` package and was curious what all the excitement was about. I've worked on a few [Next.js](https://nextjs.org/) apps, but couldn't really wrap my head around how Shiny + [React](https://react.dev/) R package would work.
+I got pretty excited when I saw Posit's [blog post](https://opensource.posit.co/blog/2026-09-30_introducing-shinyreact/) announcing the `shinyreact` package. I've worked on a few [Next.js](https://nextjs.org/) apps, but couldn't really wrap my head around how a Shiny and [React](https://react.dev/) R package would work.
 
-I recently built a Shiny app-package for browsing [#TidyTuesday](https://github.com/rfordatascience/tidytuesday) datasets: [`ttdviewer`](https://mjfrigaard.github.io/ttdviewer/). I designed the UI so I could pick a dataset title, view the files in List, Summary, and Graphs (from [`inspectdf`](https://alastairrushworth.com/inspectdf/)). I can also download each dataset as a CSV, `parquet`, or in its original format. 
+I recently built a Shiny app-package for browsing [#TidyTuesday](https://github.com/rfordatascience/tidytuesday) datasets: `ttdviewer`. I designed the UI so I could pick a dataset title, view the files in List, Summary, and Graphs (from [`inspectdf`](https://alastairrushworth.com/inspectdf/)). I can also download one file or all of a dataset's files as CSV or `parquet`. You can view the documentation and code for `ttdviewer` on its [site](https://mjfrigaard.github.io/ttdviewer/). 
 
 `ttdviewer` uses `bslib` (`page_sidebar()`, `sidebar()`, and `navset_tab()`). In this post I'll cover converting the UI to [`shinyreact`](https://posit-dev.github.io/shinyreact/), the parts of the conversion the documentation doesn't cover, and the few surprises I hit along the way.
 
 ## What is `shinyreact`?
 
-`shinyreact` moves the UI *out* of R. The server still holds the reactive graph (`input`, `reactive()`, `req()`, and `bindEvent()` all behave as usual), but the page is a React client we write ourselves. The package supplies the plumbing between the two and no UI components.
+`shinyreact` moves the UI *out* of R. The server still holds the reactive graph (`input`, `reactive()`, `req()`, and `bindEvent()` all behave as usual), but the page is a React client we write ourselves. 
+
+The diagram below gives a broad overview of how React works and how `shinyreact` supplies the plumbing between the React UI and the reactive server:
+
+```{mermaid}
+%%| fig-width: 8
+%%| fig-align: 'center'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', 'darkMode':false}}}%%
+
+flowchart TD
+    subgraph SR["<strong>shinyreact</strong>"]
+        User(["User"])
+        UI("Browser: React components<br>(<code>ui.js</code>, written in TSX)")
+        JS[["Browser: <code>shinyreact.js</code><br>hooks and React"]]
+        RG("R server: reactive graph<br><code>input</code>, <code>reactive()</code>, outputs")
+        User -->|"i. clicks and selects"| UI
+        UI <-->|"ii. hooks"| JS
+        JS <-->|"iii. Shiny websocket"| RG
+    end
+    subgraph React["<strong>React</strong>"]
+        Event(["User event:<br>click or typing"])
+        Set("State setter called<br>(<code>useState()</code>)")
+        Rerun("React re-runs the<br>component functions")
+        JSX("New UI description<br>from JSX")
+        Diff{"What changed<br>since the last render?"}
+        Page("Only those changes<br>applied to the page")
+        Event -->|"i. handler<br>updates state"| Set
+        Set -->|"ii. schedules<br>a re-render"| Rerun
+        Rerun -->|"iii. components<br>return markup"| JSX
+        JSX -->|"iv. compared with<br>the previous output"| Diff
+        Diff -->|"v. updates<br>the DOM"| Page
+        Page -.->|"next event"| Event
+    end
+
+    style React fill:#FFFFFF,color:#000000,stroke:#333,stroke-width:1px,rx:10,ry:10
+    style SR fill:#FFFFFF,color:#000000,stroke:#333,stroke-width:1px,rx:10,ry:10
+    style Event fill:#FFFFFF,color:#000000,stroke:#333
+    style Set fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Rerun fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style JSX fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Diff fill:#4CBB9D,color:#FFFFFF
+    style Page fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style User fill:#FFFFFF,color:#000000,stroke:#333
+    style UI fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style JS fill:#4CBB9D,color:#FFFFFF
+    style RG fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+```
+
 
 `shinyreact` is pretty new (version 0.1.0), and the documentation calls it a pre-release, so it's not on CRAN:
 
@@ -38,7 +85,7 @@ I recently built a Shiny app-package for browsing [#TidyTuesday](https://github.
 pak::pak("posit-dev/shinyreact/pkg-r")
 ```
 
-The R side is small. `page_react()` replaces the UI function and serves a `ui.js` (and `ui.css`) from `src_dir`, and `reactive_output()` sends any R value to the client as JSON:
+The R side is small. The package exports seven functions, and `ttdviewer` only uses two of them (`page_react()` and `reactive_output()`):
 
 ```{r}
 #| eval: false
@@ -48,6 +95,16 @@ ls("package:shinyreact")
 #> [5] "reactive_output" "send_message"    "wire_tap"
 ```
 
+1. `page_react()` replaces the UI function and serves a `ui.js` (and `ui.css`) from `src_dir`. The server sends no body HTML, so the client creates its own mount point. The other `page_*` functions cover setups `page_react()` doesn't:    
+    * `page_react_html()`: serves a complete `index.html` (the kind a Vite build writes) and injects the Shiny dependencies into it.   
+    * `page_react_dep()`: builds the `htmltools::htmlDependency()` for a bundle. `page_react()` calls it for us.    
+    * `page_bare()`: a bare page with jQuery and Shiny (and no Bootstrap unless we pass a `theme`).   
+2. `reactive_output()` sends any R value to the client as JSON. The client reads it with `useShinyOutputValue()`.   
+3. `send_message()` pushes a custom message from the server to a React component, which receives it with `useShinyMessageHandler()`. The message id is namespaced like an input or output id, so it works inside modules.   
+4. `wire_tap()` is for testing. It reads the JSON that crossed the Shiny websocket during a `shinytest2` run, so tests can check what the server actually sent to the client.
+
+### Client hooks
+
 On the client, the hooks on `window.shinyreact` read and write Shiny values: `useShinyInput()` sets `input[[id]]`, `useShinyOutputValue()` reads a `reactive_output()`, and `ShinyOutput` and `ImageOutput` host classic Shiny outputs inside React. `ShinyModuleProvider` namespaces the hook ids, so Shiny modules still work.
 
 The diagram below shows how values move between the two sides:
@@ -55,7 +112,7 @@ The diagram below shows how values move between the two sides:
 ```{mermaid}
 %%| fig-width: 6
 %%| fig-align: 'center'
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', "darkMode":false}}}%%
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', 'darkMode':false}}}%%
 flowchart LR
     subgraph Srv["<strong>R server</strong>"]
         RO[["<code>reactive_output()</code>"]]
@@ -66,7 +123,7 @@ flowchart LR
         SO("<code>ShinyOutput</code><br><code>ImageOutput</code>")
         SI("<code>useShinyInput()</code>")
     end
-    subgraph Inp["<strong>R server</strong>"]
+    subgraph Inp["<strong>R server (inputs)</strong>"]
         IN[/"<code>input$ds_title</code>"/]
     end
     RO -->|"i. JSON value"| OV
@@ -86,11 +143,142 @@ flowchart LR
 
 ## Spike first
 
-The documentation only shows R examples for `plotly` and `reactable`. It doesn't mention `listviewerlite`, `renderPlot()`, `downloadHandler()`, or serving the client from an installed R package. Those are four of the app's five outputs, so before touching the package I built a small prototype (a spike) to test each one with Netflix Titles (one file) and Space Launches (two files).
+Before touching the package, I asked Claude to build a spike (small prototype) to test each output with the Netflix Titles data (one file) and Space Launches data (two files).
 
-All four worked.
+### The prompt
 
-### Lists
+The `shinyreact` documentation only shows R examples for `plotly` and `reactable`. `ttdviewer` also uses `listviewerlite`, `renderPlot()`, and `downloadHandler()`, and the client has to be served from an installed package. The prompt asked the spike to answer those questions and nothing else:
+
+```{verbatim}
+Before we convert ttdviewer to shinyreact, build a throwaway spike outside
+the repo. Use shinyreact 0.1.0 from GitHub and the no build pattern
+(page_react() serving www/ui.js). Load ttdviewer with load_all() and test
+the outputs the shinyreact docs don't cover:
+
+1. listviewerlite::listview() through renderUI()
+2. inspect_plot() through renderPlot()
+3. downloadHandler() for CSV and zip downloads
+4. reactable (documented, but confirm it works with our data)
+
+Use Netflix Titles (one file) and Space Launches (two files). Then check
+that page_react() can serve the client from an installed package
+(inst/www/). Report what works, what breaks, and why.
+```
+
+### The structure
+
+The spike is just two files. There's no build step: `page_react()` finds `www/ui.js`, and the client uses `React.createElement()` (aliased as `h()`) instead of JSX.
+
+::: {style="font-style: italic;"}
+
+```{verbatim}
+spike
+├── app.R
+└── www
+    └── ui.js
+
+2 directories, 2 files
+```
+
+:::
+
+`app.R` loads `ttdviewer` with `load_all()` and defines one output for each question in the prompt:
+
+```{r}
+#| eval: false
+#| code-fold: true
+#| code-summary: 'show/hide app.R'
+library(shiny)
+library(shinyreact)
+pkgload::load_all("~/projects/apps/R/ttdviewer", quiet = TRUE)
+
+ui <- page_react(theme = bslib::bs_theme(version = 5))
+
+server <- function(input, output, session) {
+  data <- reactive({
+    req(input$title)
+    load_tt_data(input$title)
+  })
+
+  # i. plain values for the client
+  output$titles <- reactive_output(sort(unique(all_tt_combined$title)))
+
+  output$files <- reactive_output({
+    if (is.null(input$title)) return(NULL)
+    d <- data()
+    list(names = names(d), date = format(attr(d[[1]], "date")))
+  })
+
+  # ii. listviewerlite (HTML)
+  output$list <- renderUI({
+    req(data())
+    listviewerlite::listview(data())
+  })
+
+  # iii. reactable (htmlwidget)
+  output$table <- reactable::renderReactable({
+    req(data())
+    reactable::reactable(utils::head(data()[[1]], 1000), searchable = TRUE)
+  })
+
+  # iv. inspect_plot() ggplot
+  output$plt_types <- renderPlot({
+    req(data())
+    inspect_plot(data()[1], plots = "types")
+  })
+
+  # v. download
+  output$download <- downloadHandler(
+    filename = function() tt_download_filename(data(), input$format, input$title),
+    content = function(file) write_tt_download(data(), input$format, file)
+  )
+}
+
+shinyApp(ui, server)
+```
+
+`ui.js` reads the plain values with `useShinyOutputValue()`, sends the title and format back with `useShinyInput()`, and hosts the classic outputs in `ShinyOutput` and `ImageOutput`:
+
+```{verbatim}
+const {
+  React, ReactDOM, useShinyInput, useShinyOutputValue, ShinyOutput, ImageOutput,
+} = window.shinyreact;
+const h = React.createElement;
+
+function App() {
+  const titles = useShinyOutputValue("titles", []);
+  const files = useShinyOutputValue("files", null);
+  const [title, setTitle] = useShinyInput("title", "Netflix Titles");
+  const [format, setFormat] = useShinyInput("format", "csv");
+
+  return h("div", { className: "container py-3" },
+    h("select", { id: "title", className: "form-select mb-2", value: title,
+      onChange: (e) => setTitle(e.target.value) },
+      titles.map((t) => h("option", { key: t, value: t }, t))),
+    files && h("p", { id: "files" }, "Files: ", files.names.join(", "), " | TidyTuesday date: ", files.date),
+    h("select", { className: "form-select mb-2", value: format,
+      onChange: (e) => setFormat(e.target.value) },
+      ["csv", "parquet", "original"].map((f) => h("option", { key: f, value: f }, f))),
+    h(ShinyOutput, { id: "download", tagName: "a", className: "btn btn-primary shiny-download-link",
+      href: "", target: "_blank", download: "" }, "Download"),
+    h("h4", { className: "mt-3" }, "List"),
+    h(ShinyOutput, { id: "list", className: "shiny-html-output" }),
+    h("h4", null, "Table"),
+    h(ShinyOutput, { id: "table", className: "reactable html-widget html-widget-output",
+      "data-reactable-output": "table" }),
+    h("h4", null, "Plot"),
+    h(ImageOutput, { id: "plt_types", width: "100%", height: "300px" }),
+  );
+}
+
+ReactDOM.createRoot(document.body.appendChild(document.createElement("div"))).render(h(App));
+```
+
+### The outputs
+
+Every output worked once the client was fixed (see [Surprises](#surprises-in-the-spike) below). The rest of this section covers how each one is hosted on the client.
+
+#### Lists
 
 `listviewerlite::listview()` returns HTML, so the server keeps `renderUI()`, and the client hosts it with the `shiny-html-output` class:
 
@@ -104,39 +292,35 @@ output$list <- renderUI({
 ```
 
 ```{verbatim}
-<ShinyOutput id="list" className="shiny-html-output" />
+h(ShinyOutput, { id: "list", className: "shiny-html-output" }),
 ```
 
-### Plots
+#### Tables
+
+`reactable` works the documented way: a `ShinyOutput` with the widget classes (`reactable html-widget html-widget-output`).
+
+#### Plots
 
 `ImageOutput` is only documented for Python, but it follows the same contract as R's `renderPlot()`. The client reports its size through `.clientdata_output_<id>_width` and `_height`, and draws the image `renderPlot()` sends back. The `inspect_plot()` ggplots rendered unchanged:
 
 ```{verbatim}
-<ImageOutput id={`plt_${p.value}`} width="100%" height="300px" />
+h(ImageOutput, { id: "plt_types", width: "100%", height: "300px" }),
 ```
 
-### Downloads
+#### Downloads
 
 `downloadHandler()` binds to an anchor with the `shiny-download-link` class, so a `ShinyOutput` with `tagName="a"` works:
 
 ```{verbatim}
-<ShinyOutput
-  id="download"
-  tagName="a"
-  className="btn btn-primary w-100 shiny-download-link"
-  href=""
-  target="_blank"
-  download=""
->
-  Download Data
-</ShinyOutput>
+h(ShinyOutput, { id: "download", tagName: "a", className: "btn btn-primary shiny-download-link",
+  href: "", target: "_blank", download: "" }, "Download"),
 ```
 
 The CSV download for Netflix Titles returned 3.0 MB, and the two file zip for Space Launches returned 104 KB.
 
-### Packaging
+#### Packaging
 
-`page_react()` passes `src_dir` to `page_react_dep()`, which builds an `htmltools::htmlDependency()` with a file source. File sources work from an installed package, so the built client belongs in `inst/www/`:
+`page_react()` passes `src_dir` to `page_react_dep()`, which builds an `htmltools::htmlDependency()` with a file source. I wanted to see if the file sources work from an installed package, which I confirmed by installing a copy of `ttdviewer` with `ui.js` in `inst/www/` into a temporary library:
 
 ```{r}
 #| eval: false
@@ -151,37 +335,141 @@ app_ui <- function() {
 }
 ```
 
-`bs_theme(version = 5)` keeps Bootstrap on the page, so the React components can use the same classes (`form-select`, `nav-tabs`, `card`) the `bslib` UI used.
+* `system.file("www", package = "ttdviewer")` found `ui.js`, and `page_react_dep()` built a `type="module"` script from it. So the built client belongs in `inst/www/`.
+
+* `bs_theme(version = 5)` keeps Bootstrap on the page, so the React components can use the same classes (`form-select`, `nav-tabs`, `card`) the `bslib` UI used.
+
+### Surprises {#surprises-in-the-spike}
+
+The spike turned up two small surprises and one crash. `ImageOutput` worked with R's `renderPlot()` (see Plots above). And `reactable` didn't need a `reactableOutput()` placeholder, because `shinyreact` finds the widget's JavaScript from the render function. The crash came from a plain value.
+
+#### Length one vectors
+
+`reactive_output()` passes the R value through unchanged, and Shiny serializes it with `auto_unbox`, so a character vector of length one arrives as a string, not an array.
+
+In `app.R`, `output$files` sends the file names and the TidyTuesday date for the selected title, and `ui.js` joins the names into a single line with `files.names.join(", ")`.
+
+The spike's default title was Netflix Titles, which has one file. The app crashed on load, and the browser console showed:
+
+```{verbatim}
+TypeError: files.names.join is not a function
+    at App (http://127.0.0.1:8765/spike-1795455972/ui.js:16:61)
+    at vf (http://127.0.0.1:8765/shinyreact-0.1.1/shinyreact.js:40:47833)
+    at Yf (http://127.0.0.1:8765/shinyreact-0.1.1/shinyreact.js:40:70472)
+    at Gd (http://127.0.0.1:8765/shinyreact-0.1.1/shinyreact.js:40:80765)
+    at ry (http://127.0.0.1:8765/shinyreact-0.1.1/shinyreact.js:40:116187)
+    at Kr (http://127.0.0.1:8765/shinyreact-0.1.1/shinyreact.js:40:115267)
+    at uc (http://127.0.0.1:8765/shinyreact-0.1.1/shinyreact.js:40:115104)
+    at cy (http://127.0.0.1:8765/shinyreact-0.1.1/shinyreact.js:40:111963)
+    at My (http://127.0.0.1:8765/shinyreact-0.1.1/shinyreact.js:40:123483)
+    at It (http://127.0.0.1:8765/shinyreact-0.1.1/shinyreact.js:17:1579)
+```
+
+Shiny's internal `toJSON()` shows why. One file arrives as a string, and two files arrive as an array:
+
+```{r}
+#| eval: false
+#| code-fold: false
+# one file (Netflix Titles)
+shiny:::toJSON(list(names = c("netflix_titles.csv")))
+#> {"names":"netflix_titles.csv"}
+```
+
+```{r}
+#| eval: false
+#| code-fold: false
+# two files (Space Launches)
+shiny:::toJSON(list(names = c("agencies.csv", "launches.csv")))
+#> {"names":["agencies.csv","launches.csv"]}
+```
+
+#### The fix
+
+The spike fixed the client line with `[].concat()`, which turns a string into a one element array and leaves an array alone:
+
+```{verbatim}
+files && h("p", { id: "files" }, "Files: ", [].concat(files.names).join(", "), " | TidyTuesday date: ", files.date),
+```
+
+We can also protect the vector on the server with `I()`, which keeps it an array:
+
+```{r}
+#| eval: false
+#| code-fold: false
+shiny:::toJSON(list(names = I("netflix_titles.csv")))
+#> {"names":["netflix_titles.csv"]}
+```
+
+Or we can wrap it on the client, so every `reactive_output()` is covered. In the package, I went with a small client helper:
+
+```{verbatim}
+export function asArray<T>(x: T | T[] | null | undefined): T[] {
+  if (x === null || x === undefined) return [];
+  return Array.isArray(x) ? x : [x];
+}
+```
 
 ## The conversion
 
-The conversion lives on its own branch, so `main` keeps the `bslib` app. The spike was built outside the repo, so the branch starts with the full conversion in one commit (`0dbf03e`). The graph below shows how the two branches relate:
+The conversion lives on its own branch, so `main` keeps the `bslib` app. The spike was built outside the repo, so the branch starts with the full conversion in one commit (`convert UI to shinyreact`). The graph below shows how the two branches diverge:
 
 ```{mermaid}
 %%| fig-width: 6
 %%| fig-align: 'center'
-%%{init: {'theme': 'base', 'gitGraph': {'mainBranchName': 'main', 'showCommitLabel': true, 'rotateCommitLabel': false}, 'themeVariables': { 'fontFamily': 'monospace', "darkMode":false, 'git0': '#4CBB9D', 'git1': '#E83E8C', 'gitBranchLabel0': '#FFFFFF', 'gitBranchLabel1': '#FFFFFF', 'commitLabelFontSize': '12px'}}}%%
+%%{init: {'theme': 'base', 'gitGraph': {'mainBranchName': 'main', 'showCommitLabel': true, 'rotateCommitLabel': true}, 'themeVariables': { 'fontFamily': 'monospace', "darkMode":false, 'git0': '#4CBB9D', 'git1': '#E83E8C', 'gitBranchLabel0': '#FFFFFF', 'gitBranchLabel1': '#FFFFFF', 'commitLabelFontSize': '12px'}}}%%
 
 gitGraph LR:
-    commit id: "91bc354: zip support, 2026 data"
-    commit id: "d3f3d7b: report and tables"
-    commit id: "ab7a2e3: TidyTuesday date"
-    commit id: "7202318: data vignette"
+    commit id: "d3f3d7b"
+    commit id: "ab7a2e3"
+    commit id: "7202318"
     branch shinyreact
     checkout shinyreact
-    commit id: "0dbf03e: convert UI to shinyreact" type: HIGHLIGHT
-    commit id: "796b3b7: conversion vignette"
+    commit id: "convert UI to shinyreact" type: HIGHLIGHT
+    commit id: "796b3b7"
     checkout main
-    commit id: "c03fa33: tab order (bslib)"
+    commit id: "c03fa33"
     checkout shinyreact
-    commit id: "5f4a1df: tab order (React)"
+    commit id: "5f4a1df"
+    checkout main
+    commit id: "0d16311"
+    checkout shinyreact
+    commit id: "0b6c43b"
+    checkout main
+    commit id: "f48c616"
+    checkout shinyreact
+    commit id: "92b21f4"
 ```
 
-The branches don't share UI code anymore, so a UI change has to be made twice. Reordering the tabs (Summary, Graphs, List) took one commit on `main` (`R/app_ui.R`) and another on `shinyreact` (`js/src/ui.tsx`, then a rebuilt `inst/www/ui.js`).
+The branches don't share UI code anymore, so every change happens twice. I've added a few improvements to both (reordering the tabs, clearer graph labels, and the option to download one file or all files). I haven't decided if I will merge the two branches, but for now I've updated the documentation in each branch to describe the changes.
 
 ### The client
 
-The client lives in `js/`, a Vite and TypeScript (TSX) project. `npm run build` writes `inst/www/ui.js` and `ui.css`. React isn't bundled, because `shinyreact.js` (served by the R package) already provides it, so Vite maps `react` to the global `shinyreact.React`:
+`npm run build` writes `inst/www/ui.js` and `ui.css`:
+
+::: {style="font-style: italic;"}
+
+```{verbatim}
+js/
+├── package-lock.json
+├── package.json
+├── src
+│   ├── components
+│   │   ├── DatasetSelect.tsx
+│   │   ├── Download.tsx
+│   │   ├── GraphsTab.tsx
+│   │   ├── ListTab.tsx
+│   │   ├── SummaryTab.tsx
+│   │   └── TitleInput.tsx
+│   ├── shinyreact.ts
+│   ├── ui.css
+│   └── ui.tsx
+├── tsconfig.json
+└── vite.config.ts
+```
+
+:::
+
+React isn't bundled, because `shinyreact.js` (served by the R package) already provides it, so Vite maps `react` to the global `shinyreact.React`:
 
 ```{verbatim}
 rollupOptions: {
@@ -216,9 +504,9 @@ flowchart TD
     style Br fill:#FFFFFF,color:#000000,stroke:#333
 ```
 
-### The modules
+### What happened to the modules?
 
-Every `mod_*_ui()` function is gone. Each server module keeps its id, and the client wraps the matching component in a `ShinyModuleProvider` with the same namespace:
+All the module UI functions are gone. The server module functions keep their `id`s, and the client wraps the matching component in a `ShinyModuleProvider` with the same namespace:
 
 ```{verbatim}
 <ShinyModuleProvider namespace="input">
@@ -268,13 +556,15 @@ flowchart LR
     style CP fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
 ```
 
+### Plain values
+
 Plain values (the dataset titles, file names, and the Summary file overview) moved to `reactive_output()`. For example, `mod_input_server()` used to get its choices from `selectInput()` in the UI module. Now it sends them:
 
 ```{r}
 #| eval: false
 #| code-fold: false
 output$titles <- shinyreact::reactive_output(
-  unique(all_tt_combined$title)
+  unique(all_tt_combined$title[!is.na(all_tt_combined$data_files)])
 )
 ```
 
@@ -290,14 +580,63 @@ The table below maps each module to its outputs and client component:
 | Module | R output | Client |
 |---|---|---|
 | `mod_input` | `titles` (`reactive_output()`) | `TitleInput.tsx` |
-| `mod_download` | `download` (`downloadHandler()`) | `Download.tsx` |
+| `mod_download` | `files` (`reactive_output()`); `download` (`downloadHandler()`) | `Download.tsx` |
 | `mod_list` | `list` (`renderUI()`) | `ListTab.tsx` |
 | `mod_summary` | `overview`, `choices` (`reactive_output()`); `stats`, `vars`, `table` (`renderReactable()`) | `SummaryTab.tsx` |
 | `mod_plot` | `datasets` (`reactive_output()`); `plt_<type>` (`renderPlot()`) | `GraphsTab.tsx` |
 
-### `mod_plot_server()`
+### Plot outputs
 
 The plot module changed the most. The `bslib` version populated a dataset `selectInput()` with `updateSelectInput()`, created `renderPlot()` calls inside an observer, and built the plot containers with `renderUI()`. It also piped `return(...)` into `bindEvent()`, so the `bindEvent()` never ran.
+
+```{r}
+#| eval: false
+#| code-fold: false
+# mod_plot_server() from main branch
+observe({ #<1>
+  if (is.null(ttd_r())) {
+    updateSelectInput(session, "dataset", choices = character(0))
+    return()
+  }
+  ds <- names(ttd_r())
+  updateSelectInput(session, "dataset", choices = ds, selected = ds[[1]])
+}) |>
+  bindEvent(ttd_r(), ignoreNULL = FALSE) #<1>
+
+observe({ #<2>
+  ds_list <- req(ttd_r())
+  sel_ds  <- input$dataset
+  req(sel_ds %in% names(ds_list))
+  df <- ds_list[[sel_ds]]
+  purrr::walk(input$plots, function(plt) {
+    output[[paste0("plt_", plt)]] <- renderPlot({
+      inspect_plot(ttd = setNames(list(df), sel_ds), plots = plt)
+    })
+  })
+}) |>
+  bindEvent(list(ttd_r(), input$dataset, input$plots), ignoreNULL = TRUE) #<2>
+
+output$plots_ui <- renderUI({ #<3>
+  req(ttd_r(), input$dataset, input$plots)
+  purrr::map(input$plots, function(plt) {
+    tagList(
+      h4(names(plot_labels())[plot_labels() == plt]),
+      plotOutput(ns(paste0("plt_", plt)), height = "300px")
+    )
+  })
+}) #<3>
+
+return( #<4>
+  reactive({
+    list("dataset" = input$dataset, "plots" = input$plots)
+  })
+) |>
+  bindEvent(list(ttd_r(), input$dataset, input$plots), ignoreNULL = TRUE) #<4>
+```
+1. Populate the dataset dropdown once ttd is available  
+2. Render each selected plot type for chosen dataset  
+3. Dynamically generate UI for selected plot types
+4. `return()` exits before `bindEvent()` runs
 
 The new version creates one `renderPlot()` per plot type up front, and each one is gated by `req()`:
 
@@ -322,83 +661,9 @@ purrr::walk(PLOT_TYPES, function(plt) {
 
 The checkboxes and plot containers now live in `GraphsTab.tsx`, and `PLOT_TYPES` has to match in both places.
 
-## Surprises
+## Surprises in the conversion
 
-### Length one vectors
-
-`reactive_output()` passes the R value through unchanged, and Shiny serializes it with `auto_unbox`, so a character vector of length one arrives as a string, not an array.
-
-The spike's server sent the file names and the TidyTuesday date for the selected title:
-
-```{r}
-#| eval: false
-#| code-fold: false
-output$files <- reactive_output({
-  if (is.null(input$title)) return(NULL)
-  d <- data()
-  list(names = names(d), date = format(attr(d[[1]], "date")))
-})
-```
-
-And the client joined the names into a single line:
-
-```{verbatim}
-files && h("p", { id: "files" }, "Files: ", files.names.join(", "), " | TidyTuesday date: ", files.date),
-```
-
-The spike's default title was Netflix Titles, which has one file. The app crashed on load, and the browser console showed:
-
-```{verbatim}
-TypeError: files.names.join is not a function
-    at App (http://localhost:8765/spike-1795198398/ui.js:20:61)
-    at vf (http://localhost:8765/shinyreact-0.1.1/shinyreact.js:40:47833)
-    at Yf (http://localhost:8765/shinyreact-0.1.1/shinyreact.js:40:70472)
-    at Gd (http://localhost:8765/shinyreact-0.1.1/shinyreact.js:40:80765)
-    at ry (http://localhost:8765/shinyreact-0.1.1/shinyreact.js:40:116187)
-    at Kr (http://localhost:8765/shinyreact-0.1.1/shinyreact.js:40:115267)
-    at uc (http://localhost:8765/shinyreact-0.1.1/shinyreact.js:40:115104)
-    at cy (http://localhost:8765/shinyreact-0.1.1/shinyreact.js:40:111963)
-    at My (http://localhost:8765/shinyreact-0.1.1/shinyreact.js:40:123483)
-    at MessagePort.It (http://localhost:8765/shinyreact-0.1.1/shinyreact.js:17:1579)
-```
-
-Shiny's internal `toJSON()` shows why. One file arrives as a string, and two files arrive as an array:
-
-```{r}
-#| eval: false
-#| code-fold: false
-# one file (Netflix Titles)
-shiny:::toJSON(list(names = c("netflix_titles.csv")))
-#> {"names":"netflix_titles.csv"}
-
-# two files (Space Launches)
-shiny:::toJSON(list(names = c("agencies.csv", "launches.csv")))
-#> {"names":["agencies.csv","launches.csv"]}
-```
-
-The spike fixed the client line with `[].concat()`, which turns a string into a one element array and leaves an array alone:
-
-```{verbatim}
-files && h("p", { id: "files" }, "Files: ", [].concat(files.names).join(", "), " | TidyTuesday date: ", files.date),
-```
-
-We can also protect the vector on the server with `I()`, which keeps it an array:
-
-```{r}
-#| eval: false
-#| code-fold: false
-shiny:::toJSON(list(names = I("netflix_titles.csv")))
-#> {"names":["netflix_titles.csv"]}
-```
-
-Or we can wrap it on the client, so every `reactive_output()` is covered. In the package, I went with a small client helper:
-
-```{verbatim}
-export function asArray<T>(x: T | T[] | null | undefined): T[] {
-  if (x === null || x === undefined) return [];
-  return Array.isArray(x) ? x : [x];
-}
-```
+The conversion turned up two more surprises.
 
 ### Outputs that never rendered
 
@@ -406,10 +671,18 @@ export function asArray<T>(x: T | T[] | null | undefined): T[] {
 
 ### No type to search
 
-The title picker is a native `<select>`, so it lost the type to search behavior `selectize` gave `selectInput()`. With 422 titles that's noticeable, and it's the main thing I'm still deciding on.
+The title picker is a native `<select>`, so it lost the type to search behavior `selectize` gave `selectInput()`. With 432 titles that's noticeable, and it's the main thing I'm still deciding on.
 
 ## Recap
 
-The server barely changed: the modules kept their ids, `downloadHandler()`, `renderPlot()`, `renderUI()`, and `renderReactable()` all work inside React, and the busy indicators still show. What changed is where the UI lives (`js/` builds into `inst/www/`), and how plain values get to it (`reactive_output()`). The test suite went from 178 to 164 tests, because the UI module tests were dropped with the functions they tested.
+The spike helped discover what a `shinyreact` conversion would look like: 
 
-The conversion is on the `shinyreact` branch for now. `shinyreact` is pre-release, so before merging I need the pkgdown GitHub Action to install it from `Remotes`, and a decision on the title picker.
+1. The server would barely change.  
+2. The server module functions would keep their ids. 
+3. `downloadHandler()`, `renderPlot()`, `renderUI()`, and `renderReactable()` would all work inside React, and the busy indicators still show. 
+
+Conceptually, I had to wrap my head around the new UI location (`js/` builds into `inst/www/`), and how the plain values get to it (`reactive_output()`). 
+
+The test suite dropped from 178 to 164, because the UI module tests were dropped with the functions they tested.
+
+I'll keep the conversion on the `shinyreact` branch for now, because I haven't decided if I will merge it. `shinyreact` is pre-release, so a merge would need the `pkgdown` GitHub Action to install it from `Remotes`, and a decision on the title picker.
