@@ -22,37 +22,28 @@ source("../_common.R")
 
 I got pretty excited when I saw Posit's [blog post](https://opensource.posit.co/blog/2026-09-30_introducing-shinyreact/) announcing the `shinyreact` package. I've worked on a few [Next.js](https://nextjs.org/) apps, but couldn't really wrap my head around how a Shiny and [React](https://react.dev/) R package would work.
 
-I recently built a Shiny app-package for browsing [#TidyTuesday](https://github.com/rfordatascience/tidytuesday) datasets: `ttdviewer`. I designed the UI so I could pick a dataset title, view the files in List, Summary, and Graphs (from [`inspectdf`](https://alastairrushworth.com/inspectdf/)). I can also download one file or all of a dataset's files as CSV or `parquet`. You can view the documentation and code for `ttdviewer` on its [site](https://mjfrigaard.github.io/ttdviewer/). 
+I recently built a Shiny app-package for browsing [#TidyTuesday](https://github.com/rfordatascience/tidytuesday) datasets: `ttdviewer`. I designed the UI so I could pick a dataset title and view its files in List, Summary, and Graphs tabs (the graphs come from [`inspectdf`](https://alastairrushworth.com/inspectdf/)). I can also download one file or all of a dataset's files as CSV or `parquet`. You can view the documentation and code for `ttdviewer` on its [site](https://mjfrigaard.github.io/ttdviewer/).
 
-`ttdviewer` uses `bslib` (`page_sidebar()`, `sidebar()`, and `navset_tab()`). In this post I'll cover converting the UI to [`shinyreact`](https://posit-dev.github.io/shinyreact/), the parts of the conversion the documentation doesn't cover, and the few surprises I hit along the way.
+`ttdviewer` uses `bslib` (`page_sidebar()`, `sidebar()`, and `navset_tab()`). In this post I'll cover converting the UI to [`shinyreact`](https://posit-dev.github.io/shinyreact/). I'll also cover the parts the documentation doesn't, and the few surprises I hit along the way.
 
 ## What is `shinyreact`?
 
-`shinyreact` moves the UI *out* of R. The server still holds the reactive graph (`input`, `reactive()`, `req()`, and `bindEvent()` all behave as usual), but the page is a React client we write ourselves. 
+`shinyreact` moves the UI *out* of R. The server still holds the reactive graph (`input`, `reactive()`, `req()`, and `bindEvent()` all behave as usual), but the page is a React client we write ourselves.
 
-The diagram below gives a broad overview of how React works and how `shinyreact` supplies the plumbing between the React UI and the reactive server:
+The diagrams below give a broad overview of how React works (left) and how `shinyreact` supplies the plumbing between the React UI and the reactive server (right):
+
+::: {layout-ncol="2"}
 
 ```{mermaid}
-%%| fig-width: 8
-%%| fig-align: 'center'
 %%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', 'darkMode':false}}}%%
-
 flowchart TD
-    subgraph SR["<strong>shinyreact</strong>"]
-        User(["User"])
-        UI("Browser: React components<br>(<code>ui.js</code>, written in TSX)")
-        JS[["Browser: <code>shinyreact.js</code><br>hooks and React"]]
-        RG("R server: reactive graph<br><code>input</code>, <code>reactive()</code>, outputs")
-        User -->|"i. clicks and selects"| UI
-        UI <-->|"ii. hooks"| JS
-        JS <-->|"iii. Shiny websocket"| RG
-    end
     subgraph React["<strong>React</strong>"]
+        direction TB
         Event(["User event:<br>click or typing"])
         Set("State setter called<br>(<code>useState()</code>)")
         Rerun("React re-runs the<br>component functions")
         JSX("New UI description<br>from JSX")
-        Diff{"What changed<br>since the last render?"}
+        Diff{"What<br>changed?"}
         Page("Only those changes<br>applied to the page")
         Event -->|"i. handler<br>updates state"| Set
         Set -->|"ii. schedules<br>a re-render"| Rerun
@@ -63,19 +54,36 @@ flowchart TD
     end
 
     style React fill:#FFFFFF,color:#000000,stroke:#333,stroke-width:1px,rx:10,ry:10
-    style SR fill:#FFFFFF,color:#000000,stroke:#333,stroke-width:1px,rx:10,ry:10
     style Event fill:#FFFFFF,color:#000000,stroke:#333
     style Set fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
     style Rerun fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
     style JSX fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
     style Diff fill:#4CBB9D,color:#FFFFFF
     style Page fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+```
+
+```{mermaid}
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', 'darkMode':false}}}%%
+flowchart TD
+    subgraph SR["<strong>shinyreact</strong>"]
+        direction TB
+        User(["User"])
+        UI("Browser: React components<br>(<code>ui.js</code>, written in TSX)")
+        JS[["Browser: <code>shinyreact.js</code><br>hooks and React"]]
+        RG("R server: reactive graph<br><code>input</code>, <code>reactive()</code>, outputs")
+        User -->|"i. clicks and selects"| UI
+        UI <-->|"ii. hooks"| JS
+        JS <-->|"iii. Shiny websocket"| RG
+    end
+
+    style SR fill:#FFFFFF,color:#000000,stroke:#333,stroke-width:1px,rx:10,ry:10
     style User fill:#FFFFFF,color:#000000,stroke:#333
     style UI fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
     style JS fill:#4CBB9D,color:#FFFFFF
     style RG fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
 ```
 
+:::
 
 `shinyreact` is pretty new (version 0.1.0), and the documentation calls it a pre-release, so it's not on CRAN:
 
@@ -143,11 +151,11 @@ flowchart LR
 
 ## Spike first
 
-Before touching the package, I asked Claude to build a spike (small prototype) to test each output with the Netflix Titles data (one file) and Space Launches data (two files).
+Before touching the package, I asked Claude to build a spike (a small prototype). The spike tested each output with the Netflix Titles data (one file) and the Space Launches data (two files).
 
 ### The prompt
 
-The `shinyreact` documentation only shows R examples for `plotly` and `reactable`. `ttdviewer` also uses `listviewerlite`, `renderPlot()`, and `downloadHandler()`, and the client has to be served from an installed package. The prompt asked the spike to answer those questions and nothing else:
+The `shinyreact` documentation only shows R examples for `plotly` and `reactable`. `ttdviewer` also uses `listviewerlite`, `renderPlot()`, and `downloadHandler()`, and the client has to be served from an installed package. The prompt asked the spike to test those gaps and nothing else:
 
 ```{verbatim}
 Before we convert ttdviewer to shinyreact, build a throwaway spike outside
@@ -320,7 +328,7 @@ The CSV download for Netflix Titles returned 3.0 MB, and the two file zip for Sp
 
 #### Packaging
 
-`page_react()` passes `src_dir` to `page_react_dep()`, which builds an `htmltools::htmlDependency()` with a file source. I wanted to see if the file sources work from an installed package, which I confirmed by installing a copy of `ttdviewer` with `ui.js` in `inst/www/` into a temporary library:
+`page_react()` passes `src_dir` to `page_react_dep()`, which builds an `htmltools::htmlDependency()` with a file source. I wanted to know whether a file source works from an installed package. I confirmed it by installing a copy of `ttdviewer` (with `ui.js` in `inst/www/`) into a temporary library:
 
 ```{r}
 #| eval: false
@@ -440,11 +448,11 @@ gitGraph LR:
     commit id: "92b21f4"
 ```
 
-The branches don't share UI code anymore, so every change happens twice. I've added a few improvements to both (reordering the tabs, clearer graph labels, and the option to download one file or all files). I haven't decided if I will merge the two branches, but for now I've updated the documentation in each branch to describe the changes.
+The branches don't share UI code anymore, so every change happens twice. I've added a few improvements to both (reordering the tabs, clearer graph labels, and the option to download one file or all files). I haven't decided whether to merge the two branches, so for now I've updated the documentation on each branch to describe its changes.
 
 ### The client
 
-`npm run build` writes `inst/www/ui.js` and `ui.css`:
+The client is a Vite and TypeScript (TSX) project in `js/`. `npm run build` writes `inst/www/ui.js` and `ui.css`:
 
 ::: {style="font-style: italic;"}
 
@@ -585,6 +593,45 @@ The table below maps each module to its outputs and client component:
 | `mod_summary` | `overview`, `choices` (`reactive_output()`); `stats`, `vars`, `table` (`renderReactable()`) | `SummaryTab.tsx` |
 | `mod_plot` | `datasets` (`reactive_output()`); `plt_<type>` (`renderPlot()`) | `GraphsTab.tsx` |
 
+### What happened to the inputs?
+
+The inputs went the same way as the module UI functions. There's no `selectInput()` or `checkboxGroupInput()` left on the `shinyreact` branch. Each input is now React state that `useShinyInput()` copies to the server. The ids didn't change, so every `input$...` in the server modules reads the same value it did before.
+
+`useShinyInput()` takes an id and a default, and returns the value and a setter. `GraphsTab.tsx` keeps the plot types as an array, which arrives in `input$plots` as a character vector (just like `checkboxGroupInput()`):
+
+```{verbatim}
+const [plots, setPlots] = useShinyInput<string[]>("plots", ["types", "mem", "na"]);
+```
+
+The table below maps each input on `main` to its replacement on `shinyreact`:
+
+| Module | Input | `main` (`bslib`) | `shinyreact` |
+|---|---|---|---|
+| `mod_input` | `ds_title` | `selectInput()` | `<select>` in `TitleInput.tsx` |
+| `mod_download` | `file` | `selectInput()` and `updateSelectInput()` | `<select>` in `Download.tsx` |
+| `mod_download` | `format` | `selectInput()` | `<select>` in `Download.tsx` |
+| `mod_summary` | `ds_input` | `selectInput()` and `updateSelectInput()` | `DatasetSelect.tsx` |
+| `mod_plot` | `dataset` | `selectInput()` and `updateSelectInput()` | `DatasetSelect.tsx` |
+| `mod_plot` | `plots` | `checkboxGroupInput()` | checkboxes in `GraphsTab.tsx` |
+
+#### Choices and selections
+
+`updateSelectInput()` is gone too. On `main`, the server changed a select's choices when a new title loaded. On `shinyreact`, the server only sends the choices (as a `reactive_output()`), and the client picks the selected value. `DatasetSelect.tsx` selects the first file whenever the file names change:
+
+```{verbatim}
+const choices = asArray(useShinyOutputValue<string | string[] | null>(props.outputId, null));
+const [value, setValue] = useShinyInput<string | null>(props.inputId, null);
+const key = choices.join("\u0000");
+
+React.useEffect(() => {
+  if (choices.length > 0 && (value === null || !choices.includes(value))) {
+    setValue(choices[0]);
+  }
+}, [key]);
+```
+
+`Download.tsx` does the same thing for the file choice, but it resets to `"all"` instead of the first file. So the server decides what the choices are, and the client decides which one is selected.
+
 ### Plot outputs
 
 The plot module changed the most. The `bslib` version populated a dataset `selectInput()` with `updateSelectInput()`, created `renderPlot()` calls inside an observer, and built the plot containers with `renderUI()`. It also piped `return(...)` into `bindEvent()`, so the `bindEvent()` never ran.
@@ -646,7 +693,7 @@ The new version creates one `renderPlot()` per plot type up front, and each one 
 purrr::walk(PLOT_TYPES, function(plt) {
   output[[paste0("plt_", plt)]] <- renderPlot({
     req(plt %in% input$plots)
-    ds <- selected() #<1> 
+    ds <- selected() #<1>
     tryCatch(
       inspect_plot(ttd = ds, plots = plt),
       error = function(err) {
@@ -675,14 +722,14 @@ The title picker is a native `<select>`, so it lost the type to search behavior 
 
 ## Recap
 
-The spike helped discover what a `shinyreact` conversion would look like: 
+The spike showed what a `shinyreact` conversion would look like:
 
 1. The server would barely change.  
 2. The server module functions would keep their ids. 
-3. `downloadHandler()`, `renderPlot()`, `renderUI()`, and `renderReactable()` would all work inside React, and the busy indicators still show. 
+3. `downloadHandler()`, `renderPlot()`, `renderUI()`, and `renderReactable()` would all work inside React, and the busy indicators would still show.
 
 Conceptually, I had to wrap my head around the new UI location (`js/` builds into `inst/www/`), and how the plain values get to it (`reactive_output()`). 
 
-The test suite dropped from 178 to 164, because the UI module tests were dropped with the functions they tested.
+The `shinyreact` branch has fewer tests (184 passing expectations, compared with 206 on `main`), because the UI module tests were removed with the functions they tested.
 
-I'll keep the conversion on the `shinyreact` branch for now, because I haven't decided if I will merge it. `shinyreact` is pre-release, so a merge would need the `pkgdown` GitHub Action to install it from `Remotes`, and a decision on the title picker.
+I'll keep the conversion on the `shinyreact` branch for now, because I haven't decided whether to merge it. `shinyreact` is pre-release, so a merge would need the `pkgdown` GitHub Action to install it from `Remotes`, and a decision on the title picker.
