@@ -250,37 +250,48 @@ shinyApp(ui, server)
 ```{verbatim}
 const {
   React, ReactDOM, useShinyInput, useShinyOutputValue, ShinyOutput, ImageOutput,
-} = window.shinyreact;
-const h = React.createElement;
+} = window.shinyreact; #<1>
+const h = React.createElement; #<2>
 
 function App() {
-  const titles = useShinyOutputValue("titles", []);
-  const files = useShinyOutputValue("files", null);
-  const [title, setTitle] = useShinyInput("title", "Netflix Titles");
-  const [format, setFormat] = useShinyInput("format", "csv");
+  const titles = useShinyOutputValue("titles", []); #<3>
+  const files = useShinyOutputValue("files", null); #<3>
+  const [title, setTitle] = useShinyInput("title", "Netflix Titles"); #<4>
+  const [format, setFormat] = useShinyInput("format", "csv"); #<4>
 
   return h("div", { className: "container py-3" },
     h("select", { id: "title", className: "form-select mb-2", value: title,
-      onChange: (e) => setTitle(e.target.value) },
+      onChange: (e) => setTitle(e.target.value) }, #<5>
       titles.map((t) => h("option", { key: t, value: t }, t))),
-    files && h("p", { id: "files" }, "Files: ", files.names.join(", "), " | TidyTuesday date: ", files.date),
+    files && h("p", { id: "files" }, "Files: ", files.names.join(", "), " | TidyTuesday date: ", files.date), #<6>
     h("select", { className: "form-select mb-2", value: format,
       onChange: (e) => setFormat(e.target.value) },
       ["csv", "parquet", "original"].map((f) => h("option", { key: f, value: f }, f))),
-    h(ShinyOutput, { id: "download", tagName: "a", className: "btn btn-primary shiny-download-link",
-      href: "", target: "_blank", download: "" }, "Download"),
+    h(ShinyOutput, { id: "download", tagName: "a", className: "btn btn-primary shiny-download-link", #<7>
+      href: "", target: "_blank", download: "" }, "Download"), #<7>
     h("h4", { className: "mt-3" }, "List"),
-    h(ShinyOutput, { id: "list", className: "shiny-html-output" }),
+    h(ShinyOutput, { id: "list", className: "shiny-html-output" }), #<8>
     h("h4", null, "Table"),
-    h(ShinyOutput, { id: "table", className: "reactable html-widget html-widget-output",
-      "data-reactable-output": "table" }),
+    h(ShinyOutput, { id: "table", className: "reactable html-widget html-widget-output", #<9>
+      "data-reactable-output": "table" }), #<9>
     h("h4", null, "Plot"),
-    h(ImageOutput, { id: "plt_types", width: "100%", height: "300px" }),
+    h(ImageOutput, { id: "plt_types", width: "100%", height: "300px" }), #<10>
   );
 }
 
-ReactDOM.createRoot(document.body.appendChild(document.createElement("div"))).render(h(App));
+ReactDOM.createRoot(document.body.appendChild(document.createElement("div"))).render(h(App)); #<11>
 ```
+1. No build step means no imports: React, ReactDOM, the hooks, and the output components all come from `window.shinyreact`
+2. `h()` is a short name for `React.createElement()`, which stands in for JSX
+3. Plain values from `reactive_output()`: `output$titles` and `output$files`
+4. Inputs sent to the server as `input$title` and `input$format`
+5. Picking a title calls `setTitle()`, which updates `input$title`
+6. The line that crashed on datasets with one file (see [Surprises](#surprises-in-the-spike))
+7. The download link for `downloadHandler()`
+8. The `listviewerlite` HTML from `renderUI()`
+9. The `reactable` widget from `renderReactable()`
+10. The `inspect_plot()` image from `renderPlot()`
+11. `page_react()` sends no body HTML, so the client adds its own `<div>` and renders `App` into it
 
 ### The outputs
 
@@ -288,7 +299,7 @@ Every output worked once the client was fixed (see [Surprises](#surprises-in-the
 
 #### Lists
 
-`listviewerlite::listview()` returns HTML, so the server keeps `renderUI()`, and the client hosts it with the `shiny-html-output` class:
+`listviewerlite::listview()` returns HTML, so the server keeps `renderUI()`, and the client hosts it with the `shiny-html-output` class (which tells Shiny to treat the element like a `uiOutput()`):
 
 ```{r}
 #| eval: false
@@ -321,8 +332,9 @@ h(ImageOutput, { id: "plt_types", width: "100%", height: "300px" }),
 
 ```{verbatim}
 h(ShinyOutput, { id: "download", tagName: "a", className: "btn btn-primary shiny-download-link",
-  href: "", target: "_blank", download: "" }, "Download"),
+  href: "", target: "_blank", download: "" }, "Download"), #<1>
 ```
+1. Shiny fills in `href` with the download URL; `target` and `download` match the attributes `downloadButton()` sets
 
 The CSV download for Netflix Titles returned 3.0 MB, and the two file zip for Space Launches returned 104 KB.
 
@@ -412,10 +424,12 @@ Or we can wrap it on the client, so every `reactive_output()` is covered. In the
 
 ```{verbatim}
 export function asArray<T>(x: T | T[] | null | undefined): T[] {
-  if (x === null || x === undefined) return [];
-  return Array.isArray(x) ? x : [x];
+  if (x === null || x === undefined) return []; #<1>
+  return Array.isArray(x) ? x : [x]; #<2>
 }
 ```
+1. Returns an empty array when there's no value yet (the output hasn't arrived, or the server sent `NULL`)
+2. An array comes back unchanged, and a single value is wrapped in an array
 
 ## The conversion
 
@@ -481,10 +495,12 @@ React isn't bundled, because `shinyreact.js` (served by the R package) already p
 
 ```{verbatim}
 rollupOptions: {
-  external: ["react"],
-  output: { globals: { react: "shinyreact.React" } },
+  external: ["react"], #<1>
+  output: { globals: { react: "shinyreact.React" } }, #<2>
 },
 ```
+1. Leave React out of the bundle
+2. At runtime, every `import ... from "react"` uses the copy that `shinyreact.js` provides
 
 `js/` is in `.Rbuildignore`, and the built bundle is committed, so installing the package doesn't require Node.
 
@@ -518,9 +534,10 @@ All the module UI functions are gone. The server module functions keep their `id
 
 ```{verbatim}
 <ShinyModuleProvider namespace="input">
-  <TitleInput />
+  <TitleInput /> #<1>
 </ShinyModuleProvider>
 ```
+1. Hook ids inside the provider get the `"input"` namespace, so `"ds_title"` becomes `input-ds_title` (the same id `NS("input")` creates for `mod_input_server("input")`)
 
 The namespace strings on the client have to match the module ids in `app_server()`:
 
@@ -580,8 +597,9 @@ And `TitleInput.tsx` reads the titles and sends the selection back as `input$ds_
 
 ```{verbatim}
 const titles = asArray(useShinyOutputValue<string | string[]>("titles", []));
-const [title, setTitle] = useShinyInput("ds_title", "Space Launches");
+const [title, setTitle] = useShinyInput("ds_title", "Space Launches"); #<1>
 ```
+1. `setTitle()` sends the selected title back as `input$ds_title`
 
 The table below maps each module to its outputs and client component:
 
@@ -596,6 +614,40 @@ The table below maps each module to its outputs and client component:
 ### What happened to the inputs?
 
 The inputs went the same way as the module UI functions. There's no `selectInput()` or `checkboxGroupInput()` left on the `shinyreact` branch. Each input is now React state that `useShinyInput()` copies to the server. The ids didn't change, so every `input$...` in the server modules reads the same value it did before.
+
+
+```{verbatim}
+export function TitleInput() {
+  const titles = asArray(useShinyOutputValue<string | string[]>("titles", [])); #<1>
+  const [title, setTitle] = useShinyInput("ds_title", "Space Launches"); #<2>
+
+  return (
+    <div className="mb-3">
+      <label className="form-label fw-bold" htmlFor="ds-title">
+        Choose Dataset Title:
+      </label>
+      <select
+        id="ds-title"
+        className="form-select"
+        value={title} #<3>
+        onChange={(e) => setTitle(e.target.value)} #<4>
+      >
+        {titles.map((t) => ( #<5>
+          <option key={t} value={t}>
+            {t}
+          </option>
+        ))} #<5>
+      </select>
+    </div>
+  );
+}
+```
+1. Dataset titles from `output$titles` (a `reactive_output()`), wrapped in `asArray()` in case only one title arrives
+2. `title` holds the current value (`"Space Launches"` until the user picks one), and `setTitle()` sends it to the server as `input$ds_title`
+3. The `<select>` shows the current `title`
+4. Picking a title calls `setTitle()`, which updates the state and `input$ds_title`
+5. One `<option>` per title (this replaces the `choices` argument of `selectInput()`)
+
 
 `useShinyInput()` takes an id and a default, and returns the value and a setter. `GraphsTab.tsx` keeps the plot types as an array, which arrives in `input$plots` as a character vector (just like `checkboxGroupInput()`):
 
@@ -620,15 +672,18 @@ The table below maps each input on `main` to its replacement on `shinyreact`:
 
 ```{verbatim}
 const choices = asArray(useShinyOutputValue<string | string[] | null>(props.outputId, null));
-const [value, setValue] = useShinyInput<string | null>(props.inputId, null);
-const key = choices.join("\u0000");
+const [value, setValue] = useShinyInput<string | null>(props.inputId, null); #<1>
+const key = choices.join("\u0000"); #<2>
 
-React.useEffect(() => {
+React.useEffect(() => { #<3>
   if (choices.length > 0 && (value === null || !choices.includes(value))) {
     setValue(choices[0]);
   }
-}, [key]);
+}, [key]); #<3>
 ```
+1. The selected file, sent as `input$dataset` (Graphs tab) or `input$ds_input` (Summary tab); the choices on the line above come from `output$datasets` or `output$choices`
+2. One string built from all the file names, so the effect below runs only when the names change
+3. Runs when a new title brings new file names. If the current file isn't among them, it selects the first one (this replaces `updateSelectInput()`)
 
 `Download.tsx` does the same thing for the file choice, but it resets to `"all"` instead of the first file. So the server decides what the choices are, and the client decides which one is selected.
 
