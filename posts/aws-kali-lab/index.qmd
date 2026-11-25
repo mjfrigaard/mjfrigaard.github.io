@@ -19,30 +19,78 @@ toc-location: right
 source("../_common.R")
 ```
 
-I've been working through [Black Hat Bash](https://nostarch.com/blackhatbash) by Dolev Farhi and Nick Aleks. Chapter 3 sets up a hacking lab: a Kali Linux virtual machine that runs a set of intentionally vulnerable Docker containers. The book assumes a local hypervisor (VMware or VirtualBox), but I wanted the lab off my laptop. In this post I'll cover running the same lab on an AWS EC2 instance, and how the book's safety advice translates to the cloud.
+Chapter 3 of [Black Hat Bash](https://nostarch.com/blackhatbash) (by Dolev Farhi and Nick Aleks) builds a hacking lab on a local virtual machine. I didn't want that lab on my laptop. A machine full of deliberately vulnerable services is the kind of thing I'd rather keep somewhere I can stop, snapshot, and throw away. In this post I'll cover how I moved the book's lab onto an AWS EC2 instance, and how each of the book's safety precautions translates to the cloud.
 
-## What the lab needs
+## What does the lab need?
 
-The lab is fully contained in one Kali machine. Kali plays two roles: it hosts the target networks, and it's the machine we attack them from. The book lists the minimum specifications as 4 GB of RAM, 40 GB of storage, and an internet connection.
+The book's lab is one Kali Linux machine. Kali plays both roles: it hosts the targets, and it's the machine we attack them from. The book's minimum specifications are 4 GB of RAM, 40 GB of storage, and an internet connection for the install.
 
-The targets are eight Docker containers for a fake hosting company, ACME Infinity Servers. They sit on two Docker networks:
+The targets are eight Docker containers that belong to a fictional hosting company, ACME Infinity Servers. They're split across two Docker networks:
 
-* Public network (`172.16.10.0/24`): the entry points, mostly machines prefixed with `p-`.
-* Corporate network (`10.1.0.0/24`): backend machines prefixed with `c-`, reachable only after we compromise a public machine.
+* Public network (`172.16.10.0/24`): the entry points, with names that start with `p-`.
+* Corporate network (`10.1.0.0/24`): the backend machines, with names that start with `c-`.
 
-Both networks are Docker bridges *inside* the Kali machine. That detail matters on AWS, because the targets never get an address in the VPC.
+Both networks are Docker bridges, and a Docker bridge is just a virtual network switch that lives inside one machine. I've found this is the detail that makes the move to AWS simple. The targets never get an address in AWS, so the cloud only has to provide the Kali machine.
 
-## The book's precautions on AWS
+## How does the lab fit on AWS?
 
-The book gives three precautions for a hacking lab. Each one has an AWS counterpart:
+The diagram below shows the layout. My laptop reaches the Kali instance over SSH, and the Kali instance reaches the containers through its two bridges:
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', 'darkMode':false}}}%%
+
+flowchart TD
+    Laptop(["Laptop"])
+    subgraph VPC["<strong>lab-vpc</strong>"]
+        SG{"Security group:<br>SSH from<br>my IP?"}
+        subgraph Kali["<strong>Kali</strong>"]
+            Shell("bash and<br>hacking tools")
+            subgraph Pub["<strong>br_public</strong>"]
+                PW("p-web-01<br>p-ftp-01")
+            end
+            Both("p-web-02<br>c-jumpbox-01")
+            subgraph Corp["<strong>br_corporate</strong>"]
+                CW("c-db-01<br>c-db-02<br>c-redis-01<br>c-backup-01")
+            end
+        end
+    end
+    Blocked(["Everything<br>else"])
+
+    Laptop -->|"i. ssh with key"| SG
+    Blocked --x SG
+    SG -->|"ii. allowed"| Shell
+    Shell -->|"iii. attack"| PW
+    Shell -->|"iii. attack"| Both
+    Both -.->|"iv. pivot"| CW
+
+    style VPC fill:#FFFFFF,color:#000000,stroke:#333,stroke-width:1px,rx:10,ry:10
+    style Kali fill:#FFFFFF,color:#000000,stroke:#333,stroke-width:1px,rx:10,ry:10
+    style Pub fill:#F5F5F5,color:#000000,stroke:#999,stroke-width:1px,rx:10,ry:10
+    style Corp fill:#F5F5F5,color:#000000,stroke:#999,stroke-width:1px,rx:10,ry:10
+    style Laptop fill:#FFFFFF,color:#000000,stroke:#333
+    style Blocked fill:#FFFFFF,color:#000000,stroke:#333
+    style SG fill:#4CBB9D,color:#FFFFFF
+    style Shell fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style PW fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Both fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style CW fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+```
+
+The security group lets in SSH from one address and blocks everything else. Inside the instance, `p-web-02` and `c-jumpbox-01` sit on both bridges. Later chapters use them to pivot from the public network into the corporate one.
+
+## What changes from the book?
+
+The book gives three precautions for any hacking lab. Each one has an AWS counterpart:
 
 | Book precaution | On AWS |
 |:---|:---|
-| Avoid connecting the lab to the internet | The security group allows SSH from my IP address only; the lab networks are Docker bridges that never leave the instance |
-| Separate the lab from your main operating system | The lab runs on its own EC2 instance in its own VPC |
-| Take frequent snapshots | Create an AMI (or EBS snapshot) whenever the lab is stable |
+| Keep the lab off the internet | The security group allows SSH from my IP address only, and the targets live on bridges that never leave the instance |
+| Separate the lab from your main operating system | The lab runs on its own instance in its own VPC |
+| Take frequent snapshots | Save an AMI whenever the lab is in a good state |
 
-The first row is the one that changes the most. A cloud instance *is* on the internet, so we can't follow the book's advice to work offline. Instead, nothing outside the instance can reach it except SSH from one address.
+The first row changes the most. A cloud instance is on the internet by definition, so we can't work offline the way the book suggests. Instead, we make sure nothing outside the instance can reach the lab, and only SSH from one address can reach the instance.
 
 ```{r}
 #| label: co_box_aup
@@ -52,59 +100,16 @@ The first row is the one that changes the most. A cloud instance *is* on the int
 co_box(
   color = "r",
   header = "Only attack what you own",
-  contents = "AWS lets you run security tests against your own resources, but only your own. Every target in this lab is a container on the Kali instance. Never point these tools at an address, host, or service you don't own or have written permission to test.")
+  contents = "AWS lets you run security tests against your own resources, and only your own. Every target in this lab is a container on the Kali instance. Never point these tools at an address, host, or service you don't own or don't have written permission to test.")
 ```
 
-## How the pieces fit
+## Setting up the network
 
-The diagram below shows the setup. My laptop reaches Kali over SSH, and Kali reaches the lab containers over its two bridge interfaces:
+You don't have to know much about AWS for this, but you'll need an account and the [AWS CLI](https://docs.aws.amazon.com/cli/) configured with credentials. Each command below has a console equivalent if you'd rather click through it.
 
-```{mermaid}
-%%| fig-align: 'center'
-%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', 'darkMode':false}}}%%
+### Creating a VPC
 
-flowchart TD
-    Laptop(["Laptop"])
-    subgraph VPC["<strong>lab-vpc</strong>"]
-        SG{"Security group:<br>SSH from my IP?"}
-        subgraph Kali["<strong>Kali EC2 instance</strong>"]
-            Shell("bash shell<br>and hacking tools")
-            subgraph Pub["<strong>br_public</strong>"]
-                PW("p-web-01<br>p-ftp-01")
-            end
-            subgraph Corp["<strong>br_corporate</strong>"]
-                CW("c-db-01<br>c-db-02<br>c-redis-01<br>c-backup-01")
-            end
-            Jump("p-web-02<br>c-jumpbox-01<br>(both networks)")
-        end
-    end
-    Laptop -->|"i. ssh with key"| SG
-    SG -->|"ii. allowed"| Shell
-    Shell -->|"iii. attack"| PW
-    Shell -->|"iii. attack"| Jump
-    Jump -.->|"iv. pivot"| CW
-
-    style VPC fill:#FFFFFF,color:#000000,stroke:#333,stroke-width:1px,rx:10,ry:10
-    style Kali fill:#FFFFFF,color:#000000,stroke:#333,stroke-width:1px,rx:10,ry:10
-    style Pub fill:#F5F5F5,color:#000000,stroke:#999,stroke-width:1px,rx:10,ry:10
-    style Corp fill:#F5F5F5,color:#000000,stroke:#999,stroke-width:1px,rx:10,ry:10
-    style Laptop fill:#FFFFFF,color:#000000,stroke:#333
-    style SG fill:#4CBB9D,color:#FFFFFF
-    style Shell fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
-    style PW fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
-    style CW fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
-    style Jump fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
-```
-
-Two containers sit on both networks: `p-web-02` and `c-jumpbox-01`. Later chapters use them as the launchpad into the corporate network.
-
-## Setting up AWS
-
-You don't have to know much about AWS for this, but you'll need an account and the [AWS CLI](https://docs.aws.amazon.com/cli/) configured with credentials. Each step below has a console equivalent if you'd rather click through it.
-
-### A dedicated VPC
-
-A VPC (virtual private cloud) is just a private network inside your AWS account. A dedicated one keeps the lab away from anything else in the account. In the console, choose VPC > Create VPC > VPC and more, with one availability zone, one public subnet, no private subnets, and no NAT gateway. The CLI version creates the VPC itself:
+A VPC (virtual private cloud) is a private network inside your AWS account. A dedicated VPC keeps the lab away from anything else in the account. The command below creates one:
 
 ```{bash}
 #| eval: false
@@ -114,11 +119,13 @@ aws ec2 create-vpc --cidr-block 10.50.0.0/16 \
   --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=lab-vpc}]'
 ```
 
-The VPC range (`10.50.0.0/16`) doesn't overlap with either lab network, so the Docker bridges and the VPC never compete for the same addresses.
+The VPC range (`10.50.0.0/16`) was chosen so it doesn't overlap either lab network. That way the Docker bridges and the VPC never compete for the same addresses.
 
-### A locked down security group
+The VPC also needs one public subnet with a route to an internet gateway, or we can't SSH in. The console handles this in one step: choose VPC, then Create VPC, then VPC and more, with one availability zone, one public subnet, no private subnets, and no NAT gateway.
 
-A security group is the instance's firewall. Ours allows one thing: SSH from my current public IP address.
+### Creating a security group
+
+A security group is the instance's firewall. Ours allows exactly one thing: SSH from my current public IP address. The commands below create the group and add that rule:
 
 ```{bash}
 #| eval: false
@@ -137,11 +144,11 @@ aws ec2 authorize-security-group-ingress \
   --cidr "${MY_IP}/32"
 ```
 
-There are no other inbound rules. If my home IP address changes, SSH stops working until I update this rule.
+There are no other inbound rules. If my home IP address changes, SSH stops working until I update the rule with the new address.
 
-### A key pair
+### Creating a key pair
 
-Kali on AWS logs in with an SSH key, not a password. The key below is written to `~/.ssh/` and made readable by my user only:
+The Kali instance accepts SSH keys, not passwords. The commands below create a key, save it to `~/.ssh/`, and make it readable by my user only (SSH refuses a key file other users can read):
 
 ```{bash}
 #| eval: false
@@ -154,9 +161,9 @@ chmod 400 ~/.ssh/lab-key.pem
 
 ## Launching Kali
 
-OffSec publishes an official Kali image on the [AWS Marketplace](https://aws.amazon.com/marketplace) (search for "Kali Linux"). Subscribe to the listing once in the console, then copy the AMI ID for your region from its launch page.
+OffSec publishes an official Kali image on the [AWS Marketplace](https://aws.amazon.com/marketplace). Search for "Kali Linux", subscribe to the listing once in the console, and copy the AMI ID for your region from its launch page.
 
-The root volume needs to be larger than the default to meet the book's 40 GB minimum. The root device name varies between images, so I look it up instead of guessing:
+The default root volume is too small for the book's 40 GB minimum, so we set the size at launch. The root device name varies between images, and I look it up rather than guess:
 
 ```{bash}
 #| eval: false
@@ -166,7 +173,7 @@ aws ec2 describe-images --image-ids ami-xxxxxxxxxxxxxxxxx \
   --query 'Images[0].RootDeviceName' --output text
 ```
 
-Then we launch the instance with that device name. A `t3.large` (2 vCPUs, 8 GB of RAM) doubles the book's memory minimum, which helps once eight containers are running:
+Now we can launch the instance. Replace `/dev/xvda` below with the name `describe-images` returned. A `t3.large` (2 vCPUs, 8 GB of RAM) doubles the book's memory minimum, and that headroom helps once eight containers are running:
 
 ```{bash}
 #| eval: false
@@ -183,7 +190,7 @@ aws ec2 run-instances \
   --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=kali-lab}]'
 ```
 
-Replace `/dev/xvda` with the name `describe-images` returned. The default user on the Kali image is `kali`:
+The login user on the Kali image is `kali`. We can confirm the instance is reachable by connecting with the key:
 
 ```{bash}
 #| eval: false
@@ -194,7 +201,7 @@ ssh -i ~/.ssh/lab-key.pem kali@<public-ip>
 
 ## Preparing Kali
 
-The book's first steps carry over unchanged. We update the packages, then make bash the default shell (newer Kali releases default to `zsh`):
+The book's preparation steps carry over unchanged. First we update the packages:
 
 ```{bash}
 #| eval: false
@@ -203,14 +210,22 @@ The book's first steps carry over unchanged. We update the packages, then make b
 sudo apt update -y
 sudo apt upgrade -y
 sudo apt dist-upgrade -y
+```
+
+Newer Kali releases use `zsh` as the default shell, but the book's scripts assume bash. The command below makes bash the default for the `kali` user:
+
+```{bash}
+#| eval: false
+#| code-fold: false
+#| echo: true
 sudo usermod --shell /bin/bash kali
 ```
 
-I log out and back in over SSH so the new shell takes effect. We can confirm it with `echo $SHELL`, which should print `/bin/bash`.
+The change takes effect at the next login, so I disconnect and connect again over SSH. We can confirm the new shell with `echo $SHELL`, which should print `/bin/bash`.
 
 ## Deploying the lab
 
-The book walks through installing Docker and each tool by hand, and I'd recommend doing that once. On a fresh instance, the repository's `make init` does all of it:
+The book walks through installing Docker and each tool by hand, and I'd recommend doing that once to see what gets installed. On a fresh instance, though, the repository's `make init` does all of it. The commands below clone the repository and run it:
 
 ```{bash}
 #| eval: false
@@ -222,7 +237,7 @@ cd Black-Hat-Bash/lab
 sudo make init
 ```
 
-The first deployment downloads images and tools, so it takes a while. A second SSH session can follow the install log:
+The first run downloads every image and tool, so expect it to take a while. A second SSH session can follow the install log:
 
 ```{bash}
 #| eval: false
@@ -233,7 +248,7 @@ tail -f /var/log/lab-install.log
 
 ### Checking the lab
 
-When the log says the install finished, `make test` checks the lab:
+When the log says the install has finished, `make test` checks that the lab is running:
 
 ```{bash}
 #| eval: false
@@ -250,7 +265,7 @@ Lab is up.
 
 :::
 
-`docker ps` should list all eight containers (the order may differ):
+Next, `docker ps` should list all eight containers (the order may differ):
 
 ```{bash}
 #| eval: false
@@ -274,7 +289,7 @@ c-redis-01
 
 :::
 
-Last, the two bridge interfaces should have the addresses from the book (`172.16.10.1` and `10.1.0.1`):
+Last, the two bridge interfaces should carry the gateway addresses from the book (`172.16.10.1` and `10.1.0.1`):
 
 ```{bash}
 #| eval: false
@@ -283,15 +298,60 @@ Last, the two bridge interfaces should have the addresses from the book (`172.16
 ip addr | grep "br_"
 ```
 
-These addresses exist only on the Kali instance. From my laptop, `172.16.10.10` goes nowhere, which is exactly what we want.
+These addresses exist only on the Kali instance. From my laptop, an address like `172.16.10.10` goes nowhere, and that's exactly the isolation we want.
 
-## Managing the lab
+## Running a lab session
 
-The book's lab commands work the same on EC2. AWS adds two more steps: snapshots and stopping the instance.
+Once the lab is built, every session follows the same loop. The diagram below shows it:
 
-### Snapshots
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', 'darkMode':false}}}%%
 
-The book recommends a VM snapshot whenever the lab is stable. On AWS, an AMI captures the whole instance, and we can launch a new instance from it if the lab breaks:
+flowchart TD
+    Start(["Start<br>instance"]) --> IP("Look up the<br>public IP")
+    IP --> SSH("ssh in")
+    SSH --> Deploy("make deploy")
+    Deploy --> Work("Work through<br>the chapter")
+    Work --> Good{"Lab in a<br>good state?"}
+    Good -->|"yes"| AMI[("Save<br>an AMI")]
+    Good -->|"no"| Down("make teardown")
+    AMI --> Down
+    Down --> Stop(["Stop<br>instance"])
+
+    style Start fill:#FFFFFF,color:#000000,stroke:#333
+    style Stop fill:#FFFFFF,color:#000000,stroke:#333
+    style IP fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style SSH fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Deploy fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Work fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style Good fill:#4CBB9D,color:#FFFFFF
+    style AMI fill:#4CBB9D,color:#FFFFFF
+    style Down fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+```
+
+The book's lab commands (`make deploy` and `make teardown`) work the same on EC2. AWS adds the steps at each end: starting and stopping the instance, and saving an AMI.
+
+### Starting and connecting
+
+A stopped instance gets a new public IP address each time it starts. The commands below start the instance and print the new address:
+
+```{bash}
+#| eval: false
+#| code-fold: false
+#| echo: true
+aws ec2 start-instances --instance-ids i-xxxxxxxxxxxxxxxxx
+
+aws ec2 describe-instances --instance-ids i-xxxxxxxxxxxxxxxxx \
+  --query 'Reservations[0].Instances[0].PublicIpAddress' --output text
+```
+
+An Elastic IP would keep the address fixed, but it costs money while the instance is stopped. For a lab I use a few times a week, looking up the address is cheaper.
+
+### Saving an AMI
+
+The book recommends a snapshot whenever the lab is in a good state. On AWS, an AMI (Amazon Machine Image) captures the whole instance, and we can launch a fresh copy from it if the lab breaks:
 
 ```{bash}
 #| eval: false
@@ -301,11 +361,11 @@ aws ec2 create-image --instance-id i-xxxxxxxxxxxxxxxxx \
   --name kali-lab-clean --description "Black Hat Bash lab after make init"
 ```
 
-AWS reboots the instance while it creates the image, unless we pass `--no-reboot`. I let it reboot, because the image is more reliable that way.
+AWS reboots the instance while it creates the image, unless we pass `--no-reboot`. I let it reboot, because the reboot writes everything to disk before AWS copies it.
 
 ### Stopping the instance
 
-EC2 bills for the instance while it runs. When I'm done for the day, I shut down the lab, then stop (not terminate) the instance:
+EC2 bills for the instance while it runs. When I'm done for the day, I tear down the lab and then stop (not terminate) the instance:
 
 ```{bash}
 #| eval: false
@@ -315,22 +375,89 @@ sudo make teardown
 aws ec2 stop-instances --instance-ids i-xxxxxxxxxxxxxxxxx
 ```
 
-A stopped instance keeps its volume, so everything we installed is still there next time. The volume still costs a little while the instance is stopped. Terminating the instance deletes the volume, unless we've saved an AMI first.
+A stopped instance keeps its volume, so everything we installed is there next time. The volume still costs a little while the instance is stopped.
+
+## Throw it away?
+
+Stopping the instance is the right default between sessions, but it isn't free and it isn't clean. I've found three reasons to terminate the lab instead.
+
+The first reason is cost. A stopped instance no longer bills for compute, but its 60 GB volume bills every month whether I use it or not. An AMI is cheaper to keep, because its snapshot stores only the blocks in use. If I won't be back for a few weeks, the AMI is the only copy I need.
+
+The second reason is a clean slate. Each chapter compromises the containers, and the work leaves files, credentials, and changed configurations behind on Kali. The book's advice to take snapshots exists for this: a lab should return to a known state. Launching a new instance from the AMI gets me that state with certainty, without having to remember what I changed.
+
+The third reason is drift. Kali is a rolling release, so an instance left stopped for months needs a long upgrade before it's useful. When the break is that long, a fresh image from the Marketplace and a new `make init` are often faster than upgrading the old one.
+
+The diagram below shows how I decide at the end of a session:
+
+```{mermaid}
+%%| eval: true
+%%| fig-align: 'center'
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'monospace', 'darkMode':false}}}%%
+
+flowchart TD
+    Done(["Session<br>done"]) --> Soon{"Back within<br>a week?"}
+    Soon -->|"yes"| Stop("Stop the<br>instance")
+    Soon -->|"no"| Keep{"Lab worth<br>keeping?"}
+    Keep -->|"yes"| AMI[("Save<br>an AMI")]
+    Keep -->|"no"| Term("Terminate the<br>instance")
+    AMI --> Term
+    Term --> Gone(["Nothing left<br>running"])
+
+    style Done fill:#FFFFFF,color:#000000,stroke:#333
+    style Gone fill:#FFFFFF,color:#000000,stroke:#333
+    style Soon fill:#4CBB9D,color:#FFFFFF
+    style Keep fill:#4CBB9D,color:#FFFFFF
+    style Stop fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+    style AMI fill:#4CBB9D,color:#FFFFFF
+    style Term fill:#4CBB9D,color:#FFFFFF,rx:5,ry:5
+```
+
+Before terminating, make sure the AMI exists and is ready. The command below prints its state, which should be `available`:
+
+```{bash}
+#| eval: false
+#| code-fold: false
+#| echo: true
+aws ec2 describe-images --owners self \
+  --filters "Name=name,Values=kali-lab-clean" \
+  --query 'Images[0].[ImageId,State]' --output text
+```
 
 ```{r}
-#| label: co_box_ip
+#| label: co_box_terminate
 #| echo: false
 #| results: asis
 #| eval: true
 co_box(
-  color = "b",
-  header = "A new public IP after each start",
-  contents = "A stopped instance gets a new public IP address when it starts again. Look it up with `aws ec2 describe-instances` (or in the console) before you connect. An Elastic IP keeps the address fixed, but it costs money while the instance is stopped.")
+  color = "r",
+  header = "Terminating is permanent",
+  contents = "Terminating an instance deletes its root volume. Unless you've saved an AMI first, every tool, image, and change to the lab goes with it.")
+```
+
+Once the AMI is `available`, we can terminate the instance:
+
+```{bash}
+#| eval: false
+#| code-fold: false
+#| echo: true
+aws ec2 terminate-instances --instance-ids i-xxxxxxxxxxxxxxxxx
+```
+
+The next session starts with `run-instances`, using the AMI ID in place of the Marketplace image. The VPC, security group, and key pair stay in place, and none of them cost anything while they sit unused.
+
+When I'm finished with the book, the AMI goes too. Deregistering an AMI doesn't delete its snapshot, so that takes a second command:
+
+```{bash}
+#| eval: false
+#| code-fold: false
+#| echo: true
+aws ec2 deregister-image --image-id ami-xxxxxxxxxxxxxxxxx
+aws ec2 delete-snapshot --snapshot-id snap-xxxxxxxxxxxxxxxxx
 ```
 
 ## Recap
 
-The Black Hat Bash lab runs on EC2 without changes, because all of its targets are containers on the Kali instance. AWS replaces the hypervisor, and the security group replaces the book's advice to work offline. AMIs replace VM snapshots, and stopping the instance keeps the bill down between sessions.
+The Black Hat Bash lab moves to EC2 without changes to the lab itself, because every target is a container on the Kali instance. AWS replaces the hypervisor, the security group replaces the book's advice to stay offline, and AMIs replace VM snapshots. Stopping the instance between sessions keeps the bill down without losing any work.
 
 * [Black Hat Bash](https://nostarch.com/blackhatbash) (No Starch Press)
 * [Black Hat Bash repository](https://github.com/dolevf/Black-Hat-Bash)
